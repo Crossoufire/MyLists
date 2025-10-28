@@ -5,6 +5,7 @@ import {ApiProviderType} from "@/lib/utils/enums";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
 import {Popover, PopoverContent, PopoverTrigger} from "@/lib/client/components/ui/popover";
 import {Card, CardAction, CardContent, CardHeader, CardTitle} from "@/lib/client/components/ui/card";
+import {mail} from "@/lib/utils/helpers";
 
 
 export const Route = createFileRoute("/_main/_universal/features")({
@@ -13,6 +14,15 @@ export const Route = createFileRoute("/_main/_universal/features")({
 
 
 const features = [
+    {
+        name: "New Backend Language",
+        description:
+            <div>
+                MyLists is now in TypeScript. If you experience any bugs (very much expected), please{" "}
+                <a className="text-blue-500 font-medium" href={`mailto:${mail}`}>Contact me</a>.
+            </div>,
+        isNew: true,
+    },
     {
         name: "Search MyLists using !bangs",
         description: "You can now search MyLists Media and Users using your custom bangs.",
@@ -65,24 +75,21 @@ const features = [
         isNew: true,
     },
     {
-        name: "New Global Stats Page",
-        description: "The global stats page has been revamped, with a new 'Overall' section more stats.",
-        isNew: true,
-    },
-    {
         name: "Cropping Pictures",
         description: "You can now crop your profile picture and back picture (on upload).",
         isNew: true,
     },
     {
+        name: "New Global Stats Page",
+        description: "The global stats page has been revamped, with a new 'Overall' section more stats.",
+    },
+    {
         name: "New HoF Ranking system/UI",
         description: "The HoF page has been revamped.",
-        isNew: true,
     },
     {
         name: "Updates in /lists",
         description: "You can now update everything about a media directly from the /list page.",
-        isNew: true,
     },
     {
         name: "Achievements system",

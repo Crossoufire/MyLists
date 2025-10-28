@@ -3,9 +3,10 @@ import {redirect} from "@tanstack/react-router";
 import {createServerFn} from "@tanstack/react-start";
 import {getContainer} from "@/lib/server/core/container";
 import {FormattedError} from "@/lib/utils/error-classes";
+import {createOrGetQueue} from "@/lib/server/core/bullmq";
 import {getCookie, setCookie} from "@tanstack/react-start/server";
 import {taskDefinitions} from "@/lib/server/domain/tasks/tasks-config";
-import {createAdminToken, verifyAdminToken} from "@/lib/utils/jwt-utils";
+import {adminCookieOptions, createAdminToken, verifyAdminToken} from "@/lib/utils/jwt-utils";
 import {ADMIN_COOKIE_NAME, adminAuthMiddleware, managerAuthMiddleware} from "@/lib/server/middlewares/authentication";
 import {
     adminTriggerTaskSchema,
@@ -15,16 +16,6 @@ import {
     searchTypeAdminSchema,
     searchTypeSchema
 } from "@/lib/types/zod.schema.types";
-import {createOrGetQueue} from "@/lib/server/core/bullmq";
-
-
-const ADMIN_COOKIE_OPTIONS = {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax" as const,
-    maxAge: 5 * 60 * 1000, // 5 minutes
-    path: "/"
-};
 
 
 export const checkAdminAuth = createServerFn({ method: "GET" })
@@ -46,7 +37,7 @@ export const adminAuth = createServerFn({ method: "GET" })
     .handler(async ({ data }) => {
         if (data.password === serverEnv.ADMIN_PASSWORD) {
             const adminToken = createAdminToken();
-            setCookie(ADMIN_COOKIE_NAME, adminToken, ADMIN_COOKIE_OPTIONS);
+            setCookie(ADMIN_COOKIE_NAME, adminToken, adminCookieOptions);
 
             return { success: true };
         }
@@ -61,7 +52,7 @@ export const adminAuth = createServerFn({ method: "GET" })
 export const adminLogout = createServerFn({ method: "POST" })
     .middleware([managerAuthMiddleware])
     .handler(async () => {
-        setCookie(ADMIN_COOKIE_NAME, "", { ...ADMIN_COOKIE_OPTIONS, maxAge: 0 });
+        setCookie(ADMIN_COOKIE_NAME, "", { ...adminCookieOptions, maxAge: 0 });
         throw redirect({ to: "/" });
     });
 
