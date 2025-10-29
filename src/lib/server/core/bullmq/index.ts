@@ -3,7 +3,7 @@ import {Queue, Worker} from "bullmq";
 import {serverEnv} from "@/env/server";
 import {CancelJobError} from "@/lib/utils/error-classes";
 import {executeTask} from "@/lib/server/core/task-runner";
-import {isJobCancelled, saveJobToDb} from "@/lib/utils/bullmq";
+import {isJobCancelled} from "@/lib/utils/bullmq";
 import {createDummyQueue} from "@/lib/server/core/bullmq/dummy";
 import {getRedisConnection} from "@/lib/server/core/redis-client";
 import {createTaskLogger, rootLogger} from "@/lib/server/core/logger";
@@ -54,7 +54,7 @@ export const createWorker = (connection: Redis) => {
     worker.on("failed", async (job, error) => {
         rootLogger.error({ jobId: job?.id, taskName: job?.name, err: error }, "Worker failed task");
 
-        await saveJobToDb(job, "failed");
+        // await saveJobToDb(job, "failed");
     });
 
     worker.on("completed", async (job, returnValue) => {
@@ -65,7 +65,7 @@ export const createWorker = (connection: Redis) => {
             rootLogger.info({ jobId: job.id, taskName: job.name, returnValue }, "Worker completed task");
         }
 
-        await saveJobToDb(job, "completed", returnValue);
+        // await saveJobToDb(job, "completed", returnValue);
     });
 
     rootLogger.info("Worker instance created and listeners attached.");
