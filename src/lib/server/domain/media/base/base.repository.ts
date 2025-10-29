@@ -115,14 +115,22 @@ export abstract class BaseRepository<TConfig extends MediaSchemaConfig<MediaTabl
     }
 
     async removeMediaByIds(mediaIds: number[]) {
+        const { mediaTable } = this.config;
         const tablesForDeletion = this.config.tablesForDeletion;
 
+        // Delete on other tables
         for (const table of tablesForDeletion) {
             await getDbClient()
                 .delete(table)
                 .where(inArray(table.mediaId, mediaIds))
                 .execute();
         }
+
+        // Delete on main table
+        await getDbClient()
+            .delete(mediaTable)
+            .where(inArray(mediaTable.id, mediaIds))
+            .execute();
     }
 
     async searchByName(query: string, limit: number = 20) {

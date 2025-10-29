@@ -105,6 +105,6 @@ export const animeConfig: AnimeSchemaConfig = {
             mediaIdColumn: animeNetwork.mediaId,
         }
     },
-    tablesForDeletion: [animeActors, animeGenre, animeLabels],
+    tablesForDeletion: [animeEpisodesPerSeason, animeNetwork, animeActors, animeGenre, animeLabels],
     achievements: animeAchievements,
 };

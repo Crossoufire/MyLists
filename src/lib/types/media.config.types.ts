@@ -94,7 +94,7 @@ export interface MediaSchemaConfig<
     achievements: readonly AchievementSeedData[];
     editableFields: Array<keyof TMediaTable["$inferSelect"]>;
     jobDefinitions: Partial<Record<JobType, JobDefinition>>;
-    tablesForDeletion: (Table & { mediaId: Column<any, any, any>, name: Column<any, any, any> })[];
+    tablesForDeletion: (Table & { mediaId: Column<any, any, any> })[];
 }
 
 

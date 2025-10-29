@@ -114,6 +114,6 @@ export const seriesConfig: SeriesSchemaConfig = {
             mediaIdColumn: seriesNetwork.mediaId,
         }
     },
-    tablesForDeletion: [seriesActors, seriesGenre, seriesLabels],
+    tablesForDeletion: [seriesEpisodesPerSeason, seriesNetwork, seriesActors, seriesGenre, seriesLabels],
     achievements: seriesAchievements,
 };
