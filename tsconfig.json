@@ -20,6 +20,9 @@
             "DOM.Iterable",
             "ES2022"
         ],
+        "types": [
+            "bun-types"
+        ],
         "isolatedModules": true,
         "resolveJsonModule": true,
         "skipLibCheck": true,
