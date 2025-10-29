@@ -57,6 +57,7 @@ export const registerTaskCommand = (program: Command, task: TaskDefinition) => {
             finally {
                 await queue.close();
                 await connection.quit();
+                process.exit(0);
             }
         }
     });
