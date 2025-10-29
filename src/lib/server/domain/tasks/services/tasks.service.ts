@@ -125,9 +125,9 @@ export class TasksService {
 
     protected async runDbMaintenance(_ctx: TaskContext) {
         this.logger.info("Starting: dbMaintenance execution.");
-        getDbClient().run("PRAGMA checkpoint(FULL)");
-        getDbClient().run("VACUUM");
-        getDbClient().run("ANALYZE");
+        await getDbClient().run("PRAGMA checkpoint(FULL)");
+        await getDbClient().run("VACUUM");
+        await getDbClient().run("ANALYZE");
         this.logger.info("Completed: dbMaintenance execution.");
     }
 
@@ -238,8 +238,8 @@ export class TasksService {
                 this.logger.info(`Found ${mediaIds.length} non-list ${mediaType} to remove.`);
 
                 // Remove in other services
-                this.userUpdatesService.deleteMediaUpdates(mediaType, mediaIds);
-                this.notificationsService.deleteNotifications(mediaType, mediaIds);
+                await this.userUpdatesService.deleteMediaUpdates(mediaType, mediaIds);
+                await this.notificationsService.deleteNotifications(mediaType, mediaIds);
 
                 // Remove main media and associated tables: actors, genres, companies, authors...
                 await mediaService.removeMediaByIds(mediaIds);
@@ -289,7 +289,9 @@ export class TasksService {
 
         const gamesProviderService = this.mediaProviderRegistry.getService(MediaType.GAMES);
         const accessToken = await gamesProviderService.fetchNewIgdbToken();
-        if (!accessToken) throw new Error("Failed to fetch new IGDB token.");
+        if (!accessToken) {
+            throw new Error("Failed to fetch new IGDB token.");
+        }
 
         await this._updateEnvFile("IGDB_API_KEY", accessToken);
 
