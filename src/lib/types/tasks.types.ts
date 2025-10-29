@@ -1,8 +1,10 @@
 import {Job} from "bullmq";
+import {Logger} from "pino";
 import {taskNames} from "@/lib/server/domain/tasks/tasks-config";
 
 
 export type TaskContext = {
+    logger: Logger;
     data: TaskJobData,
     taskName: TaskName,
     triggeredBy: string,

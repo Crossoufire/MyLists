@@ -26,17 +26,16 @@ export const createOrGetQueue = async () => {
     }
 
     const connection = await getRedisConnection();
-
     mylistsTaskQueue = new Queue(QUEUE_NAME, {
         connection: connection.duplicate(),
         defaultJobOptions: {
             attempts: 1,
-            removeOnFail: { count: 25 },
-            removeOnComplete: { count: 25 },
+            removeOnFail: 10,
+            removeOnComplete: 10,
         },
     });
-
     rootLogger.info("Mylists-tasks queue initialized.");
+
     return mylistsTaskQueue;
 };
 
@@ -97,10 +96,11 @@ const taskProcessor = async (job: TypedJob): Promise<TaskReturnType> => {
             data: jobData,
             cancelCallback,
             progressCallback,
+            logger: taskLogger,
             triggeredBy: jobData.triggeredBy,
         };
 
-        await executeTask(context, taskLogger);
+        await executeTask(context);
 
         taskLogger.info("Task completed successfully.");
 

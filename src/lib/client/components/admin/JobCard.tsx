@@ -1,11 +1,13 @@
+import {useState} from "react";
 import {cn} from "@/lib/utils/helpers";
-import {CheckCircle, Clock} from "lucide-react";
 import {JobProgress} from "@/lib/types/tasks.types";
 import {Badge} from "@/lib/client/components/ui/badge";
 import {capitalize, formatDateTime} from "@/lib/utils/functions";
 import {Card, CardContent, CardHeader} from "@/lib/client/components/ui/card";
 // import {useCancelUploadsMutation} from "@/routes/_main/_private/settings/uploads/route";
+import {AlertCircle, CheckCircle, ChevronDown, ChevronRight, Clock, Info, XCircle} from "lucide-react";
 import {adminArchivedTasksOptions, adminCheckActiveJobs} from "@/lib/client/react-query/query-options/admin-options";
+import {Button} from "../ui/button";
 
 
 type TaskType = Awaited<ReturnType<NonNullable<ReturnType<typeof adminCheckActiveJobs>["queryFn"]>>>[0]
@@ -21,9 +23,10 @@ interface JobCardProps {
 
 
 export function JobCard({ job, title, isAdmin = true }: JobCardProps) {
+    const [showLogs, setShowLogs] = useState(false);
     // const cancelUploadsMutation = useCancelUploadsMutation(queryKey);
-    const jobStatus = ("returnValue" in job && job.returnValue?.result) === "cancelled" ? "cancelled" : job.status;
-    console.log({ jobStatus })
+    const jobHasLogs = isAdmin && "logs" in job && job.logs && job.logs.logs.length > 0;
+    const jobStatus = job.returnValue?.result === "cancelled" ? "cancelled" : job.status;
 
     // const handleCancel = () => {
     //     cancelUploadsMutation.mutate({ data: { jobId: job.jobId! } }, {
@@ -142,9 +145,14 @@ export function JobCard({ job, title, isAdmin = true }: JobCardProps) {
                     </div>
                 }
 
-                {isAdmin && "logs" in job && job.logs &&
-                    <div className="mt-2 ">
-                        {job.logs.logs}
+                {jobHasLogs &&
+                    <div className="mt-3 -mb-1">
+                        <Button onClick={() => setShowLogs(!showLogs)} variant="outline" size="sm">
+                            {showLogs ? "Hide Logs" : `Show Logs - (${job!.logs!.logs!.length})`}
+                        </Button>
+                        {showLogs &&
+                            <LogViewer logsData={job!.logs!.logs!}/>
+                        }
                     </div>
                 }
             </CardContent>
@@ -153,156 +161,156 @@ export function JobCard({ job, title, isAdmin = true }: JobCardProps) {
 }
 
 
-// interface ParsedLog {
-//     msg: string;
-//     raw: string;
-//     level: number;
-//     durationMs?: number,
-//     time: number | null;
-//     data: Record<string, any> | null;
-// }
-//
-//
-// function LogViewer({ logsData }: { logsData: string[] }) {
-//     const [expandedLogs, setExpandedLogs] = useState(() => new Set<number>());
-//
-//     const parseLogLine = (logLine: string): ParsedLog => {
-//         try {
-//             const parsed = JSON.parse(logLine);
-//             return {
-//                 raw: logLine,
-//                 msg: parsed.msg,
-//                 time: parsed.time,
-//                 level: parsed.level,
-//                 data: { ...parsed },
-//                 durationMs: parsed.durationMs,
-//             };
-//         }
-//         catch {
-//             return {
-//                 level: 30,
-//                 time: null,
-//                 data: null,
-//                 msg: logLine,
-//                 raw: logLine,
-//             };
-//         }
-//     };
-//
-//     const getLevelInfo = (level: number) => {
-//         if (level >= 50) {
-//             return { label: "ERROR", color: "text-red-400", icon: XCircle };
-//         }
-//         else if (level >= 40) {
-//             return { label: "WARN", color: "text-yellow-400", icon: AlertCircle };
-//         }
-//         else {
-//             return { label: "INFO", color: "text-blue-400", icon: Info };
-//         }
-//     };
-//
-//     const formatTime = (time: number | null) => {
-//         if (!time) return "";
-//         const date = new Date(time);
-//
-//         return date.toLocaleTimeString("fr", {
-//             hour12: false,
-//             hour: "2-digit",
-//             minute: "2-digit",
-//             second: "2-digit",
-//             fractionalSecondDigits: 3,
-//         });
-//     };
-//
-//     const toggleExpanded = (idx: number) => {
-//         const newExpanded = new Set(expandedLogs);
-//         if (newExpanded.has(idx)) {
-//             newExpanded.delete(idx);
-//         }
-//         else {
-//             newExpanded.add(idx);
-//         }
-//         setExpandedLogs(newExpanded);
-//     };
-//
-//     const hasAdditionalData = (log: ParsedLog) => {
-//         if (!log.data || log.level < 40) return false;
-//
-//         const keys = Object.keys(log.data);
-//         const standardKeys = ["level", "time", "msg", "pid", "hostname"];
-//
-//         return keys.some((key) => !standardKeys.includes(key));
-//     };
-//
-//     return (
-//         <div className="overflow-auto max-h-[500px]">
-//             {logsData.map((logLine, idx) => {
-//                 const log = parseLogLine(logLine);
-//                 const levelInfo = getLevelInfo(log.level);
-//                 const Icon = levelInfo.icon;
-//                 const isExpanded = expandedLogs.has(idx);
-//                 const showExpandButton = hasAdditionalData(log);
-//
-//                 return (
-//                     <div
-//                         key={idx}
-//                         className="border-b border-zinc-800 last:border-b-0 hover:bg-zinc-900 transition-colors bg-opacity-5"
-//                     >
-//                         <div className="px-3 py-2 flex items-start gap-2">
-//                             <Icon className={`w-4 h-4 mt-0.5 flex-shrink-0 ${levelInfo.color}`}/>
-//
-//                             <div className="flex-1 min-w-0">
-//                                 <div className="flex items-start gap-2">
-//                                     {showExpandButton &&
-//                                         <button
-//                                             type="button"
-//                                             onClick={() => toggleExpanded(idx)}
-//                                             className="text-zinc-500 hover:text-zinc-300 mt-0.5"
-//                                         >
-//                                             {isExpanded ? <ChevronDown className="size-3"/> : <ChevronRight className="size-3"/>}
-//                                         </button>
-//                                     }
-//
-//                                     <div className="flex-1">
-//                                         <div className="flex items-baseline gap-2 flex-wrap">
-//                                             <span className={`text-xs font-semibold ${levelInfo.color}`}>
-//                                                 {levelInfo.label}
-//                                             </span>
-//                                             {log.time &&
-//                                                 <span className="text-xs text-zinc-500 font-mono">
-//                                                     {formatTime(log.time)}
-//                                                 </span>
-//                                             }
-//                                             {log.durationMs &&
-//                                                 <span className="text-xs text-zinc-500 font-mono">
-//                                                     [{log.durationMs} ms]
-//                                                 </span>
-//                                             }
-//                                             <span className="text-sm text-zinc-200 break-words">
-//                                                 {log.msg}
-//                                             </span>
-//                                         </div>
-//
-//                                         {isExpanded && log.data && log.level >= 30 &&
-//                                             <div className="mt-2 p-2 bg-zinc-900 rounded text-xs font-mono overflow-auto">
-//                                                 <pre className="text-zinc-300 whitespace-pre-wrap break-words">
-//                                                     {JSON.stringify(
-//                                                         Object.fromEntries(
-//                                                             Object.entries(log.data).filter(
-//                                                                 ([key]) => !["level", "time", "msg", "pid", "hostname"].includes(key)
-//                                                             )
-//                                                         ), null, 2
-//                                                     )}
-//                                                 </pre>
-//                                             </div>
-//                                         }
-//                                     </div>
-//                                 </div>
-//                             </div>
-//                         </div>
-//                     </div>
-//                 );
-//             })}
-//         </div>
-//     );
-// }
+interface ParsedLog {
+    msg: string;
+    raw: string;
+    level: number;
+    durationMs?: number,
+    time: number | null;
+    data: Record<string, any> | null;
+}
+
+
+function LogViewer({ logsData }: { logsData: string[] }) {
+    const [expandedLogs, setExpandedLogs] = useState(() => new Set<number>());
+
+    const parseLogLine = (logLine: string): ParsedLog => {
+        try {
+            const parsed = JSON.parse(logLine);
+            return {
+                raw: logLine,
+                msg: parsed.msg,
+                time: parsed.time,
+                level: parsed.level,
+                data: { ...parsed },
+                durationMs: parsed.durationMs,
+            };
+        }
+        catch {
+            return {
+                level: 30,
+                time: null,
+                data: null,
+                msg: logLine,
+                raw: logLine,
+            };
+        }
+    };
+
+    const getLevelInfo = (level: number) => {
+        if (level >= 50) {
+            return { label: "ERROR", color: "text-red-400", icon: XCircle };
+        }
+        else if (level >= 40) {
+            return { label: "WARN", color: "text-yellow-400", icon: AlertCircle };
+        }
+        else {
+            return { label: "INFO", color: "text-blue-400", icon: Info };
+        }
+    };
+
+    const formatTime = (time: number | null) => {
+        if (!time) return "";
+        const date = new Date(time);
+
+        return date.toLocaleTimeString("fr", {
+            hour12: false,
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+            fractionalSecondDigits: 3,
+        });
+    };
+
+    const toggleExpanded = (idx: number) => {
+        const newExpanded = new Set(expandedLogs);
+        if (newExpanded.has(idx)) {
+            newExpanded.delete(idx);
+        }
+        else {
+            newExpanded.add(idx);
+        }
+        setExpandedLogs(newExpanded);
+    };
+
+    const hasAdditionalData = (log: ParsedLog) => {
+        if (!log.data || log.level < 40) return false;
+
+        const keys = Object.keys(log.data);
+        const standardKeys = ["level", "time", "msg", "pid", "hostname"];
+
+        return keys.some((key) => !standardKeys.includes(key));
+    };
+
+    return (
+        <div className="overflow-auto max-h-[400px] pr-2">
+            {logsData.map((logLine, idx) => {
+                const log = parseLogLine(logLine);
+                const levelInfo = getLevelInfo(log.level);
+                const Icon = levelInfo.icon;
+                const isExpanded = expandedLogs.has(idx);
+                const showExpandButton = hasAdditionalData(log);
+
+                return (
+                    <div
+                        key={idx}
+                        className="border-b border-zinc-800 last:border-b-0 hover:bg-zinc-900 transition-colors bg-opacity-5"
+                    >
+                        <div className="px-3 py-2 flex items-start gap-2">
+                            <Icon className={`w-4 h-4 mt-0.5 flex-shrink-0 ${levelInfo.color}`}/>
+
+                            <div className="flex-1 min-w-0">
+                                <div className="flex items-start gap-2">
+                                    {showExpandButton &&
+                                        <button
+                                            type="button"
+                                            onClick={() => toggleExpanded(idx)}
+                                            className="text-zinc-500 hover:text-zinc-300 mt-0.5"
+                                        >
+                                            {isExpanded ? <ChevronDown className="size-3"/> : <ChevronRight className="size-3"/>}
+                                        </button>
+                                    }
+
+                                    <div className="flex-1">
+                                        <div className="flex items-baseline gap-2 flex-wrap">
+                                            <span className={`text-xs font-semibold ${levelInfo.color}`}>
+                                                {levelInfo.label}
+                                            </span>
+                                            {log.time &&
+                                                <span className="text-xs text-zinc-500 font-mono">
+                                                    {formatTime(log.time)}
+                                                </span>
+                                            }
+                                            {log.durationMs &&
+                                                <span className="text-xs text-zinc-500 font-mono">
+                                                    [{log.durationMs} ms]
+                                                </span>
+                                            }
+                                            <span className="text-sm text-zinc-200 break-words">
+                                                {log.msg}
+                                            </span>
+                                        </div>
+
+                                        {isExpanded && log.data && log.level >= 30 &&
+                                            <div className="mt-2 p-2 bg-zinc-900 rounded text-xs font-mono overflow-auto">
+                                                <pre className="text-zinc-300 whitespace-pre-wrap break-words">
+                                                    {JSON.stringify(
+                                                        Object.fromEntries(
+                                                            Object.entries(log.data).filter(
+                                                                ([key]) => !["level", "time", "msg", "pid", "hostname"].includes(key)
+                                                            )
+                                                        ), null, 2
+                                                    )}
+                                                </pre>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                );
+            })}
+        </div>
+    );
+}

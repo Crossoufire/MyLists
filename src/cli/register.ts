@@ -28,11 +28,12 @@ export const registerTaskCommand = (program: Command, task: TaskDefinition) => {
 
                 const context: TaskContext = {
                     data: jobData,
+                    logger: taskLogger,
                     taskName: task.name,
                     triggeredBy: jobData.triggeredBy,
                 }
 
-                await executeTask(context, taskLogger);
+                await executeTask(context);
                 cliLogger.info(`Task ${task.name} completed directly via CLI.`);
             }
             catch (error) {
