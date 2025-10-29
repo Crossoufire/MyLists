@@ -1,7 +1,6 @@
 import {createFileRoute} from "@tanstack/react-router";
 import {useHashTab} from "@/lib/client/hooks/use-hash-tab";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
-import {UploadCsv} from "@/lib/client/components/user-settings/UploadCsv";
 import {DangerForm} from "@/lib/client/components/user-settings/DangerForm";
 import {Sidebar, SideBarItem} from "@/lib/client/components/general/Sidebar";
 import {GeneralForm} from "@/lib/client/components/user-settings/GeneralForm";
@@ -18,7 +17,7 @@ const tabConfig = [
     { sidebarTitle: "General", component: <GeneralForm/> },
     { sidebarTitle: "MediaList", component: <MediaListForm/> },
     { sidebarTitle: "Password", component: <PasswordForm/> },
-    { sidebarTitle: "Upload CSV", component: <UploadCsv/> },
+    // { sidebarTitle: "Upload CSV", component: <UploadCsv/> },
     { sidebarTitle: "Advanced", component: <DangerForm/> },
 ] as const;
 type TabConfigTypes = typeof tabConfig[number]["sidebarTitle"];
