@@ -1,13 +1,13 @@
 // import {toast} from "sonner";
-// import {createFileRoute} from "@tanstack/react-router";
+import {createFileRoute} from "@tanstack/react-router";
 // import {JobCard} from "@/lib/client/components/admin/JobCard";
 // import {PageTitle} from "@/lib/client/components/general/PageTitle";
 // import {MutedText} from "@/lib/client/components/general/MutedText";
 // import {queryOptions, useMutation, useSuspenseQuery} from "@tanstack/react-query";
 // import {cancelUserUpload, getUserUploads} from "@/lib/server/functions/user-settings";
 // import {adminCheckActiveJobs} from "@/lib/client/react-query/query-options/admin-options";
-//
-//
+
+
 // const uploadsOptions = (pollingSec = 3) => queryOptions({
 //     queryKey: ["uploads"],
 //     queryFn: getUserUploads,
@@ -20,11 +20,11 @@
 //         return false;
 //     },
 // });
-//
-//
+
+
 // type QKeyCancelUploads = ReturnType<typeof uploadsOptions>["queryKey"] | ReturnType<typeof adminCheckActiveJobs>["queryKey"];
-//
-//
+
+
 // export const useCancelUploadsMutation = (queryKey: QKeyCancelUploads) => {
 //     return useMutation({
 //         mutationFn: cancelUserUpload,
@@ -50,13 +50,13 @@
 //     });
 // }
 //
-//
-// export const Route = createFileRoute("/_main/_private/settings/uploads")({
-//     loader: async ({ context: { queryClient } }) => queryClient.ensureQueryData(uploadsOptions()),
-//     component: UserUploadsPage,
-// });
-//
-//
+
+
+export const Route = createFileRoute("/_main/_private/settings/uploads")({
+    component: () => <></>,
+});
+
+
 // function UserUploadsPage() {
 //     const userJobs = useSuspenseQuery(uploadsOptions()).data;
 //
