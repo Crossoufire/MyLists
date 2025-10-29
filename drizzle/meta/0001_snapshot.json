@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "cc725dbd-d248-4500-ac4d-655799232138",
+  "id": "81e8acae-dec4-42ae-8b5e-927851f04e50",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "account": {
@@ -233,29 +233,8 @@
     "anime": {
       "name": "anime",
       "columns": {
-        "id": {
-          "name": "id",
-          "type": "integer",
-          "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "name": {
-          "name": "name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
         "original_name": {
           "name": "original_name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "release_date": {
-          "name": "release_date",
           "type": "text",
           "primaryKey": false,
           "notNull": false,
@@ -331,13 +310,6 @@
           "notNull": false,
           "autoincrement": false
         },
-        "synopsis": {
-          "name": "synopsis",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
         "popularity": {
           "name": "popularity",
           "type": "real",
@@ -345,25 +317,11 @@
           "notNull": false,
           "autoincrement": false
         },
-        "image_cover": {
-          "name": "image_cover",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
         "api_id": {
           "name": "api_id",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
-          "autoincrement": false
-        },
-        "lock_status": {
-          "name": "lock_status",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
           "autoincrement": false
         },
         "season_to_air": {
@@ -387,6 +345,56 @@
           "notNull": false,
           "autoincrement": false
         },
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "release_date": {
+          "name": "release_date",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "synopsis": {
+          "name": "synopsis",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "image_cover": {
+          "name": "image_cover",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "lock_status": {
+          "name": "lock_status",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "added_at": {
+          "name": "added_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(CURRENT_TIMESTAMP)"
+        },
         "last_api_update": {
           "name": "last_api_update",
           "type": "text",
@@ -395,7 +403,15 @@
           "autoincrement": false
         }
       },
-      "indexes": {},
+      "indexes": {
+        "anime_apiId_unique": {
+          "name": "anime_apiId_unique",
+          "columns": [
+            "api_id"
+          ],
+          "isUnique": true
+        }
+      },
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
@@ -546,17 +562,17 @@
     "anime_labels": {
       "name": "anime_labels",
       "columns": {
-        "id": {
-          "name": "id",
-          "type": "integer",
-          "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
-        },
         "user_id": {
           "name": "user_id",
           "type": "integer",
           "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
           "notNull": true,
           "autoincrement": false
         },
@@ -611,6 +627,44 @@
     "anime_list": {
       "name": "anime_list",
       "columns": {
+        "current_season": {
+          "name": "current_season",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "current_episode": {
+          "name": "current_episode",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "redo": {
+          "name": "redo",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "total": {
+          "name": "total",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "redo2": {
+          "name": "redo2",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'[]'"
+        },
         "id": {
           "name": "id",
           "type": "integer",
@@ -632,20 +686,6 @@
           "notNull": true,
           "autoincrement": false
         },
-        "current_season": {
-          "name": "current_season",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "last_episode_watched": {
-          "name": "last_episode_watched",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
         "status": {
           "name": "status",
           "type": "text",
@@ -660,28 +700,12 @@
           "notNull": false,
           "autoincrement": false
         },
-        "redo": {
-          "name": "redo",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": 0
-        },
         "comment": {
           "name": "comment",
           "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
-        },
-        "total": {
-          "name": "total",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": 0
         },
         "rating": {
           "name": "rating",
@@ -690,13 +714,20 @@
           "notNull": false,
           "autoincrement": false
         },
-        "redo2": {
-          "name": "redo2",
+        "added_at": {
+          "name": "added_at",
           "type": "text",
           "primaryKey": false,
-          "notNull": true,
+          "notNull": false,
           "autoincrement": false,
-          "default": "'[]'"
+          "default": "(CURRENT_TIMESTAMP)"
+        },
+        "last_updated": {
+          "name": "last_updated",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
         }
       },
       "indexes": {},
@@ -780,27 +811,6 @@
     "books": {
       "name": "books",
       "columns": {
-        "id": {
-          "name": "id",
-          "type": "integer",
-          "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "name": {
-          "name": "name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "release_date": {
-          "name": "release_date",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
         "pages": {
           "name": "pages",
           "type": "integer",
@@ -822,6 +832,34 @@
           "notNull": false,
           "autoincrement": false
         },
+        "api_id": {
+          "name": "api_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "release_date": {
+          "name": "release_date",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
         "synopsis": {
           "name": "synopsis",
           "type": "text",
@@ -836,19 +874,20 @@
           "notNull": true,
           "autoincrement": false
         },
-        "api_id": {
-          "name": "api_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
         "lock_status": {
           "name": "lock_status",
           "type": "integer",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
+        },
+        "added_at": {
+          "name": "added_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(CURRENT_TIMESTAMP)"
         },
         "last_api_update": {
           "name": "last_api_update",
@@ -858,7 +897,15 @@
           "autoincrement": false
         }
       },
-      "indexes": {},
+      "indexes": {
+        "books_apiId_unique": {
+          "name": "books_apiId_unique",
+          "columns": [
+            "api_id"
+          ],
+          "isUnique": true
+        }
+      },
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
@@ -957,17 +1004,17 @@
     "books_labels": {
       "name": "books_labels",
       "columns": {
-        "id": {
-          "name": "id",
-          "type": "integer",
-          "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
-        },
         "user_id": {
           "name": "user_id",
           "type": "integer",
           "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
           "notNull": true,
           "autoincrement": false
         },
@@ -1022,6 +1069,29 @@
     "books_list": {
       "name": "books_list",
       "columns": {
+        "actual_page": {
+          "name": "actual_page",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "redo": {
+          "name": "redo",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "total": {
+          "name": "total",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
         "id": {
           "name": "id",
           "type": "integer",
@@ -1050,28 +1120,12 @@
           "notNull": true,
           "autoincrement": false
         },
-        "redo": {
-          "name": "redo",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": 0
-        },
-        "actual_page": {
-          "name": "actual_page",
+        "favorite": {
+          "name": "favorite",
           "type": "integer",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
-        },
-        "total": {
-          "name": "total",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": 0
         },
         "comment": {
           "name": "comment",
@@ -1087,9 +1141,17 @@
           "notNull": false,
           "autoincrement": false
         },
-        "favorite": {
-          "name": "favorite",
-          "type": "integer",
+        "added_at": {
+          "name": "added_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(CURRENT_TIMESTAMP)"
+        },
+        "last_updated": {
+          "name": "last_updated",
+          "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
@@ -1228,27 +1290,6 @@
     "games": {
       "name": "games",
       "columns": {
-        "id": {
-          "name": "id",
-          "type": "integer",
-          "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "name": {
-          "name": "name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "image_cover": {
-          "name": "image_cover",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
         "game_engine": {
           "name": "game_engine",
           "type": "text",
@@ -1280,20 +1321,6 @@
         "vote_count": {
           "name": "vote_count",
           "type": "real",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "release_date": {
-          "name": "release_date",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "synopsis": {
-          "name": "synopsis",
-          "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
@@ -1333,12 +1360,55 @@
           "notNull": true,
           "autoincrement": false
         },
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "release_date": {
+          "name": "release_date",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "synopsis": {
+          "name": "synopsis",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "image_cover": {
+          "name": "image_cover",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
         "lock_status": {
           "name": "lock_status",
           "type": "integer",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
+        },
+        "added_at": {
+          "name": "added_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(CURRENT_TIMESTAMP)"
         },
         "last_api_update": {
           "name": "last_api_update",
@@ -1348,7 +1418,15 @@
           "autoincrement": false
         }
       },
-      "indexes": {},
+      "indexes": {
+        "games_apiId_unique": {
+          "name": "games_apiId_unique",
+          "columns": [
+            "api_id"
+          ],
+          "isUnique": true
+        }
+      },
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
@@ -1461,17 +1539,17 @@
     "games_labels": {
       "name": "games_labels",
       "columns": {
-        "id": {
-          "name": "id",
-          "type": "integer",
-          "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
-        },
         "user_id": {
           "name": "user_id",
           "type": "integer",
           "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
           "notNull": true,
           "autoincrement": false
         },
@@ -1526,6 +1604,21 @@
     "games_list": {
       "name": "games_list",
       "columns": {
+        "playtime": {
+          "name": "playtime",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": 0
+        },
+        "platform": {
+          "name": "platform",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
         "id": {
           "name": "id",
           "type": "integer",
@@ -1554,14 +1647,6 @@
           "notNull": true,
           "autoincrement": false
         },
-        "playtime": {
-          "name": "playtime",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false,
-          "default": 0
-        },
         "favorite": {
           "name": "favorite",
           "type": "integer",
@@ -1576,16 +1661,24 @@
           "notNull": false,
           "autoincrement": false
         },
-        "platform": {
-          "name": "platform",
-          "type": "text",
+        "rating": {
+          "name": "rating",
+          "type": "real",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
-        "rating": {
-          "name": "rating",
-          "type": "real",
+        "added_at": {
+          "name": "added_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(CURRENT_TIMESTAMP)"
+        },
+        "last_updated": {
+          "name": "last_updated",
+          "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
@@ -1669,16 +1762,146 @@
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
-    "manga": {
-      "name": "manga",
+    "job_history": {
+      "name": "job_history",
       "columns": {
         "id": {
           "name": "id",
           "type": "integer",
           "primaryKey": true,
           "notNull": true,
+          "autoincrement": true
+        },
+        "job_id": {
+          "name": "job_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
           "autoincrement": false
         },
+        "user_id": {
+          "name": "user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "task_name": {
+          "name": "task_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "logs": {
+          "name": "logs",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "finished_on": {
+          "name": "finished_on",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "failed_reason": {
+          "name": "failed_reason",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "processed_on": {
+          "name": "processed_on",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "data": {
+          "name": "data",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "timestamp": {
+          "name": "timestamp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "triggered_by": {
+          "name": "triggered_by",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "return_value": {
+          "name": "return_value",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "ix_job_history_job_id": {
+          "name": "ix_job_history_job_id",
+          "columns": [
+            "job_id"
+          ],
+          "isUnique": false
+        },
+        "ix_job_history_user_id": {
+          "name": "ix_job_history_user_id",
+          "columns": [
+            "user_id"
+          ],
+          "isUnique": false
+        },
+        "ix_job_history_job_status": {
+          "name": "ix_job_history_job_status",
+          "columns": [
+            "status"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "job_history_user_id_user_id_fk": {
+          "name": "job_history_user_id_user_id_fk",
+          "tableFrom": "job_history",
+          "tableTo": "user",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "manga": {
+      "name": "manga",
+      "columns": {
         "original_name": {
           "name": "original_name",
           "type": "text",
@@ -1749,6 +1972,20 @@
           "notNull": false,
           "autoincrement": false
         },
+        "api_id": {
+          "name": "api_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
         "name": {
           "name": "name",
           "type": "text",
@@ -1756,15 +1993,15 @@
           "notNull": true,
           "autoincrement": false
         },
-        "synopsis": {
-          "name": "synopsis",
+        "release_date": {
+          "name": "release_date",
           "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
-        "release_date": {
-          "name": "release_date",
+        "synopsis": {
+          "name": "synopsis",
           "type": "text",
           "primaryKey": false,
           "notNull": false,
@@ -1777,19 +2014,20 @@
           "notNull": true,
           "autoincrement": false
         },
-        "api_id": {
-          "name": "api_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
         "lock_status": {
           "name": "lock_status",
           "type": "integer",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
+        },
+        "added_at": {
+          "name": "added_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(CURRENT_TIMESTAMP)"
         },
         "last_api_update": {
           "name": "last_api_update",
@@ -1799,7 +2037,15 @@
           "autoincrement": false
         }
       },
-      "indexes": {},
+      "indexes": {
+        "manga_apiId_unique": {
+          "name": "manga_apiId_unique",
+          "columns": [
+            "api_id"
+          ],
+          "isUnique": true
+        }
+      },
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
@@ -1853,17 +2099,17 @@
     "manga_genre": {
       "name": "manga_genre",
       "columns": {
-        "media_id": {
-          "name": "media_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
         "id": {
           "name": "id",
           "type": "integer",
           "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "media_id": {
+          "name": "media_id",
+          "type": "integer",
+          "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
@@ -1898,8 +2144,8 @@
     "manga_labels": {
       "name": "manga_labels",
       "columns": {
-        "media_id": {
-          "name": "media_id",
+        "user_id": {
+          "name": "user_id",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
@@ -1912,8 +2158,8 @@
           "notNull": true,
           "autoincrement": false
         },
-        "user_id": {
-          "name": "user_id",
+        "media_id": {
+          "name": "media_id",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
@@ -1927,29 +2173,8 @@
           "autoincrement": false
         }
       },
-      "indexes": {
-        "ix_manga_labels_user_id": {
-          "name": "ix_manga_labels_user_id",
-          "columns": [
-            "user_id"
-          ],
-          "isUnique": false
-        }
-      },
+      "indexes": {},
       "foreignKeys": {
-        "manga_labels_media_id_manga_id_fk": {
-          "name": "manga_labels_media_id_manga_id_fk",
-          "tableFrom": "manga_labels",
-          "tableTo": "manga",
-          "columnsFrom": [
-            "media_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
         "manga_labels_user_id_user_id_fk": {
           "name": "manga_labels_user_id_user_id_fk",
           "tableFrom": "manga_labels",
@@ -1962,6 +2187,19 @@
           ],
           "onDelete": "cascade",
           "onUpdate": "no action"
+        },
+        "manga_labels_media_id_manga_id_fk": {
+          "name": "manga_labels_media_id_manga_id_fk",
+          "tableFrom": "manga_labels",
+          "tableTo": "manga",
+          "columnsFrom": [
+            "media_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -1971,17 +2209,33 @@
     "manga_list": {
       "name": "manga_list",
       "columns": {
+        "current_chapter": {
+          "name": "current_chapter",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "redo": {
+          "name": "redo",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "total": {
+          "name": "total",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
         "id": {
           "name": "id",
           "type": "integer",
           "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "media_id": {
-          "name": "media_id",
-          "type": "integer",
-          "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
@@ -1992,28 +2246,12 @@
           "notNull": true,
           "autoincrement": false
         },
-        "current_chapter": {
-          "name": "current_chapter",
+        "media_id": {
+          "name": "media_id",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
-        },
-        "total": {
-          "name": "total",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": 0
-        },
-        "redo": {
-          "name": "redo",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": 0
         },
         "status": {
           "name": "status",
@@ -2029,6 +2267,13 @@
           "notNull": false,
           "autoincrement": false
         },
+        "comment": {
+          "name": "comment",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
         "rating": {
           "name": "rating",
           "type": "real",
@@ -2036,44 +2281,24 @@
           "notNull": false,
           "autoincrement": false
         },
-        "comment": {
-          "name": "comment",
+        "added_at": {
+          "name": "added_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(CURRENT_TIMESTAMP)"
+        },
+        "last_updated": {
+          "name": "last_updated",
           "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         }
       },
-      "indexes": {
-        "ix_manga_list_id": {
-          "name": "ix_manga_list_id",
-          "columns": [
-            "id"
-          ],
-          "isUnique": false
-        },
-        "ix_manga_list_user_id": {
-          "name": "ix_manga_list_user_id",
-          "columns": [
-            "user_id"
-          ],
-          "isUnique": false
-        }
-      },
+      "indexes": {},
       "foreignKeys": {
-        "manga_list_media_id_manga_id_fk": {
-          "name": "manga_list_media_id_manga_id_fk",
-          "tableFrom": "manga_list",
-          "tableTo": "manga",
-          "columnsFrom": [
-            "media_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
         "manga_list_user_id_user_id_fk": {
           "name": "manga_list_user_id_user_id_fk",
           "tableFrom": "manga_list",
@@ -2085,6 +2310,19 @@
             "id"
           ],
           "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "manga_list_media_id_manga_id_fk": {
+          "name": "manga_list_media_id_manga_id_fk",
+          "tableFrom": "manga_list",
+          "tableTo": "manga",
+          "columnsFrom": [
+            "media_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
           "onUpdate": "no action"
         }
       },
@@ -2175,29 +2413,8 @@
     "movies": {
       "name": "movies",
       "columns": {
-        "id": {
-          "name": "id",
-          "type": "integer",
-          "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "name": {
-          "name": "name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
         "original_name": {
           "name": "original_name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "release_date": {
-          "name": "release_date",
           "type": "text",
           "primaryKey": false,
           "notNull": false,
@@ -2219,13 +2436,6 @@
         },
         "original_language": {
           "name": "original_language",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "synopsis": {
-          "name": "synopsis",
           "type": "text",
           "primaryKey": false,
           "notNull": false,
@@ -2273,13 +2483,6 @@
           "notNull": false,
           "autoincrement": false
         },
-        "image_cover": {
-          "name": "image_cover",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
         "api_id": {
           "name": "api_id",
           "type": "integer",
@@ -2308,12 +2511,55 @@
           "notNull": false,
           "autoincrement": false
         },
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "release_date": {
+          "name": "release_date",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "synopsis": {
+          "name": "synopsis",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "image_cover": {
+          "name": "image_cover",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
         "lock_status": {
           "name": "lock_status",
           "type": "integer",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
+        },
+        "added_at": {
+          "name": "added_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(CURRENT_TIMESTAMP)"
         },
         "last_api_update": {
           "name": "last_api_update",
@@ -2323,7 +2569,15 @@
           "autoincrement": false
         }
       },
-      "indexes": {},
+      "indexes": {
+        "movies_apiId_unique": {
+          "name": "movies_apiId_unique",
+          "columns": [
+            "api_id"
+          ],
+          "isUnique": true
+        }
+      },
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
@@ -2422,17 +2676,17 @@
     "movies_labels": {
       "name": "movies_labels",
       "columns": {
-        "id": {
-          "name": "id",
-          "type": "integer",
-          "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
-        },
         "user_id": {
           "name": "user_id",
           "type": "integer",
           "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
           "notNull": true,
           "autoincrement": false
         },
@@ -2487,6 +2741,22 @@
     "movies_list": {
       "name": "movies_list",
       "columns": {
+        "redo": {
+          "name": "redo",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "total": {
+          "name": "total",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
         "id": {
           "name": "id",
           "type": "integer",
@@ -2515,13 +2785,12 @@
           "notNull": true,
           "autoincrement": false
         },
-        "redo": {
-          "name": "redo",
+        "favorite": {
+          "name": "favorite",
           "type": "integer",
           "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": 0
+          "notNull": false,
+          "autoincrement": false
         },
         "comment": {
           "name": "comment",
@@ -2530,14 +2799,6 @@
           "notNull": false,
           "autoincrement": false
         },
-        "total": {
-          "name": "total",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": 0
-        },
         "rating": {
           "name": "rating",
           "type": "real",
@@ -2545,9 +2806,17 @@
           "notNull": false,
           "autoincrement": false
         },
-        "favorite": {
-          "name": "favorite",
-          "type": "integer",
+        "added_at": {
+          "name": "added_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(CURRENT_TIMESTAMP)"
+        },
+        "last_updated": {
+          "name": "last_updated",
+          "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
@@ -2624,6 +2893,13 @@
           "notNull": true,
           "autoincrement": false
         },
+        "notification_type": {
+          "name": "notification_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
         "timestamp": {
           "name": "timestamp",
           "type": "text",
@@ -2631,13 +2907,6 @@
           "notNull": true,
           "autoincrement": false,
           "default": "(CURRENT_TIMESTAMP)"
-        },
-        "notification_type": {
-          "name": "notification_type",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
         }
       },
       "indexes": {
@@ -2671,29 +2940,8 @@
     "series": {
       "name": "series",
       "columns": {
-        "id": {
-          "name": "id",
-          "type": "integer",
-          "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "name": {
-          "name": "name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
         "original_name": {
           "name": "original_name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "release_date": {
-          "name": "release_date",
           "type": "text",
           "primaryKey": false,
           "notNull": false,
@@ -2769,13 +3017,6 @@
           "notNull": false,
           "autoincrement": false
         },
-        "synopsis": {
-          "name": "synopsis",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
         "popularity": {
           "name": "popularity",
           "type": "real",
@@ -2783,25 +3024,11 @@
           "notNull": false,
           "autoincrement": false
         },
-        "image_cover": {
-          "name": "image_cover",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
         "api_id": {
           "name": "api_id",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
-          "autoincrement": false
-        },
-        "lock_status": {
-          "name": "lock_status",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
           "autoincrement": false
         },
         "episode_to_air": {
@@ -2825,6 +3052,56 @@
           "notNull": false,
           "autoincrement": false
         },
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "release_date": {
+          "name": "release_date",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "synopsis": {
+          "name": "synopsis",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "image_cover": {
+          "name": "image_cover",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "lock_status": {
+          "name": "lock_status",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "added_at": {
+          "name": "added_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(CURRENT_TIMESTAMP)"
+        },
         "last_api_update": {
           "name": "last_api_update",
           "type": "text",
@@ -2833,7 +3110,15 @@
           "autoincrement": false
         }
       },
-      "indexes": {},
+      "indexes": {
+        "series_apiId_unique": {
+          "name": "series_apiId_unique",
+          "columns": [
+            "api_id"
+          ],
+          "isUnique": true
+        }
+      },
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
@@ -2984,17 +3269,17 @@
     "series_labels": {
       "name": "series_labels",
       "columns": {
-        "id": {
-          "name": "id",
-          "type": "integer",
-          "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
-        },
         "user_id": {
           "name": "user_id",
           "type": "integer",
           "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
           "notNull": true,
           "autoincrement": false
         },
@@ -3049,6 +3334,44 @@
     "series_list": {
       "name": "series_list",
       "columns": {
+        "current_season": {
+          "name": "current_season",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "current_episode": {
+          "name": "current_episode",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "redo": {
+          "name": "redo",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "total": {
+          "name": "total",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "redo2": {
+          "name": "redo2",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'[]'"
+        },
         "id": {
           "name": "id",
           "type": "integer",
@@ -3070,20 +3393,6 @@
           "notNull": true,
           "autoincrement": false
         },
-        "current_season": {
-          "name": "current_season",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "last_episode_watched": {
-          "name": "last_episode_watched",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
         "status": {
           "name": "status",
           "type": "text",
@@ -3098,28 +3407,12 @@
           "notNull": false,
           "autoincrement": false
         },
-        "redo": {
-          "name": "redo",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": 0
-        },
         "comment": {
           "name": "comment",
           "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
-        },
-        "total": {
-          "name": "total",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": 0
         },
         "rating": {
           "name": "rating",
@@ -3128,13 +3421,20 @@
           "notNull": false,
           "autoincrement": false
         },
-        "redo2": {
-          "name": "redo2",
+        "added_at": {
+          "name": "added_at",
           "type": "text",
           "primaryKey": false,
-          "notNull": true,
+          "notNull": false,
           "autoincrement": false,
-          "default": "'[]'"
+          "default": "(CURRENT_TIMESTAMP)"
+        },
+        "last_updated": {
+          "name": "last_updated",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
         }
       },
       "indexes": {},
@@ -3766,7 +4066,8 @@
           "type": "text",
           "primaryKey": false,
           "notNull": true,
-          "autoincrement": false
+          "autoincrement": false,
+          "default": "(CURRENT_TIMESTAMP)"
         }
       },
       "indexes": {

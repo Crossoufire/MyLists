@@ -20,6 +20,7 @@
         "seed:achievements": "bun run cli -- seedAchievements -d",
         "build:worker": "vite build --config vite.worker.config.ts",
         "compute:achievements": "bun run cli -- calculateAchievements -d",
+        "migrate:db": "bun run --env-file=.env scripts/db-migrate-script.ts",
         "worker": "bun --env-file=.env src/lib/server/core/bullmq/worker.ts",
         "build": "bun run build:server && bun run build:worker && bun run build:cli",
         "new:db": "bun run dk push --force && bun run seed:achievements && bun run compute:achievements",

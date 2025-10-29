@@ -679,6 +679,13 @@
           "type": "numeric",
           "primaryKey": false,
           "notNull": false
+        },
+        "added_at": {
+          "autoincrement": false,
+          "name": "added_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
         }
       },
       "compositePrimaryKeys": {},
@@ -844,6 +851,13 @@
           "autoincrement": false,
           "name": "collection_id",
           "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "added_at": {
+          "autoincrement": false,
+          "name": "added_at",
+          "type": "text",
           "primaryKey": false,
           "notNull": false
         }
@@ -1757,6 +1771,13 @@
           "type": "numeric",
           "primaryKey": false,
           "notNull": false
+        },
+        "added_at": {
+          "autoincrement": false,
+          "name": "added_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
         }
       },
       "compositePrimaryKeys": {},
@@ -1992,6 +2013,13 @@
           "type": "numeric",
           "primaryKey": false,
           "notNull": false
+        },
+        "added_at": {
+          "autoincrement": false,
+          "name": "added_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
         }
       },
       "compositePrimaryKeys": {},
@@ -2182,6 +2210,13 @@
           "autoincrement": false,
           "name": "last_api_update",
           "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "added_at": {
+          "autoincrement": false,
+          "name": "added_at",
+          "type": "text",
           "primaryKey": false,
           "notNull": false
         }
@@ -2818,6 +2853,13 @@
           "type": "numeric",
           "primaryKey": false,
           "notNull": false
+        },
+        "added_at": {
+          "autoincrement": false,
+          "name": "added_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
         }
       },
       "compositePrimaryKeys": {},
@@ -2904,6 +2946,20 @@
         "comment": {
           "autoincrement": false,
           "name": "comment",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "added_at": {
+          "autoincrement": false,
+          "name": "added_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "last_updated": {
+          "autoincrement": false,
+          "name": "last_updated",
           "type": "text",
           "primaryKey": false,
           "notNull": false
@@ -3222,6 +3278,20 @@
           "type": "real",
           "primaryKey": false,
           "notNull": false
+        },
+        "added_at": {
+          "autoincrement": false,
+          "name": "added_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "last_updated": {
+          "autoincrement": false,
+          "name": "last_updated",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
         }
       },
       "compositePrimaryKeys": {},
@@ -3329,6 +3399,20 @@
           "autoincrement": false,
           "name": "rating",
           "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "added_at": {
+          "autoincrement": false,
+          "name": "added_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "last_updated": {
+          "autoincrement": false,
+          "name": "last_updated",
+          "type": "text",
           "primaryKey": false,
           "notNull": false
         }
@@ -3446,6 +3530,20 @@
           "autoincrement": false,
           "name": "rating",
           "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "added_at": {
+          "autoincrement": false,
+          "name": "added_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "last_updated": {
+          "autoincrement": false,
+          "name": "last_updated",
+          "type": "text",
           "primaryKey": false,
           "notNull": false
         }
@@ -3684,9 +3782,9 @@
           "primaryKey": false,
           "notNull": true
         },
-        "last_episode_watched": {
+        "current_episode": {
           "autoincrement": false,
-          "name": "last_episode_watched",
+          "name": "current_episode",
           "type": "integer",
           "primaryKey": false,
           "notNull": true
@@ -3741,6 +3839,20 @@
           "type": "numeric",
           "primaryKey": false,
           "notNull": true
+        },
+        "added_at": {
+          "autoincrement": false,
+          "name": "added_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "last_updated": {
+          "autoincrement": false,
+          "name": "last_updated",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
         }
       },
       "compositePrimaryKeys": {},
@@ -3816,9 +3928,9 @@
           "primaryKey": false,
           "notNull": true
         },
-        "last_episode_watched": {
+        "current_episode": {
           "autoincrement": false,
-          "name": "last_episode_watched",
+          "name": "current_episode",
           "type": "integer",
           "primaryKey": false,
           "notNull": true
@@ -3873,6 +3985,20 @@
           "type": "numeric",
           "primaryKey": false,
           "notNull": true
+        },
+        "added_at": {
+          "autoincrement": false,
+          "name": "added_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "last_updated": {
+          "autoincrement": false,
+          "name": "last_updated",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
         }
       },
       "compositePrimaryKeys": {},

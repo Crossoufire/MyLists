@@ -33,8 +33,7 @@ export class TasksService {
         this.logger = logger.child({ service: "TasksService" });
 
         this.taskHandlers = {
-            vacuumDb: this.runVacuumDB.bind(this),
-            analyzeDb: this.runAnalyzeDB.bind(this),
+            dbMaintenance: this.runDbMaintenance.bind(this),
             lockOldMovies: this.runLockOldMovies.bind(this),
             updateIgdbToken: this.runUpdateIgdbToken.bind(this),
             bulkMediaRefresh: this.runBulkMediaRefresh.bind(this),
@@ -124,16 +123,12 @@ export class TasksService {
         this.logger.info("Completed: bulkMediaRefresh execution.");
     }
 
-    protected async runVacuumDB(_ctx: TaskContext) {
-        this.logger.info("Starting: VacuumDB execution.");
+    protected async runDbMaintenance(_ctx: TaskContext) {
+        this.logger.info("Starting: dbMaintenance execution.");
+        getDbClient().run("PRAGMA checkpoint(FULL)");
         getDbClient().run("VACUUM");
-        this.logger.info("Completed: VacuumDB execution.");
-    }
-
-    protected async runAnalyzeDB(_ctx: TaskContext) {
-        this.logger.info("Starting: AnalyzeDB execution.");
         getDbClient().run("ANALYZE");
-        this.logger.info("Completed: AnalyzeDB execution.");
+        this.logger.info("Completed: dbMaintenance execution.");
     }
 
     protected async runRemoveUnusedMediaCovers(_ctx: TaskContext) {
@@ -322,8 +317,7 @@ export class TasksService {
         await this.runLockOldMovies(ctx);
         await this.runComputeAllUsersStats(ctx);
         await this.runCalculateAchievements(ctx);
-        await this.runVacuumDB(ctx);
-        await this.runAnalyzeDB(ctx);
+        await this.runDbMaintenance(ctx);
 
         this.logger.info("Completed: MaintenanceTasks execution.");
     }
