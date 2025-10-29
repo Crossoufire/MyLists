@@ -6,7 +6,6 @@ import {db} from "@/lib/server/database/db";
 import {account, user} from "@/lib/server/database/schema";
 import {backPopulateMediaListTimestamps} from "./back-populate";
 import {existsSync, readdirSync, readFileSync, rmSync, writeFileSync} from "fs";
-import {backPopulateCollectionIdsAndCompositorsForMovies} from "./back-populate-movies";
 
 
 const PROJECT_ROOT = process.cwd();
@@ -284,13 +283,13 @@ const runAutomatedMigration = async () => {
         const sqlStatements = splitSqlStatements(sqlFileContent);
         await execRawSQL(db, sqlStatements, "Update enums: ");
 
-        console.log("Migration complete!.");
+        console.log("Migration complete!");
 
-        console.log("Running `back-populate.ts` script...");
+        console.log("Running `back-populate.ts` script to back populate the MediaList timestamps...");
         await backPopulateMediaListTimestamps();
 
-        console.log("Running `back-populate-movies.ts` script...");
-        await backPopulateCollectionIdsAndCompositorsForMovies();
+        // console.log("Running `back-populate-movies.ts` script to back populate collectionIds and compositors...");
+        // await backPopulateCollectionIdsAndCompositorsForMovies();
     }
     catch (err) {
         console.error("Migration failed:", err);
