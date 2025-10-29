@@ -22,7 +22,8 @@ interface JobCardProps {
 
 export function JobCard({ job, title, isAdmin = true }: JobCardProps) {
     // const cancelUploadsMutation = useCancelUploadsMutation(queryKey);
-    const jobStatus = job.returnValue?.result === "cancelled" ? "cancelled" : job.status;
+    const jobStatus = ("returnValue" in job && job.returnValue?.result) === "cancelled" ? "cancelled" : job.status;
+    console.log({ jobStatus })
 
     // const handleCancel = () => {
     //     cancelUploadsMutation.mutate({ data: { jobId: job.jobId! } }, {
@@ -73,7 +74,7 @@ export function JobCard({ job, title, isAdmin = true }: JobCardProps) {
                     }
                 </div>
                 <div>
-                    {jobStatus === "active" &&
+                    {// jobStatus === "active" &&
                         // <Button
                         //     size="sm"
                         //     variant="destructive"

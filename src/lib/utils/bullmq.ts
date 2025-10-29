@@ -1,4 +1,3 @@
-import {sql} from "drizzle-orm";
 import {serverEnv} from "@/env/server";
 import {jobHistory} from "@/lib/server/database/schema";
 import {createOrGetQueue} from "@/lib/server/core/bullmq";
@@ -51,10 +50,8 @@ export const saveJobToDb = async (job: TypedJob | undefined, from: "completed" |
                 triggeredBy: job.data.triggeredBy,
                 failedReason: job.failedReason ?? null,
                 userId: "userId" in job.data ? job.data.userId : null,
-            });
-
-        await getDbClient().run(sql`PRAGMA wal_checkpoint(FULL)`);
-        await job.remove();
+            })
+            .execute();
     }
     catch (err) {
         console.error("Failed to save job to database:", err);
