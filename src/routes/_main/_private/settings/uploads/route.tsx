@@ -1,4 +1,5 @@
 // import {toast} from "sonner";
+// import {useMutation} from "@tanstack/react-query";
 import {createFileRoute} from "@tanstack/react-router";
 // import {JobCard} from "@/lib/client/components/admin/JobCard";
 // import {PageTitle} from "@/lib/client/components/general/PageTitle";
@@ -49,7 +50,6 @@ import {createFileRoute} from "@tanstack/react-router";
 //         },
 //     });
 // }
-//
 
 
 export const Route = createFileRoute("/_main/_private/settings/uploads")({

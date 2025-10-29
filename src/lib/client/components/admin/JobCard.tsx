@@ -1,12 +1,10 @@
-import {toast} from "sonner";
 import {cn} from "@/lib/utils/helpers";
 import {CheckCircle, Clock} from "lucide-react";
 import {JobProgress} from "@/lib/types/tasks.types";
 import {Badge} from "@/lib/client/components/ui/badge";
-import {Button} from "@/lib/client/components/ui/button";
 import {capitalize, formatDateTime} from "@/lib/utils/functions";
 import {Card, CardContent, CardHeader} from "@/lib/client/components/ui/card";
-import {useCancelUploadsMutation} from "@/routes/_main/_private/settings/uploads/route";
+// import {useCancelUploadsMutation} from "@/routes/_main/_private/settings/uploads/route";
 import {adminArchivedTasksOptions, adminCheckActiveJobs} from "@/lib/client/react-query/query-options/admin-options";
 
 
@@ -22,15 +20,15 @@ interface JobCardProps {
 }
 
 
-export function JobCard({ job, title, queryKey, isAdmin = true }: JobCardProps) {
-    const cancelUploadsMutation = useCancelUploadsMutation(queryKey);
+export function JobCard({ job, title, isAdmin = true }: JobCardProps) {
+    // const cancelUploadsMutation = useCancelUploadsMutation(queryKey);
     const jobStatus = job.returnValue?.result === "cancelled" ? "cancelled" : job.status;
 
-    const handleCancel = () => {
-        cancelUploadsMutation.mutate({ data: { jobId: job.jobId! } }, {
-            onSuccess: () => toast.success("Upload cancelled successfully"),
-        });
-    }
+    // const handleCancel = () => {
+    //     cancelUploadsMutation.mutate({ data: { jobId: job.jobId! } }, {
+    //         onSuccess: () => toast.success("Upload cancelled successfully"),
+    //     });
+    // }
 
     const getProgress = () => {
         if (jobStatus !== "active" || !("progress" in job) || ("progress" in job && typeof job.progress !== "object")) {
@@ -75,16 +73,16 @@ export function JobCard({ job, title, queryKey, isAdmin = true }: JobCardProps) 
                     }
                 </div>
                 <div>
-                    {jobStatus === "active" ?
-                        <Button
-                            size="sm"
-                            variant="destructive"
-                            onClick={handleCancel}
-                            disabled={cancelUploadsMutation.isPending}
-                        >
-                            {cancelUploadsMutation.isPending ? "Cancelling..." : "Cancel"}
-                        </Button>
-                        :
+                    {jobStatus === "active" &&
+                        // <Button
+                        //     size="sm"
+                        //     variant="destructive"
+                        //     onClick={handleCancel}
+                        //     disabled={cancelUploadsMutation.isPending}
+                        // >
+                        //     {cancelUploadsMutation.isPending ? "Cancelling..." : "Cancel"}
+                        // </Button>
+                        // :
                         <Badge className={cn("text-white font-medium px-3 py-1", getJobStatusColor(jobStatus))}>
                             {capitalize(jobStatus)}
                         </Badge>
