@@ -1,8 +1,8 @@
 import {Command} from "commander";
-import {createOrGetQueue} from "@/lib/server/core/bullmq";
 import {executeTask} from "@/lib/server/core/task-runner";
 import {getRedisConnection} from "@/lib/server/core/redis-client";
 import {createTaskLogger, rootLogger} from "@/lib/server/core/logger";
+import {addJobAndWakeWorker, createOrGetQueue} from "@/lib/server/core/bullmq";
 import {TaskContext, TaskDefinition, TaskJobData} from "@/lib/types/tasks.types";
 
 
@@ -46,18 +46,19 @@ export const registerTaskCommand = (program: Command, task: TaskDefinition) => {
 
             const queue = await createOrGetQueue();
             const connection = await getRedisConnection();
+
             try {
-                const job = await queue.add(task.name, jobData);
-                cliLogger.info({ jobId: job.id }, `Task ${task.name} enqueued successfully via CLI.`);
+                const job = await addJobAndWakeWorker(task.name, jobData);
+                cliLogger.info({ jobId: job.id }, `Task ${task.name} enqueued successfully.`);
             }
             catch (error) {
                 cliLogger.fatal({ err: error }, `Fatal error during ${task.name} enqueue in CLI`);
                 process.exit(1);
             }
             finally {
+                cliLogger.info("CLI command finished, closing connections.");
                 await queue.close();
                 await connection.quit();
-                process.exit(0);
             }
         }
     });

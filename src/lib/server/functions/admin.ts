@@ -1,11 +1,12 @@
 import {serverEnv} from "@/env/server";
 import {redirect} from "@tanstack/react-router";
+import {rootLogger} from "@/lib/server/core/logger";
 import {createServerFn} from "@tanstack/react-start";
 import {getContainer} from "@/lib/server/core/container";
 import {FormattedError} from "@/lib/utils/error-classes";
-import {createOrGetQueue} from "@/lib/server/core/bullmq";
 import {getCookie, setCookie} from "@tanstack/react-start/server";
 import {taskDefinitions} from "@/lib/server/domain/tasks/tasks-config";
+import {addJobAndWakeWorker, createOrGetQueue} from "@/lib/server/core/bullmq";
 import {adminCookieOptions, createAdminToken, verifyAdminToken} from "@/lib/utils/jwt-utils";
 import {ADMIN_COOKIE_NAME, adminAuthMiddleware, managerAuthMiddleware} from "@/lib/server/middlewares/authentication";
 import {
@@ -139,12 +140,11 @@ export const postAdminTriggerTask = createServerFn({ method: "POST" })
     .middleware([managerAuthMiddleware, adminAuthMiddleware])
     .inputValidator(adminTriggerTaskSchema)
     .handler(async ({ data: { taskName } }) => {
-        const queue = await createOrGetQueue();
-
         try {
-            await queue.add(taskName, { triggeredBy: "dashboard" });
+            await addJobAndWakeWorker(taskName, { triggeredBy: "dashboard" });
         }
-        catch {
+        catch (err) {
+            rootLogger.error({ err }, "Failed to enqueue task from admin dashboard");
             throw new FormattedError("Failed to enqueue task.");
         }
     });

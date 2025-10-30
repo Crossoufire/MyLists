@@ -1,7 +1,7 @@
 import {serverEnv} from "@/env/server";
 import {rootLogger} from "@/lib/server/core/logger";
 import {getRedisConnection} from "@/lib/server/core/redis-client";
-import {createOrGetQueue, createWorker} from "@/lib/server/core/bullmq/index";
+import {createOrGetQueue, createWorker, WORKER_LOCK_KEY} from "@/lib/server/core/bullmq/index";
 
 
 startWorker();
@@ -19,9 +19,9 @@ async function startWorker() {
         const queue = await createOrGetQueue();
         const worker = createWorker(connection);
 
-        // Setup shutdown
         const shutdown = async () => {
             rootLogger.info("Shutting down worker...");
+            await connection.del(WORKER_LOCK_KEY);
             await queue.close();
             await worker.close();
             await connection.quit();
@@ -45,6 +45,12 @@ async function startWorker() {
     }
     catch (error) {
         rootLogger.fatal({ err: error }, "A fatal error occurred during worker startup.");
+
+        // If startup fails, try to release the lock just in case it was set
+        const connection = await getRedisConnection();
+        await connection.del(WORKER_LOCK_KEY);
+        await connection.quit();
+
         process.exit(1);
     }
 }

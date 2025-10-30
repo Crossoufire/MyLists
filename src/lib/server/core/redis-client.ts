@@ -7,25 +7,14 @@ let connectionPromise: Promise<Redis> | null = null;
 
 
 export const connectRedis = () => {
-    if (redisInstance?.status === "ready" || redisInstance?.status === "connecting") {
+    if (redisInstance?.status === "ready" || redisInstance?.status === "connecting" || redisInstance?.status === "connect") {
         return connectionPromise || Promise.resolve(redisInstance);
-    }
-    if (redisInstance?.status === "connect") {
-        return connectionPromise || Promise.resolve(redisInstance);
-    }
-
-    const redisUrl = serverEnv.REDIS_URL;
-    if (!redisUrl) {
-        return Promise.reject(new Error("REDIS_URL environment variable not set."));
     }
 
     if (!connectionPromise) {
         console.log("Attempting to connect to Redis using ioredis...");
 
-        redisInstance = new Redis(redisUrl, {
-            lazyConnect: true,
-            maxRetriesPerRequest: null,
-        });
+        redisInstance = new Redis(serverEnv.REDIS_URL, { lazyConnect: true, maxRetriesPerRequest: null });
 
         connectionPromise = new Promise((resolve, reject) => {
             redisInstance!.on("connect", () => console.log("ioredis: connecting..."));
@@ -36,8 +25,8 @@ export const connectRedis = () => {
             redisInstance!.on("error", (error) => {
                 console.error("ioredis: Client Error:", error);
                 if (redisInstance?.status !== "ready" && redisInstance?.status !== "connecting") {
-                    connectionPromise = null;
                     redisInstance = null;
+                    connectionPromise = null;
                     reject(error);
                 }
             });

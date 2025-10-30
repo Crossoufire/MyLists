@@ -1,4 +1,5 @@
 import Redis from "ioredis";
+import {spawn} from "child_process";
 import {Queue, Worker} from "bullmq";
 import {serverEnv} from "@/env/server";
 import {CancelJobError} from "@/lib/utils/error-classes";
@@ -13,6 +14,9 @@ import {Progress, TaskContext, TaskJobData, TaskName, TaskReturnType, TypedJob} 
 const QUEUE_NAME = "mylists-tasks";
 let mylistsTaskQueue: Queue<TaskJobData, TaskReturnType, TaskName>;
 
+export const WORKER_LOCK_KEY = "mylists-tasks:worker:active-lock";
+const WORKER_LOCK_KEY_TTL = 600; // 10 minutes
+
 
 export const createOrGetQueue = async () => {
     if (mylistsTaskQueue) {
@@ -26,6 +30,7 @@ export const createOrGetQueue = async () => {
     }
 
     const connection = await getRedisConnection();
+
     mylistsTaskQueue = new Queue(QUEUE_NAME, {
         connection: connection.duplicate(),
         defaultJobOptions: {
@@ -40,7 +45,58 @@ export const createOrGetQueue = async () => {
 };
 
 
+export const addJobAndWakeWorker = async (taskName: TaskName, jobData: TaskJobData, opts?: any) => {
+    const queue = await createOrGetQueue();
+    const connection = await getRedisConnection();
+
+    const handleSpawnError = async (error: Error) => {
+        rootLogger.error({ err: error }, "FATAL: Failed to spawn worker process. Releasing lock.");
+        const cleanupCo = await getRedisConnection();
+        try {
+            await cleanupCo.del(WORKER_LOCK_KEY);
+        }
+        finally {
+            await cleanupCo.quit();
+        }
+    };
+
+    const job = await queue.add(taskName, jobData, opts);
+    rootLogger.info({ jobId: job.id }, `Task ${taskName} enqueued.`);
+
+    const lockAcquired = await connection.set(
+        WORKER_LOCK_KEY,
+        "running",
+        "EX",
+        WORKER_LOCK_KEY_TTL,
+        "NX",
+    );
+
+    if (lockAcquired) {
+        rootLogger.info("Worker lock acquired. Spawning new worker process...");
+
+        try {
+            const workerProcess = spawn("bun", ["run", serverEnv.WORKER_PATH], {
+                detached: true,
+                stdio: ["ignore", "ignore", "ignore"],
+            });
+            workerProcess.on("error", handleSpawnError);
+            workerProcess.unref();
+        }
+        catch (error: any) {
+            await handleSpawnError(error);
+            throw error;
+        }
+    }
+    else {
+        rootLogger.info("Worker is already active. Job will be picked up.");
+    }
+
+    return job;
+};
+
+
 export const createWorker = (connection: Redis) => {
+    let drainedTimeout: NodeJS.Timeout | null = null;
     const worker = new Worker<TaskJobData, TaskReturnType, TaskName>(QUEUE_NAME, taskProcessor, {
         concurrency: 1,
         connection: connection.duplicate(),
@@ -65,6 +121,26 @@ export const createWorker = (connection: Redis) => {
         }
 
         await saveJobToDb(job, "completed", returnValue);
+    });
+
+    worker.on("drained", () => {
+        rootLogger.info("Queue drained. Scheduling worker shutdown in 3s.");
+        drainedTimeout = setTimeout(async () => {
+            rootLogger.info("Grace period ended. Shutting down worker.");
+            await connection.del(WORKER_LOCK_KEY);
+            await worker.close();
+            await connection.quit();
+            rootLogger.info("Worker shut down gracefully.");
+            process.exit(0);
+        }, 3000);
+    });
+
+    worker.on("active", () => {
+        if (drainedTimeout) {
+            rootLogger.info("Worker became active, cancelling shutdown.");
+            clearTimeout(drainedTimeout);
+            drainedTimeout = null;
+        }
     });
 
     rootLogger.info("Worker instance created and listeners attached.");
