@@ -1,7 +1,6 @@
 import {sql} from "drizzle-orm";
 import {relations} from "drizzle-orm/relations";
-import {customJson} from "@/lib/server/database/custom-types";
-import {TaskJobData, TaskLogs, TaskReturnType} from "@/lib/types/tasks.types";
+import {customJson, dateAsString} from "@/lib/server/database/custom-types";
 import {index, integer, real, sqliteTable, text} from "drizzle-orm/sqlite-core";
 import {MediaType, NotificationType, Status, UpdateType} from "@/lib/utils/enums";
 import {
@@ -22,6 +21,7 @@ import {
     userAchievement,
     userMediadleProgress
 } from "@/lib/server/database/schema";
+import {LogTask} from "@/lib/types/tasks.types";
 
 
 export const followers = sqliteTable("followers", {
@@ -80,30 +80,27 @@ export const userMediaSettings = sqliteTable("user_media_settings", {
 ]);
 
 
-export const jobHistory = sqliteTable("job_history", {
+export const taskHistory = sqliteTable("task_history", {
     id: integer("id").primaryKey({ autoIncrement: true }).notNull(),
-    jobId: text("job_id").notNull(),
+    taskId: text("task_id").notNull(),
     userId: integer("user_id").references(() => user.id, { onDelete: "cascade" }),
     status: text("status").notNull(),
-    name: text("task_name").notNull(),
-    logs: customJson<TaskLogs>("logs"),
-    finishedOn: integer("finished_on"),
-    failedReason: text("failed_reason"),
-    processedOn: integer("processed_on"),
-    data: customJson<TaskJobData>("data"),
-    timestamp: integer("timestamp").notNull(),
+    errorMessage: text("error_message"),
+    taskName: text("task_name").notNull(),
     triggeredBy: text("triggered_by").notNull(),
-    returnValue: customJson<TaskReturnType>("return_value"),
+    logs: customJson<LogTask[]>("logs").notNull(),
+    startedAt: dateAsString("started_at").notNull(),
+    finishedAt: dateAsString("finished_at").notNull(),
 }, (table) => [
-    index("ix_job_history_job_id").on(table.jobId),
-    index("ix_job_history_user_id").on(table.userId),
-    index("ix_job_history_job_status").on(table.status),
+    index("ix_task_history_task_id").on(table.taskId),
+    index("ix_task_history_status").on(table.status),
+    index("ix_task_history_user_id").on(table.userId),
 ]);
 
 
-export const jobHistoryRelations = relations(jobHistory, ({ one }) => ({
+export const taskHistoryRelations = relations(taskHistory, ({ one }) => ({
     user: one(user, {
-        fields: [jobHistory.userId],
+        fields: [taskHistory.userId],
         references: [user.id]
     }),
 }));
@@ -114,7 +111,7 @@ export const userRelations = relations(user, ({ many }) => ({
     gamesLists: many(gamesList),
     animeLists: many(animeList),
     booksLists: many(booksList),
-    jobHistory: many(jobHistory),
+    taskHistory: many(taskHistory),
     seriesLists: many(seriesList),
     moviesLists: many(moviesList),
     animeLabels: many(animeLabels),

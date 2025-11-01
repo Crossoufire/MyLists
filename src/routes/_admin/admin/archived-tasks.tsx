@@ -1,6 +1,6 @@
 import {createFileRoute} from "@tanstack/react-router";
 import {useSuspenseQuery} from "@tanstack/react-query";
-import {JobCard} from "@/lib/client/components/admin/JobCard";
+import {TaskCard} from "@/lib/client/components/admin/TaskCard";
 import {DashboardShell} from "@/lib/client/components/admin/DashboardShell";
 import {DashboardHeader} from "@/lib/client/components/admin/DashboardHeader";
 import {adminArchivedTasksOptions} from "@/lib/client/react-query/query-options/admin-options";
@@ -13,29 +13,22 @@ export const Route = createFileRoute("/_admin/admin/archived-tasks")({
 
 
 function AdminArchivedTasksPage() {
-    const archivedJobs = useSuspenseQuery(adminArchivedTasksOptions()).data;
-
-    const formatCamelCase = (str: string) => {
-        const withSpaces = str.replace(/([A-Z])/g, " $1");
-        return withSpaces.charAt(0).toUpperCase() + withSpaces.slice(1).trim();
-    };
+    const archivedTasks = useSuspenseQuery(adminArchivedTasksOptions()).data;
 
     return (
         <DashboardShell>
             <DashboardHeader heading="Archived Tasks" description="Manage and execute maintenance and background tasks."/>
             <div>
-                {archivedJobs.length === 0 ?
+                {archivedTasks.length === 0 ?
                     <p className="text-center text-muted-foreground p-8">
-                        No tasks are currently queued or running.
+                        No archived tasks yet.
                     </p>
                     :
                     <div className="space-y-4">
-                        {archivedJobs.map((job) =>
-                            <JobCard
-                                job={job}
-                                key={job.id}
-                                title={formatCamelCase(job.name)}
-                                queryKey={adminArchivedTasksOptions().queryKey}
+                        {archivedTasks.map((task) =>
+                            <TaskCard
+                                task={task}
+                                key={task.id}
                             />
                         )}
                     </div>

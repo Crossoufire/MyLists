@@ -29,7 +29,6 @@ import { Route as AdminAdminMediadleRouteImport } from "./routes/_admin/admin/me
 import { Route as AdminAdminMediaOverviewRouteImport } from "./routes/_admin/admin/media-overview";
 import { Route as AdminAdminArchivedTasksRouteImport } from "./routes/_admin/admin/archived-tasks";
 import { Route as AdminAdminAdminTasksRouteImport } from "./routes/_admin/admin/admin-tasks";
-import { Route as AdminAdminActiveTasksRouteImport } from "./routes/_admin/admin/active-tasks";
 import { Route as AdminAdminAchievementsRouteImport } from "./routes/_admin/admin/achievements";
 import { Route as MainPrivateTrendsRouteRouteImport } from "./routes/_main/_private/trends/route";
 import { Route as MainPrivateSearchRouteRouteImport } from "./routes/_main/_private/search/route";
@@ -40,9 +39,9 @@ import { Route as MainPrivateComingNextRouteRouteImport } from "./routes/_main/_
 import { Route as MainPrivateSettingsIndexRouteImport } from "./routes/_main/_private/settings/index";
 import { Route as MainPrivateStatsUsernameRouteImport } from "./routes/_main/_private/stats/$username";
 import { Route as MainPrivateAchievementsUsernameRouteImport } from "./routes/_main/_private/achievements/$username";
-import { Route as MainPrivateSettingsUploadsRouteRouteImport } from "./routes/_main/_private/settings/uploads/route";
 import { Route as MainPrivateProfileUsernameHeaderRouteImport } from "./routes/_main/_private/profile/$username/_header";
 import { Route as MainPrivateDetailsMediaTypeMediaIdRouteImport } from "./routes/_main/_private/details/$mediaType/$mediaId";
+import { Route as MainPrivateSettingsUploadsTaskIdRouteRouteImport } from "./routes/_main/_private/settings/uploads.$taskId/route";
 import { Route as MainPrivateListMediaTypeUsernameRouteRouteImport } from "./routes/_main/_private/list/$mediaType/$username.route";
 import { Route as MainPrivateProfileUsernameHeaderIndexRouteImport } from "./routes/_main/_private/profile/$username/_header/index";
 import { Route as MainPrivateProfileUsernameHeaderHistoryRouteImport } from "./routes/_main/_private/profile/$username/_header/history";
@@ -143,11 +142,6 @@ const AdminAdminAdminTasksRoute = AdminAdminAdminTasksRouteImport.update({
   path: "/admin/admin-tasks",
   getParentRoute: () => AdminRoute,
 } as any);
-const AdminAdminActiveTasksRoute = AdminAdminActiveTasksRouteImport.update({
-  id: "/admin/active-tasks",
-  path: "/admin/active-tasks",
-  getParentRoute: () => AdminRoute,
-} as any);
 const AdminAdminAchievementsRoute = AdminAdminAchievementsRouteImport.update({
   id: "/admin/achievements",
   path: "/admin/achievements",
@@ -211,12 +205,6 @@ const MainPrivateAchievementsUsernameRoute =
     path: "/achievements/$username",
     getParentRoute: () => MainPrivateRoute,
   } as any);
-const MainPrivateSettingsUploadsRouteRoute =
-  MainPrivateSettingsUploadsRouteRouteImport.update({
-    id: "/settings/uploads",
-    path: "/settings/uploads",
-    getParentRoute: () => MainPrivateRoute,
-  } as any);
 const MainPrivateProfileUsernameHeaderRoute =
   MainPrivateProfileUsernameHeaderRouteImport.update({
     id: "/_header",
@@ -226,6 +214,12 @@ const MainPrivateDetailsMediaTypeMediaIdRoute =
   MainPrivateDetailsMediaTypeMediaIdRouteImport.update({
     id: "/details/$mediaType/$mediaId",
     path: "/details/$mediaType/$mediaId",
+    getParentRoute: () => MainPrivateRoute,
+  } as any);
+const MainPrivateSettingsUploadsTaskIdRouteRoute =
+  MainPrivateSettingsUploadsTaskIdRouteRouteImport.update({
+    id: "/settings/uploads/$taskId",
+    path: "/settings/uploads/$taskId",
     getParentRoute: () => MainPrivateRoute,
   } as any);
 const MainPrivateListMediaTypeUsernameRouteRoute =
@@ -279,7 +273,6 @@ export interface FileRoutesByFullPath {
   "/search": typeof MainPrivateSearchRouteRoute;
   "/trends": typeof MainPrivateTrendsRouteRoute;
   "/admin/achievements": typeof AdminAdminAchievementsRoute;
-  "/admin/active-tasks": typeof AdminAdminActiveTasksRoute;
   "/admin/admin-tasks": typeof AdminAdminAdminTasksRoute;
   "/admin/archived-tasks": typeof AdminAdminArchivedTasksRoute;
   "/admin/media-overview": typeof AdminAdminMediaOverviewRoute;
@@ -294,11 +287,11 @@ export interface FileRoutesByFullPath {
   "/api/auth/$": typeof ApiAuthSplatRoute;
   "/admin": typeof AdminAdminIndexRoute;
   "/": typeof MainPublicIndexRoute;
-  "/settings/uploads": typeof MainPrivateSettingsUploadsRouteRoute;
   "/achievements/$username": typeof MainPrivateAchievementsUsernameRoute;
   "/stats/$username": typeof MainPrivateStatsUsernameRoute;
   "/settings": typeof MainPrivateSettingsIndexRoute;
   "/list/$mediaType/$username": typeof MainPrivateListMediaTypeUsernameRouteRoute;
+  "/settings/uploads/$taskId": typeof MainPrivateSettingsUploadsTaskIdRouteRoute;
   "/details/$mediaType/$mediaId": typeof MainPrivateDetailsMediaTypeMediaIdRoute;
   "/profile/$username": typeof MainPrivateProfileUsernameHeaderRouteWithChildren;
   "/details/$mediaType/$job/$name": typeof MainPrivateDetailsMediaTypeJobNameRoute;
@@ -316,7 +309,6 @@ export interface FileRoutesByTo {
   "/search": typeof MainPrivateSearchRouteRoute;
   "/trends": typeof MainPrivateTrendsRouteRoute;
   "/admin/achievements": typeof AdminAdminAchievementsRoute;
-  "/admin/active-tasks": typeof AdminAdminActiveTasksRoute;
   "/admin/admin-tasks": typeof AdminAdminAdminTasksRoute;
   "/admin/archived-tasks": typeof AdminAdminArchivedTasksRoute;
   "/admin/media-overview": typeof AdminAdminMediaOverviewRoute;
@@ -331,11 +323,11 @@ export interface FileRoutesByTo {
   "/api/auth/$": typeof ApiAuthSplatRoute;
   "/admin": typeof AdminAdminIndexRoute;
   "/": typeof MainPublicIndexRoute;
-  "/settings/uploads": typeof MainPrivateSettingsUploadsRouteRoute;
   "/achievements/$username": typeof MainPrivateAchievementsUsernameRoute;
   "/stats/$username": typeof MainPrivateStatsUsernameRoute;
   "/settings": typeof MainPrivateSettingsIndexRoute;
   "/list/$mediaType/$username": typeof MainPrivateListMediaTypeUsernameRouteRoute;
+  "/settings/uploads/$taskId": typeof MainPrivateSettingsUploadsTaskIdRouteRoute;
   "/details/$mediaType/$mediaId": typeof MainPrivateDetailsMediaTypeMediaIdRoute;
   "/profile/$username": typeof MainPrivateProfileUsernameHeaderIndexRoute;
   "/details/$mediaType/$job/$name": typeof MainPrivateDetailsMediaTypeJobNameRoute;
@@ -357,7 +349,6 @@ export interface FileRoutesById {
   "/_main/_private/search": typeof MainPrivateSearchRouteRoute;
   "/_main/_private/trends": typeof MainPrivateTrendsRouteRoute;
   "/_admin/admin/achievements": typeof AdminAdminAchievementsRoute;
-  "/_admin/admin/active-tasks": typeof AdminAdminActiveTasksRoute;
   "/_admin/admin/admin-tasks": typeof AdminAdminAdminTasksRoute;
   "/_admin/admin/archived-tasks": typeof AdminAdminArchivedTasksRoute;
   "/_admin/admin/media-overview": typeof AdminAdminMediaOverviewRoute;
@@ -372,11 +363,11 @@ export interface FileRoutesById {
   "/api/auth/$": typeof ApiAuthSplatRoute;
   "/_admin/admin/": typeof AdminAdminIndexRoute;
   "/_main/_public/": typeof MainPublicIndexRoute;
-  "/_main/_private/settings/uploads": typeof MainPrivateSettingsUploadsRouteRoute;
   "/_main/_private/achievements/$username": typeof MainPrivateAchievementsUsernameRoute;
   "/_main/_private/stats/$username": typeof MainPrivateStatsUsernameRoute;
   "/_main/_private/settings/": typeof MainPrivateSettingsIndexRoute;
   "/_main/_private/list/$mediaType/$username": typeof MainPrivateListMediaTypeUsernameRouteRoute;
+  "/_main/_private/settings/uploads/$taskId": typeof MainPrivateSettingsUploadsTaskIdRouteRoute;
   "/_main/_private/details/$mediaType/$mediaId": typeof MainPrivateDetailsMediaTypeMediaIdRoute;
   "/_main/_private/profile/$username": typeof MainPrivateProfileUsernameRouteWithChildren;
   "/_main/_private/profile/$username/_header": typeof MainPrivateProfileUsernameHeaderRouteWithChildren;
@@ -397,7 +388,6 @@ export interface FileRouteTypes {
     | "/search"
     | "/trends"
     | "/admin/achievements"
-    | "/admin/active-tasks"
     | "/admin/admin-tasks"
     | "/admin/archived-tasks"
     | "/admin/media-overview"
@@ -412,11 +402,11 @@ export interface FileRouteTypes {
     | "/api/auth/$"
     | "/admin"
     | "/"
-    | "/settings/uploads"
     | "/achievements/$username"
     | "/stats/$username"
     | "/settings"
     | "/list/$mediaType/$username"
+    | "/settings/uploads/$taskId"
     | "/details/$mediaType/$mediaId"
     | "/profile/$username"
     | "/details/$mediaType/$job/$name"
@@ -434,7 +424,6 @@ export interface FileRouteTypes {
     | "/search"
     | "/trends"
     | "/admin/achievements"
-    | "/admin/active-tasks"
     | "/admin/admin-tasks"
     | "/admin/archived-tasks"
     | "/admin/media-overview"
@@ -449,11 +438,11 @@ export interface FileRouteTypes {
     | "/api/auth/$"
     | "/admin"
     | "/"
-    | "/settings/uploads"
     | "/achievements/$username"
     | "/stats/$username"
     | "/settings"
     | "/list/$mediaType/$username"
+    | "/settings/uploads/$taskId"
     | "/details/$mediaType/$mediaId"
     | "/profile/$username"
     | "/details/$mediaType/$job/$name"
@@ -474,7 +463,6 @@ export interface FileRouteTypes {
     | "/_main/_private/search"
     | "/_main/_private/trends"
     | "/_admin/admin/achievements"
-    | "/_admin/admin/active-tasks"
     | "/_admin/admin/admin-tasks"
     | "/_admin/admin/archived-tasks"
     | "/_admin/admin/media-overview"
@@ -489,11 +477,11 @@ export interface FileRouteTypes {
     | "/api/auth/$"
     | "/_admin/admin/"
     | "/_main/_public/"
-    | "/_main/_private/settings/uploads"
     | "/_main/_private/achievements/$username"
     | "/_main/_private/stats/$username"
     | "/_main/_private/settings/"
     | "/_main/_private/list/$mediaType/$username"
+    | "/_main/_private/settings/uploads/$taskId"
     | "/_main/_private/details/$mediaType/$mediaId"
     | "/_main/_private/profile/$username"
     | "/_main/_private/profile/$username/_header"
@@ -639,13 +627,6 @@ declare module "@tanstack/react-router" {
       preLoaderRoute: typeof AdminAdminAdminTasksRouteImport;
       parentRoute: typeof AdminRoute;
     };
-    "/_admin/admin/active-tasks": {
-      id: "/_admin/admin/active-tasks";
-      path: "/admin/active-tasks";
-      fullPath: "/admin/active-tasks";
-      preLoaderRoute: typeof AdminAdminActiveTasksRouteImport;
-      parentRoute: typeof AdminRoute;
-    };
     "/_admin/admin/achievements": {
       id: "/_admin/admin/achievements";
       path: "/admin/achievements";
@@ -723,13 +704,6 @@ declare module "@tanstack/react-router" {
       preLoaderRoute: typeof MainPrivateAchievementsUsernameRouteImport;
       parentRoute: typeof MainPrivateRoute;
     };
-    "/_main/_private/settings/uploads": {
-      id: "/_main/_private/settings/uploads";
-      path: "/settings/uploads";
-      fullPath: "/settings/uploads";
-      preLoaderRoute: typeof MainPrivateSettingsUploadsRouteRouteImport;
-      parentRoute: typeof MainPrivateRoute;
-    };
     "/_main/_private/profile/$username/_header": {
       id: "/_main/_private/profile/$username/_header";
       path: "/profile/$username";
@@ -742,6 +716,13 @@ declare module "@tanstack/react-router" {
       path: "/details/$mediaType/$mediaId";
       fullPath: "/details/$mediaType/$mediaId";
       preLoaderRoute: typeof MainPrivateDetailsMediaTypeMediaIdRouteImport;
+      parentRoute: typeof MainPrivateRoute;
+    };
+    "/_main/_private/settings/uploads/$taskId": {
+      id: "/_main/_private/settings/uploads/$taskId";
+      path: "/settings/uploads/$taskId";
+      fullPath: "/settings/uploads/$taskId";
+      preLoaderRoute: typeof MainPrivateSettingsUploadsTaskIdRouteRouteImport;
       parentRoute: typeof MainPrivateRoute;
     };
     "/_main/_private/list/$mediaType/$username": {
@@ -798,7 +779,6 @@ declare module "@tanstack/react-router" {
 
 interface AdminRouteChildren {
   AdminAdminAchievementsRoute: typeof AdminAdminAchievementsRoute;
-  AdminAdminActiveTasksRoute: typeof AdminAdminActiveTasksRoute;
   AdminAdminAdminTasksRoute: typeof AdminAdminAdminTasksRoute;
   AdminAdminArchivedTasksRoute: typeof AdminAdminArchivedTasksRoute;
   AdminAdminMediaOverviewRoute: typeof AdminAdminMediaOverviewRoute;
@@ -810,7 +790,6 @@ interface AdminRouteChildren {
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminAdminAchievementsRoute: AdminAdminAchievementsRoute,
-  AdminAdminActiveTasksRoute: AdminAdminActiveTasksRoute,
   AdminAdminAdminTasksRoute: AdminAdminAdminTasksRoute,
   AdminAdminArchivedTasksRoute: AdminAdminArchivedTasksRoute,
   AdminAdminMediaOverviewRoute: AdminAdminMediaOverviewRoute,
@@ -868,11 +847,11 @@ interface MainPrivateRouteChildren {
   MainPrivatePlatformStatsRouteRoute: typeof MainPrivatePlatformStatsRouteRoute;
   MainPrivateSearchRouteRoute: typeof MainPrivateSearchRouteRoute;
   MainPrivateTrendsRouteRoute: typeof MainPrivateTrendsRouteRoute;
-  MainPrivateSettingsUploadsRouteRoute: typeof MainPrivateSettingsUploadsRouteRoute;
   MainPrivateAchievementsUsernameRoute: typeof MainPrivateAchievementsUsernameRoute;
   MainPrivateStatsUsernameRoute: typeof MainPrivateStatsUsernameRoute;
   MainPrivateSettingsIndexRoute: typeof MainPrivateSettingsIndexRoute;
   MainPrivateListMediaTypeUsernameRouteRoute: typeof MainPrivateListMediaTypeUsernameRouteRoute;
+  MainPrivateSettingsUploadsTaskIdRouteRoute: typeof MainPrivateSettingsUploadsTaskIdRouteRoute;
   MainPrivateDetailsMediaTypeMediaIdRoute: typeof MainPrivateDetailsMediaTypeMediaIdRoute;
   MainPrivateProfileUsernameRoute: typeof MainPrivateProfileUsernameRouteWithChildren;
   MainPrivateDetailsMediaTypeJobNameRoute: typeof MainPrivateDetailsMediaTypeJobNameRoute;
@@ -886,12 +865,13 @@ const MainPrivateRouteChildren: MainPrivateRouteChildren = {
   MainPrivatePlatformStatsRouteRoute: MainPrivatePlatformStatsRouteRoute,
   MainPrivateSearchRouteRoute: MainPrivateSearchRouteRoute,
   MainPrivateTrendsRouteRoute: MainPrivateTrendsRouteRoute,
-  MainPrivateSettingsUploadsRouteRoute: MainPrivateSettingsUploadsRouteRoute,
   MainPrivateAchievementsUsernameRoute: MainPrivateAchievementsUsernameRoute,
   MainPrivateStatsUsernameRoute: MainPrivateStatsUsernameRoute,
   MainPrivateSettingsIndexRoute: MainPrivateSettingsIndexRoute,
   MainPrivateListMediaTypeUsernameRouteRoute:
     MainPrivateListMediaTypeUsernameRouteRoute,
+  MainPrivateSettingsUploadsTaskIdRouteRoute:
+    MainPrivateSettingsUploadsTaskIdRouteRoute,
   MainPrivateDetailsMediaTypeMediaIdRoute:
     MainPrivateDetailsMediaTypeMediaIdRoute,
   MainPrivateProfileUsernameRoute: MainPrivateProfileUsernameRouteWithChildren,

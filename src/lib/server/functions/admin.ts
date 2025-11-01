@@ -1,12 +1,9 @@
 import {serverEnv} from "@/env/server";
 import {redirect} from "@tanstack/react-router";
-import {rootLogger} from "@/lib/server/core/logger";
 import {createServerFn} from "@tanstack/react-start";
 import {getContainer} from "@/lib/server/core/container";
-import {FormattedError} from "@/lib/utils/error-classes";
 import {getCookie, setCookie} from "@tanstack/react-start/server";
 import {taskDefinitions} from "@/lib/server/domain/tasks/tasks-config";
-import {addJobAndWakeWorker, createOrGetQueue} from "@/lib/server/core/bullmq";
 import {adminCookieOptions, createAdminToken, verifyAdminToken} from "@/lib/utils/jwt-utils";
 import {ADMIN_COOKIE_NAME, adminAuthMiddleware, managerAuthMiddleware} from "@/lib/server/middlewares/authentication";
 import {
@@ -17,6 +14,8 @@ import {
     searchTypeAdminSchema,
     searchTypeSchema
 } from "@/lib/types/zod.schema.types";
+import {executeTask} from "@/lib/server/core/task-runner";
+import {randomUUID} from "node:crypto";
 
 
 export const checkAdminAuth = createServerFn({ method: "GET" })
@@ -140,39 +139,11 @@ export const postAdminTriggerTask = createServerFn({ method: "POST" })
     .middleware([managerAuthMiddleware, adminAuthMiddleware])
     .inputValidator(adminTriggerTaskSchema)
     .handler(async ({ data: { taskName } }) => {
-        try {
-            await addJobAndWakeWorker(taskName, { triggeredBy: "dashboard" });
-        }
-        catch (err) {
-            rootLogger.error({ err }, "Failed to enqueue task from admin dashboard");
-            throw new FormattedError("Failed to enqueue task.");
-        }
-    });
-
-
-export const getAdminActiveJobs = createServerFn({ method: "GET" })
-    .middleware([managerAuthMiddleware, adminAuthMiddleware])
-    .handler(async () => {
-        const queue = await createOrGetQueue();
-
-        try {
-            const jobs = await queue.getJobs(["active", "waiting", "delayed"]);
-            return jobs.map((job) => ({
-                jobId: job.id,
-                name: job.name,
-                data: job.data,
-                progress: job.progress,
-                timestamp: job.timestamp,
-                finishedOn: job.finishedOn,
-                returnValue: job.returnvalue,
-                processedOn: job.processedOn,
-                failedReason: job.failedReason,
-                status: job.processedOn ? "active" : "waiting"
-            }));
-        }
-        catch {
-            throw new FormattedError("Failed to fetch jobs. Check Worker is Active.");
-        }
+        await executeTask({
+            taskName,
+            taskId: randomUUID(),
+            triggeredBy: "dashboard",
+        });
     });
 
 

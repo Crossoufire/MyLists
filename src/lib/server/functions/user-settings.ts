@@ -119,7 +119,7 @@ export const postUpdateFeatureFlag = createServerFn({ method: "POST" })
 // const csvFileZodSchema = z.object({
 //     file: z
 //         .instanceof(File)
-//         .refine((file) => file.size <= 5 * 1024 * 1024, `File size must be less than 5MB.`)
+//         .refine((file) => file.size <= 1 * 1024 * 1024, `File size must be less than 1MB.`)
 //         .refine((file) => ["text/csv"].includes(file.type), "File must be a .csv file."),
 // });
 //
@@ -131,24 +131,7 @@ export const postUpdateFeatureFlag = createServerFn({ method: "POST" })
 //         return tryFormZodError(csvFileZodSchema, Object.fromEntries(data.entries()));
 //     })
 //     .handler(async ({ data, context: { currentUser } }) => {
-//         const queue = await createOrGetQueue();
-//
 //         try {
-//             const existingJobs = await queue.getJobs(["waiting", "active", "delayed"]);
-//             const hasActiveCsvJob = existingJobs.some((job) => {
-//                 if ("userId" in job.data) {
-//                     return job.data?.userId === currentUser.id;
-//                 }
-//                 return false;
-//             });
-//
-//             if (hasActiveCsvJob) {
-//                 throw new FormattedError(
-//                     "You already have a CSV processing job running. " +
-//                     "Please wait for it to complete before starting a new one."
-//                 );
-//             }
-//
 //             // Save file to tmp location
 //             const buffer = Buffer.from(await data.file.arrayBuffer());
 //             const tempDir = path.join(process.cwd(), "tmp", "csv-uploads");
@@ -156,98 +139,46 @@ export const postUpdateFeatureFlag = createServerFn({ method: "POST" })
 //             const filePath = path.join(tempDir, `${currentUser.id}-${Date.now()}.csv`);
 //             await writeFile(filePath, buffer);
 //
-//             await queue.add("processCsv", {
-//                 filePath: filePath,
+//             const taskId = randomUUID();
+//
+//             await executeTask({
+//                 taskId,
+//                 filePath,
 //                 triggeredBy: "user",
 //                 userId: currentUser.id,
-//                 fileName: data.file.name,
+//                 taskName: "processCsv",
 //             });
 //
-//             return;
+//             return { taskId: taskId };
 //         }
 //         catch (err) {
 //             if (err instanceof FormattedError) {
 //                 throw err;
 //             }
-//             throw new FormattedError("Sorry, failed to process the CSV.");
+//             throw new FormattedError("Sorry, failed to process your CSV.");
 //         }
 //     });
 //
 //
 // export const getUserUploads = createServerFn({ method: "GET" })
 //     .middleware([authMiddleware])
-//     .handler(async ({ context: { currentUser } }) => {
-//         const queue = await createOrGetQueue();
-//
+//     .inputValidator((data) => data as { taskId: string })
+//     .handler(async ({ data: { taskId }, context: { currentUser } }) => {
 //         try {
-//             const allJobs = await queue.getJobs(["active", "waiting"]);
+//             const dbRow = await getDbClient()
+//                 .select()
+//                 .from(taskHistory)
+//                 .where(and(eq(taskHistory.userId, currentUser.id), eq(taskHistory.taskId, taskId)))
+//                 .get();
 //
-//             const userJobs = allJobs.filter((job) => {
-//                 if ("userId" in job.data) {
-//                     return job.data.userId === currentUser.id;
-//                 }
-//                 return false;
-//             });
-//
-//             return userJobs.map((job) => ({
-//                 jobId: job.id,
-//                 name: job.name,
-//                 progress: job.progress,
-//                 timestamp: job.timestamp,
-//                 finishedOn: job.finishedOn,
-//                 data: job.data as CsvJobData,
-//                 returnValue: job.returnvalue,
-//                 processedOn: job.processedOn,
-//                 failedReason: job.failedReason,
-//                 status: job.processedOn ? "active" : "waiting",
-//             }));
+//             const resultLog = dbRow?.logs.find((log) => "result" in log);
+//             return resultLog?.result;
 //         }
 //         catch (err) {
 //             if (err instanceof FormattedError) {
 //                 throw err;
 //             }
 //
-//             throw new FormattedError("Failed to fetch your uploads.");
-//         }
-//     });
-//
-//
-// const uploadJobIdSchema = z.object({
-//     jobId: z.string(),
-// });
-//
-//
-// export const cancelUserUpload = createServerFn({ method: "POST" })
-//     .middleware([authMiddleware])
-//     .inputValidator(uploadJobIdSchema)
-//     .handler(async ({ data: { jobId }, context: { currentUser } }) => {
-//         const queue = await createOrGetQueue();
-//
-//         try {
-//             const job = await queue.getJob(jobId);
-//
-//             if (!job || ("userId" in job.data && job.data.userId !== currentUser.id)) {
-//                 throw new FormattedError("Upload not found.");
-//             }
-//
-//             const isActive = await job.isActive();
-//             if (!isActive) {
-//                 await job.remove();
-//                 return;
-//             }
-//
-//             const isFinished = await job.isCompleted() || await job.isFailed();
-//             if (isFinished) {
-//                 throw new FormattedError("Upload already finished.");
-//             }
-//
-//             await signalJobCancellation(job.id!);
-//         }
-//         catch (err) {
-//             if (err instanceof FormattedError) {
-//                 throw err;
-//             }
-//
-//             throw new FormattedError("Failed to cancel the job.");
+//             throw new FormattedError("Failed to fetch your CSV uploads results.");
 //         }
 //     });

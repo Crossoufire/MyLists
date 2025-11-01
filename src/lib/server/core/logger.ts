@@ -1,7 +1,7 @@
-import pino from "pino";
-import {Job} from "bullmq";
 import {hostname} from "os";
-import {TaskJobData} from "@/lib/types/tasks.types";
+import {Writable} from "stream";
+import pino, {Logger} from "pino";
+import {LogTask, TaskData} from "@/lib/types/tasks.types";
 
 
 const pinoOptions: pino.LoggerOptions = {
@@ -17,33 +17,40 @@ const pinoOptions: pino.LoggerOptions = {
 export const rootLogger = pino(pinoOptions);
 
 
-interface TaskLoggerContext {
-    taskName: string;
-    [key: string]: any;
-    triggeredBy: string;
-    job?: Job<TaskJobData>;
-}
+export class InMemoryLogStream extends Writable {
+    public logs: LogTask[] = [];
 
-
-export function createTaskLogger(ctx: TaskLoggerContext) {
-    const { job, ...context } = ctx;
-
-    const base = {
-        ...context,
-        jobId: job?.id,
-    };
-
-    // BullMQ jobs, multistream logger - logs stdout and job's log
-    if (job) {
-        return pino(
-            { ...pinoOptions, base },
-            pino.multistream([
-                { stream: process.stdout },
-                { stream: { write: (msg: string) => job.log(msg.replace(/\n$/, "")) } },
-            ])
-        );
+    _write(chunk: any, encoding: BufferEncoding, callback: (error?: Error | null) => void) {
+        try {
+            this.logs.push(JSON.parse(chunk.toString()));
+            callback();
+        }
+        catch (err) {
+            callback(err as Error);
+        }
     }
-
-    // Direct CLI or other contexts, create root logger child
-    return rootLogger.child(base);
 }
+
+
+interface CapturingLoggerResult {
+    logger: Logger;
+    getLogs: () => LogTask[];
+}
+
+
+export const createCapturingLogger = (base: TaskData): CapturingLoggerResult => {
+    const inMemoryStream = new InMemoryLogStream();
+
+    const logger = pino(
+        { ...pinoOptions, base },
+        pino.multistream([
+            { stream: process.stdout },
+            { stream: inMemoryStream },
+        ])
+    );
+
+    return {
+        logger,
+        getLogs: () => inMemoryStream.logs,
+    };
+};

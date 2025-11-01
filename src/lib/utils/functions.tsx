@@ -391,6 +391,7 @@ export const formatDateTime = (dateInput: string | number | null | undefined, op
         day: options.onlyYear ? undefined : "numeric",
         hour: options.noTime ? undefined : "numeric",
         minute: options.noTime ? undefined : "numeric",
+        second: options.seconds ? "numeric" : undefined,
         timeZone: new Intl.DateTimeFormat().resolvedOptions().timeZone,
     };
 
@@ -433,6 +434,7 @@ type Variant = "text" | "border" | "bg";
 
 interface FormatDateTimeOptions {
     noTime?: boolean;
+    seconds?: boolean;
     onlyYear?: boolean;
 }
 

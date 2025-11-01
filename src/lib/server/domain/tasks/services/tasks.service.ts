@@ -2,15 +2,18 @@ import path from "path";
 import * as fs from "fs";
 import Papa from "papaparse";
 import {serverEnv} from "@/env/server";
-import {MediaType} from "@/lib/utils/enums";
 import {readFile, unlink} from "fs/promises";
-import {FormattedError} from "@/lib/utils/error-classes";
+import {MediaType, Status} from "@/lib/utils/enums";
+import {and, eq, inArray, sql} from "drizzle-orm";
+import {movies, moviesList} from "@/lib/server/database/schema";
 import {llmResponseSchema} from "@/lib/types/zod.schema.types";
+import {Movie} from "@/lib/server/domain/media/movies/movies.types";
 import {UserRepository} from "@/lib/server/domain/user/repositories";
+import {TaskContext, TaskHandler, TaskName} from "@/lib/types/tasks.types";
 import {getDbClient, withTransaction} from "@/lib/server/database/async-storage";
-import {CsvJobData, TaskContext, TaskHandler, TaskName} from "@/lib/types/tasks.types";
 import {MediaProviderServiceRegistry, MediaServiceRegistry} from "@/lib/server/domain/media/registries/registries";
 import {AchievementsService, NotificationsService, UserStatsService, UserUpdatesService,} from "@/lib/server/domain/user/services";
+import {sqliteTable, text} from "drizzle-orm/sqlite-core";
 
 
 export class TasksService {
@@ -46,15 +49,15 @@ export class TasksService {
     }
 
     async runTask(ctx: TaskContext) {
-        const taskLogger = ctx.logger.child({ service: "TasksService", taskName: ctx.taskName, triggeredBy: ctx.triggeredBy });
+        const taskLogger = ctx.logger.child({ service: "TasksService", taskName: ctx.data.taskName, triggeredBy: ctx.data.triggeredBy });
         taskLogger.info({ data: ctx.data }, "Received the request to run this task");
 
         const startTime = Date.now();
 
-        const taskHandler = this.taskHandlers[ctx.taskName];
+        const taskHandler = this.taskHandlers[ctx.data.taskName];
         if (!taskHandler) {
-            taskLogger.error(`Unknown task name: ${ctx.taskName}`);
-            throw new Error(`Unknown task name: ${ctx.taskName}`);
+            taskLogger.error(`Unknown task name: ${ctx.data.taskName}`);
+            throw new Error(`Unknown task name: ${ctx.data.taskName}`);
         }
 
         await taskHandler(ctx);
@@ -76,18 +79,6 @@ export class TasksService {
 
             for await (const result of mediaProviderService.bulkProcessAndRefreshMedia()) {
                 processedCount += 1;
-
-                if (ctx.cancelCallback) {
-                    await ctx.cancelCallback();
-                }
-
-                if (ctx.progressCallback) {
-                    await ctx.progressCallback({
-                        total: Infinity,
-                        current: processedCount,
-                        message: `Refreshing ${mediaType} with apiId: ${result.apiId}`,
-                    });
-                }
 
                 if (result.state === "fulfilled") {
                     ctx.logger.info(`Refreshed ${mediaType} with apiId: ${result.apiId}`);
@@ -336,22 +327,7 @@ For each book, choose the top genres for this book (MAX 4) from this list:
 ${booksGenres.join(", ")}.
 `;
 
-        let progressCount = 0;
         for (const booksBatch of batchedBooks) {
-            progressCount += 1;
-
-            if (ctx.cancelCallback) {
-                await ctx.cancelCallback();
-            }
-
-            if (ctx.progressCallback) {
-                await ctx.progressCallback({
-                    current: progressCount,
-                    total: batchedBooks.length,
-                    message: `Adding genres to books: ${progressCount}/${batchedBooks.length}`,
-                });
-            }
-
             const promptToSend = `${mainPrompt}\n${booksBatch.join("\n")}`;
 
             try {
@@ -377,84 +353,181 @@ ${booksGenres.join(", ")}.
     }
 
     protected async runProcessCsv(ctx: TaskContext) {
-        const { userId, filePath } = ctx.data as CsvJobData;
+        const userId = ctx.data.userId!;
+        const filePath = ctx.data.filePath!;
         ctx.logger.info({ userId, filePath }, "Starting CSV processing...");
 
-        try {
-            const fileContent = await readFile(filePath, "utf-8");
-            const records = Papa.parse<{ title: string, year: number }>(fileContent, { header: true }).data;
+        // Generate unique temp table name
+        const tempTableName = `temp_import_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
 
-            const totalRows = records.length;
-            ctx.logger.info(`Found ${totalRows} rows to process.`);
-            if (ctx.progressCallback) {
-                await ctx.progressCallback({
-                    current: 0,
-                    total: totalRows,
-                    message: `Found ${totalRows} rows.`,
+        try {
+            // --- PARSE AND VALIDATE CSV ---------------------------------------------------------
+            const fileContent = await readFile(filePath, "utf-8");
+            const parseResult = Papa.parse<CsvRecord>(fileContent, { header: true, skipEmptyLines: true });
+
+            const result: ProcessResult = {
+                items: [],
+                totalSuccess: 0,
+                totalSkipped: 0,
+                totalInvalid: 0,
+                totalNotFound: 0,
+                total: parseResult.data.length,
+            };
+
+            const validRecords: ValidRecord[] = [];
+            for (const record of parseResult.data) {
+                const yearNum = Number(record.year);
+                const title = record.title ? record.title.trim() : "";
+                if (!title || !record.year || isNaN(yearNum)) {
+                    result.totalInvalid += 1;
+                    result.items.push({
+                        status: "invalid",
+                        reason: "Row is missing 'title' or has an invalid 'year'.",
+                        metadata: { name: record.title ?? "", releaseDate: record.year ?? "" },
+                    });
+                    continue;
+                }
+                validRecords.push({
+                    title: title,
+                    year: yearNum,
+                    originalRecord: record,
                 });
             }
 
-            const result = {
-                total: totalRows,
-                totalSuccess: 0,
-                totalFailed: 0,
-                totalSkipped: 0,
-                items: [],
-            };
-
-            for (let i = 0; i < totalRows; i++) {
-                if (ctx.cancelCallback) {
-                    await ctx.cancelCallback();
-                }
-
-                const record = records[i];
-                const currentRow = i + 1;
-
-                if (!record.title || !record.year) {
-                    ctx.logger.warn({ row: currentRow, record }, "Skipping invalid row: 'title' and 'year' required.");
-                    continue;
-                }
-                const year = Number(record.year);
-                if (isNaN(year)) {
-                    ctx.logger.warn({ row: currentRow, record }, "Skipping invalid row: 'year' is not a valid number.");
-                    continue;
-                }
-
-                ctx.logger.info(`Processing row ${currentRow}/${totalRows}: ${record.title} (${record.year})`);
-                if (ctx.progressCallback) {
-                    await ctx.progressCallback({
-                        total: totalRows,
-                        current: currentRow,
-                        message: `Processing: ${record.title}`,
-                    });
-                }
-
-                const moviesService = this.mediaServiceRegistry.getService(MediaType.MOVIES);
-                const metadata = { name: record.title, releaseDate: String(record.year) }
-                try {
-                    const movie = await moviesService.findByTitleAndYear(record.title, year);
-                    if (!movie) {
-                        this._logItem({ result, metadata, status: "failed", reason: "Movie not found" });
-                        continue;
-                    }
-
-                    try {
-                        const { delta } = await moviesService.addMediaToUserList(userId, movie.id);
-                        await this.userStatsService.updateUserPreComputedStatsWithDelta(MediaType.MOVIES, userId, delta);
-                        this._logItem({ result, status: "success", metadata: { name: movie.name, releaseDate: movie.releaseDate } });
-                    }
-                    catch (err: any) {
-                        this._logItem({ result, metadata, status: err instanceof FormattedError ? "skipped" : "failed", reason: err.message });
-                    }
-                }
-                catch (err: any) {
-                    this._logItem({ result, metadata, status: "failed", reason: err.message });
-                }
-
-                // await new Promise((resolve) => setTimeout(resolve, 3000));
+            if (validRecords.length === 0) {
+                ctx.logger.info({ result }, "No valid rows found in CSV to process.");
+                return;
             }
 
-            ctx.logger.info("CSV processing completed successfully.");
+            ctx.logger.info(`Found ${validRecords.length} valid rows to process.`);
+
+            // --- CREATE AND POPULATE A TEMPORARY TABLE ------------------------------------------
+            ctx.logger.info(`Creating temp table: ${tempTableName}`);
+
+            const tempTable = sqliteTable(tempTableName, { title: text("title").notNull(), year: text("year").notNull() });
+
+            await getDbClient().run(
+                sql.raw(`
+                    CREATE TEMPORARY TABLE ${tempTableName} (
+                        title TEXT NOT NULL,
+                        year TEXT NOT NULL
+                    )`
+                )
+            );
+
+            await getDbClient()
+                .insert(tempTable)
+                .values(validRecords.map((record) => ({
+                    title: record.title.toLowerCase(),
+                    year: String(record.year),
+                })));
+
+            ctx.logger.info(`Populated temp table with ${validRecords.length} rows.`);
+
+            // --- BULK FETCH MOVIES BY JOINING WITH THE TEMP TABLE -------------------------------
+            ctx.logger.info("Fetching matching movies via JOIN...");
+            const foundMovies = await getDbClient()
+                .select({
+                    id: movies.id,
+                    name: movies.name,
+                    releaseDate: movies.releaseDate,
+                })
+                .from(movies)
+                .innerJoin(tempTable, and(
+                    eq(sql`lower(${movies.name})`, tempTable.title),
+                    eq(sql`strftime('%Y', ${movies.releaseDate})`, tempTable.year)
+                ));
+
+            ctx.logger.info(`Found ${foundMovies.length} matching movies in the database.`);
+
+            const foundMoviesMap = new Map<string, Movie>();
+            for (const movie of foundMovies) {
+                const year = new Date(movie.releaseDate!).getFullYear();
+                const key = `${movie.name.toLowerCase()}|${year}`;
+                foundMoviesMap.set(key, movie as Movie);
+            }
+
+            // --- Categorize Records (Found, Not Found, Already in List) -------------------------
+            const notFoundRecords: ValidRecord[] = [];
+            const moviesToPotentiallyAdd: Movie[] = [];
+
+            for (const record of validRecords) {
+                const key = `${record.title.toLowerCase()}|${record.year}`;
+                const foundMovie = foundMoviesMap.get(key);
+                if (foundMovie) {
+                    moviesToPotentiallyAdd.push(foundMovie);
+                }
+                else {
+                    notFoundRecords.push(record);
+                    result.totalNotFound += 1;
+                    result.items.push({
+                        status: "notFound",
+                        metadata: {
+                            name: record.title,
+                            releaseDate: String(record.year),
+                        },
+                        reason: "Movie not found in the database.",
+                    });
+                }
+            }
+
+            if (moviesToPotentiallyAdd.length === 0) {
+                ctx.logger.info({ result }, "No matching movies found in the database for valid rows.");
+                return;
+            }
+
+            const potentialMovieIds = moviesToPotentiallyAdd.map((movie) => movie.id);
+            const userMovies = await getDbClient()
+                .select({ movieId: moviesList.mediaId })
+                .from(moviesList)
+                .where(and(eq(moviesList.userId, userId), inArray(moviesList.mediaId, potentialMovieIds)));
+
+            const existingMovieIds = new Set(userMovies.map((userMovie) => userMovie.movieId));
+
+            // --- Bulk Insert new movies and update stats ----------------------------------------
+            const moviesToAdd: Movie[] = [];
+            for (const movie of moviesToPotentiallyAdd) {
+                if (existingMovieIds.has(movie.id)) {
+                    result.totalSkipped += 1;
+                    result.items.push({
+                        status: "skipped",
+                        reason: "Movie is already in the user's list.",
+                        metadata: { name: movie.name, releaseDate: movie.releaseDate ?? "" },
+                    });
+                }
+                else {
+                    moviesToAdd.push(movie);
+                }
+            }
+
+            if (moviesToAdd.length > 0) {
+                await getDbClient()
+                    .insert(moviesList)
+                    .values(
+                        moviesToAdd.map((movie) => ({
+                            total: 1,
+                            userId: userId,
+                            mediaId: movie.id,
+                            status: Status.COMPLETED,
+                        })),
+                    );
+
+                // TODO: Add a optional userId to update whole list of 1 user instead of whole list of all users
+                //  because for now it updates the stats of all the user's movies list stats lol
+                const userMoviesStats = await this.mediaServiceRegistry.getService(MediaType.MOVIES).computeAllUsersStats();
+                await this.userStatsService.updateAllUsersPreComputedStats(MediaType.MOVIES, userMoviesStats);
+
+                result.totalSuccess += moviesToAdd.length;
+                moviesToAdd.forEach((movie) => {
+                    result.items.push({
+                        status: "success",
+                        metadata: { name: movie.name, releaseDate: movie.releaseDate ?? "" },
+                    });
+                });
+            }
+
+            // --- FINAL LOGGING AND CLEANUP ------------------------------------------------------
+            ctx.logger.info("CSV processing completed.");
             ctx.logger.info({ result }, "CSV processing result added");
         }
         finally {
@@ -490,35 +563,38 @@ ${booksGenres.join(", ")}.
 
         await fs.promises.writeFile(envPath, lines.join("\n"));
     }
-
-    private _logItem({ result, status, reason, metadata }: LogItem) {
-        if (status === "success") {
-            result.totalSuccess += 1;
-        }
-        else if (status === "failed") {
-            result.totalFailed += 1;
-        }
-        else if (status === "skipped") {
-            result.totalSkipped += 1;
-        }
-
-        result.items.push({ status, reason, metadata });
-    }
 }
 
 
-type LogItem = {
-    reason?: string,
-    result: CsvResult,
-    metadata?: Record<string, string | null>,
-    status: "success" | "failed" | "skipped",
-};
+interface CsvRecord {
+    title: string;
+    year: string; // Keep as string initially from PapaParse
+}
 
 
-type CsvResult = {
-    total: number,
-    totalSuccess: number,
-    totalFailed: number,
-    totalSkipped: number,
-    items: Array<object>,
+interface ValidRecord {
+    title: string;
+    year: number;
+    // Keep original to report back to user
+    originalRecord: CsvRecord;
+}
+
+
+interface ProcessResultItem {
+    status: "success" | "skipped" | "notFound" | "invalid";
+    reason?: string;
+    metadata: {
+        name: string;
+        releaseDate: string;
+    };
+}
+
+
+export interface ProcessResult {
+    total: number;
+    totalSuccess: number;
+    totalSkipped: number;
+    totalNotFound: number;
+    totalInvalid: number;
+    items: ProcessResultItem[];
 }

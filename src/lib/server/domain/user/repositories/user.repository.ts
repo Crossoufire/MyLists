@@ -3,7 +3,7 @@ import {and, asc, count, desc, eq, like, sql} from "drizzle-orm";
 import {ApiProviderType, MediaType, PrivacyType} from "@/lib/utils/enums";
 import {AdminUpdatePayload, SearchTypeAdmin} from "@/lib/types/zod.schema.types";
 import {ProviderSearchResult, ProviderSearchResults} from "@/lib/types/provider.types";
-import {followers, jobHistory, user, userMediaSettings} from "@/lib/server/database/schema";
+import {followers, taskHistory, user, userMediaSettings} from "@/lib/server/database/schema";
 
 
 export class UserRepository {
@@ -119,8 +119,8 @@ export class UserRepository {
     static async getAdminArchivedTasks() {
         return getDbClient()
             .select()
-            .from(jobHistory)
-            .orderBy(desc(jobHistory.timestamp));
+            .from(taskHistory)
+            .orderBy(desc(taskHistory.startedAt));
     }
 
     // --------------------------------------------------------------------

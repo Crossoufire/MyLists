@@ -3,16 +3,15 @@
 // import {useMutation} from "@tanstack/react-query";
 // import {Label} from "@/lib/client/components/ui/label";
 // import {Input} from "@/lib/client/components/ui/input";
-// import {Link, useNavigate} from "@tanstack/react-router";
+// import {useNavigate} from "@tanstack/react-router";
 // import {Button} from "@/lib/client/components/ui/button";
-// import {Separator} from "@/lib/client/components/ui/separator";
 // import {postUploadsCsvFile} from "@/lib/server/functions/user-settings";
 //
 //
 // const useUploadCsvMutation = () => {
 //     return useMutation({
 //         mutationFn: postUploadsCsvFile,
-//         onError: (error) => toast.error(error.message || "An error occurred while uploading the CSV."),
+//         onError: (err) => toast.error(err.message || "An error occurred while uploading the CSV."),
 //         onSuccess: () => toast.success("CSV uploaded successfully"),
 //     });
 // }
@@ -34,43 +33,27 @@
 //         formData.append("file", file);
 //
 //         uploadMutation.mutate({ data: formData }, {
-//             onSuccess: async () => {
+//             onSuccess: async (data) => {
 //                 setFile(null);
-//
-//                 await navigate({ to: "/settings/uploads" });
+//                 await navigate({ to: "/settings/uploads/$taskId", params: { taskId: data.taskId } });
 //             },
 //         });
 //     };
 //
 //     return (
-//         <>
-//             <div>
-//                 <div className="space-y-2 text-base">
-//                     <div>See all my uploads and progression</div>
-//                     <div>
-//                         <Link to="/settings/uploads" className="text-sm underline">
-//                             <Button variant="outline" size="sm">
-//                                 My Uploads
-//                             </Button>
-//                         </Link>
-//                     </div>
-//                 </div>
-//                 <Separator className="my-6"/>
-//                 <form onSubmit={handleSubmit} className="space-y-4 max-w-md">
-//                     <div className="space-y-2">
-//                         <Label>Select a CSV file</Label>
-//                         <Input
-//                             type="file"
-//                             accept=".csv"
-//                             disabled={uploadMutation.isPending}
-//                             onChange={(e) => setFile(e.target.files?.[0] || null)}
-//                         />
-//                     </div>
-//                     <Button type="submit" disabled={!file || uploadMutation.isPending}>
-//                         Upload Movies CSV
-//                     </Button>
-//                 </form>
+//         <form onSubmit={handleSubmit} className="space-y-4 max-w-md">
+//             <div className="space-y-2">
+//                 <Label>Select a CSV file</Label>
+//                 <Input
+//                     type="file"
+//                     accept=".csv"
+//                     disabled={uploadMutation.isPending}
+//                     onChange={(e) => setFile(e.target.files?.[0] || null)}
+//                 />
 //             </div>
-//         </>
+//             <Button type="submit" disabled={!file || uploadMutation.isPending}>
+//                 Upload Movies CSV
+//             </Button>
+//         </form>
 //     );
 // };

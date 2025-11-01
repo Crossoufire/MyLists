@@ -2,7 +2,6 @@ import {queryOptions} from "@tanstack/react-query";
 import {SearchType, SearchTypeAdmin} from "@/lib/types/zod.schema.types";
 import {
     getAdminAchievements,
-    getAdminActiveJobs,
     getAdminAllUsers,
     getAdminArchivedTasks,
     getAdminMediadleStats,
@@ -59,22 +58,6 @@ export const adminTasksOptions = () => queryOptions({
     queryKey: adminQueryKeys.adminTasksKey(),
     queryFn: () => getAdminTasks(),
     staleTime: Infinity,
-});
-
-
-export const adminCheckActiveJobs = (pollingRateSec: number = 3) => queryOptions({
-    queryKey: adminQueryKeys.adminCheckActiveJobs(),
-    queryFn: getAdminActiveJobs,
-    meta: { displayErrorMsg: true },
-    refetchInterval: (query) => {
-        const data = query.state.data;
-        if (!data || data.length === 0) return false;
-        if (data.some((job) => job.status === "active" || job.status === "waiting")) {
-            return pollingRateSec * 1000;
-        }
-        return false;
-    },
-    placeholderData: (previousData) => previousData,
 });
 
 
