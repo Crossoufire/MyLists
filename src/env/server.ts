@@ -11,9 +11,6 @@ export const serverEnv = createEnv({
         UPLOADS_DIR_NAME: z.string().default("static"),
         BASE_UPLOADS_LOCATION: z.string().default("./public/static/"),
 
-        // BullMQ
-        WORKER_PATH: z.string().default("src/lib/server/core/bullmq/worker.ts"),
-
         // Admin Secrets
         ADMIN_PASSWORD: z.string().min(8),
         ADMIN_TOKEN_SECRET: z.string().min(20),

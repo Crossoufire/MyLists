@@ -1,4 +1,3 @@
-import {Cache} from "cache-manager";
 import {initCacheManager} from "@/lib/server/core/cache-manager";
 import {setupMediaModule} from "@/lib/server/core/container/media.module";
 import {setupTasksModule} from "@/lib/server/core/container/tasks.module";
@@ -9,10 +8,10 @@ import {MediaProviderServiceRegistry, MediaRepositoryRegistry, MediaServiceRegis
 
 
 interface AppContainer {
-    cacheManager: Cache;
     clients: ProviderModule["clients"];
     repositories: UserModule["repositories"];
     transformers: ProviderModule["transformers"];
+    cacheManager: Awaited<ReturnType<typeof initCacheManager>>;
     services: UserModule["services"] & { tasks: TasksService };
     registries: {
         mediaRepo: typeof MediaRepositoryRegistry;

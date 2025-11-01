@@ -6,13 +6,12 @@ import {createServerOnlyFn} from "@tanstack/react-start";
 
 
 const LAST_SEEN_CACHE_KEY = "lastSeen:";
-const UPDATE_THRESHOLD_MS = 5 * 60 * 1000;
+const UPDATE_THRESHOLD_MS = 5 * 60 * 1000 // 5 minutes;
 
 
 export const updateLastSeen = createServerOnlyFn(() => async (name: string) => {
-    const container = await getContainer();
-    const cacheManager = container.cacheManager;
     const cacheKey = `${LAST_SEEN_CACHE_KEY}${name}`;
+    const cacheManager = await getContainer().then((c) => c.cacheManager);
 
     if (await cacheManager.get(cacheKey)) {
         return;

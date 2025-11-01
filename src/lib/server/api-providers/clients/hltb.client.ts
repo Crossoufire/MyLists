@@ -1,6 +1,6 @@
 import * as cheerio from "cheerio";
 import UserAgent from "user-agents";
-import {closest} from "fastest-levenshtein";
+import {closest} from "@/lib/utils/levenshtein";
 import {RateLimiterAbstract} from "rate-limiter-flexible";
 import {createRateLimiter} from "@/lib/server/core/rate-limiter";
 import {BaseClient} from "@/lib/server/api-providers/clients/base.client";

@@ -7,7 +7,7 @@ export const trendsCacheMiddleware = createMiddleware({ type: "function" }).serv
 
     // Cached for 1 hour
     return getContainer()
-        .then(c => c.cacheManager.wrap(
+        .then((c) => c.cacheManager.wrap(
             cacheKey,
             async () => next(),
             { ttl: 60 * 60 * 1000 },
