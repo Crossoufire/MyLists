@@ -94,7 +94,10 @@ function MediaDetailsPage() {
                                     <span>Your Follows &nbsp;</span>
                                     <span className="sm:hidden -ml-2">({apiData.followsData.length})</span>
                                     <AvatarCircles
-                                        avatarUrls={apiData.followsData.map((follow) => follow.image)}
+                                        avatarData={apiData.followsData.map((follow) => ({
+                                            image: follow.image,
+                                            name: follow.name,
+                                        }))}
                                     />
                                 </TabsTrigger>
                             </TabsList>

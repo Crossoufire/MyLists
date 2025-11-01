@@ -3,6 +3,7 @@ import {useSuspenseQuery} from "@tanstack/react-query";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
 import {BlockLink} from "@/lib/client/components/general/BlockLink";
 import {followersOptions} from "@/lib/client/react-query/query-options/query-options";
+import {ProfileIcon} from "@/lib/client/components/general/ProfileIcon";
 
 
 export const Route = createFileRoute("/_main/_private/profile/$username/_header/followers")({
@@ -28,10 +29,10 @@ function ProfileFollowers() {
                         params={{ username: user.username }}
                     >
                         <div className="flex items-center flex-col">
-                            <img
-                                src={user.image!}
-                                alt="profile-picture"
-                                className="h-20 w-20 bg-neutral-600 rounded-full"
+                            <ProfileIcon
+                                fallbackSize="text-2xl"
+                                className="size-20 border-2"
+                                user={{ image: user.image, name: user.username }}
                             />
                             <div className="mt-2 font-medium">
                                 {user.username}

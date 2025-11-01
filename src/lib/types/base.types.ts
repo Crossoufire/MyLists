@@ -129,8 +129,8 @@ export type UserMediaWithLabels<TList> = TList & {
 export type UserFollowsMediaData<TList> = {
     id: number;
     name: string;
-    image: string;
     userMedia: TList;
+    image: string | null;
     ratingSystem: RatingSystemType;
 }
 

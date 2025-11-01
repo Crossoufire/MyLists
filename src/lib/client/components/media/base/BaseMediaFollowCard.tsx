@@ -8,6 +8,7 @@ import {getStatusColor, getTextColor} from "@/lib/utils/functions";
 import {DisplayRating} from "@/lib/client/components/media/base/DisplayRating";
 import {DisplayComment} from "@/lib/client/components/media/base/DisplayComment";
 import {DisplayFavorite} from "@/lib/client/components/media/base/DisplayFavorite";
+import {ProfileIcon} from "@/lib/client/components/general/ProfileIcon";
 
 
 interface BaseMediaFollowCardrops {
@@ -25,10 +26,10 @@ export const BaseMediaFollowCard = ({ followData, rating, redoDisplay, mediaDeta
                 <div className="grid grid-cols-12 gap-2">
                     <div className="col-span-3">
                         <Link to="/profile/$username" params={{ username: followData.name }}>
-                            <img
-                                alt={followData.name}
-                                src={followData.image}
-                                className="h-[52px] w-[52px] rounded-full bg-neutral-600"
+                            <ProfileIcon
+                                fallbackSize="text-lg"
+                                className="size-13 border-2"
+                                user={{ image: followData.image, name: followData.name }}
                             />
                         </Link>
                     </div>

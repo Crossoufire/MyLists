@@ -9,10 +9,10 @@ import {useDebounceCallback} from "@/lib/client/hooks/use-debounce";
 import {DashboardShell} from "@/lib/client/components/admin/DashboardShell";
 import {DashboardHeader} from "@/lib/client/components/admin/DashboardHeader";
 import {TablePagination} from "@/lib/client/components/general/TablePagination";
-import {Avatar, AvatarFallback, AvatarImage} from "@/lib/client/components/ui/avatar";
 import {adminMediadleOptions} from "@/lib/client/react-query/query-options/admin-options";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/lib/client/components/ui/table";
 import {ColumnDef, flexRender, getCoreRowModel, OnChangeFn, PaginationState, useReactTable} from "@tanstack/react-table";
+import {ProfileIcon} from "@/lib/client/components/general/ProfileIcon";
 
 
 export const Route = createFileRoute("/_admin/admin/mediadle")({
@@ -59,10 +59,11 @@ function AdminMediadlePage() {
             cell: ({ row: { original } }) => {
                 return (
                     <div className="flex items-center gap-3">
-                        <Avatar className="h-8 w-8">
-                            <AvatarImage alt={original.name} src={original.image!}/>
-                            <AvatarFallback>{original.name.charAt(0)}</AvatarFallback>
-                        </Avatar>
+                        <ProfileIcon
+                            fallbackSize="text-sm"
+                            className="size-9 border-2"
+                            user={{ image: original.image, name: original.name }}
+                        />
                         <div>
                             <Link to="/profile/$username" params={{ username: original.name }} className="hover:underline hover:underline-offset-2">
                                 {original.name}

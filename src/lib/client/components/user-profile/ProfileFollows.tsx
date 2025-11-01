@@ -5,6 +5,7 @@ import {MutedText} from "@/lib/client/components/general/MutedText";
 import {UserFollowsType} from "@/lib/types/query.options.types";
 import {Tooltip, TooltipContent, TooltipTrigger} from "@/lib/client/components/ui/tooltip";
 import {Card, CardAction, CardContent, CardHeader, CardTitle} from "@/lib/client/components/ui/card";
+import {ProfileIcon} from "@/lib/client/components/general/ProfileIcon";
 
 
 interface ProfileFollowsProps {
@@ -41,14 +42,14 @@ export const ProfileFollows = ({ username, follows }: ProfileFollowsProps) => {
                                 <TooltipTrigger asChild>
                                     <BlockLink
                                         key={follow.username}
+                                        to="/profile/$username"
                                         privacy={follow.privacy}
-                                        to={"/profile/$username"}
                                         params={{ username: follow.username }}
                                     >
-                                        <img
-                                            src={follow.image!}
-                                            alt={follow.username}
-                                            className="w-14 h-14 bg-neutral-500 rounded-full"
+                                        <ProfileIcon
+                                            fallbackSize="text-lg"
+                                            className="size-14 border-2"
+                                            user={{ image: follow.image, name: follow.username }}
                                         />
                                     </BlockLink>
                                 </TooltipTrigger>

@@ -224,6 +224,9 @@ const runAutomatedMigration = async () => {
         await execRawSQL(db, "PRAGMA foreign_keys = OFF;", "Disable FK:");
         await execRawSQL(db, "ALTER TABLE user RENAME TO user_12345;", "Rename old user:");
 
+        // Remove "default.jpg" image from user profile
+        await execRawSQL(db, "UPDATE user SET image = NULL WHERE image = 'default.jpg';", "Remove default image:");
+
         // Drop token, sqlite_stat1 and alembic_version tables
         await execRawSQL(db, [
             "DROP TABLE alembic_version;",

@@ -8,6 +8,7 @@ import {Card, CardContent} from "@/lib/client/components/ui/card";
 import {HofUserData} from "@/lib/types/query.options.types";
 import {capitalize, computeLevel} from "@/lib/utils/functions";
 import {MediaLevelCircle} from "@/lib/client/components/general/MediaLevelCircle";
+import {ProfileIcon} from "@/lib/client/components/general/ProfileIcon";
 
 
 interface HofCardProps {
@@ -41,10 +42,10 @@ export const HofCard = ({ userData }: HofCardProps) => {
                     </div>
                     <div className="col-span-6 max-sm:col-span-10 ml-3">
                         <div className="flex items-center gap-4 h-full">
-                            <img
-                                src={userData.image!}
-                                alt={"profile-picture"}
-                                className="rounded-full h-[75px] w-[75px] border-2 border-amber-600 bg-neutral-500"
+                            <ProfileIcon
+                                fallbackSize="text-xl"
+                                className="size-19 border-2"
+                                user={{ image: userData.image, name: userData.name }}
                             />
                             <div className="space-y-2">
                                 <h3 className="text-lg font-medium sm:truncate sm:w-[150px]">

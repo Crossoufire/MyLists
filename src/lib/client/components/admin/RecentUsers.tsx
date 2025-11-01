@@ -1,7 +1,7 @@
 import {Link} from "@tanstack/react-router";
 import {formatRelativeTime} from "@/lib/utils/functions";
 import {AdminUserOverview} from "@/lib/types/query.options.types";
-import {Avatar, AvatarFallback, AvatarImage} from "@/lib/client/components/ui/avatar";
+import {ProfileIcon} from "@/lib/client/components/general/ProfileIcon";
 
 
 interface RecentUsersProps {
@@ -14,10 +14,11 @@ export function RecentUsers({ users }: RecentUsersProps) {
         <div className="space-y-5 overflow-y-auto max-h-86 pr-4">
             {users.map((user) =>
                 <div key={user.id} className="flex items-center">
-                    <Avatar className="h-9 w-9">
-                        <AvatarImage src={user.image} alt={user.name}/>
-                        <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
-                    </Avatar>
+                    <ProfileIcon
+                        fallbackSize="text-sm"
+                        className="size-9 border-2"
+                        user={{ image: user.image, name: user.name }}
+                    />
                     <div className="ml-4 space-y-1">
                         <p className="text-sm font-medium leading-none">
                             <Link to="/profile/$username" params={{ username: user.name }} className="hover:underline hover:underline-offset-2">
