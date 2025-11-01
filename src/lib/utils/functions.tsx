@@ -407,9 +407,11 @@ export function downloadFile(data: any, filename: string, mimeType: string) {
     const blob = new Blob([data], { type: mimeType });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
+
     link.href = url;
     link.download = filename;
     document.body.appendChild(link);
+
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
@@ -418,12 +420,13 @@ export function downloadFile(data: any, filename: string, mimeType: string) {
 
 export function jsonToCsv(items: any[]) {
     if (!items || !items.length) return "";
+
     const header = Object.keys(items[0]);
     const headerString = header.join(",");
+
     const replacer = (_: string, value: any) => value ?? "";
-    const rowItems = items.map(row =>
-        header.map(fieldName => JSON.stringify(row[fieldName], replacer)).join(",")
-    );
+    const rowItems = items.map((row) => header.map((name) => JSON.stringify(row[name], replacer)).join(","));
+
     return [headerString, ...rowItems].join("\r\n");
 }
 

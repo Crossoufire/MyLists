@@ -330,11 +330,12 @@ export abstract class BaseRepository<TConfig extends MediaSchemaConfig<MediaTabl
         };
     }
 
-    async downloadMediaListAsCSV(userId: number): Promise<(TConfig["mediaTable"]["$inferSelect"] & { mediaName: string })[] | undefined> {
+    async downloadMediaListAsCSV(userId: number): Promise<(TConfig["listTable"]["$inferSelect"] & { mediaName: string, apiId: string | number })[] | undefined> {
         const { mediaTable, listTable } = this.config;
 
         const data = await getDbClient()
             .select({
+                apiId: sql<string>`${mediaTable.apiId}`,
                 mediaName: sql<string>`${mediaTable.name}`,
                 ...getTableColumns(listTable),
             })
