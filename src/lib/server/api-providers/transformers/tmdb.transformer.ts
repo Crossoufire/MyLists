@@ -220,10 +220,10 @@ export class TmdbTransformer {
             originCountry: rawData?.origin_country?.[0],
             totalSeasons: rawData?.number_of_seasons ?? 1,
             totalEpisodes: rawData?.number_of_episodes ?? 1,
-            nextEpisodeToAir: rawData?.next_episode_to_air?.air_date,
-            seasonToAir: rawData?.next_episode_to_air?.season_number,
-            episodeToAir: rawData?.next_episode_to_air?.episode_number,
             duration: rawData?.episode_run_time?.[0] ?? defaultDuration,
+            nextEpisodeToAir: rawData?.next_episode_to_air?.air_date ?? null,
+            seasonToAir: rawData?.next_episode_to_air?.season_number ?? null,
+            episodeToAir: rawData?.next_episode_to_air?.episode_number ?? null,
             lastAirDate: rawData?.last_air_date ? new Date(rawData.last_air_date).toISOString() : null,
             releaseDate: rawData?.first_air_date ? new Date(rawData.first_air_date).toISOString() : null,
             imageCover: await saveImageFromUrl({
