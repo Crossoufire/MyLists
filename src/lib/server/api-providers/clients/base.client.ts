@@ -6,16 +6,16 @@ import {RateLimiterAbstract, RateLimiterRes} from "rate-limiter-flexible";
 export class BaseClient {
     private consumeKey: string;
     readonly resultsPerPage = 20;
-    private limiter: RateLimiterAbstract;
+    private limiters: RateLimiterAbstract[];
 
-    constructor(limiterInstance: RateLimiterAbstract, consumeKey: string) {
-        this.limiter = limiterInstance;
+    constructor(limiterInstances: RateLimiterAbstract | RateLimiterAbstract[], consumeKey: string) {
+        this.limiters = Array.isArray(limiterInstances) ? limiterInstances : [limiterInstances];
         this.consumeKey = consumeKey;
     }
 
     async call(url: string, method: "post" | "get" = "get", options: RequestInit = {}) {
         try {
-            await this.limiter.consume(this.consumeKey);
+            await Promise.all(this.limiters.map((limiter) => limiter.consume(this.consumeKey)));
 
             const response = await fetch(url, {
                 method: method.toUpperCase(),

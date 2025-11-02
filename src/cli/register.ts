@@ -20,5 +20,6 @@ export const registerTaskCommand = (program: Command, task: TaskDefinition) => {
             triggeredBy: "cron/cli",
             ...options,
         });
+        process.exit(0);
     });
 };

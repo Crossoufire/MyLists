@@ -8,15 +8,20 @@ export class JikanClient extends BaseClient {
     private static readonly consumeKey = "jikan-API";
     private readonly animeUrl = "https://api.jikan.moe/v4/anime";
     private readonly mangaUrl = "https://api.jikan.moe/v4/manga";
-    private static readonly throttleOptions = { points: 3, duration: 1, keyPrefix: "jikanAPI" };
+    private static readonly perSecThrottle = { points: 3, duration: 1, keyPrefix: "jikanAPI-sec" };
+    private static readonly perMinThrottle = { points: 60, duration: 60, keyPrefix: "jikanAPI-min" };
 
-    constructor(limiter: RateLimiterAbstract, consumeKey: string) {
-        super(limiter, consumeKey);
+    constructor(limiters: RateLimiterAbstract[], consumeKey: string) {
+        super(limiters, consumeKey);
     }
 
     public static async create() {
-        const jikanLimiter = await createRateLimiter(JikanClient.throttleOptions);
-        return new JikanClient(jikanLimiter, JikanClient.consumeKey);
+        const [perSecondLimiter, perMinuteLimiter] = await Promise.all([
+            createRateLimiter(JikanClient.perSecThrottle),
+            createRateLimiter(JikanClient.perMinThrottle),
+        ]);
+
+        return new JikanClient([perSecondLimiter, perMinuteLimiter], JikanClient.consumeKey);
     }
 
     async search(query: string, page: number = 1): Promise<SearchData<JikanMangaSearchResponse>> {

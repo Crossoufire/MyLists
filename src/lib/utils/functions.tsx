@@ -6,7 +6,7 @@ import {AchievementDifficulty, MediaType, RatingSystemType, Status} from "@/lib/
 
 
 export const statusUtils = {
-    getNoPlanTo: () => [Status.PLAN_TO_WATCH, Status.PLAN_TO_PLAY, Status.PLAN_TO_READ] as Partial<Status>[],
+    getNoPlanTo: (): Status[] => [Status.PLAN_TO_WATCH, Status.PLAN_TO_PLAY, Status.PLAN_TO_READ],
     byMediaType: (mediaType: MediaType) => {
         switch (mediaType) {
             case MediaType.SERIES:
@@ -22,6 +22,12 @@ export const statusUtils = {
                 return [Status.READING, Status.COMPLETED, Status.ON_HOLD, Status.DROPPED, Status.PLAN_TO_READ];
         }
     },
+};
+
+
+export const mediaTypeUtils = {
+    getTypesForNotifications: (): MediaType[] => [MediaType.SERIES, MediaType.ANIME, MediaType.MOVIES],
+    getTypesForComingNext: (): MediaType[] => [MediaType.SERIES, MediaType.ANIME, MediaType.MOVIES, MediaType.GAMES],
 };
 
 

@@ -5,9 +5,10 @@ import {serverEnv} from "@/env/server";
 import {readFile, unlink} from "fs/promises";
 import {and, eq, inArray, sql} from "drizzle-orm";
 import {MediaType, Status} from "@/lib/utils/enums";
+import {mediaTypeUtils} from "@/lib/utils/functions";
 import {sqliteTable, text} from "drizzle-orm/sqlite-core";
-import {movies, moviesList} from "@/lib/server/database/schema";
 import {llmResponseSchema} from "@/lib/types/zod.schema.types";
+import {movies, moviesList} from "@/lib/server/database/schema";
 import {Movie} from "@/lib/server/domain/media/movies/movies.types";
 import {UserRepository} from "@/lib/server/domain/user/repositories";
 import {TaskContext, TaskHandler, TaskName} from "@/lib/types/tasks.types";
@@ -84,10 +85,7 @@ export class TasksService {
                     ctx.logger.info(`Refreshed ${mediaType} with apiId: ${result.apiId}`);
                 }
                 else {
-                    ctx.logger.error(
-                        { err: result.reason?.message ?? result.reason, apiId: result.apiId },
-                        `Error refreshing ${mediaType} with apiId: ${result.apiId}`
-                    );
+                    ctx.logger.error({ err: result.reason }, `Error refreshing ${mediaType} with apiId: ${result.apiId}`);
                 }
             }
 
@@ -102,7 +100,7 @@ export class TasksService {
                     requestsPerSecond: rps.toFixed(2),
                     durationSeconds: durationSecs.toFixed(2),
                 },
-                `Refreshing ${mediaType} completed.`
+                `Refreshing ${mediaType} completed in ${durationSecs.toFixed(2)}s (req ${rps.toFixed(2)}/s)`
             );
         }
 
@@ -111,9 +109,11 @@ export class TasksService {
 
     protected async runDbMaintenance(ctx: TaskContext) {
         ctx.logger.info("Starting: dbMaintenance execution.");
+
         await getDbClient().run("PRAGMA checkpoint(FULL)");
         await getDbClient().run("VACUUM");
         await getDbClient().run("ANALYZE");
+
         ctx.logger.info("Completed: dbMaintenance execution.");
     }
 
@@ -200,6 +200,7 @@ export class TasksService {
         ctx.logger.info("Starting calculating all achievements...");
 
         const allAchievements = await this.achievementsService.allUsersAchievements();
+
         for (const mediaType of this.mediaTypes) {
             const mediaService = this.mediaServiceRegistry.getService(mediaType);
             const mediaAchievements = allAchievements.filter((achievement) => achievement.mediaType === mediaType);
@@ -240,7 +241,7 @@ export class TasksService {
     protected async runAddMediaNotifications(ctx: TaskContext) {
         ctx.logger.info("Starting: AddMediaNotifications execution.");
 
-        const mediaTypes = [MediaType.SERIES, MediaType.ANIME, MediaType.MOVIES];
+        const mediaTypes = mediaTypeUtils.getTypesForNotifications();
         for (const mediaType of mediaTypes) {
             ctx.logger.info(`Adding ${mediaType} notifications to users...`);
 
