@@ -1,6 +1,6 @@
 /// <reference types="vite/client"/>
-import appCSS from "@/styles.css?url";
 import React from "react";
+import appCSS from "@/styles.css?url";
 import {QueryClient} from "@tanstack/react-query";
 import {Toaster} from "@/lib/client/components/ui/sonner";
 import {TanStackDevtools} from "@tanstack/react-devtools";

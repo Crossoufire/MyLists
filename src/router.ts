@@ -50,7 +50,7 @@ export function getRouter() {
         defaultNotFoundComponent: NotFound,
         defaultPendingComponent: InitialLoader,
         defaultPendingMs: 1000,
-        defaultPendingMinMs: 500,
+        defaultPendingMinMs: 200,
         scrollRestoration: true,
         defaultStructuralSharing: true,
         notFoundMode: "root",
