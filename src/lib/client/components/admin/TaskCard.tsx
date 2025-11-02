@@ -106,8 +106,6 @@ function LogViewer({ logsData }: { logsData: TaskType["logs"] }) {
     return (
         <div className="overflow-auto max-h-[400px] pr-2">
             {logsData.map((log, idx) => {
-                console.log({ log });
-
                 const levelInfo = getLevelInfo(log.level);
                 const Icon = levelInfo.icon;
                 const isExpanded = expandedLogs.has(idx);

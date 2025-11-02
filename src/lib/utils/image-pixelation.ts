@@ -1,14 +1,16 @@
 import path from "path";
 import sharp from "sharp";
 import fs from "fs/promises";
+import {clientEnv} from "@/env/client";
+import {serverEnv} from "@/env/server";
 import {createServerOnlyFn} from "@tanstack/react-start";
 
 
 export const pixelateImage = createServerOnlyFn(() => async (url: string, level: number) => {
     // Derive disk path from URL
-    const staticIndex = url.indexOf("/static");
-    const partial = staticIndex !== -1 ? url.substring(staticIndex) : "";
-    const absPath = path.join(process.cwd(), "public", partial);
+    const uploadsBasePath = `${clientEnv.VITE_BASE_URL}/${serverEnv.UPLOADS_DIR_NAME}/`;
+    const relativeImagePath = url.substring(uploadsBasePath.length);
+    const absPath = path.join(serverEnv.BASE_UPLOADS_LOCATION, relativeImagePath);
 
     // Scale lookup (1 = heavy pix, 5 = light pix)
     const scaleFactors: Record<number, number> = { 5: 6, 4: 7, 3: 8, 2: 10, 1: 12 };
