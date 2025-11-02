@@ -3,11 +3,7 @@
     "private": true,
     "type": "module",
     "browserslist": [
-        "defaults and supports es6-module",
-        "Chrome >= 96",
-        "Edge >= 96",
-        "Firefox >= 93",
-        "Safari >= 15"
+        ">0.3%, defaults, supports es6-module"
     ],
     "scripts": {
         "dk": "drizzle-kit",

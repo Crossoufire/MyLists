@@ -1,5 +1,5 @@
+import {Config} from "drizzle-kit";
 import {serverEnv} from "@/env/server";
-import type {Config} from "drizzle-kit";
 
 
 export default {
