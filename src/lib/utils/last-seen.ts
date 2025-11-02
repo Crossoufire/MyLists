@@ -19,9 +19,8 @@ export const updateLastSeen = createServerOnlyFn(() => async (name: string) => {
 
     await cacheManager.set(cacheKey, true, UPDATE_THRESHOLD_MS);
 
-    setImmediate(() => {
-        db.update(user)
-            .set({ updatedAt: sql`datetime('now')` })
-            .where(eq(user.name, name));
-    });
+    db.update(user)
+        .set({ updatedAt: sql`datetime('now')` })
+        .where(eq(user.name, name))
+        .catch();
 })();
