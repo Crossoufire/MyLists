@@ -77,6 +77,10 @@ export class UserService {
         return this.userRepository.getAdminArchivedTasks();
     }
 
+    async deleteAdminArchivedTask(taskId: string) {
+        return this.userRepository.deleteAdminArchivedTask(taskId);
+    }
+
     // ----------------------------------------------------------------
 
     async deleteUserAccount(userId: number) {

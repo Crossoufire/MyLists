@@ -1,8 +1,8 @@
 import {toast} from "sonner";
-import {useMutation, useQueryClient} from "@tanstack/react-query";
-import {adminQueryKeys} from "@/lib/client/react-query/query-options/admin-options";
-import {postAdminTriggerTask, postAdminUpdateAchievement, postAdminUpdateTiers, postAdminUpdateUser} from "@/lib/server/functions/admin";
 import {SearchTypeAdmin} from "@/lib/types/zod.schema.types";
+import {useMutation, useQueryClient} from "@tanstack/react-query";
+import {adminArchivedTasksOptions, adminQueryKeys} from "@/lib/client/react-query/query-options/admin-options";
+import {postAdminDeleteArchivedTask, postAdminTriggerTask, postAdminUpdateAchievement, postAdminUpdateTiers, postAdminUpdateUser} from "@/lib/server/functions/admin";
 
 
 export const useAdminUpdateUserMutation = (filters: SearchTypeAdmin) => {
@@ -49,5 +49,16 @@ export const useAdminTriggerTaskMutation = () => {
     return useMutation({
         mutationFn: postAdminTriggerTask,
         onError: (error) => toast.error(error.message),
+    });
+};
+
+
+export const useAdminDeleteTaskMutation = () => {
+    return useMutation({
+        mutationFn: postAdminDeleteArchivedTask,
+        onError: (error) => toast.error(error.message ?? "Can't delete this task."),
+        onSuccess: async (_data, _variables, _result, context) => {
+            await context.client.invalidateQueries({ queryKey: adminArchivedTasksOptions().queryKey });
+        },
     });
 };

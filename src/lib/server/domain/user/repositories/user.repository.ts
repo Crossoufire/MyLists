@@ -123,6 +123,13 @@ export class UserRepository {
             .orderBy(desc(taskHistory.startedAt));
     }
 
+    static async deleteAdminArchivedTask(taskId: string) {
+        await getDbClient()
+            .delete(taskHistory)
+            .where(eq(taskHistory.taskId, taskId))
+            .execute();
+    }
+
     // --------------------------------------------------------------------
 
     static async findUserByName(name: string) {

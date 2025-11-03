@@ -1,12 +1,15 @@
 import {serverEnv} from "@/env/server";
+import {randomUUID} from "node:crypto";
 import {redirect} from "@tanstack/react-router";
 import {createServerFn} from "@tanstack/react-start";
 import {getContainer} from "@/lib/server/core/container";
+import {executeTask} from "@/lib/server/core/task-runner";
 import {getCookie, setCookie} from "@tanstack/react-start/server";
 import {taskDefinitions} from "@/lib/server/domain/tasks/tasks-config";
 import {adminCookieOptions, createAdminToken, verifyAdminToken} from "@/lib/utils/jwt-utils";
 import {ADMIN_COOKIE_NAME, adminAuthMiddleware, managerAuthMiddleware} from "@/lib/server/middlewares/authentication";
 import {
+    adminDeleteArchivedTaskSchema,
     adminTriggerTaskSchema,
     adminUpdateAchievementSchema,
     postAdminUpdateTiersSchema,
@@ -14,8 +17,6 @@ import {
     searchTypeAdminSchema,
     searchTypeSchema
 } from "@/lib/types/zod.schema.types";
-import {executeTask} from "@/lib/server/core/task-runner";
-import {randomUUID} from "node:crypto";
 
 
 export const checkAdminAuth = createServerFn({ method: "GET" })
@@ -152,4 +153,13 @@ export const getAdminArchivedTasks = createServerFn({ method: "GET" })
     .handler(async () => {
         const userService = await getContainer().then((c) => c.services.user);
         return userService.getAdminArchivedTasks();
+    });
+
+
+export const postAdminDeleteArchivedTask = createServerFn({ method: "POST" })
+    .middleware([managerAuthMiddleware, adminAuthMiddleware])
+    .inputValidator(adminDeleteArchivedTaskSchema)
+    .handler(async ({ data: { taskId } }) => {
+        const userService = await getContainer().then((c) => c.services.user);
+        return userService.deleteAdminArchivedTask(taskId);
     });

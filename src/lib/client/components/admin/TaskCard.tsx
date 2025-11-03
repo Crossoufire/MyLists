@@ -3,9 +3,10 @@ import {cn} from "@/lib/utils/helpers";
 import {Badge} from "@/lib/client/components/ui/badge";
 import {Button} from "@/lib/client/components/ui/button";
 import {capitalize, formatDateTime} from "@/lib/utils/functions";
-import {CheckCircle, Clock, Info, TriangleAlert, XCircle} from "lucide-react";
-import {Card, CardContent, CardHeader} from "@/lib/client/components/ui/card";
+import {CheckCircle, Clock, Info, Trash, TriangleAlert, XCircle} from "lucide-react";
+import {Card, CardAction, CardContent, CardHeader, CardTitle} from "@/lib/client/components/ui/card";
 import {adminArchivedTasksOptions} from "@/lib/client/react-query/query-options/admin-options";
+import {useAdminDeleteTaskMutation} from "@/lib/client/react-query/query-mutations/admin.mutations";
 
 
 type TaskType = Awaited<ReturnType<NonNullable<ReturnType<typeof adminArchivedTasksOptions>["queryFn"]>>>[0];
@@ -13,6 +14,7 @@ type TaskType = Awaited<ReturnType<NonNullable<ReturnType<typeof adminArchivedTa
 
 export function TaskCard({ task }: { task: TaskType }) {
     const [showLogs, setShowLogs] = useState(false);
+    const deleteTaskMutation = useAdminDeleteTaskMutation();
 
     const getTaskStatusColor = (taskStatus: string) => {
         switch (taskStatus) {
@@ -23,46 +25,56 @@ export function TaskCard({ task }: { task: TaskType }) {
         }
     };
 
+    const handleDeleteTask = () => {
+        deleteTaskMutation.mutate({ data: { taskId: task.taskId } });
+    }
+
     return (
-        <Card className="w-full max-w-3xl">
-            <CardHeader className="pb-2 flex flex-row items-center justify-between">
-                <div className="flex items-center gap-2">
-                    <h2 className="text-xl font-bold text-white">
-                        {task.taskName}
-                    </h2>
-                    <Badge variant="outline" className="border-zinc-700 text-zinc-400">
-                        TaskId: {task.id} {task.userId && `- UserId: ${task.userId}`}
-                    </Badge>
-                </div>
-                <div>
-                    <Badge className={cn("text-white font-medium px-3 py-1", getTaskStatusColor(task.status))}>
-                        {capitalize(task.status)}
-                    </Badge>
-                </div>
+        <Card className="max-w-2xl">
+            <CardHeader>
+                <CardTitle>
+                    {task.taskName}
+                </CardTitle>
+                <CardAction>
+                    <div className="flex items-center gap-3">
+                        <Badge className={cn("text-white font-medium px-3 py-1", getTaskStatusColor(task.status))}>
+                            {capitalize(task.status)}
+                        </Badge>
+                        <Button onClick={handleDeleteTask} size="xs" variant="destructive">
+                            <Trash className="size-4"/>
+                        </Button>
+                    </div>
+                </CardAction>
             </CardHeader>
             <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm mt-2">
                     <div className="flex flex-col gap-1">
                         <div className="text-zinc-400 flex items-center gap-1">
-                            <Clock className="h-3.5 w-3.5"/>
-                            <span>Started</span>
+                            <Info className="size-3.5"/> Id
                         </div>
-                        <div className="text-zinc-200">
+                        <div>
+                            TaskId: {task.id} {task.userId && `- UserId: ${task.userId}`}
+                        </div>
+                    </div>
+                    <div className="flex flex-col gap-1">
+                        <div className="text-zinc-400 flex items-center gap-1">
+                            <Clock className="size-3.5"/> Started
+                        </div>
+                        <div>
                             {formatDateTime(task.startedAt, { seconds: true })}
                         </div>
                     </div>
                     <div className="flex flex-col gap-1">
                         <div className="text-zinc-400 flex items-center gap-1">
-                            <CheckCircle className="h-3.5 w-3.5"/>
-                            <span>Finished</span>
+                            <CheckCircle className="size-3.5"/> Finished
                         </div>
-                        <div className="text-zinc-200">
+                        <div>
                             {formatDateTime(task.finishedAt, { seconds: true })}
                         </div>
                     </div>
                 </div>
                 {task.logs &&
-                    <div className="mt-3 -mb-1">
+                    <div className="mt-4">
                         <Button onClick={() => setShowLogs(!showLogs)} variant="outline" size="sm">
                             {showLogs ? "Hide Logs" : `Show Logs - (${task.logs.length})`}
                         </Button>

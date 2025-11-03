@@ -64,5 +64,4 @@ export const adminTasksOptions = () => queryOptions({
 export const adminArchivedTasksOptions = () => queryOptions({
     queryKey: adminQueryKeys.adminJobArchivedKey(),
     queryFn: getAdminArchivedTasks,
-    meta: { displayErrorMsg: true },
 });

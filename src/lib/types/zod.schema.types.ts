@@ -272,13 +272,9 @@ export const adminTriggerTaskSchema = z.object({
     taskName: z.enum(taskNames),
 });
 
-export const getAdminJobsSchema = z.object({
-    types: z.array(z.enum(["wait", "active", "completed", "failed"])),
-})
-
-export const getAdminJobSchema = z.object({
-    jobId: z.coerce.string(),
-})
+export const adminDeleteArchivedTaskSchema = z.object({
+    taskId: z.string(),
+});
 
 export const llmResponseSchema = z.array(z.object({
     bookApiId: z.string(),
