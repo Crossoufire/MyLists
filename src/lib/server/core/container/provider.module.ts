@@ -1,5 +1,5 @@
-import {GBooksClient, HltbClient, IgdbClient, JikanClient, LlmClient, TmdbClient,} from "@/lib/server/api-providers/clients";
-import {GBooksTransformer, IgdbTransformer, JikanTransformer, TmdbTransformer,} from "@/lib/server/api-providers/transformers";
+import {GBooksClient, HltbClient, IgdbClient, JikanClient, LlmClient, TmdbClient} from "@/lib/server/api-providers/clients";
+import {GBooksTransformer, IgdbTransformer, JikanTransformer, TmdbTransformer} from "@/lib/server/api-providers/transformers";
 
 
 export async function setupProviderModule() {

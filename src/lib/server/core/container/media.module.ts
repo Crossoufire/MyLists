@@ -5,7 +5,7 @@ import {GamesProviderService, GamesRepository, GamesService} from "@/lib/server/
 import {MangaProviderService, MangaRepository, MangaService} from "@/lib/server/domain/media/manga";
 import {MoviesProviderService, MoviesRepository, MoviesService} from "@/lib/server/domain/media/movies";
 import {animeConfig, seriesConfig, TvProviderService, TvRepository, TvService} from "@/lib/server/domain/media/tv";
-import {MediaProviderServiceRegistry, MediaRepositoryRegistry, MediaServiceRegistry} from "@/lib/server/domain/media/registries/registries";
+import {MediaProviderServiceRegistry, MediaRepositoryRegistry, MediaServiceRegistry} from "@/lib/server/domain/media/media.registries";
 
 
 export function setupMediaModule(apiModule: ProviderModule) {

@@ -1,6 +1,6 @@
 import {Logger} from "pino";
 import {taskNames} from "@/lib/server/domain/tasks/tasks-config";
-import {ProcessResult} from "@/lib/server/domain/tasks/services/tasks.service";
+import {ProcessResult} from "@/lib/server/domain/tasks/tasks.service";
 
 
 export type LogTask = {

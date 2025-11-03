@@ -1,12 +1,12 @@
 import {initCacheManager} from "@/lib/server/core/cache-manager";
+import {AdminService} from "@/lib/server/domain/admin/admin.service";
+import {TasksService} from "@/lib/server/domain/tasks/tasks.service";
 import {setupMediaModule} from "@/lib/server/core/container/media.module";
 import {setupTasksModule} from "@/lib/server/core/container/tasks.module";
 import {setupAdminModule} from "@/lib/server/core/container/admin.module";
-import {AdminService} from "@/lib/server/domain/user/services/admin.service";
-import {TasksService} from "@/lib/server/domain/tasks/services/tasks.service";
 import {setupUserModule, UserModule} from "@/lib/server/core/container/user.module";
 import {ProviderModule, setupProviderModule} from "@/lib/server/core/container/provider.module";
-import {MediaProviderServiceRegistry, MediaRepositoryRegistry, MediaServiceRegistry} from "@/lib/server/domain/media/registries/registries";
+import {MediaProviderServiceRegistry, MediaRepositoryRegistry, MediaServiceRegistry} from "@/lib/server/domain/media/media.registries";
 
 
 interface AppContainer {

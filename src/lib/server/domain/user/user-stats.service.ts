@@ -3,10 +3,10 @@ import {DeltaStats} from "@/lib/types/stats.types";
 import {MediaType, Status} from "@/lib/utils/enums";
 import {UserMediaStats} from "@/lib/types/base.types";
 import {SearchTypeHoF} from "@/lib/types/zod.schema.types";
-import {MediaServiceRegistry} from "@/lib/server/domain/media/registries/registries";
-import {UserStatsRepository} from "@/lib/server/domain/user/repositories/user-stats.repository";
-import {UserUpdatesRepository} from "@/lib/server/domain/user/repositories/user-updates.repository";
-import {AchievementsRepository} from "@/lib/server/domain/user/repositories/achievements.repository";
+import {MediaServiceRegistry} from "@/lib/server/domain/media/media.registries";
+import {UserStatsRepository} from "@/lib/server/domain/user/user-stats.repository";
+import {UserUpdatesRepository} from "@/lib/server/domain/user/user-updates.repository";
+import {AchievementsRepository} from "@/lib/server/domain/achievements/achievements.repository";
 
 
 export class UserStatsService {

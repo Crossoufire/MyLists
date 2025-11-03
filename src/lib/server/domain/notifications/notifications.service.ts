@@ -1,6 +1,6 @@
 import {MediaType, NotificationType} from "@/lib/utils/enums";
 import {UpComingMedia, UpdateMediaNotification} from "@/lib/types/base.types";
-import {NotificationsRepository} from "@/lib/server/domain/user/repositories/notifications.repository";
+import {NotificationsRepository} from "@/lib/server/domain/notifications/notifications.repository";
 
 
 export class NotificationsService {

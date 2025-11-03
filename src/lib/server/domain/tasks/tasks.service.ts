@@ -10,11 +10,12 @@ import {sqliteTable, text} from "drizzle-orm/sqlite-core";
 import {llmResponseSchema} from "@/lib/types/zod.schema.types";
 import {movies, moviesList} from "@/lib/server/database/schema";
 import {Movie} from "@/lib/server/domain/media/movies/movies.types";
-import {UserRepository} from "@/lib/server/domain/user/repositories";
 import {TaskContext, TaskHandler, TaskName} from "@/lib/types/tasks.types";
 import {getDbClient, withTransaction} from "@/lib/server/database/async-storage";
-import {MediaProviderServiceRegistry, MediaServiceRegistry} from "@/lib/server/domain/media/registries/registries";
-import {AchievementsService, NotificationsService, UserStatsService, UserUpdatesService,} from "@/lib/server/domain/user/services";
+import {AchievementsService} from "@/lib/server/domain/achievements/achievements.service";
+import {NotificationsService} from "@/lib/server/domain/notifications/notifications.service";
+import {UserRepository, UserStatsService, UserUpdatesService} from "@/lib/server/domain/user";
+import {MediaProviderServiceRegistry, MediaServiceRegistry} from "@/lib/server/domain/media/media.registries";
 
 
 export class TasksService {

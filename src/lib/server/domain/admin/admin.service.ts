@@ -1,7 +1,7 @@
 import {MediaType} from "@/lib/utils/enums";
 import {SaveToDbProps} from "@/lib/types/tasks.types";
-import {MediaServiceRegistry} from "@/lib/server/domain/media/registries/registries";
-import {AdminRepository} from "@/lib/server/domain/user/repositories/admin.repository";
+import {MediaServiceRegistry} from "@/lib/server/domain/media/media.registries";
+import {AdminRepository} from "@/lib/server/domain/admin/admin.repository";
 
 
 export class AdminService {

@@ -4,8 +4,8 @@ import {useCollapse} from "@/lib/client/hooks/use-collapse";
 import {Progress} from "@/lib/client/components/ui/progress";
 import {UserSettingsType} from "@/lib/types/query.options.types";
 import {MediaLevelCircle} from "@/lib/client/components/general/MediaLevelCircle";
-import {Card, CardContent, CardHeader, CardTitle} from "@/lib/client/components/ui/card";
 import {capitalize, computeLevel, getMediaColor, zeroPad} from "@/lib/utils/functions";
+import {Card, CardContent, CardHeader, CardTitle} from "@/lib/client/components/ui/card";
 
 
 interface MediaLevelsProps {

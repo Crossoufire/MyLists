@@ -1,6 +1,6 @@
 import {UserModule} from "@/lib/server/core/container/user.module";
-import {TasksService} from "@/lib/server/domain/tasks/services/tasks.service";
-import {MediaProviderServiceRegistry, MediaServiceRegistry} from "@/lib/server/domain/media/registries/registries";
+import {TasksService} from "@/lib/server/domain/tasks/tasks.service";
+import {MediaProviderServiceRegistry, MediaServiceRegistry} from "@/lib/server/domain/media/media.registries";
 
 
 interface TasksModuleDependencies {

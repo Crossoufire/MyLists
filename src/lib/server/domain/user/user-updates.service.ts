@@ -4,7 +4,7 @@ import {MediaType, UpdateType} from "@/lib/utils/enums";
 import {userMediaUpdate} from "@/lib/server/database/schema";
 import {AllUpdatesSearch} from "@/lib/types/zod.schema.types";
 import {getDbClient} from "@/lib/server/database/async-storage";
-import {UserUpdatesRepository} from "@/lib/server/domain/user/repositories/user-updates.repository";
+import {UserUpdatesRepository} from "@/lib/server/domain/user/user-updates.repository";
 
 
 interface LogUpdateParams {

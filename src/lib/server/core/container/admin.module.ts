@@ -1,5 +1,5 @@
-import {AdminService} from "@/lib/server/domain/user/services/admin.service";
-import {AdminRepository} from "@/lib/server/domain/user/repositories/admin.repository";
+import {AdminService} from "@/lib/server/domain/admin/admin.service";
+import {AdminRepository} from "@/lib/server/domain/admin/admin.repository";
 
 
 export function setupAdminModule() {
