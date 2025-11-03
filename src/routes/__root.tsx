@@ -1,6 +1,7 @@
 /// <reference types="vite/client"/>
 import React from "react";
 import appCSS from "@/styles.css?url";
+import {addSeo} from "@/lib/utils/add-seo";
 import {QueryClient} from "@tanstack/react-query";
 import {Toaster} from "@/lib/client/components/ui/sonner";
 import {TanStackDevtools} from "@tanstack/react-devtools";
@@ -21,13 +22,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         meta: [
             { charSet: "utf-8" },
             { name: "viewport", content: "width=device-width, initial-scale=1" },
-            { title: "MyLists" },
-            {
-                name: "description",
-                content: "MyLists is your go-to platform for organizing your favorite series, anime, movies, games, and books. " +
-                    "With a clean and user-friendly interface, it regroups the functionalities of multiple sites into one. " +
-                    "MyLists integrates features such as total viewing time, comments, favorites, and more."
-            },
+            ...addSeo({
+                image: "logo512.png",
+                title: "Mylists",
+                description: "MyLists is your all-in-one platform to organize your favorite series, movies, games, anime, books and manga.",
+            }),
         ],
         links: [{ rel: "stylesheet", href: appCSS }],
     }),
