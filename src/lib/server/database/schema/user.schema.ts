@@ -1,4 +1,5 @@
 import {sql} from "drizzle-orm";
+import {LogTask} from "@/lib/types/tasks.types";
 import {relations} from "drizzle-orm/relations";
 import {customJson, dateAsString} from "@/lib/server/database/custom-types";
 import {index, integer, real, sqliteTable, text} from "drizzle-orm/sqlite-core";
@@ -21,7 +22,6 @@ import {
     userAchievement,
     userMediadleProgress
 } from "@/lib/server/database/schema";
-import {LogTask} from "@/lib/types/tasks.types";
 
 
 export const followers = sqliteTable("followers", {
@@ -33,11 +33,11 @@ export const followers = sqliteTable("followers", {
 export const notifications = sqliteTable("notifications", {
     id: integer().primaryKey().notNull(),
     userId: integer().references(() => user.id, { onDelete: "cascade" }),
-    mediaType: text().$type<MediaType>(),
     mediaId: integer(),
-    payload: customJson<Record<string, any>>("payload").notNull(),
+    mediaType: text().$type<MediaType>(),
     notificationType: text().$type<NotificationType>(),
     timestamp: text().default(sql`(CURRENT_TIMESTAMP)`).notNull(),
+    payload: customJson<Record<string, any>>("payload").notNull(),
 }, (table) => [index("ix_notifications_timestamp").on(table.timestamp)]);
 
 

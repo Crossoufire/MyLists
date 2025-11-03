@@ -66,7 +66,10 @@ export const postUpdateFollowStatus = createServerFn({ method: "POST" })
         await userService.updateFollowStatus(currentUser.id, targetUser.id);
 
         if (followStatus) {
-            const payload = { username: currentUser.name, message: `${currentUser.name} is following you` }
+            const payload = {
+                username: currentUser.name,
+                message: `${currentUser.name} is following you`,
+            }
             await notificationsService.sendNotification(targetUser.id, NotificationType.FOLLOW, payload);
         }
     });

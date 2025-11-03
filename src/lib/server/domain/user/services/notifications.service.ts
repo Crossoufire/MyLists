@@ -16,7 +16,7 @@ export class NotificationsService {
                 if (
                     notification &&
                     item.date === notification.payload.releaseDate &&
-                    item.episodeToAir === notification.payload.releaseDate &&
+                    item.episodeToAir === notification.payload.episode &&
                     item.seasonToAir === notification.payload.season
                 ) {
                     continue;
@@ -32,7 +32,7 @@ export class NotificationsService {
                         release_date: item.date,
                         season: item.seasonToAir,
                         episode: item.episodeToAir,
-                        final: (item.lastEpisode === item.episodeToAir && item.episodeToAir !== 1),
+                        final: ((item.lastEpisode === item.episodeToAir) && item.episodeToAir !== 1),
                     },
                 };
 
