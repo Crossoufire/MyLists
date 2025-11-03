@@ -1,8 +1,15 @@
 import {toast} from "sonner";
 import {SearchTypeAdmin} from "@/lib/types/zod.schema.types";
 import {useMutation, useQueryClient} from "@tanstack/react-query";
-import {adminArchivedTasksOptions, adminQueryKeys} from "@/lib/client/react-query/query-options/admin-options";
-import {postAdminDeleteArchivedTask, postAdminTriggerTask, postAdminUpdateAchievement, postAdminUpdateTiers, postAdminUpdateUser} from "@/lib/server/functions/admin";
+import {adminArchivedTasksOptions, adminErrorLogsOptions, adminQueryKeys} from "@/lib/client/react-query/query-options/admin-options";
+import {
+    postAdminDeleteArchivedTask,
+    postAdminDeleteErrorLog,
+    postAdminTriggerTask,
+    postAdminUpdateAchievement,
+    postAdminUpdateTiers,
+    postAdminUpdateUser
+} from "@/lib/server/functions/admin";
 
 
 export const useAdminUpdateUserMutation = (filters: SearchTypeAdmin) => {
@@ -54,11 +61,26 @@ export const useAdminTriggerTaskMutation = () => {
 
 
 export const useAdminDeleteTaskMutation = () => {
+    const queryClient = useQueryClient();
+
     return useMutation({
         mutationFn: postAdminDeleteArchivedTask,
         onError: (error) => toast.error(error.message ?? "Can't delete this task."),
-        onSuccess: async (_data, _variables, _result, context) => {
-            await context.client.invalidateQueries({ queryKey: adminArchivedTasksOptions().queryKey });
+        onSuccess: async () => {
+            await queryClient.invalidateQueries({ queryKey: adminArchivedTasksOptions().queryKey });
+        },
+    });
+};
+
+
+export const useAdminDeleteErrorLogMutation = () => {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: postAdminDeleteErrorLog,
+        onError: (error) => toast.error(error.message ?? "Can't delete this error log."),
+        onSuccess: async () => {
+            await queryClient.invalidateQueries({ queryKey: adminErrorLogsOptions().queryKey });
         },
     });
 };

@@ -1,10 +1,36 @@
 import {desc, eq} from "drizzle-orm";
+import {ErrorLog} from "@/lib/types/base.types";
 import {SaveToDbProps} from "@/lib/types/tasks.types";
-import {taskHistory} from "@/lib/server/database/schema";
 import {getDbClient} from "@/lib/server/database/async-storage";
+import {errorLogs, taskHistory} from "@/lib/server/database/schema";
 
 
 export class AdminRepository {
+    static async saveErrorToDb(error: ErrorLog) {
+        await getDbClient()
+            .insert(errorLogs)
+            .values({
+                name: error.name,
+                message: error.message,
+                stack: error.stack ?? null,
+            })
+            .execute();
+    }
+
+    static async getErrorLogs() {
+        return getDbClient()
+            .select()
+            .from(errorLogs)
+            .orderBy(desc(errorLogs.createdAt));
+    }
+
+    static async deleteErrorLog(errorId: number) {
+        await getDbClient()
+            .delete(errorLogs)
+            .where(eq(errorLogs.id, errorId))
+            .execute();
+    }
+
     static async saveTaskToDb(data: SaveToDbProps) {
         try {
             await getDbClient()

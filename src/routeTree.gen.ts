@@ -27,6 +27,7 @@ import { Route as AdminAdminUsersRouteImport } from "./routes/_admin/admin/users
 import { Route as AdminAdminOverviewRouteImport } from "./routes/_admin/admin/overview";
 import { Route as AdminAdminMediadleRouteImport } from "./routes/_admin/admin/mediadle";
 import { Route as AdminAdminMediaOverviewRouteImport } from "./routes/_admin/admin/media-overview";
+import { Route as AdminAdminErrorLogsRouteImport } from "./routes/_admin/admin/error-logs";
 import { Route as AdminAdminArchivedTasksRouteImport } from "./routes/_admin/admin/archived-tasks";
 import { Route as AdminAdminAdminTasksRouteImport } from "./routes/_admin/admin/admin-tasks";
 import { Route as AdminAdminAchievementsRouteImport } from "./routes/_admin/admin/achievements";
@@ -130,6 +131,11 @@ const AdminAdminMediadleRoute = AdminAdminMediadleRouteImport.update({
 const AdminAdminMediaOverviewRoute = AdminAdminMediaOverviewRouteImport.update({
   id: "/admin/media-overview",
   path: "/admin/media-overview",
+  getParentRoute: () => AdminRoute,
+} as any);
+const AdminAdminErrorLogsRoute = AdminAdminErrorLogsRouteImport.update({
+  id: "/admin/error-logs",
+  path: "/admin/error-logs",
   getParentRoute: () => AdminRoute,
 } as any);
 const AdminAdminArchivedTasksRoute = AdminAdminArchivedTasksRouteImport.update({
@@ -275,6 +281,7 @@ export interface FileRoutesByFullPath {
   "/admin/achievements": typeof AdminAdminAchievementsRoute;
   "/admin/admin-tasks": typeof AdminAdminAdminTasksRoute;
   "/admin/archived-tasks": typeof AdminAdminArchivedTasksRoute;
+  "/admin/error-logs": typeof AdminAdminErrorLogsRoute;
   "/admin/media-overview": typeof AdminAdminMediaOverviewRoute;
   "/admin/mediadle": typeof AdminAdminMediadleRoute;
   "/admin/overview": typeof AdminAdminOverviewRoute;
@@ -311,6 +318,7 @@ export interface FileRoutesByTo {
   "/admin/achievements": typeof AdminAdminAchievementsRoute;
   "/admin/admin-tasks": typeof AdminAdminAdminTasksRoute;
   "/admin/archived-tasks": typeof AdminAdminArchivedTasksRoute;
+  "/admin/error-logs": typeof AdminAdminErrorLogsRoute;
   "/admin/media-overview": typeof AdminAdminMediaOverviewRoute;
   "/admin/mediadle": typeof AdminAdminMediadleRoute;
   "/admin/overview": typeof AdminAdminOverviewRoute;
@@ -351,6 +359,7 @@ export interface FileRoutesById {
   "/_admin/admin/achievements": typeof AdminAdminAchievementsRoute;
   "/_admin/admin/admin-tasks": typeof AdminAdminAdminTasksRoute;
   "/_admin/admin/archived-tasks": typeof AdminAdminArchivedTasksRoute;
+  "/_admin/admin/error-logs": typeof AdminAdminErrorLogsRoute;
   "/_admin/admin/media-overview": typeof AdminAdminMediaOverviewRoute;
   "/_admin/admin/mediadle": typeof AdminAdminMediadleRoute;
   "/_admin/admin/overview": typeof AdminAdminOverviewRoute;
@@ -390,6 +399,7 @@ export interface FileRouteTypes {
     | "/admin/achievements"
     | "/admin/admin-tasks"
     | "/admin/archived-tasks"
+    | "/admin/error-logs"
     | "/admin/media-overview"
     | "/admin/mediadle"
     | "/admin/overview"
@@ -426,6 +436,7 @@ export interface FileRouteTypes {
     | "/admin/achievements"
     | "/admin/admin-tasks"
     | "/admin/archived-tasks"
+    | "/admin/error-logs"
     | "/admin/media-overview"
     | "/admin/mediadle"
     | "/admin/overview"
@@ -465,6 +476,7 @@ export interface FileRouteTypes {
     | "/_admin/admin/achievements"
     | "/_admin/admin/admin-tasks"
     | "/_admin/admin/archived-tasks"
+    | "/_admin/admin/error-logs"
     | "/_admin/admin/media-overview"
     | "/_admin/admin/mediadle"
     | "/_admin/admin/overview"
@@ -611,6 +623,13 @@ declare module "@tanstack/react-router" {
       path: "/admin/media-overview";
       fullPath: "/admin/media-overview";
       preLoaderRoute: typeof AdminAdminMediaOverviewRouteImport;
+      parentRoute: typeof AdminRoute;
+    };
+    "/_admin/admin/error-logs": {
+      id: "/_admin/admin/error-logs";
+      path: "/admin/error-logs";
+      fullPath: "/admin/error-logs";
+      preLoaderRoute: typeof AdminAdminErrorLogsRouteImport;
       parentRoute: typeof AdminRoute;
     };
     "/_admin/admin/archived-tasks": {
@@ -781,6 +800,7 @@ interface AdminRouteChildren {
   AdminAdminAchievementsRoute: typeof AdminAdminAchievementsRoute;
   AdminAdminAdminTasksRoute: typeof AdminAdminAdminTasksRoute;
   AdminAdminArchivedTasksRoute: typeof AdminAdminArchivedTasksRoute;
+  AdminAdminErrorLogsRoute: typeof AdminAdminErrorLogsRoute;
   AdminAdminMediaOverviewRoute: typeof AdminAdminMediaOverviewRoute;
   AdminAdminMediadleRoute: typeof AdminAdminMediadleRoute;
   AdminAdminOverviewRoute: typeof AdminAdminOverviewRoute;
@@ -792,6 +812,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminAdminAchievementsRoute: AdminAdminAchievementsRoute,
   AdminAdminAdminTasksRoute: AdminAdminAdminTasksRoute,
   AdminAdminArchivedTasksRoute: AdminAdminArchivedTasksRoute,
+  AdminAdminErrorLogsRoute: AdminAdminErrorLogsRoute,
   AdminAdminMediaOverviewRoute: AdminAdminMediaOverviewRoute,
   AdminAdminMediadleRoute: AdminAdminMediadleRoute,
   AdminAdminOverviewRoute: AdminAdminOverviewRoute,

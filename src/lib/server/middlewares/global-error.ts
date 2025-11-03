@@ -1,6 +1,7 @@
 import z from "zod";
 import {isRedirect} from "@tanstack/react-router";
 import {createMiddleware} from "@tanstack/react-start";
+import {getContainer} from "@/lib/server/core/container";
 import {sendAdminErrorMail} from "@/lib/utils/mail-sender";
 import {FormattedError, FormZodError} from "@/lib/utils/error-classes";
 
@@ -27,6 +28,9 @@ export const errorMiddleware = createMiddleware({ type: "function" }).server(asy
         if (process.env.NODE_ENV !== "production") {
             console.error("Error:", { err });
         }
+
+        await saveError(err);
+
         if ("options" in err && isRedirect(err)) {
             throw err;
         }
@@ -53,3 +57,13 @@ export const errorMiddleware = createMiddleware({ type: "function" }).server(asy
         }
     }
 });
+
+
+const saveError = async (err: any) => {
+    const adminService = await getContainer().then((c) => c.services.admin);
+    await adminService.saveErrorToDb({
+        name: err.name,
+        stack: err.stack,
+        message: err.message,
+    });
+}

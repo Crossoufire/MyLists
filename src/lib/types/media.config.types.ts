@@ -1,6 +1,6 @@
 import {Column, SQL, Table} from "drizzle-orm";
-import {SQLiteColumn} from "drizzle-orm/sqlite-core";
 import {JobType, Status} from "@/lib/utils/enums";
+import {SQLiteColumn} from "drizzle-orm/sqlite-core";
 import {FilterDefinitions} from "@/lib/types/base.types";
 import {AchievementSeedData} from "@/lib/types/achievements.types";
 
@@ -92,8 +92,8 @@ export interface MediaSchemaConfig<
         maxGenres: number;
     }
     achievements: readonly AchievementSeedData[];
-    editableFields: Array<keyof TMediaTable["$inferSelect"]>;
     jobDefinitions: Partial<Record<JobType, JobDefinition>>;
+    editableFields: Array<keyof TMediaTable["$inferSelect"]>;
     tablesForDeletion: (Table & { mediaId: Column<any, any, any> })[];
 }
 

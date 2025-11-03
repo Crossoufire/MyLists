@@ -1,11 +1,24 @@
 import {MediaType} from "@/lib/utils/enums";
+import {ErrorLog} from "@/lib/types/base.types";
 import {SaveToDbProps} from "@/lib/types/tasks.types";
-import {MediaServiceRegistry} from "@/lib/server/domain/media/media.registries";
 import {AdminRepository} from "@/lib/server/domain/admin/admin.repository";
+import {MediaServiceRegistry} from "@/lib/server/domain/media/media.registries";
 
 
 export class AdminService {
     constructor(private repository: typeof AdminRepository) {
+    }
+
+    async saveErrorToDb(error: ErrorLog) {
+        return this.repository.saveErrorToDb(error);
+    }
+
+    async getErrorLogs() {
+        return this.repository.getErrorLogs();
+    }
+
+    async deleteErrorLog(errorId: number) {
+        return this.repository.deleteErrorLog(errorId);
     }
 
     async saveTaskToDb(data: SaveToDbProps) {

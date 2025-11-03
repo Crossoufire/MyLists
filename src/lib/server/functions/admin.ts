@@ -10,6 +10,7 @@ import {adminCookieOptions, createAdminToken, verifyAdminToken} from "@/lib/util
 import {ADMIN_COOKIE_NAME, adminAuthMiddleware, managerAuthMiddleware} from "@/lib/server/middlewares/authentication";
 import {
     adminDeleteArchivedTaskSchema,
+    adminDeleteErrorLogSchema,
     adminTriggerTaskSchema,
     adminUpdateAchievementSchema,
     postAdminUpdateTiersSchema,
@@ -162,4 +163,21 @@ export const postAdminDeleteArchivedTask = createServerFn({ method: "POST" })
     .handler(async ({ data: { taskId } }) => {
         const adminService = await getContainer().then((c) => c.services.admin);
         return adminService.deleteArchivedTaskForAdmin(taskId);
+    });
+
+
+export const getAdminErrorLogs = createServerFn({ method: "GET" })
+    .middleware([managerAuthMiddleware, adminAuthMiddleware])
+    .handler(async () => {
+        const adminService = await getContainer().then((c) => c.services.admin);
+        return adminService.getErrorLogs();
+    });
+
+
+export const postAdminDeleteErrorLog = createServerFn({ method: "POST" })
+    .middleware([managerAuthMiddleware, adminAuthMiddleware])
+    .inputValidator(adminDeleteErrorLogSchema)
+    .handler(async ({ data: { errorId } }) => {
+        const adminService = await getContainer().then((c) => c.services.admin);
+        return adminService.deleteErrorLog(errorId);
     });

@@ -4,6 +4,7 @@ import {
     getAdminAchievements,
     getAdminAllUsers,
     getAdminArchivedTasks,
+    getAdminErrorLogs,
     getAdminMediadleStats,
     getAdminMediaOverview,
     getAdminOverview,
@@ -21,6 +22,7 @@ export const adminQueryKeys = {
     adminCheckActiveJobs: () => ["admin", "jobs", "active"] as const,
     adminJobLogsKey: (jobId: string | null | undefined) => ["admin", "jobs", jobId, "Logs"] as const,
     adminJobArchivedKey: () => ["admin", "jobs", "archived"] as const,
+    adminErrorLogsKey: () => ["admin", "errors"] as const,
 };
 
 
@@ -64,4 +66,9 @@ export const adminTasksOptions = () => queryOptions({
 export const adminArchivedTasksOptions = () => queryOptions({
     queryKey: adminQueryKeys.adminJobArchivedKey(),
     queryFn: getAdminArchivedTasks,
+});
+
+export const adminErrorLogsOptions = () => queryOptions({
+    queryKey: adminQueryKeys.adminErrorLogsKey(),
+    queryFn: getAdminErrorLogs,
 });

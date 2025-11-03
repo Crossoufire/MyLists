@@ -21,8 +21,11 @@ export function getRouter() {
             },
         }),
         mutationCache: new MutationCache({
-            onError: (_error, _variables, _context, mutation) => {
-                if (mutation?.meta?.errorMessage) {
+            onError: (error, _variables, _context, mutation) => {
+                if (error.name === "FormattedError") {
+                    toast.error(error.message);
+                }
+                else if (mutation?.meta?.errorMessage) {
                     toast.error(mutation.meta.errorMessage.toString());
                 }
             },
