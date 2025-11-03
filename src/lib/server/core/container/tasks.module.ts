@@ -10,7 +10,7 @@ interface TasksModuleDependencies {
 }
 
 
-export function setupTasksModule(deps: TasksModuleDependencies): TasksService {
+export function setupTasksModule(deps: TasksModuleDependencies) {
     return new TasksService(
         deps.userModule.repositories.user,
         deps.mediaServiceRegistry,

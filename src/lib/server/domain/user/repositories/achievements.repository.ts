@@ -120,14 +120,14 @@ export class AchievementsRepository {
         });
     }
 
-    static async adminUpdateAchievement(achievementId: number, name: string, description: string) {
+    static async updateAchievementForAdmin(achievementId: number, name: string, description: string) {
         await getDbClient()
             .update(achievement)
             .set({ name, description })
             .where(eq(achievement.id, achievementId));
     }
 
-    static async adminUpdateTiers(tiers: AchievementTier[]) {
+    static async updateTiersForAdmin(tiers: AchievementTier[]) {
         return db.transaction(async (tx) => {
             for (const tier of tiers) {
                 await tx

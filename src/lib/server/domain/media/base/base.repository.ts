@@ -646,7 +646,7 @@ export abstract class BaseRepository<TConfig extends MediaSchemaConfig<MediaTabl
 
     // --- Admin Functions -------------------------------------------------
 
-    async getAdminUserMediaAddedAndUpdated() {
+    async getUserMediaAddedAndUpdatedForAdmin() {
         const { listTable } = this.config;
 
         const [addedThisMonth] = await getDbClient()

@@ -1,8 +1,8 @@
 import path from "path";
 import sharp from "sharp";
 import crypto from "crypto";
+import {mkdir} from "fs/promises";
 import {serverEnv} from "@/env/server";
-import {promises as fsPromises} from "node:fs";
 import {CoverType} from "@/lib/types/base.types";
 import {FormattedError} from "@/lib/utils/error-classes";
 import {createServerOnlyFn} from "@tanstack/react-start";
@@ -78,7 +78,7 @@ const processAndSaveImage = createServerOnlyFn(() => async ({ buffer, dirSaveNam
         ? path.join(base, dirSaveName)
         : path.join(process.cwd(), base, dirSaveName);
 
-    await fsPromises.mkdir(saveLocation, { recursive: true });
+    await mkdir(saveLocation, { recursive: true });
     const filePath = path.join(saveLocation, fileName);
 
     const sharpInstance = sharp(buffer);

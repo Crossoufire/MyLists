@@ -3,7 +3,7 @@ import {and, asc, count, desc, eq, like, sql} from "drizzle-orm";
 import {ApiProviderType, MediaType, PrivacyType} from "@/lib/utils/enums";
 import {AdminUpdatePayload, SearchTypeAdmin} from "@/lib/types/zod.schema.types";
 import {ProviderSearchResult, ProviderSearchResults} from "@/lib/types/provider.types";
-import {followers, taskHistory, user, userMediaSettings} from "@/lib/server/database/schema";
+import {followers, user, userMediaSettings} from "@/lib/server/database/schema";
 
 
 export class UserRepository {
@@ -20,7 +20,7 @@ export class UserRepository {
 
     // --- Admin Stats ----------------------------------------------------
 
-    static async getAdminUserStats() {
+    static async getUserStatsForAdmin() {
         const now = new Date();
         const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
         const previousMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString();
@@ -45,7 +45,41 @@ export class UserRepository {
         };
     }
 
-    static async getAdminCumulativeUsersPerMonth(months?: number) {
+    static async getUsersPerPrivacyValueForAdmin() {
+        const implementedPrivacyValues = Object.values(PrivacyType).filter((p) => p !== PrivacyType.PRIVATE);
+
+        const result = await getDbClient()
+            .select({
+                count: count(),
+                privacy: user.privacy,
+            })
+            .from(user)
+            .groupBy(user.privacy);
+
+        return implementedPrivacyValues.map((privacy) => ({
+            privacy,
+            count: result.find((r) => r.privacy === privacy)?.count ?? 0,
+        }));
+    }
+
+    static async getActiveUsersForAdmin(limit: number) {
+        return getDbClient()
+            .select({
+                id: user.id,
+                name: user.name,
+                email: user.email,
+                image: user.image,
+                privacy: user.privacy,
+                updatedAt: user.updatedAt,
+                createdAt: user.createdAt,
+            })
+            .from(user)
+            .orderBy(desc(user.updatedAt))
+            .limit(limit)
+            .execute();
+    }
+
+    static async getCumUsersPerMonthForAdmin(months?: number) {
         const results = await getDbClient()
             .all<{ month: string, count: number }>(sql`
                 WITH monthly_buckets AS (
@@ -80,54 +114,6 @@ export class UserRepository {
             count: row.count,
             month: new Date(row.month).toLocaleString("en-US", { month: "short", year: "numeric" }),
         }));
-    }
-
-    static async getAdminRecentUsers(limit: number) {
-        return getDbClient()
-            .select({
-                id: user.id,
-                name: user.name,
-                email: user.email,
-                image: user.image,
-                privacy: user.privacy,
-                updatedAt: user.updatedAt,
-                createdAt: user.createdAt,
-            })
-            .from(user)
-            .orderBy(desc(user.updatedAt))
-            .limit(limit)
-            .execute();
-    }
-
-    static async getAdminUsersPerPrivacyValue() {
-        const implementedPrivacyValues = Object.values(PrivacyType).filter((p) => p !== PrivacyType.PRIVATE);
-
-        const result = await getDbClient()
-            .select({
-                count: count(),
-                privacy: user.privacy,
-            })
-            .from(user)
-            .groupBy(user.privacy);
-
-        return implementedPrivacyValues.map((privacy) => ({
-            privacy,
-            count: result.find((r) => r.privacy === privacy)?.count ?? 0,
-        }));
-    }
-
-    static async getAdminArchivedTasks() {
-        return getDbClient()
-            .select()
-            .from(taskHistory)
-            .orderBy(desc(taskHistory.startedAt));
-    }
-
-    static async deleteAdminArchivedTask(taskId: string) {
-        await getDbClient()
-            .delete(taskHistory)
-            .where(eq(taskHistory.taskId, taskId))
-            .execute();
     }
 
     // --------------------------------------------------------------------

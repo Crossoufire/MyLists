@@ -62,17 +62,17 @@ export const getAdminOverview = createServerFn({ method: "GET" })
     .middleware([managerAuthMiddleware, adminAuthMiddleware])
     .handler(async () => {
         const userService = await getContainer().then((c) => c.services.user);
-        return userService.getAdminOverview();
+        return userService.getUserOverviewForAdmin();
     });
 
 
 export const getAdminMediaOverview = createServerFn({ method: "GET" })
     .middleware([managerAuthMiddleware, adminAuthMiddleware])
     .handler(async () => {
-        const userService = await getContainer().then((c) => c.services.user);
+        const adminService = await getContainer().then((c) => c.services.admin);
         const mediaServiceRegistry = await getContainer().then((c) => c.registries.mediaService);
 
-        return userService.getAdminMediaOverview(mediaServiceRegistry);
+        return adminService.getMediaOverviewForAdmin(mediaServiceRegistry);
     });
 
 
@@ -81,7 +81,7 @@ export const getAdminAllUsers = createServerFn({ method: "GET" })
     .inputValidator(searchTypeAdminSchema)
     .handler(async ({ data }) => {
         const userService = await getContainer().then((c) => c.services.user);
-        return userService.getAdminPaginatedUsers(data);
+        return userService.getPaginatedUsersForAdmin(data);
     });
 
 
@@ -98,7 +98,7 @@ export const getAdminMediadleStats = createServerFn({ method: "GET" })
     .inputValidator(searchTypeSchema)
     .handler(async ({ data }) => {
         const mediadleService = await getContainer().then((c) => c.services.mediadle);
-        return mediadleService.getAdminAllUsersStats(data);
+        return mediadleService.getAllUsersStatsForAdmin(data);
     });
 
 
@@ -107,7 +107,7 @@ export const postAdminUpdateUser = createServerFn({ method: "POST" })
     .inputValidator(postAdminUpdateUserSchema)
     .handler(async ({ data: { userId, payload } }) => {
         const userService = await getContainer().then((c) => c.services.user);
-        return userService.adminUpdateUser(userId, payload);
+        return userService.updateUserForAdmin(userId, payload);
     });
 
 
@@ -116,7 +116,7 @@ export const postAdminUpdateAchievement = createServerFn({ method: "POST" })
     .inputValidator(adminUpdateAchievementSchema)
     .handler(async ({ data: { achievementId, name, description } }) => {
         const achievementService = await getContainer().then((c) => c.services.achievements);
-        return achievementService.adminUpdateAchievement(achievementId, name, description);
+        return achievementService.updateAchievementForAdmin(achievementId, name, description);
     });
 
 
@@ -125,7 +125,7 @@ export const postAdminUpdateTiers = createServerFn({ method: "POST" })
     .inputValidator(postAdminUpdateTiersSchema)
     .handler(async ({ data: { tiers } }) => {
         const achievementService = await getContainer().then((c) => c.services.achievements);
-        return achievementService.adminUpdateTiers(tiers);
+        return achievementService.updateTiersForAdmin(tiers);
     });
 
 
@@ -151,8 +151,8 @@ export const postAdminTriggerTask = createServerFn({ method: "POST" })
 export const getAdminArchivedTasks = createServerFn({ method: "GET" })
     .middleware([managerAuthMiddleware, adminAuthMiddleware])
     .handler(async () => {
-        const userService = await getContainer().then((c) => c.services.user);
-        return userService.getAdminArchivedTasks();
+        const adminService = await getContainer().then((c) => c.services.admin);
+        return adminService.getArchivedTasksForAdmin();
     });
 
 
@@ -160,6 +160,6 @@ export const postAdminDeleteArchivedTask = createServerFn({ method: "POST" })
     .middleware([managerAuthMiddleware, adminAuthMiddleware])
     .inputValidator(adminDeleteArchivedTaskSchema)
     .handler(async ({ data: { taskId } }) => {
-        const userService = await getContainer().then((c) => c.services.user);
-        return userService.deleteAdminArchivedTask(taskId);
+        const adminService = await getContainer().then((c) => c.services.admin);
+        return adminService.deleteArchivedTaskForAdmin(taskId);
     });

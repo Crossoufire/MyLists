@@ -7,7 +7,7 @@ import {dailyMediadle, mediadleStats, movies, user, userMediadleProgress} from "
 
 
 export class MediadleRepository {
-    static async getAdminAllUsersStats(data: SearchType) {
+    static async getAllUsersStatsForAdmin(data: SearchType) {
         const page = data.page ?? 1;
         const search = data.search ?? "";
         const perPage = data.perPage ?? 25;

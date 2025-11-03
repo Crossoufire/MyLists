@@ -47,5 +47,18 @@ export type TaskDefinition = {
 }
 
 
+export type SaveToDbProps = {
+    taskId: string,
+    logs: LogTask[],
+    userId?: number,
+    startedAt: string,
+    finishedAt: string,
+    taskName: TaskName,
+    errorMessage: string | null,
+    status: "completed" | "failed";
+    triggeredBy: "user" | "cron/cli" | "dashboard",
+}
+
+
 export type TaskName = (typeof taskNames)[number];
 export type TaskHandler = (ctx: TaskContext) => Promise<void>;

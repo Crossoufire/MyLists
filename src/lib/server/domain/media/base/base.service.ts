@@ -217,8 +217,8 @@ export abstract class BaseService<
 
     // --- Admin Methods ---------------------------------------------------
 
-    async getAdminUserMediaAddedAndUpdated() {
-        return this.repository.getAdminUserMediaAddedAndUpdated();
+    async getUserMediaAddedAndUpdatedForAdmin() {
+        return this.repository.getUserMediaAddedAndUpdatedForAdmin();
     }
 
     // --- Abstract Methods ------------------------------------------------

@@ -3,7 +3,6 @@ import {user} from "@/lib/server/database/schema";
 import {FormattedError} from "@/lib/utils/error-classes";
 import {AdminUpdatePayload, SearchTypeAdmin} from "@/lib/types/zod.schema.types";
 import {UserRepository} from "@/lib/server/domain/user/repositories/user.repository";
-import {MediaServiceRegistry} from "@/lib/server/domain/media/registries/registries";
 
 
 export class UserService {
@@ -12,11 +11,25 @@ export class UserService {
 
     // --- Admin functions --------------------------------------------
 
-    async getAdminPaginatedUsers(data: SearchTypeAdmin) {
+    async getUserOverviewForAdmin() {
+        const userStats = await this.userRepository.getUserStatsForAdmin();
+        const recentUsers = await this.userRepository.getActiveUsersForAdmin(20);
+        const usersPerPrivacy = await this.userRepository.getUsersPerPrivacyValueForAdmin();
+        const cumulativeUsersPerMonth = await this.userRepository.getCumUsersPerMonthForAdmin();
+
+        return {
+            ...userStats,
+            recentUsers,
+            usersPerPrivacy,
+            cumulativeUsersPerMonth,
+        };
+    }
+
+    async getPaginatedUsersForAdmin(data: SearchTypeAdmin) {
         return this.userRepository.getAdminPaginatedUsers(data);
     }
 
-    async adminUpdateUser(userId: number | undefined, payload: AdminUpdatePayload) {
+    async updateUserForAdmin(userId: number | undefined, payload: AdminUpdatePayload) {
         if (!userId && payload.showUpdateModal) {
             return this.userRepository.adminUpdateFeaturesFlag(payload.showUpdateModal);
         }
@@ -36,49 +49,6 @@ export class UserService {
         }
 
         await this.userRepository.adminUpdateUser(userId, payload);
-    }
-
-    async getAdminOverview() {
-        const userStats = await this.userRepository.getAdminUserStats();
-        const recentUsers = await this.userRepository.getAdminRecentUsers(20);
-        const usersPerPrivacy = await this.userRepository.getAdminUsersPerPrivacyValue();
-        const cumulativeUsersPerMonth = await this.userRepository.getAdminCumulativeUsersPerMonth();
-
-        return {
-            ...userStats,
-            recentUsers,
-            usersPerPrivacy,
-            cumulativeUsersPerMonth,
-        };
-    }
-
-    async getAdminMediaOverview(mediaServiceRegistry: typeof MediaServiceRegistry) {
-        const mediaStats = await Promise.all(Object.values(MediaType).map(async (mediaType) => {
-            const mediaService = mediaServiceRegistry.getService(mediaType);
-            const { added, updated } = await mediaService.getAdminUserMediaAddedAndUpdated();
-            return { mediaType, added, updated };
-        }));
-
-        const addedThisMonth = mediaStats.reduce((sum, { added }) => sum + added.thisMonth, 0);
-        const addedLastMonth = mediaStats.reduce((sum, { added }) => sum + added.lastMonth, 0);
-        const updatedThisMonth = mediaStats.reduce((sum, { updated }) => sum + updated.thisMonth, 0);
-
-        return {
-            addedThisMonth,
-            addedLastMonth,
-            updatedThisMonth,
-            addedComparedToLastMonth: addedThisMonth - addedLastMonth,
-            addedPerMediaType: mediaStats.map(({ mediaType, added }) => ({ mediaType, ...added })),
-            updatedPerMediaType: mediaStats.map(({ mediaType, updated }) => ({ mediaType, ...updated })),
-        };
-    }
-
-    async getAdminArchivedTasks() {
-        return this.userRepository.getAdminArchivedTasks();
-    }
-
-    async deleteAdminArchivedTask(taskId: string) {
-        return this.userRepository.deleteAdminArchivedTask(taskId);
     }
 
     // ----------------------------------------------------------------

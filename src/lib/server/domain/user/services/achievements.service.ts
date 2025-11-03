@@ -15,12 +15,12 @@ export class AchievementsService {
         return this.repository.seedAchievements(achievements);
     }
 
-    async adminUpdateAchievement(achievementId: number, name: string, description: string) {
-        await this.repository.adminUpdateAchievement(achievementId, name, description);
+    async updateAchievementForAdmin(achievementId: number, name: string, description: string) {
+        await this.repository.updateAchievementForAdmin(achievementId, name, description);
     }
 
-    async adminUpdateTiers(tiers: AchievementTier[]) {
-        return this.repository.adminUpdateTiers(tiers);
+    async updateTiersForAdmin(tiers: AchievementTier[]) {
+        return this.repository.updateTiersForAdmin(tiers);
     }
 
     async getDifficultySummary(userId: number) {

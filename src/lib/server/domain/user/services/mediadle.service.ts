@@ -9,8 +9,8 @@ export class MediadleService {
     constructor(private repository: typeof MediadleRepository) {
     }
 
-    async getAdminAllUsersStats(data: SearchType) {
-        return this.repository.getAdminAllUsersStats(data);
+    async getAllUsersStatsForAdmin(data: SearchType) {
+        return this.repository.getAllUsersStatsForAdmin(data);
     }
 
     async getUserMediadleStats(userId: number) {
