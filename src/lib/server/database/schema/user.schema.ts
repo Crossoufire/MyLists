@@ -1,7 +1,7 @@
 import {sql} from "drizzle-orm";
-import {LogTask} from "@/lib/types/tasks.types";
 import {relations} from "drizzle-orm/relations";
-import {customJson, dateAsString} from "@/lib/server/database/custom-types";
+import {customJson} from "@/lib/server/database/custom-types";
+import {taskHistory} from "@/lib/server/database/schema/admin.schema";
 import {index, integer, real, sqliteTable, text} from "drizzle-orm/sqlite-core";
 import {MediaType, NotificationType, Status, UpdateType} from "@/lib/utils/enums";
 import {
@@ -78,32 +78,6 @@ export const userMediaSettings = sqliteTable("user_media_settings", {
     index("ix_user_media_settings_user_id").on(table.userId),
     index("ix_user_media_settings_media_type").on(table.mediaType),
 ]);
-
-
-export const taskHistory = sqliteTable("task_history", {
-    id: integer("id").primaryKey({ autoIncrement: true }).notNull(),
-    taskId: text("task_id").notNull(),
-    userId: integer("user_id").references(() => user.id, { onDelete: "cascade" }),
-    status: text("status").notNull(),
-    errorMessage: text("error_message"),
-    taskName: text("task_name").notNull(),
-    triggeredBy: text("triggered_by").notNull(),
-    logs: customJson<LogTask[]>("logs").notNull(),
-    startedAt: dateAsString("started_at").notNull(),
-    finishedAt: dateAsString("finished_at").notNull(),
-}, (table) => [
-    index("ix_task_history_task_id").on(table.taskId),
-    index("ix_task_history_status").on(table.status),
-    index("ix_task_history_user_id").on(table.userId),
-]);
-
-
-export const taskHistoryRelations = relations(taskHistory, ({ one }) => ({
-    user: one(user, {
-        fields: [taskHistory.userId],
-        references: [user.id]
-    }),
-}));
 
 
 export const userRelations = relations(user, ({ many }) => ({

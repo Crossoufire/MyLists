@@ -8,3 +8,4 @@ export * from "./media/books.schema";
 export * from "./media/manga.schema";
 export * from "./mediadle.schema";
 export * from "./achievements.schema";
+export * from "./admin.schema";
