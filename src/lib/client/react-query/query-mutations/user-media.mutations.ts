@@ -2,13 +2,18 @@ import {SearchType} from "@/lib/types/zod.schema.types";
 import {LabelAction, MediaType} from "@/lib/utils/enums";
 import {Label, UpdatePayload} from "@/lib/types/base.types";
 import {useMutation, useQueryClient} from "@tanstack/react-query";
-import {MediaDetailsOptionsType, MediaListOptionsType, UserMedia} from "@/lib/types/query.options.types";
-import {allUpdatesOptions, historyOptions, profileOptions, queryKeys, userMediaLabelsOptions} from "@/lib/client/react-query/query-options/query-options";
 import {postAddMediaToList, postDeleteUserUpdates, postEditUserLabel, postRemoveMediaFromList, postUpdateUserMedia} from "@/lib/server/functions/user-media";
+import {
+    allUpdatesOptions,
+    historyOptions,
+    mediaDetailsOptions,
+    mediaListOptions,
+    profileOptions,
+    userMediaLabelsOptions
+} from "@/lib/client/react-query/query-options/query-options";
 
 
-const _detailsUserListKeys = [queryKeys.detailsKey, queryKeys.userListKey] as const
-export type DetailsUserListKeys = ReturnType<(typeof _detailsUserListKeys)[number]>;
+export type ModifyUserMedia = ReturnType<typeof mediaDetailsOptions> | ReturnType<typeof mediaListOptions>;
 
 
 export const useDeleteProfileUpdateMutation = (username: string) => {
@@ -62,7 +67,7 @@ export const useDeleteHistoryUpdatesMutation = (mediaType: MediaType, mediaId: n
 };
 
 
-export const useAddMediaToListMutation = (queryKey: DetailsUserListKeys) => {
+export const useAddMediaToListMutation = (queryOption: ModifyUserMedia) => {
     const queryClient = useQueryClient();
 
     return useMutation({
@@ -72,23 +77,22 @@ export const useAddMediaToListMutation = (queryKey: DetailsUserListKeys) => {
             errorMessage: "Failed to add this media to your list",
         },
         onSuccess: (data, variables) => {
-            if (queryKey[0] === "details") {
-                queryClient.setQueryData<MediaDetailsOptionsType>(queryKey, (oldData) => {
+            if (queryOption.queryKey[0] === "details") {
+                queryClient.setQueryData(queryOption.queryKey, (oldData) => {
                     if (!oldData || !data) return;
-                    return { ...oldData, userMedia: data as UserMedia };
+                    return Object.assign({}, oldData, { userMedia: data });
                 });
             }
-            else if (queryKey[0] === "userList") {
-                queryClient.setQueryData<MediaListOptionsType>(queryKey, (oldData) => {
+            else if (queryOption.queryKey[0] === "userList") {
+                queryClient.setQueryData(queryOption.queryKey, (oldData) => {
                     if (!oldData) return;
                     return {
                         ...oldData,
-                        results: {
-                            ...oldData.results,
-                            items: oldData.results.items.map((media: any) => (
-                                media.mediaId === variables.data.mediaId ? { ...media, common: true } : media),
+                        results: Object.assign({}, oldData.results, {
+                            items: oldData.results.items.map((m) =>
+                                m.mediaId === variables.data.mediaId ? Object.assign({}, m, { common: true }) : m
                             )
-                        },
+                        }),
                     };
                 });
             }
@@ -97,28 +101,27 @@ export const useAddMediaToListMutation = (queryKey: DetailsUserListKeys) => {
 };
 
 
-export const useRemoveMediaFromListMutation = (queryKey: DetailsUserListKeys) => {
+export const useRemoveMediaFromListMutation = (queryOption: ModifyUserMedia) => {
     const queryClient = useQueryClient();
 
     return useMutation({
         mutationFn: postRemoveMediaFromList,
         meta: { errorMessage: "Failed to remove this media from your list" },
         onSuccess: (_data, variables) => {
-            if (queryKey[0] === "details") {
-                queryClient.setQueryData<MediaDetailsOptionsType>(queryKey, (oldData) => {
+            if (queryOption.queryKey[0] === "details") {
+                queryClient.setQueryData(queryOption.queryKey, (oldData) => {
                     if (!oldData) return;
                     return { ...oldData, userMedia: null };
                 });
             }
-            else if (queryKey[0] === "userList") {
-                queryClient.setQueryData<MediaListOptionsType>(queryKey, (oldData) => {
+            else if (queryOption.queryKey[0] === "userList") {
+                queryClient.setQueryData(queryOption.queryKey, (oldData) => {
                     if (!oldData) return;
                     return {
                         ...oldData,
-                        results: {
-                            ...oldData.results,
-                            items: [...oldData.results.items.filter((media) => media.mediaId !== variables.data.mediaId)] as any,
-                        },
+                        results: Object.assign({}, oldData.results, {
+                            items: [...oldData.results.items.filter((m) => m.mediaId !== variables.data.mediaId)]
+                        }),
                     };
                 })
             }
@@ -127,27 +130,27 @@ export const useRemoveMediaFromListMutation = (queryKey: DetailsUserListKeys) =>
 };
 
 
-export const useUpdateUserMediaMutation = (mediaType: MediaType, mediaId: number, queryKey: DetailsUserListKeys) => {
+export const useUpdateUserMediaMutation = (mediaType: MediaType, mediaId: number, queryOption: ModifyUserMedia) => {
     const queryClient = useQueryClient();
 
     return useMutation({
         mutationFn: ({ payload }: UpdatePayload) => postUpdateUserMedia({ data: { payload, mediaType, mediaId } }),
         meta: { errorMessage: "Failed to update this field value. Please try again later." },
         onSuccess: (data) => {
-            if (queryKey[0] === "details") {
-                queryClient.setQueryData<MediaDetailsOptionsType>(queryKey, (oldData) => {
+            if (queryOption.queryKey[0] === "details") {
+                queryClient.setQueryData(queryOption.queryKey, (oldData) => {
                     if (!oldData) return;
-                    return { ...oldData, userMedia: { ...oldData.userMedia, ...data as UserMedia } };
+                    return { ...oldData, userMedia: { ...oldData.userMedia, ...data } };
                 })
             }
-            else if (queryKey[0] === "userList") {
-                queryClient.setQueryData<MediaListOptionsType>(queryKey, (oldData) => {
+            else if (queryOption.queryKey[0] === "userList") {
+                queryClient.setQueryData(queryOption.queryKey, (oldData) => {
                     if (!oldData) return;
                     return {
                         ...oldData,
                         results: {
                             ...oldData.results,
-                            items: oldData.results.items.map((userMedia: any) => {
+                            items: oldData.results.items.map((userMedia) => {
                                 return userMedia.mediaId === mediaId ? { ...userMedia, ...data } : userMedia
                             }),
                         }

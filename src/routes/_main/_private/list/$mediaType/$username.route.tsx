@@ -1,18 +1,18 @@
 import {useState} from "react";
-import {useAuth} from "@/lib/client/hooks/use-auth";
-import {capitalize} from "@/lib/utils/functions";
 import {MediaType} from "@/lib/utils/enums";
+import {capitalize} from "@/lib/utils/functions";
+import {useAuth} from "@/lib/client/hooks/use-auth";
 import {createFileRoute} from "@tanstack/react-router";
 import {useSuspenseQuery} from "@tanstack/react-query";
-import {Header} from "@/lib/client/components/media/base/Header";
 import {MediaListArgs} from "@/lib/types/zod.schema.types";
+import {Header} from "@/lib/client/components/media/base/Header";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
 import {Pagination} from "@/lib/client/components/general/Pagination";
 import {MediaGrid} from "@/lib/client/components/media/base/MediaGrid";
 import {MediaTable} from "@/lib/client/components/media/base/MediaTable";
 import {AppliedFilters} from "@/lib/client/components/media/base/AppliedFilters";
 import {FiltersSideSheet} from "@/lib/client/components/media/base/FiltersSideSheet";
-import {mediaListOptions, queryKeys} from "@/lib/client/react-query/query-options/query-options";
+import {mediaListOptions} from "@/lib/client/react-query/query-options/query-options";
 
 
 export const Route = createFileRoute("/_main/_private/list/$mediaType/$username")({
@@ -99,15 +99,15 @@ function MediaList() {
                     isCurrent={isCurrent}
                     mediaType={mediaType}
                     mediaItems={apiData.results.items}
-                    queryKey={queryKeys.userListKey(mediaType, username, search)}
+                    queryOption={mediaListOptions(mediaType, username, search)}
                 />
                 :
                 <MediaTable
                     mediaType={mediaType}
                     isCurrent={isCurrent}
                     results={apiData.results}
+                    queryOption={mediaListOptions(mediaType, username, search)}
                     onChangePage={(filters) => handleFilterChange(filters)}
-                    queryKey={queryKeys.userListKey(mediaType, username, search)}
                 />
             }
             {isGrid &&

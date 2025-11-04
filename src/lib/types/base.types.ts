@@ -136,11 +136,14 @@ export type UserFollowsMediaData<TList> = {
 
 export type MediaListData<TList> = {
     items: (TList & {
+        pages?: number;
         common: boolean;
         mediaName: string;
+        chapters?: number;
         imageCover: string;
         labels: IdNamePair[];
         ratingSystem: RatingSystemType;
+        epsPerSeason?: EpsPerSeasonType[];
     })[];
     pagination: {
         page: number;
@@ -235,7 +238,7 @@ export type ErrorLog = {
 
 export type StatsCTE = any;
 
-type NameObj = { name: string };
+export type NameObj = { name: string };
 
 type IdNamePair = { id: number, name: string };
 

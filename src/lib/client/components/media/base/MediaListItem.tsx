@@ -1,8 +1,8 @@
 import {formatRating} from "@/lib/utils/functions";
+import {MediaType, Status} from "@/lib/utils/enums";
 import {ExtractListByType} from "@/lib/types/query.options.types";
 import {mediaConfig} from "@/lib/client/components/media/media-config";
-import {MediaType, Status} from "@/lib/utils/enums";
-import {queryKeys} from "@/lib/client/react-query/query-options/query-options";
+import {mediaListOptions} from "@/lib/client/react-query/query-options/query-options";
 
 
 interface MediaListItemProps<T extends MediaType> {
@@ -11,12 +11,12 @@ interface MediaListItemProps<T extends MediaType> {
     isConnected: boolean;
     allStatuses: Status[];
     userMedia: ExtractListByType<T>;
-    queryKey: ReturnType<typeof queryKeys.userListKey>;
+    queryOption: ReturnType<typeof mediaListOptions>;
 }
 
 
 export const MediaListItem = <T extends MediaType>(props: MediaListItemProps<T>) => {
-    const { mediaType, queryKey, isCurrent, isConnected, allStatuses, userMedia } = props;
+    const { mediaType, queryOption, isCurrent, isConnected, allStatuses, userMedia } = props;
 
     const MediaItemComponent = mediaConfig[mediaType].mediaListCard;
     const rating = formatRating(userMedia.ratingSystem, userMedia.rating);
@@ -24,10 +24,10 @@ export const MediaListItem = <T extends MediaType>(props: MediaListItemProps<T>)
     return (
         <MediaItemComponent
             rating={rating}
-            queryKey={queryKey}
             isCurrent={isCurrent}
             mediaType={mediaType}
             userMedia={userMedia}
+            queryOption={queryOption}
             isConnected={isConnected}
             allStatuses={allStatuses}
         />

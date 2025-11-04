@@ -5,8 +5,8 @@ import {useUpdateUserMediaMutation} from "@/lib/client/react-query/query-mutatio
 
 
 interface UpdateInputProps {
-    total: number | null;
     initValue: number | null;
+    total: number | null | undefined;
     payloadName: "actualPage" | "currentChapter";
     updateInput: ReturnType<typeof useUpdateUserMediaMutation>;
     updateType: typeof UpdateType.PAGE | typeof UpdateType.CHAPTER;

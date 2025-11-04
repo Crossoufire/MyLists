@@ -11,9 +11,9 @@ import {SimilarMedia} from "@/lib/client/components/media/base/SimilarMedia";
 import {MediaFollowCard} from "@/lib/client/components/media/base/MediaFollowCard";
 import {UserMediaDetails} from "@/lib/client/components/media/base/UserMediaDetails";
 import {MediaDataDetails} from "@/lib/client/components/media/base/MediaDataDetails";
+import {mediaDetailsOptions} from "@/lib/client/react-query/query-options/query-options";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/lib/client/components/ui/tabs";
 import {RefreshAndEditMedia} from "@/lib/client/components/media/base/RefreshAndEditMedia";
-import {mediaDetailsOptions, queryKeys} from "@/lib/client/react-query/query-options/query-options";
 import {useAddMediaToListMutation} from "@/lib/client/react-query/query-mutations/user-media.mutations";
 
 
@@ -40,7 +40,7 @@ function MediaDetailsPage() {
     const { external } = Route.useSearch();
     const { mediaType, mediaId } = Route.useParams();
     const apiData = useSuspenseQuery(mediaDetailsOptions(mediaType, mediaId, external)).data;
-    const addMediaToListMutation = useAddMediaToListMutation(queryKeys.detailsKey(mediaType, mediaId, external));
+    const addMediaToListMutation = useAddMediaToListMutation(mediaDetailsOptions(mediaType, mediaId, external));
 
     const handleAddMediaToUser = () => {
         addMediaToListMutation.mutate({ data: { mediaType, mediaId: apiData.media.id } });
@@ -77,7 +77,7 @@ function MediaDetailsPage() {
                                 <UserMediaDetails
                                     mediaType={mediaType}
                                     userMedia={apiData.userMedia}
-                                    queryKey={queryKeys.detailsKey(mediaType, mediaId, external)}
+                                    queryOption={mediaDetailsOptions(mediaType, mediaId, external)}
                                 />
                                 :
                                 <Button className="w-[300px]" onClick={handleAddMediaToUser}>

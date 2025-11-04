@@ -1,6 +1,6 @@
 import {MediaType} from "@/lib/utils/enums";
 import {useMutation, useQueryClient} from "@tanstack/react-query";
-import {queryKeys} from "@/lib/client/react-query/query-options/query-options";
+import {mediaDetailsOptions} from "@/lib/client/react-query/query-options/query-options";
 import {postEditMediaDetails, refreshMediaDetails} from "@/lib/server/functions/media-details";
 
 
@@ -10,7 +10,7 @@ export const useRefreshMediaMutation = (mediaType: MediaType, mediaOrApiId: numb
     return useMutation({
         mutationFn: refreshMediaDetails,
         onSuccess: async () => {
-            return queryClient.invalidateQueries({ queryKey: queryKeys.detailsKey(mediaType, mediaOrApiId.toString(), external) });
+            return queryClient.invalidateQueries({ queryKey: mediaDetailsOptions(mediaType, mediaOrApiId.toString(), external).queryKey });
         },
     });
 };

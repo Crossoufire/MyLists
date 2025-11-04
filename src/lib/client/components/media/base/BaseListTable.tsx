@@ -1,11 +1,11 @@
+import {MediaType} from "@/lib/utils/enums";
 import {ColumnDef} from "@tanstack/react-table";
 import {statusUtils} from "@/lib/utils/functions";
-import {MediaType} from "@/lib/utils/enums";
 import {CircleCheck, Settings2} from "lucide-react";
-import {BlockLink} from "@/lib/client/components/general/BlockLink";
 import {UserMediaItem} from "@/lib/types/query.options.types";
+import {BlockLink} from "@/lib/client/components/general/BlockLink";
 import {QuickAddMedia} from "@/lib/client/components/media/base/QuickAddMedia";
-import {queryKeys} from "@/lib/client/react-query/query-options/query-options";
+import {mediaListOptions} from "@/lib/client/react-query/query-options/query-options";
 
 
 export type ColumnConfigProps = {
@@ -13,11 +13,11 @@ export type ColumnConfigProps = {
     isConnected: boolean;
     mediaType: MediaType;
     onEdit: (mediaId: number) => void;
-    queryKey: ReturnType<typeof queryKeys.userListKey>;
+    queryOption: ReturnType<typeof mediaListOptions>;
 }
 
 
-export const getBaseColumns = <T extends UserMediaItem>({ isCurrent, isConnected, mediaType, queryKey, onEdit }: ColumnConfigProps): ColumnDef<T>[] => [
+export const getBaseColumns = <T extends UserMediaItem>({ isCurrent, isConnected, mediaType, queryOption, onEdit }: ColumnConfigProps): ColumnDef<T>[] => [
     {
         id: "name",
         header: "Name",
@@ -49,8 +49,8 @@ export const getBaseColumns = <T extends UserMediaItem>({ isCurrent, isConnected
                 return (
                     <div className="flex items-center justify-center">
                         <QuickAddMedia
-                            queryKey={queryKey}
                             mediaType={mediaType}
+                            queryOption={queryOption}
                             mediaId={original.mediaId}
                             allStatuses={statusUtils.byMediaType(mediaType)}
                         />

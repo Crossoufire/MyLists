@@ -1,7 +1,7 @@
 import {MediaType} from "@/lib/utils/enums";
 import {UserMediaItem} from "@/lib/types/query.options.types";
-import {queryKeys} from "@/lib/client/react-query/query-options/query-options";
 import {UserMediaDetails} from "@/lib/client/components/media/base/UserMediaDetails";
+import {mediaListOptions} from "@/lib/client/react-query/query-options/query-options";
 import {Credenza, CredenzaContent, CredenzaDescription, CredenzaHeader, CredenzaTitle} from "@/lib/client/components/ui/credenza";
 
 
@@ -10,11 +10,11 @@ interface UserMediaEditDialogProps {
     mediaType: MediaType;
     userMedia: UserMediaItem;
     onOpenChange: (open: boolean) => void;
-    queryKey: ReturnType<typeof queryKeys.userListKey>;
+    queryOption: ReturnType<typeof mediaListOptions>;
 }
 
 
-export const UserMediaEditDialog = ({ dialogOpen, userMedia, mediaType, queryKey, onOpenChange }: UserMediaEditDialogProps) => {
+export const UserMediaEditDialog = ({ dialogOpen, userMedia, mediaType, queryOption, onOpenChange }: UserMediaEditDialogProps) => {
     if (!userMedia) return null;
 
     return (
@@ -26,9 +26,9 @@ export const UserMediaEditDialog = ({ dialogOpen, userMedia, mediaType, queryKey
                 </CredenzaHeader>
                 <div className="flex items-center justify-center max-sm:mb-8">
                     <UserMediaDetails
-                        queryKey={queryKey}
                         userMedia={userMedia}
                         mediaType={mediaType}
+                        queryOption={queryOption}
                     />
                 </div>
             </CredenzaContent>

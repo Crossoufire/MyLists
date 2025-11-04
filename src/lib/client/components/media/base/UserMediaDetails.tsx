@@ -9,23 +9,23 @@ import {UpdateComment} from "@/lib/client/components/media/base/UpdateComment";
 import {HistoryDetails} from "@/lib/client/components/media/base/HistoryDetails";
 import {UpdateFavorite} from "@/lib/client/components/media/base/UpdateFavorite";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/lib/client/components/ui/tabs";
-import {historyOptions, queryKeys} from "@/lib/client/react-query/query-options/query-options";
 import {UserMediaSpecificDetails} from "@/lib/client/components/media/base/UserMediaSpecificDetails";
-import {useRemoveMediaFromListMutation, useUpdateUserMediaMutation} from "@/lib/client/react-query/query-mutations/user-media.mutations";
+import {historyOptions} from "@/lib/client/react-query/query-options/query-options";
+import {ModifyUserMedia, useRemoveMediaFromListMutation, useUpdateUserMediaMutation} from "@/lib/client/react-query/query-mutations/user-media.mutations";
 
 
 interface UserMediaDetailsProps {
     mediaType: MediaType;
+    queryOption: ModifyUserMedia;
     userMedia: UserMedia | UserMediaItem;
-    queryKey: ReturnType<typeof queryKeys.userListKey> | ReturnType<typeof queryKeys.detailsKey>;
 }
 
 
-export const UserMediaDetails = ({ userMedia, mediaType, queryKey }: UserMediaDetailsProps) => {
+export const UserMediaDetails = ({ userMedia, mediaType, queryOption }: UserMediaDetailsProps) => {
     const queryClient = useQueryClient();
     const history = useQuery(historyOptions(mediaType, userMedia.mediaId)).data;
-    const removeMediaFromListMutation = useRemoveMediaFromListMutation(queryKey);
-    const updateUserMediaMutation = useUpdateUserMediaMutation(mediaType, userMedia.mediaId, queryKey);
+    const removeMediaFromListMutation = useRemoveMediaFromListMutation(queryOption);
+    const updateUserMediaMutation = useUpdateUserMediaMutation(mediaType, userMedia.mediaId, queryOption);
 
     const handleRemoveMediaFromList = () => {
         if (!window.confirm(`Do you want to remove this ${mediaType} from your list?`)) return;
@@ -57,8 +57,8 @@ export const UserMediaDetails = ({ userMedia, mediaType, queryKey }: UserMediaDe
                 <TabsContent value="yourInfo">
                     <div className="p-5 pt-3 bg-card rounded-md">
                         <UserMediaSpecificDetails
-                            queryKey={queryKey}
                             mediaType={mediaType}
+                            queryOption={queryOption}
                             userMedia={userMedia as any}
                         />
                         <UpdateComment
@@ -66,8 +66,8 @@ export const UserMediaDetails = ({ userMedia, mediaType, queryKey }: UserMediaDe
                             updateComment={updateUserMediaMutation}
                         />
                         <LabelLists
-                            queryKey={queryKey}
                             mediaType={mediaType}
+                            queryOption={queryOption}
                             mediaId={userMedia.mediaId}
                             mediaLabels={userMedia?.labels ?? []}
                         />

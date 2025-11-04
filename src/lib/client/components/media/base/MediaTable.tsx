@@ -1,21 +1,21 @@
 import {useMemo, useState} from "react";
-import {useAuth} from "@/lib/client/hooks/use-auth";
-import {useSearch} from "@tanstack/react-router";
 import {MediaType} from "@/lib/utils/enums";
+import {useSearch} from "@tanstack/react-router";
+import {useAuth} from "@/lib/client/hooks/use-auth";
 import {MediaListArgs} from "@/lib/types/zod.schema.types";
 import {mediaConfig} from "@/lib/client/components/media/media-config";
-import {queryKeys} from "@/lib/client/react-query/query-options/query-options";
-import {TablePagination} from "@/lib/client/components/general/TablePagination";
 import {ListPagination, UserMediaItem} from "@/lib/types/query.options.types";
+import {TablePagination} from "@/lib/client/components/general/TablePagination";
 import {UserMediaEditDialog} from "@/lib/client/components/media/base/UserMediaEditDialog";
-import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/lib/client/components/ui/table";
+import {mediaListOptions} from "@/lib/client/react-query/query-options/query-options";
 import {flexRender, getCoreRowModel, OnChangeFn, PaginationState, useReactTable} from "@tanstack/react-table";
+import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/lib/client/components/ui/table";
 
 
 interface MediaTableProps {
     isCurrent: boolean;
     mediaType: MediaType;
-    queryKey: ReturnType<typeof queryKeys.userListKey>;
+    queryOption: ReturnType<typeof mediaListOptions>;
     onChangePage: (filters: Partial<MediaListArgs>) => void;
     results: {
         items: UserMediaItem[];
@@ -24,7 +24,7 @@ interface MediaTableProps {
 }
 
 
-export const MediaTable = ({ isCurrent, mediaType, results, queryKey, onChangePage }: MediaTableProps) => {
+export const MediaTable = ({ isCurrent, mediaType, results, queryOption, onChangePage }: MediaTableProps) => {
     const { currentUser } = useAuth();
     const isConnected = !!currentUser;
     const [dialogOpen, setDialogOpen] = useState(false);
@@ -44,8 +44,8 @@ export const MediaTable = ({ isCurrent, mediaType, results, queryKey, onChangePa
 
     const listColumns = useMemo(() => {
         const columnGenerator = mediaConfig[mediaType].mediaListColumns;
-        return columnGenerator({ isCurrent, isConnected, mediaType, queryKey, onEdit: handleEdit });
-    }, [isCurrent, isConnected, mediaType, queryKey]);
+        return columnGenerator({ isCurrent, isConnected, mediaType, queryOption, onEdit: handleEdit });
+    }, [isCurrent, isConnected, mediaType, queryOption]);
 
     const table = useReactTable({
         manualFiltering: true,
@@ -107,9 +107,9 @@ export const MediaTable = ({ isCurrent, mediaType, results, queryKey, onChangePa
                 />
             </div>
             <UserMediaEditDialog
-                queryKey={queryKey}
                 mediaType={mediaType}
                 dialogOpen={dialogOpen}
+                queryOption={queryOption}
                 userMedia={getCurrentEditingItem()!}
                 onOpenChange={() => {
                     setEditingId(null);

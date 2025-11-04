@@ -6,9 +6,9 @@ import {UserMediaItem} from "@/lib/types/query.options.types";
 import {MediaCard} from "@/lib/client/components/media/base/MediaCard";
 import {QuickAddMedia} from "@/lib/client/components/media/base/QuickAddMedia";
 import {DisplayRating} from "@/lib/client/components/media/base/DisplayRating";
-import {queryKeys} from "@/lib/client/react-query/query-options/query-options";
 import {DisplayComment} from "@/lib/client/components/media/base/DisplayComment";
 import {DisplayFavorite} from "@/lib/client/components/media/base/DisplayFavorite";
+import {mediaListOptions} from "@/lib/client/react-query/query-options/query-options";
 import {MediaCornerCommon} from "@/lib/client/components/media/base/MediaCornerCommon";
 import {UserMediaEditDialog} from "@/lib/client/components/media/base/UserMediaEditDialog";
 
@@ -22,13 +22,13 @@ interface BaseMediaListItemProps {
     userMedia: UserMediaItem;
     redoDisplay?: React.ReactNode;
     mediaDetailsDisplay?: React.ReactNode;
-    queryKey: ReturnType<typeof queryKeys.userListKey>;
+    queryOption: ReturnType<typeof mediaListOptions>;
 }
 
 
 export const BaseMediaListItem = (props: BaseMediaListItemProps) => {
     const [dialogOpen, setDialogOpen] = useState(false);
-    const { isCurrent, queryKey, isConnected, mediaType, allStatuses, rating, userMedia, redoDisplay, mediaDetailsDisplay } = props;
+    const { isCurrent, queryOption, isConnected, mediaType, allStatuses, rating, userMedia, redoDisplay, mediaDetailsDisplay } = props;
 
     return (
         <>
@@ -41,8 +41,8 @@ export const BaseMediaListItem = (props: BaseMediaListItemProps) => {
                     }
                     {!isCurrent && !userMedia.common && isConnected &&
                         <QuickAddMedia
-                            queryKey={queryKey}
                             mediaType={mediaType}
+                            queryOption={queryOption}
                             allStatuses={allStatuses}
                             mediaId={userMedia.mediaId}
                         />
@@ -84,10 +84,10 @@ export const BaseMediaListItem = (props: BaseMediaListItemProps) => {
                 </div>
             </MediaCard>
             <UserMediaEditDialog
-                queryKey={queryKey}
                 mediaType={mediaType}
                 userMedia={userMedia}
                 dialogOpen={dialogOpen}
+                queryOption={queryOption}
                 onOpenChange={() => setDialogOpen(false)}
             />
         </>

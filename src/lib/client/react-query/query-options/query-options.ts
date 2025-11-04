@@ -17,12 +17,6 @@ import {getAllUpdatesHistory, getUserProfile, getUsersFollowers, getUsersFollows
 import {getMediaListFilters, getMediaListSearchFilters, getMediaListServerFunction} from "@/lib/server/functions/media-lists";
 
 
-export const queryKeys = {
-    detailsKey: (mediaType: MediaType, mediaId: string | number, external: boolean) => ["details", mediaType, mediaId, external] as const,
-    userListKey: (mediaType: MediaType, username: string, search: MediaListArgs) => ["userList", mediaType, username, search] as const,
-};
-
-
 export const authOptions = queryOptions({
     queryKey: ["currentUser"],
     queryFn: () => getCurrentUser(),
@@ -80,14 +74,14 @@ export const navSearchOptions = (query: string, page: number, apiProvider: ApiPr
 
 
 export const mediaDetailsOptions = (mediaType: MediaType, mediaId: number | string, external: boolean) => queryOptions({
-    queryKey: queryKeys.detailsKey(mediaType, mediaId, external),
+    queryKey: ["details", mediaType, mediaId, external] as const,
     queryFn: () => getMediaDetails({ data: { mediaType, mediaId, external } }),
     staleTime: 3 * 1000,
 });
 
 
 export const mediaListOptions = (mediaType: MediaType, username: string, search: MediaListArgs) => queryOptions({
-    queryKey: queryKeys.userListKey(mediaType, username, search),
+    queryKey: ["userList", mediaType, username, search] as const,
     queryFn: () => getMediaListServerFunction({ data: { mediaType, username, args: search } }),
 });
 

@@ -1,7 +1,7 @@
 import React from "react";
 import {ColumnDef} from "@tanstack/react-table";
-import {SheetFilterObject} from "@/lib/types/base.types";
 import {MediaType, Status} from "@/lib/utils/enums";
+import {SheetFilterObject} from "@/lib/types/base.types";
 import {TvDetails} from "@/lib/client/components/media/tv/TvDetails";
 import {TvListItem} from "@/lib/client/components/media/tv/TvListItem";
 import {TvFollowCard} from "@/lib/client/components/media/tv/TvFollowCard";
@@ -12,7 +12,6 @@ import {GamesDetails} from "@/lib/client/components/media/games/GamesDetails";
 import {GameListItem} from "@/lib/client/components/media/games/GameListItem";
 import {MangaDetails} from "@/lib/client/components/media/manga/MangaDetails";
 import {BookListItem} from "@/lib/client/components/media/books/BookListItem";
-import {queryKeys} from "@/lib/client/react-query/query-options/query-options";
 import {MangaListItem} from "@/lib/client/components/media/manga/MangaListItem";
 import {MoviesDetails} from "@/lib/client/components/media/movies/MoviesDetails";
 import {MovieListItem} from "@/lib/client/components/media/movies/MovieListItem";
@@ -33,16 +32,18 @@ import {MoviesUserDetails} from "@/lib/client/components/media/movies/MoviesUser
 import {getMangaActiveFilters} from "@/lib/client/components/media/manga/MangaActiveFilters";
 import {getBooksActiveFilters} from "@/lib/client/components/media/books/BooksActiveFilters";
 import {getGamesActiveFilters} from "@/lib/client/components/media/games/GamesActiveFilters";
+import {ModifyUserMedia} from "@/lib/client/react-query/query-mutations/user-media.mutations";
 import {getMoviesActiveFilters} from "@/lib/client/components/media/movies/MoviesActiveFilters";
 import {ExtractFollowByType, ExtractListByType, ExtractMediaDetailsByType, ExtractUserMediaByType} from "@/lib/types/query.options.types";
+import {mediaListOptions} from "@/lib/client/react-query/query-options/query-options";
 
 
 export type MediaConfiguration = {
     [T in MediaType]: {
         mediaUserDetails: React.FC<{
             mediaType: T;
+            queryOption: ModifyUserMedia;
             userMedia: ExtractUserMediaByType<T>;
-            queryKey: ReturnType<typeof queryKeys.userListKey> | ReturnType<typeof queryKeys.detailsKey>;
         }>;
         mediaFollowCard: React.FC<{
             rating: React.ReactNode,
@@ -59,7 +60,7 @@ export type MediaConfiguration = {
             allStatuses: Status[],
             rating: React.ReactNode,
             userMedia: ExtractListByType<T>,
-            queryKey: ReturnType<typeof queryKeys.userListKey>;
+            queryOption: ReturnType<typeof mediaListOptions>;
         }>;
         mediaListColumns: (props: ColumnConfigProps) => (ColumnDef<ExtractListByType<T>>)[];
         sheetFilters: () => SheetFilterObject[];

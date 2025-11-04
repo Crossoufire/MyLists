@@ -1,34 +1,32 @@
 import React from "react";
 import {useQueryClient} from "@tanstack/react-query";
-import {MediaConfiguration} from "@/lib/client/components/media/media-config";
+import {MediaType, Status, UpdateType} from "@/lib/utils/enums";
 import {UpdateRedo} from "@/lib/client/components/media/base/UpdateRedo";
 import {UpdateInput} from "@/lib/client/components/media/base/UpdateInput";
 import {UpdateRating} from "@/lib/client/components/media/base/UpdateRating";
 import {UpdateStatus} from "@/lib/client/components/media/base/UpdateStatus";
-import {MediaType, Status, UpdateType} from "@/lib/utils/enums";
+import {MediaConfiguration} from "@/lib/client/components/media/media-config";
 import {useUpdateUserMediaMutation} from "@/lib/client/react-query/query-mutations/user-media.mutations";
 
 
 type BooksUserDetailsProps<T extends MediaType> = Parameters<MediaConfiguration[T]["mediaUserDetails"]>[0];
 
 
-export const BooksUserDetails = ({ userMedia, mediaType, queryKey }: BooksUserDetailsProps<typeof MediaType.BOOKS>) => {
+export const BooksUserDetails = ({ userMedia, mediaType, queryOption }: BooksUserDetailsProps<typeof MediaType.BOOKS>) => {
     const queryClient = useQueryClient();
-    const updateUserMediaMutation = useUpdateUserMediaMutation(mediaType, userMedia.mediaId, queryKey);
-
-    const mediaData = getMediaData();
+    const updateUserMediaMutation = useUpdateUserMediaMutation(mediaType, userMedia.mediaId, queryOption);
+    const mediaData = getMediaData()!;
 
     function getMediaData() {
-        // Easiest way to get 'pages' from media but no type safety :/.
-        // 'Too complicated' to add type safety because media is a union type.
-
-        if (queryKey[0] === "details") {
-            const apiData: any = queryClient.getQueryData(queryKey);
-            return apiData.media;
+        if (queryOption.queryKey[0] === "details") {
+            const apiData = queryClient.getQueryData(queryOption.queryKey);
+            if (apiData && "pages" in apiData.media) {
+                return apiData.media;
+            }
         }
-        else if (queryKey[0] === "userList") {
-            const apiData: any = queryClient.getQueryData(queryKey);
-            return apiData.results.items.find((media: any) => media.mediaId === userMedia.mediaId);
+        else if (queryOption.queryKey[0] === "userList") {
+            const apiData = queryClient.getQueryData(queryOption.queryKey);
+            return apiData?.results.items.find((m) => "pages" in m && m.mediaId === userMedia.mediaId);
         }
     }
 
