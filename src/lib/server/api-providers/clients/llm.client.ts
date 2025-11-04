@@ -1,15 +1,15 @@
 import z from "zod";
 import {serverEnv} from "@/env/server";
-import {RateLimiterAbstract} from "rate-limiter-flexible";
 import {LLMResponse} from "@/lib/types/provider.types";
+import {RateLimiterAbstract} from "rate-limiter-flexible";
 import {createRateLimiter} from "@/lib/server/core/rate-limiter";
 import {BaseClient} from "@/lib/server/api-providers/clients/base.client";
 
 
 export class LlmClient extends BaseClient {
-    private readonly baseUrl = serverEnv.LLM_BASE_URL;
     private static readonly consumeKey = "llm-API";
-    private static readonly throttleOptions = { points: 20, duration: 1, keyPrefix: "llmAPI" };
+    private readonly baseUrl = serverEnv.LLM_BASE_URL;
+    private static readonly throttleOptions = { points: 5, duration: 1, keyPrefix: "llmAPI" };
 
     constructor(limiter: RateLimiterAbstract, consumeKey: string) {
         super(limiter, consumeKey);

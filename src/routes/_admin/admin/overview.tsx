@@ -12,13 +12,13 @@ import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/lib/c
 
 
 export const Route = createFileRoute("/_admin/admin/overview")({
-    loader: async ({ context: { queryClient } }) => queryClient.ensureQueryData(adminOverviewOptions()),
+    loader: async ({ context: { queryClient } }) => queryClient.ensureQueryData(adminOverviewOptions),
     component: OverviewPage,
 });
 
 
 function OverviewPage() {
-    const apiData = useSuspenseQuery(adminOverviewOptions()).data;
+    const apiData = useSuspenseQuery(adminOverviewOptions).data;
     const newUsers = apiData.newUsers.comparedToLastMonth > 0;
 
     return (

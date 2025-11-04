@@ -7,13 +7,13 @@ import {adminArchivedTasksOptions} from "@/lib/client/react-query/query-options/
 
 
 export const Route = createFileRoute("/_admin/admin/archived-tasks")({
-    loader: async ({ context: { queryClient } }) => queryClient.ensureQueryData(adminArchivedTasksOptions()),
+    loader: async ({ context: { queryClient } }) => queryClient.ensureQueryData(adminArchivedTasksOptions),
     component: AdminArchivedTasksPage,
 })
 
 
 function AdminArchivedTasksPage() {
-    const archivedTasks = useSuspenseQuery(adminArchivedTasksOptions()).data;
+    const archivedTasks = useSuspenseQuery(adminArchivedTasksOptions).data;
 
     return (
         <DashboardShell>

@@ -9,7 +9,7 @@ import {
     mediaListOptions,
     profileOptions,
     trendsOptions,
-    upcomingOptions
+    upcomingOptions,
 } from "@/lib/client/react-query/query-options/query-options";
 
 
@@ -25,7 +25,7 @@ export type ComingNextItem = Awaited<ReturnType<NonNullable<ReturnType<typeof up
 export type HofUserData = Awaited<ReturnType<NonNullable<ReturnType<typeof hallOfFameOptions>["queryFn"]>>>["items"][0];
 export type HofUserRank = Awaited<ReturnType<NonNullable<ReturnType<typeof hallOfFameOptions>["queryFn"]>>>["userRanks"];
 export type TrendItemType = Awaited<ReturnType<NonNullable<ReturnType<typeof trendsOptions>["queryFn"]>>>["seriesTrends"][0];
-export type AdminUserOverview = Awaited<ReturnType<NonNullable<ReturnType<typeof adminOverviewOptions>["queryFn"]>>>["recentUsers"];
+export type AdminUserOverview = Awaited<ReturnType<NonNullable<typeof adminOverviewOptions.queryFn>>>["recentUsers"];
 
 
 // --- User Media Details Types ----------------------------------------------------

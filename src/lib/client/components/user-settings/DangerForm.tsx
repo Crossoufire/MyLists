@@ -21,14 +21,14 @@ export const DangerForm = () => {
         if (!secondConfirm) return;
 
         deleteAccountMutation.mutate(undefined, {
-            onError: () => toast.error("An error occurred while deleting your account. Please try again later."),
+            onError: () => toast.error("An error occurred deleting your account. Please try again later."),
             onSuccess: async () => {
                 await authClient.signOut();
                 await router.invalidate();
                 queryClient.setQueryData(authOptions.queryKey, null);
                 await navigate({ to: "/", replace: true });
                 queryClient.removeQueries();
-                toast.success("Your account has been deleted successfully");
+                toast.success("Account successfully deleted");
             }
         });
     };

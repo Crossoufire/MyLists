@@ -4,12 +4,12 @@ import {Badge} from "@/lib/client/components/ui/badge";
 import {Button} from "@/lib/client/components/ui/button";
 import {capitalize, formatDateTime} from "@/lib/utils/functions";
 import {CheckCircle, Clock, Info, Trash, TriangleAlert, XCircle} from "lucide-react";
-import {Card, CardAction, CardContent, CardHeader, CardTitle} from "@/lib/client/components/ui/card";
 import {adminArchivedTasksOptions} from "@/lib/client/react-query/query-options/admin-options";
 import {useAdminDeleteTaskMutation} from "@/lib/client/react-query/query-mutations/admin.mutations";
+import {Card, CardAction, CardContent, CardHeader, CardTitle} from "@/lib/client/components/ui/card";
 
 
-type TaskType = Awaited<ReturnType<NonNullable<ReturnType<typeof adminArchivedTasksOptions>["queryFn"]>>>[0];
+type TaskType = Awaited<ReturnType<NonNullable<typeof adminArchivedTasksOptions.queryFn>>>[number];
 
 
 export function TaskCard({ task }: { task: TaskType }) {

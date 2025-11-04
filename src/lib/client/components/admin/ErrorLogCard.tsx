@@ -7,7 +7,7 @@ import {Card, CardAction, CardContent, CardHeader, CardTitle} from "@/lib/client
 import {useAdminDeleteErrorLogMutation} from "@/lib/client/react-query/query-mutations/admin.mutations";
 
 
-type ErrorLogType = Awaited<ReturnType<NonNullable<ReturnType<typeof adminErrorLogsOptions>["queryFn"]>>>[0];
+type ErrorLogType = Awaited<ReturnType<NonNullable<typeof adminErrorLogsOptions.queryFn>>>[number];
 
 
 export function ErrorLogCard({ errorLog }: { errorLog: ErrorLogType }) {

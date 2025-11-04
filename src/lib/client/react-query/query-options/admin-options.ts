@@ -12,63 +12,49 @@ import {
 } from "@/lib/server/functions/admin";
 
 
-export const adminQueryKeys = {
-    adminAchievementsKey: () => ["admin", "achievements"] as const,
-    adminMediadleKey: (search: SearchType) => ["admin", "mediadle", search] as const,
-    adminOverviewKey: () => ["admin", "overview"] as const,
-    adminMediaOverviewKey: () => ["admin", "media-overview"] as const,
-    adminTasksKey: () => ["admin", "tasks"] as const,
-    adminUsersKeys: (search: SearchTypeAdmin) => ["admin", "updateUsers", search] as const,
-    adminCheckActiveJobs: () => ["admin", "jobs", "active"] as const,
-    adminJobLogsKey: (jobId: string | null | undefined) => ["admin", "jobs", jobId, "Logs"] as const,
-    adminJobArchivedKey: () => ["admin", "jobs", "archived"] as const,
-    adminErrorLogsKey: () => ["admin", "errors"] as const,
-};
-
-
 export const userAdminOptions = (search: SearchTypeAdmin) => queryOptions({
-    queryKey: adminQueryKeys.adminUsersKeys(search),
+    queryKey: ["admin", "updateUsers", search],
     queryFn: () => getAdminAllUsers({ data: search }),
 });
 
 
-export const adminOverviewOptions = () => queryOptions({
-    queryKey: adminQueryKeys.adminOverviewKey(),
+export const adminOverviewOptions = queryOptions({
+    queryKey: ["admin", "overview"],
     queryFn: () => getAdminOverview(),
 });
 
 
-export const adminMediaOverviewOptions = () => queryOptions({
-    queryKey: adminQueryKeys.adminMediaOverviewKey(),
+export const adminMediaOverviewOptions = queryOptions({
+    queryKey: ["admin", "media-overview"],
     queryFn: () => getAdminMediaOverview(),
 });
 
 
-export const adminAchievementsOptions = () => queryOptions({
-    queryKey: adminQueryKeys.adminAchievementsKey(),
+export const adminAchievementsOptions = queryOptions({
+    queryKey: ["admin", "achievements"],
     queryFn: () => getAdminAchievements(),
 });
 
 
 export const adminMediadleOptions = (search: SearchType) => queryOptions({
-    queryKey: adminQueryKeys.adminMediadleKey(search),
+    queryKey: ["admin", "mediadle", search],
     queryFn: () => getAdminMediadleStats({ data: search }),
 });
 
 
-export const adminTasksOptions = () => queryOptions({
-    queryKey: adminQueryKeys.adminTasksKey(),
+export const adminTasksOptions = queryOptions({
+    queryKey: ["admin", "tasks"],
     queryFn: () => getAdminTasks(),
     staleTime: Infinity,
 });
 
 
-export const adminArchivedTasksOptions = () => queryOptions({
-    queryKey: adminQueryKeys.adminJobArchivedKey(),
+export const adminArchivedTasksOptions = queryOptions({
+    queryKey: ["admin", "tasks", "archived"],
     queryFn: getAdminArchivedTasks,
 });
 
-export const adminErrorLogsOptions = () => queryOptions({
-    queryKey: adminQueryKeys.adminErrorLogsKey(),
+export const adminErrorLogsOptions = queryOptions({
+    queryKey: ["admin", "errors"],
     queryFn: getAdminErrorLogs,
 });

@@ -6,19 +6,21 @@ import {useSuspenseQuery} from "@tanstack/react-query";
 import {SearchType} from "@/lib/types/zod.schema.types";
 import {createFileRoute, Link} from "@tanstack/react-router";
 import {useDebounceCallback} from "@/lib/client/hooks/use-debounce";
+import {ProfileIcon} from "@/lib/client/components/general/ProfileIcon";
 import {DashboardShell} from "@/lib/client/components/admin/DashboardShell";
 import {DashboardHeader} from "@/lib/client/components/admin/DashboardHeader";
 import {TablePagination} from "@/lib/client/components/general/TablePagination";
 import {adminMediadleOptions} from "@/lib/client/react-query/query-options/admin-options";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/lib/client/components/ui/table";
 import {ColumnDef, flexRender, getCoreRowModel, OnChangeFn, PaginationState, useReactTable} from "@tanstack/react-table";
-import {ProfileIcon} from "@/lib/client/components/general/ProfileIcon";
 
 
 export const Route = createFileRoute("/_admin/admin/mediadle")({
     validateSearch: (search) => search as SearchType,
     loaderDeps: ({ search }) => ({ search }),
-    loader: async ({ context: { queryClient }, deps: { search } }) => queryClient.ensureQueryData(adminMediadleOptions(search)),
+    loader: async ({ context: { queryClient }, deps: { search } }) => {
+        return queryClient.ensureQueryData(adminMediadleOptions(search));
+    },
     component: AdminMediadlePage,
 })
 

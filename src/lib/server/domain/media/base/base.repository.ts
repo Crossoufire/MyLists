@@ -82,7 +82,7 @@ export abstract class BaseRepository<TConfig extends MediaSchemaConfig<MediaTabl
     }
 
     async getCoverFilenames() {
-        const mediaTable = this.config.mediaTable;
+        const { mediaTable } = this.config;
 
         return getDbClient()
             .select({ imageCover: mediaTable.imageCover })
@@ -91,8 +91,7 @@ export abstract class BaseRepository<TConfig extends MediaSchemaConfig<MediaTabl
     }
 
     async getNonListMediaIds() {
-        const listTable = this.config.listTable;
-        const mediaTable = this.config.mediaTable;
+        const { mediaTable, listTable } = this.config;
 
         const mediaToDelete = await getDbClient()
             .select({ id: sql<number>`${mediaTable.id}` })
@@ -105,7 +104,7 @@ export abstract class BaseRepository<TConfig extends MediaSchemaConfig<MediaTabl
     }
 
     async getUserMediaLabels(userId: number) {
-        const labelTable = this.config.labelTable;
+        const { labelTable } = this.config;
 
         return getDbClient()
             .selectDistinct({ name: sql<string>`${labelTable.name}` })
@@ -115,8 +114,7 @@ export abstract class BaseRepository<TConfig extends MediaSchemaConfig<MediaTabl
     }
 
     async removeMediaByIds(mediaIds: number[]) {
-        const { mediaTable } = this.config;
-        const tablesForDeletion = this.config.tablesForDeletion;
+        const { mediaTable, tablesForDeletion } = this.config;
 
         // Delete on other tables
         for (const table of tablesForDeletion) {

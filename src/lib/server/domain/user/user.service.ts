@@ -1,8 +1,8 @@
 import {MediaType} from "@/lib/utils/enums";
 import {user} from "@/lib/server/database/schema";
 import {FormattedError} from "@/lib/utils/error-classes";
-import {AdminUpdatePayload, SearchTypeAdmin} from "@/lib/types/zod.schema.types";
 import {UserRepository} from "@/lib/server/domain/user/user.repository";
+import {AdminUpdatePayload, SearchTypeAdmin} from "@/lib/types/zod.schema.types";
 
 
 export class UserService {

@@ -2,8 +2,8 @@ import {toast} from "sonner";
 import {Loader2, Play} from "lucide-react";
 import {TaskDefinition} from "@/lib/types/tasks.types";
 import {createFileRoute} from "@tanstack/react-router";
-import {Button} from "@/lib/client/components/ui/button";
 import {useSuspenseQuery} from "@tanstack/react-query";
+import {Button} from "@/lib/client/components/ui/button";
 import {DashboardShell} from "@/lib/client/components/admin/DashboardShell";
 import {DashboardHeader} from "@/lib/client/components/admin/DashboardHeader";
 import {adminTasksOptions} from "@/lib/client/react-query/query-options/admin-options";
@@ -12,14 +12,14 @@ import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/lib/c
 
 
 export const Route = createFileRoute("/_admin/admin/admin-tasks")({
-    loader: async ({ context: { queryClient } }) => queryClient.ensureQueryData(adminTasksOptions()),
+    loader: async ({ context: { queryClient } }) => queryClient.ensureQueryData(adminTasksOptions),
     component: AdminTasksPage,
 })
 
 
 function AdminTasksPage() {
     const taskTriggerMutation = useAdminTriggerTaskMutation();
-    const tasksList = useSuspenseQuery(adminTasksOptions()).data;
+    const tasksList = useSuspenseQuery(adminTasksOptions).data;
 
     const formatCamelCase = (str: string) => {
         const withSpaces = str.replace(/([A-Z])/g, " $1");

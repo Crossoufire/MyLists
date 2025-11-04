@@ -1,13 +1,13 @@
 import {useEffect, useState} from "react";
+import {capitalize} from "@/lib/utils/functions";
 import {Badge} from "@/lib/client/components/ui/badge";
 import {Input} from "@/lib/client/components/ui/input";
 import {Label} from "@/lib/client/components/ui/label";
-import {capitalize} from "@/lib/utils/functions";
-import {Button} from "@/lib/client/components/ui/button";
-import {Textarea} from "@/lib/client/components/ui/textarea";
 import {createFileRoute} from "@tanstack/react-router";
 import {useSuspenseQuery} from "@tanstack/react-query";
+import {Button} from "@/lib/client/components/ui/button";
 import {AchievementTier} from "@/lib/types/zod.schema.types";
+import {Textarea} from "@/lib/client/components/ui/textarea";
 import {DashboardShell} from "@/lib/client/components/admin/DashboardShell";
 import {DashboardHeader} from "@/lib/client/components/admin/DashboardHeader";
 import {adminAchievementsOptions} from "@/lib/client/react-query/query-options/admin-options";
@@ -16,12 +16,12 @@ import {Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, Di
 import {useAdminUpdateAchievementMutation, useAdminUpdateTiersMutation} from "@/lib/client/react-query/query-mutations/admin.mutations";
 
 
-type Achievement = Awaited<ReturnType<NonNullable<ReturnType<typeof adminAchievementsOptions>["queryFn"]>>>[0];
+type Achievement = Awaited<ReturnType<NonNullable<typeof adminAchievementsOptions["queryFn"]>>>[number];
 
 
 export const Route = createFileRoute("/_admin/admin/achievements")({
     loader: async ({ context: { queryClient } }) => {
-        return queryClient.ensureQueryData(adminAchievementsOptions());
+        return queryClient.ensureQueryData(adminAchievementsOptions);
     },
     component: AchievementPage,
 })
@@ -30,7 +30,7 @@ export const Route = createFileRoute("/_admin/admin/achievements")({
 function AchievementPage() {
     const updateTiersMutation = useAdminUpdateTiersMutation();
     const [editedName, setEditedName] = useState("");
-    const apiData = useSuspenseQuery(adminAchievementsOptions()).data;
+    const apiData = useSuspenseQuery(adminAchievementsOptions).data;
     const updateAchievementMutation = useAdminUpdateAchievementMutation();
     const [editedDescription, setEditedDescription] = useState("");
     const [editedMediaType, setEditedMediaType] = useState<any>("");

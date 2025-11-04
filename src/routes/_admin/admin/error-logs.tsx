@@ -7,13 +7,13 @@ import {adminErrorLogsOptions} from "@/lib/client/react-query/query-options/admi
 
 
 export const Route = createFileRoute("/_admin/admin/error-logs")({
-    loader: async ({ context: { queryClient } }) => queryClient.ensureQueryData(adminErrorLogsOptions()),
+    loader: async ({ context: { queryClient } }) => queryClient.ensureQueryData(adminErrorLogsOptions),
     component: AdminErrorLogsPage,
 })
 
 
 function AdminErrorLogsPage() {
-    const errorLogs = useSuspenseQuery(adminErrorLogsOptions()).data;
+    const errorLogs = useSuspenseQuery(adminErrorLogsOptions).data;
 
     return (
         <DashboardShell>

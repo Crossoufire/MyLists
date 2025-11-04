@@ -9,13 +9,13 @@ import {adminMediaOverviewOptions} from "@/lib/client/react-query/query-options/
 
 
 export const Route = createFileRoute("/_admin/admin/media-overview")({
-    loader: async ({ context: { queryClient } }) => queryClient.ensureQueryData(adminMediaOverviewOptions()),
+    loader: async ({ context: { queryClient } }) => queryClient.ensureQueryData(adminMediaOverviewOptions),
     component: MediaDashboardPage,
 });
 
 
 function MediaDashboardPage() {
-    const apiData = useSuspenseQuery(adminMediaOverviewOptions()).data;
+    const apiData = useSuspenseQuery(adminMediaOverviewOptions).data;
     const addedMedia = apiData.addedComparedToLastMonth > 0;
 
     return (
