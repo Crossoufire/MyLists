@@ -1,21 +1,22 @@
 import {notFound} from "@tanstack/react-router";
 import {FormattedError} from "@/lib/utils/error-classes";
-import {RateLimiterAbstract, RateLimiterRes} from "rate-limiter-flexible";
+import {RateLimiterAbstract, RateLimiterQueue} from "rate-limiter-flexible";
 
 
 export class BaseClient {
     private consumeKey: string;
     readonly resultsPerPage = 20;
-    private limiters: RateLimiterAbstract[];
+    private queues: RateLimiterQueue[];
 
     constructor(limiterInstances: RateLimiterAbstract | RateLimiterAbstract[], consumeKey: string) {
-        this.limiters = Array.isArray(limiterInstances) ? limiterInstances : [limiterInstances];
         this.consumeKey = consumeKey;
+        const limiters = Array.isArray(limiterInstances) ? limiterInstances : [limiterInstances];
+        this.queues = limiters.map((limiter) => new RateLimiterQueue(limiter, { maxQueueSize: 200 }));
     }
 
     async call(url: string, method: "post" | "get" = "get", options: RequestInit = {}) {
         try {
-            await Promise.all(this.limiters.map((limiter) => limiter.consume(this.consumeKey)));
+            await Promise.all(this.queues.map((queue) => queue.removeTokens(1, this.consumeKey)));
 
             const response = await fetch(url, {
                 method: method.toUpperCase(),
@@ -24,17 +25,12 @@ export class BaseClient {
             });
 
             if (!response.ok) {
-                this._handleErrorResponse(response);
+                await this._handleResponseError(response);
             }
 
             return response;
         }
         catch (err) {
-            if (err && typeof err === "object" && "msBeforeNext" in err) {
-                const typedRejRes = err as RateLimiterRes;
-                const waitTimeSec = Math.ceil(typedRejRes.msBeforeNext / 1000);
-                throw new FormattedError(`Too many requests. Please wait ${waitTimeSec}s and try again.`);
-            }
             if (err instanceof DOMException && err.name === "TimeoutError") {
                 throw new FormattedError("Request timed out. API probably down. Please try again later.");
             }
@@ -46,25 +42,28 @@ export class BaseClient {
         }
     }
 
-    private _handleErrorResponse(response: Response) {
+    private async _handleResponseError(response: Response) {
         switch (response.status) {
             case 404:
                 throw notFound();
             case 429: {
                 // API-level rate limiting (bad rate limit on my part)
                 const retryAfter = response.headers.get("Retry-After");
+                const retryAfterSecs = retryAfter ? Number(retryAfter) : 1;
+                await new Promise((resolve) => setTimeout(resolve, retryAfterSecs * 1000))
+
                 const waitMessage = retryAfter ? `Please wait ${retryAfter}s and try again.` : "Please try again later.";
-                throw new FormattedError(`Too many requests. ${waitMessage}`);
+                throw new FormattedError(`[API] Too many requests. ${waitMessage}`);
             }
             case 410:
-                throw new FormattedError("This media is no longer available on the API.");
+                throw new FormattedError("Media no longer available on the API.");
             case 500:
             case 502:
             case 503:
             case 504:
-                throw new FormattedError("This API is currently down. Please try again later.");
+                throw new FormattedError("API currently down. Please try again later.");
             default: {
-                throw new Error(`Unexpected error: ${response.status}`);
+                throw new Error(`Unexpected Error: ${response.status}`);
             }
         }
     }
