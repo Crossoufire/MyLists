@@ -21,10 +21,10 @@ export type ListFiltersOptionsType = Awaited<ReturnType<NonNullable<ReturnType<t
 export type MediaDetailsOptionsType = Awaited<ReturnType<NonNullable<ReturnType<typeof mediaDetailsOptions>["queryFn"]>>>;
 export type AchCard = Awaited<ReturnType<NonNullable<ReturnType<typeof achievementOptions>["queryFn"]>>>["result"][0];
 export type AchSummary = Awaited<ReturnType<NonNullable<ReturnType<typeof achievementOptions>["queryFn"]>>>["summary"][MediaType];
-export type ComingNextItem = Awaited<ReturnType<NonNullable<ReturnType<typeof upcomingOptions>["queryFn"]>>>[0]["items"][0];
 export type HofUserData = Awaited<ReturnType<NonNullable<ReturnType<typeof hallOfFameOptions>["queryFn"]>>>["items"][0];
 export type HofUserRank = Awaited<ReturnType<NonNullable<ReturnType<typeof hallOfFameOptions>["queryFn"]>>>["userRanks"];
-export type TrendItemType = Awaited<ReturnType<NonNullable<ReturnType<typeof trendsOptions>["queryFn"]>>>["seriesTrends"][0];
+export type TrendItemType = Awaited<ReturnType<NonNullable<typeof trendsOptions.queryFn>>>["seriesTrends"][number];
+export type ComingNextItem = Awaited<ReturnType<NonNullable<typeof upcomingOptions.queryFn>>>[number]["items"][number];
 export type AdminUserOverview = Awaited<ReturnType<NonNullable<typeof adminOverviewOptions.queryFn>>>["recentUsers"];
 
 

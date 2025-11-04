@@ -1,11 +1,11 @@
 import {toast} from "sonner";
+import {MediaType} from "@/lib/utils/enums";
 import {capitalize} from "@/lib/utils/functions";
 import {Button} from "@/lib/client/components/ui/button";
-import {MediaType} from "@/lib/utils/enums";
 import {useQuery, useQueryClient} from "@tanstack/react-query";
 import {LabelLists} from "@/lib/client/components/media/base/LabelLists";
-import {UpdateComment} from "@/lib/client/components/media/base/UpdateComment";
 import {UserMedia, UserMediaItem} from "@/lib/types/query.options.types";
+import {UpdateComment} from "@/lib/client/components/media/base/UpdateComment";
 import {HistoryDetails} from "@/lib/client/components/media/base/HistoryDetails";
 import {UpdateFavorite} from "@/lib/client/components/media/base/UpdateFavorite";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/lib/client/components/ui/tabs";
@@ -32,7 +32,7 @@ export const UserMediaDetails = ({ userMedia, mediaType, queryKey }: UserMediaDe
         removeMediaFromListMutation.mutate({ data: { mediaType, mediaId: userMedia.mediaId } }, {
             onSuccess: () => {
                 toast.success(`${capitalize(mediaType)} removed from your list`);
-                queryClient.removeQueries({ queryKey: queryKeys.historyKey(mediaType, userMedia.mediaId) });
+                queryClient.removeQueries({ queryKey: historyOptions(mediaType, userMedia.mediaId).queryKey });
             },
         });
     };
@@ -75,8 +75,9 @@ export const UserMediaDetails = ({ userMedia, mediaType, queryKey }: UserMediaDe
                 </TabsContent>
                 <TabsContent value="history" className="bg-card rounded-md overflow-y-auto max-h-[353px] p-3 px-5">
                     <HistoryDetails
+                        mediaType={mediaType}
                         history={history ?? []}
-                        queryKey={queryKeys.historyKey(mediaType, userMedia.mediaId)}
+                        mediaId={userMedia.mediaId}
                     />
                 </TabsContent>
             </Tabs>

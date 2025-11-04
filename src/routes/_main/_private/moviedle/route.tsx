@@ -4,20 +4,20 @@ import {Button} from "@/lib/client/components/ui/button";
 import {MediaType} from "@/lib/utils/enums";
 import {useDebounce} from "@/lib/client/hooks/use-debounce";
 import {Progress} from "@/lib/client/components/ui/progress";
-import {PageTitle} from "@/lib/client/components/general/PageTitle";
 import {createFileRoute, Link} from "@tanstack/react-router";
-import {StatsCard} from "@/lib/client/components/moviedle/StatsCard";
 import {useQuery, useSuspenseQuery} from "@tanstack/react-query";
+import {PageTitle} from "@/lib/client/components/general/PageTitle";
+import {StatsCard} from "@/lib/client/components/moviedle/StatsCard";
 import {AttemptsGraph} from "@/lib/client/components/moviedle/AttemptsGraph";
 import {CountdownTimer} from "@/lib/client/components/moviedle/CountdownTimer";
 import {Card, CardContent, CardHeader, CardTitle} from "@/lib/client/components/ui/card";
-import {useMoviedleGuessMutation} from "@/lib/client/react-query/query-mutations/mediadle.mutations";
 import {Award, Crown, Flame, PartyPopper, Sigma, Target, ThumbsDown, Trophy} from "lucide-react";
+import {useMoviedleGuessMutation} from "@/lib/client/react-query/query-mutations/mediadle.mutations";
 import {dailyMediadleOptions, mediadleSuggestionsOptions} from "@/lib/client/react-query/query-options/query-options";
 
 
 export const Route = createFileRoute("/_main/_private/moviedle")({
-    loader: async ({ context: { queryClient } }) => queryClient.ensureQueryData(dailyMediadleOptions()),
+    loader: async ({ context: { queryClient } }) => queryClient.ensureQueryData(dailyMediadleOptions),
     component: MediadlePage,
 });
 
@@ -26,7 +26,7 @@ function MediadlePage() {
     const [guess, setGuess] = useState("");
     const makeGuessMutation = useMoviedleGuessMutation();
     const debouncedSearch = useDebounce(guess, 350);
-    const mediadleData = useSuspenseQuery(dailyMediadleOptions()).data;
+    const mediadleData = useSuspenseQuery(dailyMediadleOptions).data;
     const [showSuggestions, setShowSuggestions] = useState(false);
     const { data = [] } = useQuery(mediadleSuggestionsOptions(debouncedSearch));
 

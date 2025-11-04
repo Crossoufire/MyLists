@@ -1,14 +1,13 @@
 import {useState} from "react";
 import {cn} from "@/lib/utils/helpers";
 import {useAuth} from "@/lib/client/hooks/use-auth";
-import {useCollapse} from "@/lib/client/hooks/use-collapse";
 import {Link, useParams} from "@tanstack/react-router";
-import {MutedText} from "@/lib/client/components/general/MutedText";
+import {useCollapse} from "@/lib/client/hooks/use-collapse";
 import {UserUpdateType} from "@/lib/types/query.options.types";
+import {MutedText} from "@/lib/client/components/general/MutedText";
 import {UserUpdate} from "@/lib/client/components/general/UserUpdate";
-import {queryKeys} from "@/lib/client/react-query/query-options/query-options";
 import {Card, CardAction, CardContent, CardHeader, CardTitle} from "@/lib/client/components/ui/card";
-import {useDeleteUpdatesMutation} from "@/lib/client/react-query/query-mutations/user-media.mutations";
+import {useDeleteProfileUpdateMutation} from "@/lib/client/react-query/query-mutations/user-media.mutations";
 
 
 interface UserUpdatesProps {
@@ -21,7 +20,7 @@ export const UserUpdates = ({ updates, followers = false }: UserUpdatesProps) =>
     const { currentUser } = useAuth();
     const { caret, toggleCollapse, contentClasses } = useCollapse();
     const { username } = useParams({ from: "/_main/_private/profile/$username" });
-    const deleteUpdatesMutation = useDeleteUpdatesMutation(queryKeys.profileKey(username));
+    const deleteUpdatesMutation = useDeleteProfileUpdateMutation(username);
     const [mediaIdBeingDeleted, setMediaIdBeingDeleted] = useState<undefined | number>();
 
     const deleteUpdate = (updateId: number) => {

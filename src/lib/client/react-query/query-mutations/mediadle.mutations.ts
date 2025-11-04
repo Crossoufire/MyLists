@@ -1,6 +1,6 @@
 import {useMutation, useQueryClient} from "@tanstack/react-query";
 import {postAddMediadleGuess} from "@/lib/server/functions/moviedle";
-import {queryKeys} from "@/lib/client/react-query/query-options/query-options";
+import {dailyMediadleOptions} from "@/lib/client/react-query/query-options/query-options";
 
 
 export const useMoviedleGuessMutation = () => {
@@ -9,7 +9,7 @@ export const useMoviedleGuessMutation = () => {
     return useMutation({
         mutationFn: postAddMediadleGuess,
         onSuccess: () => {
-            return queryClient.invalidateQueries({ queryKey: queryKeys.dailyMediadleKey() });
+            return queryClient.invalidateQueries({ queryKey: dailyMediadleOptions.queryKey });
         },
     });
 };

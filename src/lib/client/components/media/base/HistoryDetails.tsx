@@ -1,20 +1,21 @@
 import {useState} from "react";
+import {MediaType} from "@/lib/utils/enums";
 import {HistoryOptionsType} from "@/lib/types/query.options.types";
 import {MutedText} from "@/lib/client/components/general/MutedText";
 import {UserUpdate} from "@/lib/client/components/general/UserUpdate";
-import {queryKeys} from "@/lib/client/react-query/query-options/query-options";
-import {useDeleteUpdatesMutation} from "@/lib/client/react-query/query-mutations/user-media.mutations";
+import {useDeleteHistoryUpdatesMutation} from "@/lib/client/react-query/query-mutations/user-media.mutations";
 
 
 interface HistoryDetailsProps {
+    mediaId: number;
+    mediaType: MediaType;
     history: HistoryOptionsType;
-    queryKey: ReturnType<typeof queryKeys.historyKey>;
 }
 
 
-export const HistoryDetails = ({ queryKey, history }: HistoryDetailsProps) => {
-    const deleteHistoryMutation = useDeleteUpdatesMutation(queryKey);
+export const HistoryDetails = ({ history, mediaId, mediaType }: HistoryDetailsProps) => {
     const [mediaIdBeingDeleted, setMediaIdBeingDeleted] = useState<number>();
+    const deleteHistoryMutation = useDeleteHistoryUpdatesMutation(mediaType, mediaId);
 
     const handleDelete = (updateId: number) => {
         setMediaIdBeingDeleted(updateId);

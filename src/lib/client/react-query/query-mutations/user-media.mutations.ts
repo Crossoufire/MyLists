@@ -1,42 +1,62 @@
-import {Label, UpdatePayload} from "@/lib/types/base.types";
+import {SearchType} from "@/lib/types/zod.schema.types";
 import {LabelAction, MediaType} from "@/lib/utils/enums";
+import {Label, UpdatePayload} from "@/lib/types/base.types";
 import {useMutation, useQueryClient} from "@tanstack/react-query";
-import {queryKeys} from "@/lib/client/react-query/query-options/query-options";
-import {HistoryOptionsType, MediaDetailsOptionsType, MediaListOptionsType, ProfileOptionsType, UserMedia} from "@/lib/types/query.options.types";
+import {MediaDetailsOptionsType, MediaListOptionsType, UserMedia} from "@/lib/types/query.options.types";
+import {allUpdatesOptions, historyOptions, profileOptions, queryKeys, userMediaLabelsOptions} from "@/lib/client/react-query/query-options/query-options";
 import {postAddMediaToList, postDeleteUserUpdates, postEditUserLabel, postRemoveMediaFromList, postUpdateUserMedia} from "@/lib/server/functions/user-media";
 
-
-const _deleteUpdatesKeys = [queryKeys.profileKey, queryKeys.allUpdatesKey, queryKeys.historyKey] as const;
-export type DeleteUpdatesKeys = ReturnType<(typeof _deleteUpdatesKeys)[number]>;
 
 const _detailsUserListKeys = [queryKeys.detailsKey, queryKeys.userListKey] as const
 export type DetailsUserListKeys = ReturnType<(typeof _detailsUserListKeys)[number]>;
 
 
-export const useDeleteUpdatesMutation = (queryKey: DeleteUpdatesKeys) => {
+export const useDeleteProfileUpdateMutation = (username: string) => {
     const queryClient = useQueryClient();
+    const queryKey = profileOptions(username).queryKey;
+
+    return useMutation({
+        mutationFn: postDeleteUserUpdates,
+        meta: { errorMessage: "The update could not be deleted" },
+        onSuccess: (data, variables) => {
+            queryClient.setQueryData(queryKey, (oldData) => {
+                if (!oldData || !data) return;
+                return {
+                    ...oldData,
+                    userUpdates: [...oldData.userUpdates.filter((up) => up.id !== variables.data.updateIds[0]), data],
+                };
+            });
+        },
+    });
+};
+
+
+export const useDeleteAllUpdatesMutation = (username: string, filters: SearchType) => {
+    const queryClient = useQueryClient();
+    const queryKey = allUpdatesOptions(username, filters).queryKey;
+
+    return useMutation({
+        mutationFn: postDeleteUserUpdates,
+        meta: { errorMessage: "The update could not be deleted" },
+        onSuccess: async () => {
+            await queryClient.invalidateQueries({ queryKey });
+        },
+    });
+};
+
+
+export const useDeleteHistoryUpdatesMutation = (mediaType: MediaType, mediaId: number) => {
+    const queryClient = useQueryClient();
+    const queryKey = historyOptions(mediaType, mediaId).queryKey;
+
     return useMutation({
         mutationFn: postDeleteUserUpdates,
         meta: { errorMessage: "The update(s) could not be deleted" },
-        onSuccess: async (data, variables) => {
-            if (queryKey[0] === "profile") {
-                return queryClient.setQueryData<ProfileOptionsType>(queryKey, (oldData) => {
-                    if (!oldData || !data) return;
-                    return {
-                        ...oldData,
-                        userUpdates: [...oldData.userUpdates.filter((up) => up.id !== variables.data.updateIds[0]), data],
-                    }
-                });
-            }
-            else if (queryKey[0] === "allUpdates") {
-                await queryClient.invalidateQueries({ queryKey });
-            }
-            else if (queryKey[0] === "onOpenHistory") {
-                return queryClient.setQueryData<HistoryOptionsType>(queryKey, (oldData) => {
-                    if (!oldData) return;
-                    return [...oldData.filter((history) => history.id !== variables.data.updateIds[0])];
-                });
-            }
+        onSuccess: async (_data, variables) => {
+            return queryClient.setQueryData(queryKey, (oldData) => {
+                if (!oldData) return;
+                return [...oldData.filter((history) => history.id !== variables.data.updateIds[0])];
+            });
         },
     });
 };
@@ -148,11 +168,11 @@ export const useEditUserLabelMutation = (mediaType: MediaType, mediaId: number) 
         },
         meta: { errorMessage: "Failed to edit this label" },
         onSuccess: (data, variables) => {
-            queryClient.setQueryData<(Label | undefined)[]>(queryKeys.labelsKey(mediaType), (oldData) => {
-                if (!oldData) return;
+            queryClient.setQueryData(userMediaLabelsOptions(mediaType, false).queryKey, (oldData) => {
+                if (!oldData || !data) return;
 
                 if (variables.action === "add") {
-                    return oldData.map(l => l?.name).includes(data?.name) ? oldData : [...oldData, data];
+                    return oldData.map(l => l?.name).includes(data?.name ?? "") ? oldData : [...oldData, data];
                 }
                 else if (variables.action === "rename") {
                     return oldData.map(l => l?.name === variables.label.oldName ? data : l);

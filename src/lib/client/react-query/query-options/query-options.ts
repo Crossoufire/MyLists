@@ -18,32 +18,8 @@ import {getMediaListFilters, getMediaListSearchFilters, getMediaListServerFuncti
 
 
 export const queryKeys = {
-    achievementPageKey: (username: string) => ["achievementPage", username] as const,
-    allUpdatesKey: (username: string, filters: SearchType) => ["allUpdates", username, filters] as const,
-    dailyMediadleKey: () => ["dailyMediadle"] as const,
     detailsKey: (mediaType: MediaType, mediaId: string | number, external: boolean) => ["details", mediaType, mediaId, external] as const,
-    editDetailsKey: (mediaType: MediaType, mediaId: string | number) => ["editDetails", mediaType, mediaId] as const,
-    filterSearchKey: (mediaType: MediaType, username: string, query: string, job: JobType) =>
-        ["filterSearch", mediaType, username, query, job] as const,
-    followersKey: (username: string) => ["followers", username] as const,
-    followsKey: (username: string) => ["follows", username] as const,
-    platformStatsKey: (search: { mediaType?: MediaType }) => ["platformStats", search] as const,
-    historyKey: (mediaType: MediaType, mediaId: string | number) => ["onOpenHistory", mediaType, mediaId] as const,
-    hofKey: (search: SearchTypeHoF) => ["hof", search] as const,
-    jobDetailsKey: (mediaType: MediaType, job: JobType, name: string, search: SearchType) =>
-        ["jobDetails", mediaType, job, name, search] as const,
-    labelsKey: (mediaType: MediaType) => ["labels", mediaType] as const,
-    listFiltersKey: (mediaType: MediaType, username: string) => ["listFilters", mediaType, username] as const,
-    mediadleSuggestionsKey: (query: string) => ["mediadleSuggestions", query] as const,
-    navSearchKey: (query: string, page: number, selector: ApiProviderType) => ["navSearch", query, page, selector] as const,
-    notificationCountKey: () => ["notificationCount"] as const,
-    notificationsKey: () => ["notifications"] as const,
-    profileKey: (username: string) => ["profile", username] as const,
-    trendsKey: () => ["trends"] as const,
-    upcomingKey: () => ["upcoming"] as const,
-    userListKey: (mediaType: MediaType, username: string, search: MediaListArgs) =>
-        ["userList", mediaType, username, search] as const,
-    userStatsKey: (username: string, search: { mediaType?: MediaType }) => ["userStats", username, search] as const,
+    userListKey: (mediaType: MediaType, username: string, search: MediaListArgs) => ["userList", mediaType, username, search] as const,
 };
 
 
@@ -54,14 +30,49 @@ export const authOptions = queryOptions({
 });
 
 
+export const upcomingOptions = queryOptions({
+    queryKey: ["upcoming"],
+    queryFn: () => getComingNextMedia(),
+});
+
+
+export const dailyMediadleOptions = queryOptions({
+    queryKey: ["dailyMediadle"],
+    queryFn: () => getDailyMediadle(),
+});
+
+
+export const notificationsCountOptions = queryOptions({
+    queryKey: ["notificationCount"],
+    queryFn: getNotificationsCount,
+    meta: { errorMessage: "An error occurred fetching your notifications count" },
+});
+
+
+export const notificationsOptions = queryOptions({
+    queryKey: ["notifications"],
+    queryFn: () => getNotifications(),
+    meta: { errorMessage: "An error occurred fetching the notifications" },
+    refetchInterval: 30 * 60 * 1000,
+    enabled: false,
+});
+
+
+export const trendsOptions = queryOptions({
+    queryKey: ["trends"],
+    queryFn: () => getTrendsMedia(),
+    meta: { errorMessage: "An error occurred fetching the trends. Please try again later." },
+});
+
+
 export const profileOptions = (username: string) => queryOptions({
-    queryKey: queryKeys.profileKey(username),
+    queryKey: ["profile", username],
     queryFn: () => getUserProfile({ data: { username } }),
 });
 
 
 export const navSearchOptions = (query: string, page: number, apiProvider: ApiProviderType) => queryOptions({
-    queryKey: queryKeys.navSearchKey(query, page, apiProvider),
+    queryKey: ["navSearch", query, page, apiProvider],
     queryFn: () => getSearchResults({ data: { query, page, apiProvider } }),
     staleTime: 1000 * 60 * 2,
     enabled: query?.trim().length >= 2,
@@ -82,14 +93,14 @@ export const mediaListOptions = (mediaType: MediaType, username: string, search:
 
 
 export const listFiltersOptions = (mediaType: MediaType, username: string) => queryOptions({
-    queryKey: queryKeys.listFiltersKey(mediaType, username),
+    queryKey: ["listFilters", mediaType, username],
     queryFn: () => getMediaListFilters({ data: { mediaType, username } }),
     staleTime: Infinity,
 });
 
 
 export const filterSearchOptions = (mediaType: MediaType, username: string, query: string, job: JobType) => queryOptions({
-    queryKey: queryKeys.filterSearchKey(mediaType, username, query, job),
+    queryKey: ["filterSearch", mediaType, username, query, job],
     queryFn: () => getMediaListSearchFilters({ data: { mediaType, username, query, job } }),
     staleTime: 2 * 60 * 1000,
     enabled: query.length >= 2,
@@ -97,94 +108,66 @@ export const filterSearchOptions = (mediaType: MediaType, username: string, quer
 
 
 export const followersOptions = (username: string) => queryOptions({
-    queryKey: queryKeys.followersKey(username),
+    queryKey: ["followers", username],
     queryFn: () => getUsersFollowers({ data: { username } }),
 });
 
 
 export const followsOptions = (username: string) => queryOptions({
-    queryKey: queryKeys.followsKey(username),
+    queryKey: ["follows", username],
     queryFn: () => getUsersFollows({ data: { username } }),
 });
 
 
 export const allUpdatesOptions = (username: string, filters: SearchType) => queryOptions({
-    queryKey: queryKeys.allUpdatesKey(username, filters),
+    queryKey: ["allUpdates", username, filters],
     queryFn: () => getAllUpdatesHistory({ data: { ...filters, username } }),
 });
 
 
-export const hallOfFameOptions = (search: SearchTypeHoF) => queryOptions({
-    queryKey: queryKeys.hofKey(search),
-    queryFn: () => getHallOfFame({ data: search }),
-});
-
-
-export const upcomingOptions = () => queryOptions({
-    queryKey: queryKeys.upcomingKey(),
-    queryFn: () => getComingNextMedia(),
-});
-
-
-export const dailyMediadleOptions = () => queryOptions({
-    queryKey: queryKeys.dailyMediadleKey(),
-    queryFn: () => getDailyMediadle(),
-});
-
-
-export const mediadleSuggestionsOptions = (query: string) => queryOptions({
-    queryKey: queryKeys.mediadleSuggestionsKey(query),
-    queryFn: () => getMediadleSuggestions({ data: { query } }),
-    staleTime: 2 * 60 * 1000,
-    enabled: query.length >= 2,
-});
-
-
-export const notificationsCountOptions = () => queryOptions({
-    queryKey: queryKeys.notificationCountKey(),
-    queryFn: getNotificationsCount,
-    meta: { errorMessage: "An error occurred fetching the notifications count" },
-});
-
-
-export const notificationsOptions = () => queryOptions({
-    queryKey: queryKeys.notificationsKey(),
-    queryFn: () => getNotifications(),
-    meta: { errorMessage: "An error occurred fetching the notifications" },
-    refetchInterval: 30 * 60 * 1000,
-    enabled: false,
-});
-
-
-export const achievementOptions = (username: string) => queryOptions({
-    queryKey: queryKeys.achievementPageKey(username),
-    queryFn: () => getUserAchievements({ data: { username } }),
-});
-
-
-export const userStatsOptions = (username: string, search: { mediaType?: MediaType }) => queryOptions({
-    queryKey: queryKeys.userStatsKey(username, search),
-    queryFn: () => getUserStats({ data: { username, ...search } }),
-});
-
-
 export const historyOptions = (mediaType: MediaType, mediaId: number) => queryOptions({
-    queryKey: queryKeys.historyKey(mediaType, mediaId),
+    queryKey: ["onOpenHistory", mediaType, mediaId],
     queryFn: () => getUserMediaHistory({ data: { mediaType, mediaId } }),
     staleTime: 10 * 1000,
     placeholderData: [],
 });
 
 
+export const hallOfFameOptions = (search: SearchTypeHoF) => queryOptions({
+    queryKey: ["hof", search],
+    queryFn: () => getHallOfFame({ data: search }),
+});
+
+
+export const mediadleSuggestionsOptions = (query: string) => queryOptions({
+    queryKey: ["mediadleSuggestions", query],
+    queryFn: () => getMediadleSuggestions({ data: { query } }),
+    staleTime: 2 * 60 * 1000,
+    enabled: query.length >= 2,
+});
+
+
+export const achievementOptions = (username: string) => queryOptions({
+    queryKey: ["achievementPage", username],
+    queryFn: () => getUserAchievements({ data: { username } }),
+});
+
+
+export const userStatsOptions = (username: string, search: { mediaType?: MediaType }) => queryOptions({
+    queryKey: ["userStats", username, search],
+    queryFn: () => getUserStats({ data: { username, ...search } }),
+});
+
+
 export const userMediaLabelsOptions = (mediaType: MediaType, isOpen: boolean) => queryOptions({
-    queryKey: queryKeys.labelsKey(mediaType),
+    queryKey: ["labels", mediaType],
     queryFn: () => getUserMediaLabels({ data: { mediaType } }),
     enabled: isOpen,
 });
 
 
 export const editMediaDetailsOptions = (mediaType: MediaType, mediaId: number) => queryOptions({
-    queryKey: queryKeys.editDetailsKey(mediaType, mediaId),
+    queryKey: ["editDetails", mediaType, mediaId],
     queryFn: () => getMediaDetailsToEdit({ data: { mediaType, mediaId } }),
     gcTime: 0,
     staleTime: 0,
@@ -192,19 +175,12 @@ export const editMediaDetailsOptions = (mediaType: MediaType, mediaId: number) =
 
 
 export const jobDetailsOptions = (mediaType: MediaType, job: JobType, name: string, search: SearchType) => queryOptions({
-    queryKey: queryKeys.jobDetailsKey(mediaType, job, name, search),
+    queryKey: ["jobDetails", mediaType, job, name, search],
     queryFn: () => getJobDetails({ data: { mediaType, job, name, search } }),
 });
 
 
-export const trendsOptions = () => queryOptions({
-    queryKey: queryKeys.trendsKey(),
-    queryFn: () => getTrendsMedia(),
-    meta: { errorMessage: "An error occurred fetching the trends. Please try again later." },
-});
-
-
 export const platformStatsOptions = (search: { mediaType?: MediaType }) => queryOptions({
-    queryKey: queryKeys.platformStatsKey(search),
+    queryKey: ["platformStats", search],
     queryFn: () => getPlatformStats({ data: search }),
 });

@@ -1,20 +1,20 @@
 import React, {useState} from "react";
 import {Search} from "lucide-react";
 import {useAuth} from "@/lib/client/hooks/use-auth";
-import {Input} from "@/lib/client/components/ui/input";
-import {Button} from "@/lib/client/components/ui/button";
 import {formatDateTime} from "@/lib/utils/functions";
-import {Checkbox} from "@/lib/client/components/ui/checkbox";
+import {Input} from "@/lib/client/components/ui/input";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {SearchType} from "@/lib/types/zod.schema.types";
+import {Button} from "@/lib/client/components/ui/button";
+import {Checkbox} from "@/lib/client/components/ui/checkbox";
+import {createFileRoute, Link} from "@tanstack/react-router";
 import {Payload} from "@/lib/client/components/general/Payload";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
-import {createFileRoute, Link} from "@tanstack/react-router";
 import {useDebounceCallback} from "@/lib/client/hooks/use-debounce";
 import {TablePagination} from "@/lib/client/components/general/TablePagination";
 import {MediaAndUserIcon} from "@/lib/client/components/media/base/MediaAndUserIcon";
-import {allUpdatesOptions, queryKeys} from "@/lib/client/react-query/query-options/query-options";
-import {useDeleteUpdatesMutation} from "@/lib/client/react-query/query-mutations/user-media.mutations";
+import {allUpdatesOptions} from "@/lib/client/react-query/query-options/query-options";
+import {useDeleteAllUpdatesMutation} from "@/lib/client/react-query/query-mutations/user-media.mutations";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/lib/client/components/ui/table";
 import {ColumnDef, flexRender, getCoreRowModel, OnChangeFn, PaginationState, useReactTable} from "@tanstack/react-table";
 
@@ -99,9 +99,9 @@ function AllUpdates() {
     const isCurrent = (currentUser?.name === username);
     const [rowSelected, setRowSelected] = useState({});
     const [currentSearch, setCurrentSearch] = useState(filters?.search ?? "");
+    const deleteUpdateMutation = useDeleteAllUpdatesMutation(username, filters);
     const apiData = useSuspenseQuery(allUpdatesOptions(username, filters)).data;
     const paginationState = { pageIndex: filters?.page ? (filters.page - 1) : 0, pageSize: 25 };
-    const deleteUpdateMutation = useDeleteUpdatesMutation(queryKeys.allUpdatesKey(username, filters));
 
     const { search = DEFAULT.search } = filters;
     const historyColumns = getHistoryColumns(isCurrent);

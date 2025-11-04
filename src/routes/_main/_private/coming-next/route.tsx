@@ -1,8 +1,8 @@
-import {capitalize} from "@/lib/utils/functions";
 import {MediaType} from "@/lib/utils/enums";
-import {useHashTab} from "@/lib/client/hooks/use-hash-tab";
+import {capitalize} from "@/lib/utils/functions";
 import {createFileRoute} from "@tanstack/react-router";
 import {useSuspenseQuery} from "@tanstack/react-query";
+import {useHashTab} from "@/lib/client/hooks/use-hash-tab";
 import {MutedText} from "@/lib/client/components/general/MutedText";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
 import {ComingNextMedia} from "@/lib/client/components/coming-next/ComingNextMedia";
@@ -12,13 +12,13 @@ import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/lib/client/components/
 
 
 export const Route = createFileRoute("/_main/_private/coming-next")({
-    loader: ({ context: { queryClient } }) => queryClient.ensureQueryData(upcomingOptions()),
+    loader: ({ context: { queryClient } }) => queryClient.ensureQueryData(upcomingOptions),
     component: ComingNextPage,
 });
 
 
 function ComingNextPage() {
-    const apiData = useSuspenseQuery(upcomingOptions()).data;
+    const apiData = useSuspenseQuery(upcomingOptions).data;
     const [selectedTab, handleTabChange] = useHashTab<MediaType>(MediaType.SERIES);
 
     return (

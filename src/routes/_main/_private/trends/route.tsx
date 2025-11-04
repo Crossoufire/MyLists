@@ -9,13 +9,13 @@ import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/lib/client/components/
 
 
 export const Route = createFileRoute("/_main/_private/trends")({
-    loader: ({ context: { queryClient } }) => queryClient.ensureQueryData(trendsOptions()),
+    loader: ({ context: { queryClient } }) => queryClient.ensureQueryData(trendsOptions),
     component: TrendsPage,
 });
 
 
 function TrendsPage() {
-    const apiData = useSuspenseQuery(trendsOptions()).data;
+    const apiData = useSuspenseQuery(trendsOptions).data;
     const [selectedTab, handleTabChange] = useHashTab<typeof MediaType.SERIES | typeof MediaType.MOVIES>(MediaType.SERIES);
 
     return (

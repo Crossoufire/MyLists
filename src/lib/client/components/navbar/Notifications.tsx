@@ -1,18 +1,18 @@
 import {cn} from "@/lib/utils/helpers";
+import {useRef, useState} from "react";
 import {Link} from "@tanstack/react-router";
+import {MediaType} from "@/lib/utils/enums";
 import {Badge} from "@/lib/client/components/ui/badge";
 import {Button} from "@/lib/client/components/ui/button";
-import {useRef, useState} from "react";
-import {MediaType} from "@/lib/utils/enums";
-import {formatDateTime, zeroPad} from "@/lib/utils/functions";
-import {useSheet} from "@/lib/client/contexts/sheet-context";
-import {Separator} from "@/lib/client/components/ui/separator";
 import {Bell, LoaderCircle, MoveRight} from "lucide-react";
-import {MutedText} from "@/lib/client/components/general/MutedText";
+import {useSheet} from "@/lib/client/contexts/sheet-context";
+import {formatDateTime, zeroPad} from "@/lib/utils/functions";
+import {Separator} from "@/lib/client/components/ui/separator";
 import {useQuery, useQueryClient} from "@tanstack/react-query";
+import {MutedText} from "@/lib/client/components/general/MutedText";
 import {MediaAndUserIcon} from "@/lib/client/components/media/base/MediaAndUserIcon";
 import {Popover, PopoverClose, PopoverContent, PopoverTrigger} from "@/lib/client/components/ui/popover";
-import {notificationsCountOptions, notificationsOptions, queryKeys} from "@/lib/client/react-query/query-options/query-options";
+import {notificationsCountOptions, notificationsOptions} from "@/lib/client/react-query/query-options/query-options";
 
 
 export const Notifications = ({ isMobile }: { isMobile?: boolean }) => {
@@ -20,13 +20,13 @@ export const Notifications = ({ isMobile }: { isMobile?: boolean }) => {
     const queryClient = useQueryClient();
     const [isOpen, setIsOpen] = useState(false);
     const popRef = useRef<HTMLButtonElement>(null);
-    const { data: notifCount = 0 } = useQuery(notificationsCountOptions());
-    const { data: notifs = [], isLoading, refetch } = useQuery(notificationsOptions());
+    const { data: notifCount = 0 } = useQuery(notificationsCountOptions);
+    const { data: notifs = [], isLoading, refetch } = useQuery(notificationsOptions);
 
     const handleOnClickOpen = async () => {
         await refetch();
         setIsOpen(true);
-        queryClient.setQueryData(queryKeys.notificationCountKey(), 0);
+        queryClient.setQueryData(notificationsCountOptions.queryKey, 0);
     };
 
     const handlePopoverClose = () => {
@@ -73,7 +73,7 @@ export const Notifications = ({ isMobile }: { isMobile?: boolean }) => {
 
 interface NotificationItemProps {
     handlePopoverClose: () => void;
-    data: Awaited<ReturnType<NonNullable<ReturnType<typeof notificationsOptions>["queryFn"]>>>[0];
+    data: Awaited<ReturnType<NonNullable<typeof notificationsOptions.queryFn>>>[number];
 }
 
 
