@@ -46,14 +46,12 @@ function RootComponent() {
         <body>
 
         <div id="root">
-            <div className="flex flex-col min-h-[calc(100vh_-_64px)] mt-[64px]">
-                <Toaster/>
-                <SheetProvider>
-                    <Navbar/>
-                </SheetProvider>
-                <Outlet/>
-                <Footer/>
-            </div>
+            <Toaster/>
+            <SheetProvider>
+                <Navbar/>
+            </SheetProvider>
+            <Outlet/>
+            <Footer/>
 
             {import.meta.env.DEV &&
                 <TanStackDevtools

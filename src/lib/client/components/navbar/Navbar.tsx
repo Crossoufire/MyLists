@@ -42,7 +42,7 @@ export const Navbar = () => {
     if (!currentUser) {
         return (
             <nav className="w-screen z-50 flex items-center fixed top-0 h-16 border-b border-b-neutral-700 bg-background">
-                <div className="max-sm:px-4 w-[100%] max-w-[1320px] flex w-full justify-between items-center container mx-auto">
+                <div className="max-sm:px-4 max-w-[1320px] flex w-full justify-between items-center container mx-auto">
                     <NavLink to="/" className="text-xl font-bold">
                         MyLists
                     </NavLink>
@@ -69,7 +69,7 @@ export const Navbar = () => {
 
     return (
         <nav className="w-screen z-50 flex items-center fixed top-0 h-16 border-b border-b-neutral-700 bg-background">
-            <div className="mx-auto w-[100%] max-w-[1320px] flex w-full justify-between items-center container">
+            <div className="mx-auto max-w-[1320px] flex w-full justify-between items-center container">
                 <div className="hidden lg:block">
                     <NavigationMenu>
                         <NavigationMenuList>

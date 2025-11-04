@@ -26,7 +26,7 @@ function AdminLayout() {
                     <header className="fixed flex h-12 shrink-0 items-center gap-2 px-2">
                         <SidebarTrigger className="-ml-1"/>
                     </header>
-                    <div className="flex flex-1 flex-col gap-4 p-4 mt-8">
+                    <div className="flex flex-col gap-4 p-4 pb-0 mt-8">
                         <Outlet/>
                     </div>
                 </SidebarInset>

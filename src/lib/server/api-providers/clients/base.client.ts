@@ -42,13 +42,13 @@ export class BaseClient {
         }
     }
 
-    private async _handleResponseError(response: Response) {
-        switch (response.status) {
+    private async _handleResponseError(res: Response) {
+        switch (res.status) {
             case 404:
                 throw notFound();
             case 429: {
                 // API-level rate limiting (bad rate limit on my part)
-                const retryAfter = response.headers.get("Retry-After");
+                const retryAfter = res.headers.get("Retry-After");
                 const retryAfterSecs = retryAfter ? Number(retryAfter) : 1;
                 await new Promise((resolve) => setTimeout(resolve, retryAfterSecs * 1000))
 
@@ -63,7 +63,7 @@ export class BaseClient {
             case 504:
                 throw new FormattedError("API currently down. Please try again later.");
             default: {
-                throw new Error(`Unexpected Error: ${response.status}`);
+                throw new Error(`Unexpected Error: ${res.status}`);
             }
         }
     }
