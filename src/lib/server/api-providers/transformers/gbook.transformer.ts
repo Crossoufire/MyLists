@@ -1,17 +1,17 @@
 import {MediaType} from "@/lib/utils/enums";
-import {books} from "@/lib/server/database/schema";
 import {getImageUrl} from "@/lib/utils/image-url";
+import {books} from "@/lib/server/database/schema";
 import {saveImageFromUrl} from "@/lib/utils/save-image";
 import {cleanHtmlText} from "@/lib/utils/clean-html-text";
 import {GBooksDetails, GBooksSearchResults, ProviderSearchResult, ProviderSearchResults, SearchData} from "@/lib/types/provider.types";
 
 
-type Book = typeof books.$inferInsert;
+type InsertBook = typeof books.$inferInsert;
 
 
 export class GBooksTransformer {
     transformSearchResults(searchData: SearchData<GBooksSearchResults>): ProviderSearchResults {
-        const results = searchData.rawData.items;
+        const results = searchData.rawData?.items ?? [];
         const hasNextPage = searchData.rawData.totalItems > (searchData.page * searchData.resultsPerPage);
 
         const transformedResults = results.map((item): ProviderSearchResult => {
@@ -28,7 +28,7 @@ export class GBooksTransformer {
     }
 
     async transformBooksDetailsResults(rawData: GBooksDetails) {
-        const mediaData: Book = {
+        const mediaData: InsertBook = {
             apiId: rawData.id,
             name: rawData.volumeInfo.title,
             language: rawData.volumeInfo.language,

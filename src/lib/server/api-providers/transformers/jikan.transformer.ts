@@ -10,7 +10,7 @@ type Manga = typeof manga.$inferInsert;
 
 export class JikanTransformer {
     transformSearchResults(searchData: SearchData<JikanMangaSearchResponse>): ProviderSearchResults {
-        const results = searchData.rawData.data;
+        const results = searchData.rawData?.data ?? [];
         const hasNextPage = searchData.rawData.pagination.has_next_page;
 
         const transformedResults = results.map((item): ProviderSearchResult => {

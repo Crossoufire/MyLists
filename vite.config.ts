@@ -21,7 +21,7 @@ export default defineConfig({
         }),
         viteReact({
             babel: {
-                plugins: [["babel-plugin-react-compiler", { target: "19" }]],
+                plugins: ["babel-plugin-react-compiler"],
             },
         }),
         tailwindcss(),

@@ -1,5 +1,5 @@
-import {CoverType} from "@/lib/types/base.types";
 import {MediaType} from "@/lib/utils/enums";
+import {CoverType} from "@/lib/types/base.types";
 import {isLatin1} from "@/lib/utils/check-latin";
 import {getImageUrl} from "@/lib/utils/image-url";
 import {saveImageFromUrl} from "@/lib/utils/save-image";
