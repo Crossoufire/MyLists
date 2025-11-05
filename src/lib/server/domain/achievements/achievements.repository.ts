@@ -4,7 +4,7 @@ import {AchievementTier} from "@/lib/types/zod.schema.types";
 import {getDbClient} from "@/lib/server/database/async-storage";
 import {AchievementDifficulty, MediaType} from "@/lib/utils/enums";
 import {Achievement, AchievementSeedData} from "@/lib/types/achievements.types";
-import {achievement, achievementTier, userAchievement} from "@/lib/server/database/schema";
+import {achievement, achievementTier, user, userAchievement} from "@/lib/server/database/schema";
 import {and, asc, count, eq, getTableColumns, inArray, max, notInArray, SQL, sql} from "drizzle-orm";
 
 
@@ -284,6 +284,32 @@ export class AchievementsRepository {
                     AND ua.user_id = calculation.user_id
             )
         `);
+    }
+
+    static async calculateAchievementsRarity() {
+        const totalActiveUsers = await getDbClient()
+            .select({ count: count() })
+            .from(user)
+            .where(eq(user.emailVerified, true))
+            .get();
+
+        const raritySubq = getDbClient()
+            .select({
+                tierId: userAchievement.tierId,
+                count: count(userAchievement.userId).as("count"),
+            })
+            .from(userAchievement)
+            .where(eq(userAchievement.completed, true))
+            .groupBy(userAchievement.tierId)
+            .as("rarity_subq");
+
+        await getDbClient()
+            .update(achievementTier)
+            .set({
+                rarity: sql`COALESCE((100.0 * ${raritySubq.count} / ${totalActiveUsers?.count ?? 0}), 0)`,
+            })
+            .from(raritySubq)
+            .where(eq(achievementTier.id, raritySubq.tierId));
     }
 
     private static _getSQLTierOrdering() {

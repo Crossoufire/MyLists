@@ -201,7 +201,7 @@ export class TasksService {
     }
 
     protected async runCalculateAchievements(ctx: TaskContext) {
-        ctx.logger.info("Starting calculating all achievements...");
+        ctx.logger.info("Starting calculating all achievements and rarity...");
 
         const allAchievements = await this.achievementsService.allUsersAchievements();
 
@@ -214,7 +214,9 @@ export class TasksService {
             ctx.logger.info(`Calculating ${mediaType} achievements completed.`);
         }
 
-        ctx.logger.info("Completed: CalculateAchievements execution.");
+        await this.achievementsService.calculateAchievementsRarity();
+
+        ctx.logger.info("Completed: CalculateAchievements and Rarity execution.");
     }
 
     protected async runRemoveNonListMedia(ctx: TaskContext) {

@@ -159,4 +159,8 @@ export class AchievementsService {
             await this.repository.insertAchievement(tier, achievementCTE, completed, count, progress);
         }
     }
+
+    async calculateAchievementsRarity() {
+        return this.repository.calculateAchievementsRarity();
+    }
 }
