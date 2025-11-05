@@ -8,8 +8,8 @@ export class JikanClient extends BaseClient {
     private static readonly consumeKey = "jikan-API";
     private readonly animeUrl = "https://api.jikan.moe/v4/anime";
     private readonly mangaUrl = "https://api.jikan.moe/v4/manga";
-    private static readonly perSecThrottle = { points: 1, duration: 0.4, keyPrefix: "jikanAPI-sec" }; // 2.5req/s (max 3)
-    private static readonly perMinThrottle = { points: 55, duration: 60, keyPrefix: "jikanAPI-min" }; // 55req/min (max 60)
+    private static readonly perSecThrottle = { points: 1, duration: 1, keyPrefix: "jikanAPI-sec" };
+    private static readonly perMinThrottle = { points: 40, duration: 60, keyPrefix: "jikanAPI-min" };
 
     constructor(limiters: RateLimiterAbstract[], consumeKey: string) {
         super(limiters, consumeKey);
