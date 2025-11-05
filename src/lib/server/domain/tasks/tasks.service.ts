@@ -203,7 +203,7 @@ export class TasksService {
     protected async runCalculateAchievements(ctx: TaskContext) {
         ctx.logger.info("Starting calculating all achievements and rarity...");
 
-        const allAchievements = await this.achievementsService.allUsersAchievements();
+        const allAchievements = await this.achievementsService.getAllAchievements();
 
         for (const mediaType of this.mediaTypes) {
             const mediaService = this.mediaServiceRegistry.getService(mediaType);
@@ -214,7 +214,7 @@ export class TasksService {
             ctx.logger.info(`Calculating ${mediaType} achievements completed.`);
         }
 
-        await this.achievementsService.calculateAchievementsRarity();
+        await this.achievementsService.calculateAllAchievementsRarity();
 
         ctx.logger.info("Completed: CalculateAchievements and Rarity execution.");
     }

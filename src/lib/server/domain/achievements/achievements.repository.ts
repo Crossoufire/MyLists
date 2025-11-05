@@ -1,8 +1,8 @@
 import {db} from "@/lib/server/database/db";
 import {StatsCTE} from "@/lib/types/base.types";
+import {AchievementDifficulty} from "@/lib/utils/enums";
 import {AchievementTier} from "@/lib/types/zod.schema.types";
 import {getDbClient} from "@/lib/server/database/async-storage";
-import {AchievementDifficulty, MediaType} from "@/lib/utils/enums";
 import {AchievementSeedData} from "@/lib/types/achievements.types";
 import {and, asc, count, eq, inArray, max, notInArray, SQL, sql} from "drizzle-orm";
 import {achievement, achievementTier, user, userAchievement} from "@/lib/server/database/schema";
@@ -201,7 +201,7 @@ export class AchievementsRepository {
         return { completedResult, totalAchievementsResult };
     }
 
-    static async getAllUserAchievements(userId: number) {
+    static async getUserAchievements(userId: number) {
         const tierOrder = this._getSQLTierOrdering();
 
         const results = await getDbClient()
@@ -218,25 +218,17 @@ export class AchievementsRepository {
         return results;
     }
 
-    static async allUsersAchievements() {
+    static async getAllAchievements() {
         const tierOrder = this._getSQLTierOrdering();
 
         return getDbClient().query.achievement.findMany({
+            orderBy: asc(achievement.id),
             with: {
                 tiers: {
                     orderBy: tierOrder,
                 },
             },
-            orderBy: asc(achievement.id),
         });
-    }
-
-    static async getMediaAchievements(mediaType: MediaType) {
-        return getDbClient()
-            .select()
-            .from(achievement)
-            .where(eq(achievement.mediaType, mediaType))
-            .execute()
     }
 
     static async updateAchievement(tier: AchievementTier, cte: StatsCTE, completed: SQL, count: SQL, progress: SQL, completedAt: SQL) {
@@ -287,7 +279,7 @@ export class AchievementsRepository {
         `);
     }
 
-    static async calculateAchievementsRarity() {
+    static async calculateAllAchievementsRarity() {
         const totalActiveUsers = await getDbClient()
             .select({ count: count() })
             .from(user)

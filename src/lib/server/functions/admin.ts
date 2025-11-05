@@ -90,7 +90,7 @@ export const getAdminAchievements = createServerFn({ method: "GET" })
     .middleware([managerAuthMiddleware, adminAuthMiddleware])
     .handler(async () => {
         const achievementService = await getContainer().then((c) => c.services.achievements);
-        return achievementService.allUsersAchievements();
+        return achievementService.getAllAchievements();
     });
 
 

@@ -4,12 +4,14 @@ import {AchievementTier} from "@/lib/types/zod.schema.types";
 import {AchievementDifficulty, MediaType} from "@/lib/utils/enums";
 import {BaseService} from "@/lib/server/domain/media/base/base.service";
 import {AchievementsRepository} from "@/lib/server/domain/achievements/achievements.repository";
-import {Achievement, AchievementSeedData, UserAchievementDetails} from "@/lib/types/achievements.types";
+import {Achievement, AchievementSeedData} from "@/lib/types/achievements.types";
 
 
 export class AchievementsService {
     constructor(private repository: typeof AchievementsRepository) {
     }
+
+    // --- Admin & Tasks -----------------------------------------------------------------
 
     async seedAchievements(achievements: readonly AchievementSeedData[]) {
         return this.repository.seedAchievements(achievements);
@@ -23,6 +25,8 @@ export class AchievementsService {
         return this.repository.updateTiersForAdmin(tiers);
     }
 
+    // -----------------------------------------------------------------------------------
+
     async getDifficultySummary(userId: number) {
         return this.repository.getDifficultySummary(userId);
     }
@@ -31,8 +35,8 @@ export class AchievementsService {
         return this.repository.getAchievementsDetails(userId, limit);
     }
 
-    async allUsersAchievements() {
-        return this.repository.allUsersAchievements();
+    async getAllAchievements() {
+        return this.repository.getAllAchievements();
     }
 
     async getUserAchievementStats(userId: number) {
@@ -86,54 +90,28 @@ export class AchievementsService {
         return results;
     }
 
-    async getAllUserAchievements(userId: number) {
-        const results = await this.repository.getAllUserAchievements(userId);
+    async getUserAchievements(userId: number) {
+        const results = await this.repository.getUserAchievements(userId);
 
-        const achievementsMap = new Map<number, UserAchievementDetails>();
-        for (const row of results) {
-            const tier = row.tier;
-            const achievement = row.achievement;
-            const userProgress = row.userProgress;
+        const uniqueAchIds = [...new Set(results.map((r) => r.achievement.id))];
 
-            let achievementEntry = achievementsMap.get(achievement.id);
-            if (!achievementEntry) {
-                achievementEntry = {
-                    tiers: [],
-                    id: achievement.id,
-                    name: achievement.name,
-                    mediaType: achievement.mediaType,
-                    description: achievement.description,
-                };
-                achievementsMap.set(achievement.id, achievementEntry);
-            }
-
-            const tierProgress = {
-                id: tier.id,
-                rarity: tier.rarity,
-                criteria: tier.criteria,
-                difficulty: tier.difficulty,
-                count: userProgress?.count ?? 0,
-                progress: userProgress?.progress ?? 0,
-                completed: userProgress?.completed ?? false,
-                completedAt: userProgress?.completedAt ?? null,
+        return uniqueAchIds.map((id) => {
+            const rows = results.filter((r) => r.achievement.id === id);
+            return {
+                ...rows[0].achievement,
+                tiers: rows.map(({ tier, userProgress }) => ({
+                    ...tier,
+                    count: userProgress?.count ?? 0,
+                    progress: userProgress?.progress ?? 0,
+                    completed: userProgress?.completed ?? false,
+                    completedAt: userProgress?.completedAt ?? null,
+                })),
             };
-
-            achievementEntry.tiers.push(tierProgress);
-        }
-
-        const finalAchievements = Array.from(achievementsMap.values());
-        finalAchievements.sort((a, b) => {
-            if (a.mediaType !== b.mediaType) {
-                return (a.mediaType).localeCompare(b.mediaType);
-            }
-            return a.name.localeCompare(b.name);
-        });
-
-        return finalAchievements;
+        }).sort((a, b) => a.mediaType.localeCompare(b.mediaType) || a.name.localeCompare(b.name));
     }
 
-    async getMediaAchievements(mediaType: MediaType) {
-        return this.repository.getMediaAchievements(mediaType);
+    async calculateAllAchievementsRarity() {
+        return this.repository.calculateAllAchievementsRarity();
     }
 
     async calculateAchievement(achievement: Achievement, mediaService: BaseService<any, any>) {
@@ -158,9 +136,5 @@ export class AchievementsService {
             await this.repository.updateAchievement(tier, achievementCTE, completed, count, progress, completedAt);
             await this.repository.insertAchievement(tier, achievementCTE, completed, count, progress);
         }
-    }
-
-    async calculateAchievementsRarity() {
-        return this.repository.calculateAchievementsRarity();
     }
 }
