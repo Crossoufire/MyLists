@@ -1,16 +1,8 @@
-import {AchievementTier} from "@/lib/types/zod.schema.types";
 import {AchievementDifficulty, MediaType} from "@/lib/utils/enums";
+import {AchievementsService} from "@/lib/server/domain/achievements/achievements.service";
 
 
-export type Achievement = {
-    id: number,
-    name: string,
-    codeName: string,
-    description: string,
-    value: string | null,
-    tiers: AchievementTier[],
-    mediaType: MediaType | null,
-}
+export type Achievement = Awaited<ReturnType<AchievementsService["allUsersAchievements"]>>[number];
 
 
 export type AchievementSeedData = {

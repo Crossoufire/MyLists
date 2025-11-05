@@ -40,7 +40,7 @@ export const userAchievement = sqliteTable("user_achievement", {
 
 
 export const achievementRelations = relations(achievement, ({ many }) => ({
-    achievementTiers: many(achievementTier),
+    tiers: many(achievementTier),
     userAchievements: many(userAchievement),
 }));
 

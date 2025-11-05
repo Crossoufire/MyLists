@@ -3,9 +3,9 @@ import {StatsCTE} from "@/lib/types/base.types";
 import {AchievementTier} from "@/lib/types/zod.schema.types";
 import {getDbClient} from "@/lib/server/database/async-storage";
 import {AchievementDifficulty, MediaType} from "@/lib/utils/enums";
-import {Achievement, AchievementSeedData} from "@/lib/types/achievements.types";
+import {AchievementSeedData} from "@/lib/types/achievements.types";
+import {and, asc, count, eq, inArray, max, notInArray, SQL, sql} from "drizzle-orm";
 import {achievement, achievementTier, user, userAchievement} from "@/lib/server/database/schema";
-import {and, asc, count, eq, getTableColumns, inArray, max, notInArray, SQL, sql} from "drizzle-orm";
 
 
 export class AchievementsRepository {
@@ -71,11 +71,11 @@ export class AchievementsRepository {
         }
     }
 
-    static async updateAchievementForAdmin(achievementId: number, name: string, description: string) {
+    static async updateAchievementForAdmin(achId: number, name: string, description: string) {
         await getDbClient()
             .update(achievement)
             .set({ name, description })
-            .where(eq(achievement.id, achievementId));
+            .where(eq(achievement.id, achId));
     }
 
     static async updateTiersForAdmin(tiers: AchievementTier[]) {
@@ -93,7 +93,10 @@ export class AchievementsRepository {
         const tierOrder = this._getSQLTierOrdering();
 
         const subq = getDbClient()
-            .select({ achievementId: userAchievement.achievementId, maxTierOrder: max(tierOrder).as("maxTierOrder") })
+            .select({
+                achievementId: userAchievement.achievementId,
+                maxTierOrder: max(tierOrder).as("maxTierOrder"),
+            })
             .from(userAchievement)
             .innerJoin(achievementTier, eq(userAchievement.tierId, achievementTier.id))
             .where(and(eq(userAchievement.userId, userId), eq(userAchievement.completed, true)))
@@ -101,7 +104,10 @@ export class AchievementsRepository {
             .as("subq");
 
         const results = await getDbClient()
-            .select({ difficulty: achievementTier.difficulty, count: count().mapWith(Number) })
+            .select({
+                count: count(),
+                difficulty: achievementTier.difficulty,
+            })
             .from(achievementTier)
             .innerJoin(subq, and(eq(achievementTier.achievementId, subq.achievementId), eq(tierOrder, subq.maxTierOrder)))
             .groupBy(achievementTier.difficulty)
@@ -114,7 +120,10 @@ export class AchievementsRepository {
         const tierOrder = this._getSQLTierOrdering();
 
         const highestCompletedTierSubquery = getDbClient()
-            .select({ achievementId: userAchievement.achievementId, maxTierOrder: max(tierOrder).as("maxTierOrder") })
+            .select({
+                achievementId: userAchievement.achievementId,
+                maxTierOrder: max(tierOrder).as("maxTierOrder"),
+            })
             .from(userAchievement)
             .innerJoin(achievementTier, eq(userAchievement.tierId, achievementTier.id))
             .where(and(eq(userAchievement.userId, userId), eq(userAchievement.completed, true)))
@@ -144,7 +153,11 @@ export class AchievementsRepository {
             .select({ count: count() })
             .from(userAchievement)
             .innerJoin(achievementTier, eq(userAchievement.tierId, achievementTier.id))
-            .where(and(forUser, eq(userAchievement.completed, true), eq(achievementTier.difficulty, AchievementDifficulty.PLATINUM)))
+            .where(and(
+                forUser,
+                eq(userAchievement.completed, true),
+                eq(achievementTier.difficulty, AchievementDifficulty.PLATINUM),
+            ))
             .get();
 
         return result?.count ?? 0;
@@ -178,7 +191,10 @@ export class AchievementsRepository {
             .orderBy(subq.mediaType, tierOrder);
 
         const totalAchievementsResult = await getDbClient()
-            .select({ total: count().as("total"), mediaType: achievement.mediaType })
+            .select({
+                total: count().as("total"),
+                mediaType: achievement.mediaType,
+            })
             .from(achievement)
             .groupBy(achievement.mediaType);
 
@@ -205,29 +221,14 @@ export class AchievementsRepository {
     static async allUsersAchievements() {
         const tierOrder = this._getSQLTierOrdering();
 
-        const flatResults = await getDbClient()
-            .select({
-                ...getTableColumns(achievement),
-                tier: getTableColumns(achievementTier),
-            })
-            .from(achievement)
-            .innerJoin(achievementTier, eq(achievement.id, achievementTier.achievementId))
-            .orderBy(asc(achievement.id), tierOrder);
-
-        const groupedAchievements = flatResults.reduce<Record<number, Achievement>>((acc, row) => {
-            const { tier, ...achievementData } = row;
-            const achievementId = achievementData.id;
-
-            if (!acc[achievementId]) {
-                acc[achievementId] = { ...achievementData, tiers: [] };
-            }
-
-            acc[achievementId].tiers.push(tier);
-
-            return acc;
-        }, {});
-
-        return Object.values(groupedAchievements);
+        return getDbClient().query.achievement.findMany({
+            with: {
+                tiers: {
+                    orderBy: tierOrder,
+                },
+            },
+            orderBy: asc(achievement.id),
+        });
     }
 
     static async getMediaAchievements(mediaType: MediaType) {

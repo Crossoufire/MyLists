@@ -15,8 +15,8 @@ export class AchievementsService {
         return this.repository.seedAchievements(achievements);
     }
 
-    async updateAchievementForAdmin(achievementId: number, name: string, description: string) {
-        await this.repository.updateAchievementForAdmin(achievementId, name, description);
+    async updateAchievementForAdmin(achId: number, name: string, description: string) {
+        await this.repository.updateAchievementForAdmin(achId, name, description);
     }
 
     async updateTiersForAdmin(tiers: AchievementTier[]) {

@@ -6,6 +6,7 @@ import {Label} from "@/lib/client/components/ui/label";
 import {createFileRoute} from "@tanstack/react-router";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {Button} from "@/lib/client/components/ui/button";
+import {Achievement} from "@/lib/types/achievements.types";
 import {AchievementTier} from "@/lib/types/zod.schema.types";
 import {Textarea} from "@/lib/client/components/ui/textarea";
 import {DashboardShell} from "@/lib/client/components/admin/DashboardShell";
@@ -14,9 +15,6 @@ import {adminAchievementsOptions} from "@/lib/client/react-query/query-options/a
 import {Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle} from "@/lib/client/components/ui/card";
 import {Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle} from "@/lib/client/components/ui/dialog";
 import {useAdminUpdateAchievementMutation, useAdminUpdateTiersMutation} from "@/lib/client/react-query/query-mutations/admin.mutations";
-
-
-type Achievement = Awaited<ReturnType<NonNullable<typeof adminAchievementsOptions["queryFn"]>>>[number];
 
 
 export const Route = createFileRoute("/_admin/admin/achievements")({
@@ -41,6 +39,7 @@ function AchievementPage() {
 
     useEffect(() => {
         if (editAchievementDialogOpen && editingAchievement) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setEditedName(editingAchievement.name);
             setEditedMediaType(editingAchievement.mediaType);
             setEditedDescription(editingAchievement.description);
@@ -49,6 +48,7 @@ function AchievementPage() {
 
     useEffect(() => {
         if (isTierDialogOpen && editingAchievement) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setEditableTiers(JSON.parse(JSON.stringify(editingAchievement.tiers || [])));
         }
     }, [isTierDialogOpen, editingAchievement]);
