@@ -8,7 +8,7 @@ import {BaseService} from "@/lib/server/domain/media/base/base.service";
 import {GamesSchemaConfig} from "@/lib/server/domain/media/games/games.config";
 import {GamesRepository} from "@/lib/server/domain/media/games/games.repository";
 import {Game, GamesAchCodeName, GamesList} from "@/lib/server/domain/media/games/games.types";
-import {LogPayload, StatsCTE, StatusPayload, UserMediaWithLabels} from "@/lib/types/base.types";
+import {LogPayload, PlaytimePayload, StatsCTE, StatusPayload, UserMediaWithLabels} from "@/lib/types/base.types";
 
 
 export class GamesService extends BaseService<GamesSchemaConfig, GamesRepository> {
@@ -38,7 +38,7 @@ export class GamesService extends BaseService<GamesSchemaConfig, GamesRepository
         this.updateHandlers = {
             ...this.updateHandlers,
             [UpdateType.STATUS]: this.updateStatusHandler.bind(this),
-            [UpdateType.PLAYTIME]: this.createSimpleUpdateHandler("playtime"),
+            [UpdateType.PLAYTIME]: this.updatePlaytimeHandler.bind(this),
             [UpdateType.PLATFORM]: this.createSimpleUpdateHandler("platform"),
         };
     }
@@ -221,6 +221,13 @@ export class GamesService extends BaseService<GamesSchemaConfig, GamesRepository
         if (payload.status === Status.PLAN_TO_PLAY) {
             newState.playtime = 0;
         }
+
+        return [newState, logPayload];
+    };
+
+    updatePlaytimeHandler(currentState: GamesList, payload: PlaytimePayload, _media: Game): [GamesList, LogPayload] {
+        const newState = { ...currentState, playtime: payload.playtime };
+        const logPayload = { oldValue: currentState.playtime, newValue: payload.playtime };
 
         return [newState, logPayload];
     };
