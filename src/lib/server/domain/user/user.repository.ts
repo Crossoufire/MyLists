@@ -1,14 +1,13 @@
 import {getDbClient} from "@/lib/server/database/async-storage";
 import {and, asc, count, desc, eq, like, sql} from "drizzle-orm";
 import {ApiProviderType, MediaType, PrivacyType} from "@/lib/utils/enums";
+import {followers, user, userMediaSettings} from "@/lib/server/database/schema";
 import {AdminUpdatePayload, SearchTypeAdmin} from "@/lib/types/zod.schema.types";
 import {ProviderSearchResult, ProviderSearchResults} from "@/lib/types/provider.types";
-import {followers, user, userMediaSettings} from "@/lib/server/database/schema";
 
 
 export class UserRepository {
-    // --- Tasks Maintenance ----------------------------------------------------
-
+    // --- Tasks & Admin ----------------------------------------------------
     static async deleteNonActivatedOldUsers() {
         const result = await getDbClient()
             .delete(user)
@@ -17,8 +16,6 @@ export class UserRepository {
 
         return result.length;
     }
-
-    // --- Admin Stats ----------------------------------------------------
 
     static async getUserStatsForAdmin() {
         const now = new Date();
@@ -75,19 +72,18 @@ export class UserRepository {
             })
             .from(user)
             .orderBy(desc(user.updatedAt))
-            .limit(limit)
-            .execute();
+            .limit(limit);
     }
 
-    static async getCumUsersPerMonthForAdmin(months?: number) {
+    static async getCumUsersPerMonthForAdmin() {
         const results = await getDbClient()
             .all<{ month: string, count: number }>(sql`
                 WITH monthly_buckets AS (
-                    SELECT 
-                        strftime('%Y-%m', created_at) as month,
-                        strftime('%Y-%m-01', created_at) as month_start
-                    FROM user
-                    WHERE created_at <= date('now')
+                    SELECT
+                        strftime('%Y-%m', ${user.createdAt}) as month,
+                        strftime('%Y-%m-01', ${user.createdAt}) as month_start
+                    FROM ${user}
+                    WHERE ${user.createdAt} <= date('now')
                 ), 
                 monthly_agg AS (
                     SELECT 
@@ -105,7 +101,6 @@ export class UserRepository {
                     SELECT *
                     FROM monthly_agg
                     ORDER BY month_start DESC
-                    LIMIT ${months ?? 9999999}
                 ) AS recent_months
                 ORDER BY month_start ASC
             `);
@@ -145,22 +140,21 @@ export class UserRepository {
             .select({ count: count() })
             .from(user)
             .where(like(user.name, `%${search}%`))
-            .get();
+            .get().then((res) => res?.count ?? 0);
 
         const users = await getDbClient()
             .select()
             .from(user)
             .offset(offset)
             .limit(perPage)
-            //@ts-expect-error, we know sorting is in user table
+            //@ts-expect-error, we know `sorting` is in user table
             .orderBy(sortDesc ? desc(user[sorting]) : asc(user[sorting]))
-            .where(like(user.name, `%${search}%`))
-            .execute();
+            .where(like(user.name, `%${search}%`));
 
         return {
             items: users,
-            total: totalUsers?.count || 0,
-            pages: Math.ceil((totalUsers?.count || 0) / perPage),
+            total: totalUsers,
+            pages: Math.ceil(totalUsers / perPage),
         };
     }
 
@@ -168,30 +162,26 @@ export class UserRepository {
         await getDbClient()
             .update(user)
             .set(payload)
-            .where(eq(user.id, userId))
-            .execute();
+            .where(eq(user.id, userId));
     }
 
     static async updateFeatureFlag(userId: number) {
         await getDbClient()
             .update(user)
             .set({ showUpdateModal: false })
-            .where(eq(user.id, userId))
-            .execute();
+            .where(eq(user.id, userId));
     }
 
     static async deleteUserAccount(userId: number) {
         await getDbClient()
             .delete(user)
-            .where(eq(user.id, userId))
-            .execute();
+            .where(eq(user.id, userId));
     }
 
     static async adminUpdateFeaturesFlag(showUpdateModal: boolean) {
         await getDbClient()
             .update(user)
-            .set({ showUpdateModal })
-            .execute();
+            .set({ showUpdateModal });
     }
 
     static async findByUsername(username: string) {
@@ -205,26 +195,22 @@ export class UserRepository {
             .select({ count: count() })
             .from(followers)
             .where(eq(followers.followedId, userResult.id))
-            .get();
+            .get().then((res) => res?.count ?? 0);
 
-        return {
-            ...userResult,
-            followersCount: followersCount?.count || 0
-        };
+        return { ...userResult, followersCount };
     }
 
     static async updateNotificationsReadTime(userId: number) {
         return getDbClient()
             .update(user)
             .set({ lastNotifReadTime: sql`datetime('now')` })
-            .where(eq(user.id, userId))
-            .execute();
+            .where(eq(user.id, userId));
     }
 
     static async findById(userId: number) {
         return getDbClient().query.user.findFirst({
             where: eq(user.id, userId),
-            with: { userMediaSettings: true }
+            with: { userMediaSettings: true },
         });
     }
 
@@ -282,13 +268,11 @@ export class UserRepository {
     }
 
     static async getUserFollowers(userId: number, limit: number = 8) {
-        const totalCountResult = await getDbClient()
+        const totalCount = await getDbClient()
             .select({ value: sql<number>`count()` })
             .from(followers)
             .where(eq(followers.followedId, userId))
-            .get()
-
-        const total = totalCountResult?.value ?? 0;
+            .get().then((res) => res?.value ?? 0);
 
         const followersUsers = await getDbClient()
             .select({
@@ -303,17 +287,15 @@ export class UserRepository {
             .orderBy(asc(user.name))
             .limit(limit);
 
-        return { total: total, followers: followersUsers };
+        return { total: totalCount, followers: followersUsers };
     }
 
     static async getUserFollows(userId: number, limit: number = 8) {
-        const totalCountResult = await getDbClient()
+        const totalCount = await getDbClient()
             .select({ value: sql<number>`count()` })
             .from(followers)
             .where(eq(followers.followerId, userId))
-            .get();
-
-        const total = totalCountResult?.value ?? 0;
+            .get().then((res) => res?.value ?? 0);
 
         const followedUsers = await getDbClient()
             .select({
@@ -328,17 +310,15 @@ export class UserRepository {
             .orderBy(asc(user.name))
             .limit(limit);
 
-        return { total: total, follows: followedUsers };
+        return { total: totalCount, follows: followedUsers };
     }
 
     static async searchUsers(query: string, page: number = 1): Promise<ProviderSearchResults> {
-        const countUsers = await getDbClient()
+        const usersCount = await getDbClient()
             .select({ count: count() })
             .from(user)
             .where(like(user.name, `%${query}%`))
-            .get()
-
-        const hasNextPage = (countUsers?.count ?? 0) > page * 20;
+            .get().then((res) => res?.count ?? 0);
 
         const dbUsers = await getDbClient()
             .select({
@@ -355,6 +335,6 @@ export class UserRepository {
 
         const users = dbUsers.map((user) => ({ ...user, itemType: ApiProviderType.USERS }) as ProviderSearchResult);
 
-        return { data: users, hasNextPage };
+        return { data: users, hasNextPage: usersCount > page * 20 };
     }
 }

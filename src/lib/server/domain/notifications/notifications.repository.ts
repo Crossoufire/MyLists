@@ -33,8 +33,7 @@ export class NotificationsRepository {
             .from(notifications)
             .where(eq(notifications.userId, userId))
             .orderBy(desc(notifications.timestamp))
-            .limit(limit)
-            .execute();
+            .limit(limit);
     }
 
     static async countUnreadNotifications(userId: number, lastReadTime: Date | null) {
@@ -44,16 +43,15 @@ export class NotificationsRepository {
             .select({ count: count() })
             .from(notifications)
             .where(and(eq(notifications.userId, userId), sql`${notifications.timestamp} >= ${lastNotifReadTime}`))
-            .get();
+            .get().then((res) => res?.count || 0);
 
-        return notificationsCount?.count || 0;
+        return notificationsCount;
     }
 
     static async deleteNotifications(mediaType: MediaType, mediaIds: number[]) {
         await getDbClient()
             .delete(notifications)
-            .where(and(eq(notifications.mediaType, mediaType), inArray(notifications.mediaId, mediaIds)))
-            .execute();
+            .where(and(eq(notifications.mediaType, mediaType), inArray(notifications.mediaId, mediaIds)));
     }
 
     static async deleteUserMediaNotifications(userId: number, mediaType: MediaType, mediaId: number) {
@@ -63,7 +61,6 @@ export class NotificationsRepository {
                 eq(notifications.userId, userId),
                 eq(notifications.mediaId, mediaId),
                 eq(notifications.mediaType, mediaType),
-            ))
-            .execute();
+            ));
     }
 }

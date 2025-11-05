@@ -20,11 +20,11 @@ export class UserUpdatesRepository {
         const search = filters?.search ?? "";
         const offset = (page - 1) * limit;
 
-        const totalCountResult = await getDbClient()
+        const totalCount = await getDbClient()
             .select({ count: sql<number>`count()` })
             .from(userMediaUpdate)
             .where(and(eq(userMediaUpdate.userId, userId), like(userMediaUpdate.mediaName, `%${search}%`)))
-            .get();
+            .get().then((res) => res?.count ?? 0);
 
         const historyResult = await getDbClient()
             .select()
@@ -32,10 +32,9 @@ export class UserUpdatesRepository {
             .where(and(eq(userMediaUpdate.userId, userId), like(userMediaUpdate.mediaName, `%${search}%`)))
             .orderBy(desc(userMediaUpdate.timestamp))
             .offset(offset)
-            .limit(limit)
-            .execute();
+            .limit(limit);
 
-        return { total: totalCountResult?.count ?? 0, items: historyResult };
+        return { total: totalCount, items: historyResult };
     }
 
     static async getUserMediaHistory(userId: number, mediaType: MediaType, mediaId: number) {
@@ -47,8 +46,7 @@ export class UserUpdatesRepository {
                 eq(userMediaUpdate.mediaType, mediaType),
                 eq(userMediaUpdate.mediaId, mediaId),
             ))
-            .orderBy(desc(userMediaUpdate.timestamp))
-            .execute();
+            .orderBy(desc(userMediaUpdate.timestamp));
     }
 
     static async getFollowsUpdates(userId: number, asPublic: boolean, limit = 10) {
@@ -107,26 +105,21 @@ export class UserUpdatesRepository {
     static async deleteUserUpdates(userId: number, updateIds: number[], returnData: boolean) {
         await getDbClient()
             .delete(userMediaUpdate)
-            .where(and(eq(userMediaUpdate.userId, userId), inArray(userMediaUpdate.id, updateIds)))
-            .execute();
+            .where(and(eq(userMediaUpdate.userId, userId), inArray(userMediaUpdate.id, updateIds)));
 
         if (returnData) {
-            const newUpdateToReturn = await getDbClient()
+            return getDbClient()
                 .select()
                 .from(userMediaUpdate)
                 .where(eq(userMediaUpdate.userId, userId))
                 .orderBy(desc(userMediaUpdate.timestamp))
-                .limit(8)
-                .execute();
-
-            return newUpdateToReturn?.at(-1) ?? null;
+                .limit(8).then((res) => res[res.length - 1] ?? null);
         }
     }
 
     static async deleteMediaUpdates(mediaType: MediaType, mediaIds: number[]) {
         await getDbClient()
             .delete(userMediaUpdate)
-            .where(and(eq(userMediaUpdate.mediaType, mediaType), inArray(userMediaUpdate.mediaId, mediaIds)))
-            .execute();
+            .where(and(eq(userMediaUpdate.mediaType, mediaType), inArray(userMediaUpdate.mediaId, mediaIds)));
     }
 }

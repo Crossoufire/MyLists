@@ -268,8 +268,11 @@ export class TasksService {
             ctx.logger.info(`Computing ${mediaType} stats for all users...`);
 
             const mediaService = this.mediaServiceRegistry.getService(mediaType);
-            const userMediaStats = await mediaService.computeAllUsersStats();
-            await this.userStatsService.updateAllUsersPreComputedStats(mediaType, userMediaStats);
+
+            await withTransaction(async () => {
+                const userMediaStats = await mediaService.computeAllUsersStats();
+                await this.userStatsService.updateAllUsersPreComputedStats(mediaType, userMediaStats);
+            })
 
             ctx.logger.info(`Computed ${mediaType} stats for all users.`);
         }

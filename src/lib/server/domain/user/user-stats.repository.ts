@@ -14,8 +14,7 @@ export class UserStatsRepository {
         return getDbClient()
             .select()
             .from(userMediaSettings)
-            .where(and(eq(userMediaSettings.userId, userId), eq(userMediaSettings.active, true)))
-            .execute();
+            .where(and(eq(userMediaSettings.userId, userId), eq(userMediaSettings.active, true)));
     }
 
     static async updateUserMediaListSettings(userId: number, payload: Partial<Record<MediaType, boolean>>) {
@@ -207,8 +206,7 @@ export class UserStatsRepository {
         const allSettings = await getDbClient()
             .select()
             .from(userMediaSettings)
-            .where(inArray(userMediaSettings.userId, userIds))
-            .execute();
+            .where(inArray(userMediaSettings.userId, userIds));
 
         const userSettingsMap = new Map<number, (typeof userMediaSettings.$inferSelect)[]>();
         for (const setting of allSettings) {
@@ -227,8 +225,7 @@ export class UserStatsRepository {
             .from(userMediaSettings)
             .where(and(gt(userMediaSettings.timeSpent, 0), eq(userMediaSettings.active, true)),
             )
-            .groupBy(userMediaSettings.mediaType)
-            .execute();
+            .groupBy(userMediaSettings.mediaType);
 
         const mediaTypeCountMap = new Map<MediaType, number>();
         mediaTypeCountsResult.forEach((row) => {
@@ -251,31 +248,28 @@ export class UserStatsRepository {
 
         return {
             mediaTypes,
-            currentUserRankData: currentUserRankData!,
-            mediaTypeCountMap,
-            currentUserActiveSettings,
             rankedUsers,
             userSettingsMap,
+            mediaTypeCountMap,
             rankSelectionColName,
+            currentUserActiveSettings,
+            currentUserRankData: currentUserRankData!,
             page, pages, total,
         };
     }
 
     static async updateAllUsersPreComputedStats(mediaType: MediaType, userStats: UserMediaStats[]) {
-        await db.transaction(async (tx) => {
-            for (const stat of userStats) {
-                await tx
-                    .update(userMediaSettings)
-                    .set({
-                        mediaType: mediaType,
-                        ...userStats,
-                    })
-                    .where(and(
-                        eq(userMediaSettings.userId, stat.userId),
-                        eq(userMediaSettings.mediaType, mediaType)
-                    ));
-            }
-        });
+        const tx = getDbClient();
+
+        for (const stat of userStats) {
+            await tx
+                .update(userMediaSettings)
+                .set({
+                    mediaType: mediaType,
+                    ...userStats,
+                })
+                .where(and(eq(userMediaSettings.userId, stat.userId), eq(userMediaSettings.mediaType, mediaType)));
+        }
     }
 
     static async getAggregatedMediaStats({ userId, mediaType }: { userId?: number, mediaType: MediaType }) {
@@ -365,11 +359,10 @@ export class UserStatsRepository {
 
         let totalUsers = 0;
         if (!userId) {
-            const userCountResult = await getDbClient()
+            totalUsers = await getDbClient()
                 .select({ count: count() })
                 .from(user)
-                .get();
-            totalUsers = userCountResult?.count ?? 0;
+                .get().then((res) => res?.count ?? 0);
         }
 
         return {

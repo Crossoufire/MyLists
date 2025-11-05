@@ -13,13 +13,13 @@ export class MediadleRepository {
         const perPage = data.perPage ?? 25;
         const offset = (page - 1) * perPage;
 
-        const totalResult = await getDbClient()
+        const totalCount = await getDbClient()
             .select({ count: count() })
             .from(mediadleStats)
             .innerJoin(user, eq(mediadleStats.userId, user.id))
             .where(like(user.name, `%${search}%`))
-            .get();
-        const totalStats = totalResult?.count ?? 0;
+            .get()
+            .then((res) => res?.count ?? 0);
 
         const results = await getDbClient()
             .select({
@@ -36,17 +36,17 @@ export class MediadleRepository {
             .orderBy(desc(mediadleStats.totalPlayed))
             .limit(perPage)
             .offset(offset)
-            .execute();
 
         return {
             items: results,
-            pages: Math.ceil((totalStats ?? 0) / perPage),
-            total: totalStats,
+            total: totalCount,
+            pages: Math.ceil(totalCount / perPage),
         };
     }
 
     static async getTodayMoviedle() {
         const today = new Date().toISOString().slice(0, 10);
+
         return getDbClient()
             .select()
             .from(dailyMediadle)
@@ -55,13 +55,12 @@ export class MediadleRepository {
     }
 
     static async createDailyMoviedle() {
-        const alreadyUsedMovies = await getDbClient()
+        const alreadyUsedMoviesIds = await getDbClient()
             .select({ mediaId: dailyMediadle.mediaId })
             .from(dailyMediadle)
             .where(eq(dailyMediadle.mediaType, MediaType.MOVIES))
             .limit(200)
-            .execute();
-        const alreadyUsedMoviesIds = alreadyUsedMovies.map((r) => r.mediaId);
+            .then((res) => res.map((r) => r.mediaId));
 
         const selectedMovie = await getDbClient()
             .select()
@@ -80,10 +79,9 @@ export class MediadleRepository {
                 mediaId: selectedMovie.id,
                 mediaType: MediaType.MOVIES,
                 date: new Date().toISOString().slice(0, 10),
-            })
-            .returning()
+            }).returning();
 
-        return newMoviedle!;
+        return newMoviedle;
     }
 
     static async getUserProgress(userId: number, mediadleId: number) {
@@ -99,14 +97,14 @@ export class MediadleRepository {
             .insert(userMediadleProgress)
             .values({
                 userId,
-                dailyMediadleId: mediadleId,
                 attempts: 0,
-                completed: false,
                 succeeded: false,
+                completed: false,
+                dailyMediadleId: mediadleId,
             })
             .returning()
 
-        return newUserProgress!;
+        return newUserProgress;
     }
 
     static async updateUserProgress(userId: number, mediadleId: number, attempts: number, completed: boolean, succeeded: boolean) {
@@ -121,7 +119,7 @@ export class MediadleRepository {
             .where(and(eq(userMediadleProgress.userId, userId), eq(userMediadleProgress.dailyMediadleId, mediadleId)))
             .returning();
 
-        return updatedProgress!;
+        return updatedProgress;
     }
 
     static async getUserMediadleStats(userId: number) {
@@ -133,13 +131,11 @@ export class MediadleRepository {
                 bestStreak: mediadleStats.bestStreak,
                 totalPlayed: mediadleStats.totalPlayed,
                 averageAttempts: mediadleStats.averageAttempts,
-                winRate: sql<number>`
-                    CASE 
-                        WHEN ${mediadleStats.totalPlayed} > 0 
-                        THEN (CAST(${mediadleStats.totalWon} AS REAL) / ${mediadleStats.totalPlayed}) * 100
-                        ELSE 0
-                    END
-                `,
+                winRate: sql<number>`CASE 
+                    WHEN ${mediadleStats.totalPlayed} > 0 
+                    THEN (CAST(${mediadleStats.totalWon} AS REAL) / ${mediadleStats.totalPlayed}) * 100
+                    ELSE 0
+                END`,
             })
             .from(mediadleStats)
             .where(eq(mediadleStats.userId, userId))
@@ -165,16 +161,14 @@ export class MediadleRepository {
                 bestStreak: mediadleStats.bestStreak,
                 totalPlayed: mediadleStats.totalPlayed,
                 averageAttempts: mediadleStats.averageAttempts,
-                winRate: sql<number>`
-                    CASE 
-                        WHEN ${mediadleStats.totalPlayed} > 0 
-                        THEN (CAST(${mediadleStats.totalWon} AS REAL) / ${mediadleStats.totalPlayed}) * 100
-                        ELSE 0
-                    END
-                `,
+                winRate: sql<number>`CASE 
+                    WHEN ${mediadleStats.totalPlayed} > 0 
+                    THEN (CAST(${mediadleStats.totalWon} AS REAL) / ${mediadleStats.totalPlayed}) * 100
+                    ELSE 0
+                END`,
             });
 
-        return newStats!;
+        return newStats;
     }
 
     static async updateMediadleStats(statsId: number, isCompleted: boolean, isCorrect: boolean, attempts: number) {
@@ -218,7 +212,7 @@ export class MediadleRepository {
             .where(eq(mediadleStats.id, statsId))
             .returning();
 
-        return updatedStats!;
+        return updatedStats;
     }
 
     static async getUserAttempts(userId: number) {
@@ -229,8 +223,7 @@ export class MediadleRepository {
             })
             .from(userMediadleProgress)
             .where(and(eq(userMediadleProgress.userId, userId), isNotNull(userMediadleProgress.completionTime)))
-            .orderBy(userMediadleProgress.completionTime)
-            .execute();
+            .orderBy(userMediadleProgress.completionTime);
     }
 
     static async incrementUserAttempts(userId: number, mediadleId: number, isCompleted: boolean, isSucceeded: boolean) {
