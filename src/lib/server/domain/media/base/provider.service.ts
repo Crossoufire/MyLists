@@ -38,15 +38,8 @@ export abstract class BaseProviderService<
     }
 
     async fetchAndRefreshMediaDetails(apiId: number | string, isBulk: boolean = false) {
-        try {
-            const details = await this._fetchAndTransformDetails(apiId, isBulk);
-            await this.repository.updateMediaWithDetails(details);
-        }
-        catch (err: any) {
-            err.apiId = apiId;
-            err.message = `Error refreshing media with apiId ${apiId}: ${err.message}`;
-            throw err;
-        }
+        const details = await this._fetchAndTransformDetails(apiId, isBulk);
+        await this.repository.updateMediaWithDetails(details);
     }
 
     protected async _enhanceDetails(details: TTransformedDetails, _isBulk: boolean, _rawData: TRawDetails) {
