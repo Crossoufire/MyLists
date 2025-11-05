@@ -4,120 +4,71 @@ import {AchievementTier} from "@/lib/types/zod.schema.types";
 import {getDbClient} from "@/lib/server/database/async-storage";
 import {AchievementDifficulty, MediaType} from "@/lib/utils/enums";
 import {Achievement, AchievementSeedData} from "@/lib/types/achievements.types";
-import {and, asc, count, eq, getTableColumns, inArray, max, SQL, sql} from "drizzle-orm";
 import {achievement, achievementTier, userAchievement} from "@/lib/server/database/schema";
+import {and, asc, count, eq, getTableColumns, inArray, max, notInArray, SQL, sql} from "drizzle-orm";
 
 
 export class AchievementsRepository {
+    static async seedAchievements(achievementsDef: readonly AchievementSeedData[]) {
+        const tx = getDbClient();
 
-    static getSQLTierOrdering() {
-        return sql<number>`CASE ${achievementTier.difficulty}
-            WHEN 'bronze' THEN 1
-            WHEN 'silver' THEN 2
-            WHEN 'gold' THEN 3
-            WHEN 'platinum' THEN 4
-            ELSE 0
-        END`;
-    }
-
-    static async seedAchievements(achievementsDefinition: readonly AchievementSeedData[]) {
-        await db.transaction(async (tx) => {
-            for (const achievementData of achievementsDefinition) {
-                const existingAchievement = await tx
-                    .select()
-                    .from(achievement)
-                    .where(eq(achievement.codeName, achievementData.codeName))
-                    .get();
-
-                let currentAchievement: typeof achievement.$inferSelect | undefined;
-
-                if (existingAchievement) {
-                    currentAchievement = existingAchievement;
-                    await tx
-                        .update(achievement)
-                        .set({
-                            name: achievementData.name,
-                            mediaType: achievementData.mediaType,
-                            value: achievementData.value?.toString(),
-                            description: achievementData.description,
-                        })
-                        .where(eq(achievement.id, currentAchievement.id))
-                }
-                else {
-                    const newAchievements = await tx
-                        .insert(achievement)
-                        .values({
-                            name: achievementData.name,
-                            codeName: achievementData.codeName,
-                            mediaType: achievementData.mediaType,
-                            value: achievementData.value?.toString(),
-                            description: achievementData.description,
-                        })
-                        .returning();
-                    currentAchievement = newAchievements[0];
-                }
-
-                const existingTiers = await tx
-                    .select()
-                    .from(achievementTier)
-                    .where(eq(achievementTier.achievementId, currentAchievement.id))
-
-                const newDifficulties = new Set(achievementData.tiers.map((tier) => tier.difficulty));
-                const existingTierDiff = new Set(existingTiers.map((tier) => tier.difficulty));
-
-                const difficultiesToRemove = Array.from(existingTierDiff).filter((d) => !newDifficulties.has(d));
-                if (difficultiesToRemove.length > 0) {
-                    await tx
-                        .delete(achievementTier)
-                        .where(and(
-                            eq(achievementTier.achievementId, currentAchievement.id),
-                            inArray(achievementTier.difficulty, difficultiesToRemove),
-                        ))
-                }
-
-                for (const tierData of achievementData.tiers) {
-                    const existingTier = existingTiers.find((tier) => tier.difficulty === tierData.difficulty);
-                    if (existingTier) {
-                        await tx
-                            .update(achievementTier)
-                            .set({ criteria: tierData.criteria })
-                            .where(eq(achievementTier.id, existingTier.id))
-                    }
-                    else {
-                        await tx
-                            .insert(achievementTier)
-                            .values({
-                                achievementId: currentAchievement.id,
-                                difficulty: tierData.difficulty,
-                                criteria: tierData.criteria,
-                            })
-                    }
-                }
-            }
-
-            const mediaTypeAchievements = await tx
-                .select({
-                    id: achievement.id,
-                    codeName: achievement.codeName,
+        // Upsert achievements and tiers
+        await Promise.all(achievementsDef.map(async (achievementData) => {
+            const [syncedAchievement] = await tx
+                .insert(achievement)
+                .values({
+                    name: achievementData.name,
+                    codeName: achievementData.codeName,
+                    mediaType: achievementData.mediaType,
+                    value: achievementData.value?.toString(),
+                    description: achievementData.description,
                 })
-                .from(achievement)
-                .where(eq(achievement.mediaType, achievementsDefinition[0].mediaType))
+                .onConflictDoUpdate({
+                    target: achievement.codeName,
+                    set: {
+                        name: achievementData.name,
+                        mediaType: achievementData.mediaType,
+                        value: achievementData.value?.toString(),
+                        description: achievementData.description,
+                    },
+                })
+                .returning();
 
-            const definedCodeNames = new Set(achievementsDefinition.map((ad) => ad.codeName));
-            const achievementsToRemove = mediaTypeAchievements.filter(
-                (existingAch) => !definedCodeNames.has(existingAch.codeName),
-            );
+            const tierDiffs = achievementData.tiers.map((tier) => tier.difficulty);
 
-            if (achievementsToRemove.length > 0) {
-                const idsToRemove = achievementsToRemove.map((ach) => ach.id);
-                await tx
-                    .delete(achievementTier)
-                    .where(inArray(achievementTier.achievementId, idsToRemove))
-                await tx
-                    .delete(achievement)
-                    .where(inArray(achievement.id, idsToRemove))
-            }
-        });
+            await tx
+                .delete(achievementTier)
+                .where(and(
+                    notInArray(achievementTier.difficulty, tierDiffs),
+                    eq(achievementTier.achievementId, syncedAchievement.id),
+                ));
+
+            await tx
+                .insert(achievementTier)
+                .values(achievementData.tiers.map((tierData) => ({
+                    criteria: tierData.criteria,
+                    difficulty: tierData.difficulty,
+                    achievementId: syncedAchievement.id,
+                })))
+                .onConflictDoUpdate({
+                    target: [achievementTier.achievementId, achievementTier.difficulty],
+                    set: { criteria: sql`excluded.criteria` },
+                });
+        }));
+
+        // Remove orphaned achievements and tiers
+        const mediaType = achievementsDef[0].mediaType;
+        const achCodeNames = achievementsDef.map((ach) => ach.codeName);
+
+        const orphanedAchievementIds = await tx
+            .select({ id: achievement.id })
+            .from(achievement)
+            .where(and(eq(achievement.mediaType, mediaType), notInArray(achievement.codeName, achCodeNames)))
+            .then((rows) => rows.map((r) => r.id));
+
+        if (orphanedAchievementIds.length > 0) {
+            await tx.delete(achievement).where(inArray(achievement.id, orphanedAchievementIds));
+        }
     }
 
     static async updateAchievementForAdmin(achievementId: number, name: string, description: string) {
@@ -139,7 +90,7 @@ export class AchievementsRepository {
     }
 
     static async getDifficultySummary(userId: number) {
-        const tierOrder = this.getSQLTierOrdering();
+        const tierOrder = this._getSQLTierOrdering();
 
         const subq = getDbClient()
             .select({ achievementId: userAchievement.achievementId, maxTierOrder: max(tierOrder).as("maxTierOrder") })
@@ -160,7 +111,7 @@ export class AchievementsRepository {
     }
 
     static async getAchievementsDetails(userId: number, limit = 6) {
-        const tierOrder = this.getSQLTierOrdering();
+        const tierOrder = this._getSQLTierOrdering();
 
         const highestCompletedTierSubquery = getDbClient()
             .select({ achievementId: userAchievement.achievementId, maxTierOrder: max(tierOrder).as("maxTierOrder") })
@@ -200,7 +151,7 @@ export class AchievementsRepository {
     }
 
     static async getUserAchievementStats(userId: number) {
-        const tierOrder = this.getSQLTierOrdering();
+        const tierOrder = this._getSQLTierOrdering();
 
         const subq = getDbClient()
             .select({
@@ -235,7 +186,7 @@ export class AchievementsRepository {
     }
 
     static async getAllUserAchievements(userId: number) {
-        const tierOrder = this.getSQLTierOrdering();
+        const tierOrder = this._getSQLTierOrdering();
 
         const results = await getDbClient()
             .select({
@@ -252,7 +203,7 @@ export class AchievementsRepository {
     }
 
     static async allUsersAchievements() {
-        const tierOrder = this.getSQLTierOrdering();
+        const tierOrder = this._getSQLTierOrdering();
 
         const flatResults = await getDbClient()
             .select({
@@ -333,5 +284,15 @@ export class AchievementsRepository {
                     AND ua.user_id = calculation.user_id
             )
         `);
+    }
+
+    private static _getSQLTierOrdering() {
+        return sql<number>`CASE ${achievementTier.difficulty}
+            WHEN 'bronze' THEN 1
+            WHEN 'silver' THEN 2
+            WHEN 'gold' THEN 3
+            WHEN 'platinum' THEN 4
+            ELSE 0
+        END`;
     }
 }

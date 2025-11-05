@@ -189,7 +189,10 @@ export class TasksService {
 
             const mediaService = this.mediaServiceRegistry.getService(mediaType);
             const achievementsDefinition = mediaService.getAchievementsDefinition();
-            await this.achievementsService.seedAchievements(achievementsDefinition);
+
+            await withTransaction(async () => {
+                await this.achievementsService.seedAchievements(achievementsDefinition);
+            });
 
             ctx.logger.info(`Seeding ${mediaType} achievements completed.`);
         }
@@ -204,7 +207,7 @@ export class TasksService {
 
         for (const mediaType of this.mediaTypes) {
             const mediaService = this.mediaServiceRegistry.getService(mediaType);
-            const mediaAchievements = allAchievements.filter((achievement) => achievement.mediaType === mediaType);
+            const mediaAchievements = allAchievements.filter((ach) => ach.mediaType === mediaType);
             for (const achievement of mediaAchievements) {
                 await this.achievementsService.calculateAchievement(achievement, mediaService);
             }

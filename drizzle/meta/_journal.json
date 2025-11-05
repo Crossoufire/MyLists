@@ -22,6 +22,27 @@
       "when": 1762185924096,
       "tag": "0002_tiny_falcon",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1762341825599,
+      "tag": "0003_needy_valeria_richards",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1762342211295,
+      "tag": "0004_amazing_grandmaster",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1762343203877,
+      "tag": "0005_material_frightful_four",
+      "breakpoints": true
     }
   ]
 }

@@ -2,14 +2,14 @@ import {relations} from "drizzle-orm/relations";
 import {user} from "@/lib/server/database/schema/auth.schema";
 import {customJson} from "@/lib/server/database/custom-types";
 import {AchievementDifficulty, MediaType} from "@/lib/utils/enums";
-import {integer, real, sqliteTable, text} from "drizzle-orm/sqlite-core";
+import {integer, real, sqliteTable, text, uniqueIndex} from "drizzle-orm/sqlite-core";
 
 
 export const achievement = sqliteTable("achievement", {
     id: integer().primaryKey().notNull(),
     name: text().notNull(),
-    codeName: text().notNull(),
     description: text().notNull(),
+    codeName: text().unique().notNull(),
     mediaType: text().$type<MediaType>().notNull(),
     value: text(),
 });
@@ -17,17 +17,19 @@ export const achievement = sqliteTable("achievement", {
 
 export const achievementTier = sqliteTable("achievement_tier", {
     id: integer().primaryKey().notNull(),
-    achievementId: integer().notNull().references(() => achievement.id),
+    achievementId: integer().notNull().references(() => achievement.id, { onDelete: "cascade" }),
     difficulty: text().$type<AchievementDifficulty>().notNull(),
     criteria: customJson<{ count: number }>("criteria").notNull(),
     rarity: real(),
-});
+}, (table) => [
+    uniqueIndex("achievement_difficulty_unique_idx").on(table.achievementId, table.difficulty),
+]);
 
 
 export const userAchievement = sqliteTable("user_achievement", {
     id: integer().primaryKey().notNull(),
     userId: integer().references(() => user.id, { onDelete: "cascade" }),
-    achievementId: integer().references(() => achievement.id),
+    achievementId: integer().references(() => achievement.id, { onDelete: "cascade" }),
     tierId: integer().references(() => achievementTier.id),
     progress: real(),
     count: real(),

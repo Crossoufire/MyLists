@@ -3,9 +3,9 @@ import {AchievementDifficulty, MediaType} from "@/lib/utils/enums";
 
 export const seriesAchievements = [
     {
-        codeName: 'completed_series',
-        name: 'Couch Potato',
-        description: 'Awarded for completing series, because finishing what you started is a true feat!',
+        codeName: "completed_series",
+        name: "Couch Potato",
+        description: "Awarded for completing series, because finishing what you started is a true feat!",
         mediaType: MediaType.SERIES,
         tiers: [
             { criteria: { count: 30 }, difficulty: AchievementDifficulty.BRONZE },
@@ -15,9 +15,9 @@ export const seriesAchievements = [
         ],
     },
     {
-        codeName: 'rated_series',
-        name: 'TV Rater',
-        description: 'Awarded for rating series, sharing your opinions with the world.',
+        codeName: "rated_series",
+        name: "TV Rater",
+        description: "Awarded for rating series, sharing your opinions with the world.",
         mediaType: MediaType.SERIES,
         tiers: [
             { criteria: { count: 20 }, difficulty: AchievementDifficulty.BRONZE },
@@ -27,9 +27,9 @@ export const seriesAchievements = [
         ],
     },
     {
-        codeName: 'short_series',
-        name: 'Episode Economist',
-        description: 'Awarded for completing series with less than 8 episodes, proving than good things come in small packages!',
+        codeName: "short_series",
+        name: "Episode Economist",
+        description: "Awarded for completing series with less than 8 episodes, proving than good things come in small packages!",
         mediaType: MediaType.SERIES,
         value: 8,
         tiers: [
@@ -40,9 +40,9 @@ export const seriesAchievements = [
         ],
     },
     {
-        codeName: 'long_series',
-        name: 'Marathon Maverick',
-        description: 'Awarded for completing series with over 150 episodes, because who needs sleep anyway?',
+        codeName: "long_series",
+        name: "Marathon Maverick",
+        description: "Awarded for completing series with over 150 episodes, because who needs sleep anyway?",
         mediaType: MediaType.SERIES,
         value: 150,
         tiers: [
@@ -53,11 +53,11 @@ export const seriesAchievements = [
         ],
     },
     {
-        codeName: 'comedy_series',
-        name: 'Laugh Track Legend',
-        description: 'Awarded for completing comedy series, because laughter is the best medicine!',
+        codeName: "comedy_series",
+        name: "Laugh Track Legend",
+        description: "Awarded for completing comedy series, because laughter is the best medicine!",
         mediaType: MediaType.SERIES,
-        value: 'Comedy',
+        value: "Comedy",
         tiers: [
             { criteria: { count: 10 }, difficulty: AchievementDifficulty.BRONZE },
             { criteria: { count: 20 }, difficulty: AchievementDifficulty.SILVER },
@@ -66,11 +66,11 @@ export const seriesAchievements = [
         ],
     },
     {
-        codeName: 'drama_series',
-        name: 'Drama Queen',
-        description: 'Awarded for completing drama series, embracing the emotional roller-coaster!',
+        codeName: "drama_series",
+        name: "Drama Queen",
+        description: "Awarded for completing drama series, embracing the emotional roller-coaster!",
         mediaType: MediaType.SERIES,
-        value: 'Drama',
+        value: "Drama",
         tiers: [
             { criteria: { count: 15 }, difficulty: AchievementDifficulty.BRONZE },
             { criteria: { count: 35 }, difficulty: AchievementDifficulty.SILVER },
@@ -79,9 +79,9 @@ export const seriesAchievements = [
         ],
     },
     {
-        codeName: 'network_series',
-        name: 'Channel Surfer',
-        description: 'Awarded for watching series from different networks, mastering the remote like a pro!',
+        codeName: "network_series",
+        name: "Channel Surfer",
+        description: "Awarded for watching series from different networks, mastering the remote like a pro!",
         mediaType: MediaType.SERIES,
         tiers: [
             { criteria: { count: 15 }, difficulty: AchievementDifficulty.BRONZE },
