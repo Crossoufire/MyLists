@@ -7,16 +7,12 @@ export type LogTask = {
     msg: string,
     time: string,
     level: number,
+    json?: object,
     command: string,
     taskName: string,
     triggeredBy: string,
     durationMs?: number,
     result?: ProcessResult,
-    err?: {
-        type: string,
-        stack: string,
-        message: string,
-    },
 }
 
 
@@ -25,6 +21,7 @@ export type TaskData = {
     userId?: number,
     filePath?: string,
     taskName: TaskName,
+    stdoutAsJson?: boolean,
     triggeredBy: "user" | "cron/cli" | "dashboard",
 };
 

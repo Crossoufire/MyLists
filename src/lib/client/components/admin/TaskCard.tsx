@@ -152,10 +152,10 @@ function LogViewer({ logsData }: { logsData: TaskType["logs"] }) {
                                             </span>
                                         </div>
 
-                                        {(isExpanded && log.err) &&
+                                        {(isExpanded && log.json) &&
                                             <div className="mt-2 p-2 bg-zinc-900 rounded text-xs font-mono overflow-auto">
                                                 <pre className="text-zinc-300 whitespace-pre-wrap break-words">
-                                                    {JSON.stringify(Object.fromEntries(Object.entries(log.err)), null, 4)}
+                                                    {JSON.stringify(Object.fromEntries(Object.entries(log.json)), null, 4)}
                                                 </pre>
                                             </div>
                                         }

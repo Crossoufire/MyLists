@@ -86,7 +86,7 @@ export class TasksService {
                     ctx.logger.info(`Refreshed ${mediaType} with apiId: ${result.apiId}`);
                 }
                 else {
-                    ctx.logger.error({ err: result.reason }, `Error refreshing ${mediaType} with apiId: ${result.apiId}`);
+                    ctx.logger.error({ json: result.reason }, `Error refreshing ${mediaType} with apiId: ${result.apiId}`);
                 }
             }
 
@@ -109,12 +109,25 @@ export class TasksService {
     }
 
     protected async runDbMaintenance(ctx: TaskContext) {
+        const db = getDbClient();
+
         ctx.logger.info("Starting: dbMaintenance execution.");
 
-        await getDbClient().run("PRAGMA checkpoint(FULL)");
-        await getDbClient().run("VACUUM");
-        await getDbClient().run("ANALYZE");
+        await db.run("PRAGMA synchronous = NORMAL");
+        await db.run("PRAGMA checkpoint(FULL)");
+        await db.run("VACUUM");
+        await db.run("ANALYZE");
 
+        const pragmaValues: Record<string, string | number | null> = {};
+        const pragmasToCheck = ["journal_mode", "synchronous", "wal_autocheckpoint", "locking_mode"];
+
+        for (const name of pragmasToCheck) {
+            const result = await db.get<{ [key: string]: string | number | null }>(`PRAGMA ${name};`);
+            const value = result ? Object.values(result)[0] : null;
+            pragmaValues[name] = value;
+        }
+
+        ctx.logger.info({ json: pragmaValues }, "Current SQLite PRAGMA settings");
         ctx.logger.info("Completed: dbMaintenance execution.");
     }
 

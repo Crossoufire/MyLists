@@ -1,6 +1,6 @@
 import {TaskData} from "@/lib/types/tasks.types";
 import {getContainer} from "@/lib/server/core/container";
-import {createCapturingLogger} from "@/lib/server/core/logger";
+import {createCapturingLogger} from "@/lib/server/core/pino-logger";
 
 
 export async function executeTask(taskData: TaskData) {
@@ -24,7 +24,7 @@ export async function executeTask(taskData: TaskData) {
     catch (err) {
         status = "failed";
         errorMessage = err instanceof Error ? err.message : String(err);
-        taskLogger.error({ err: err }, `Task ${taskData.taskName} failed.`);
+        taskLogger.error({ json: err }, `Task ${taskData.taskName} failed.`);
 
         throw err;
     }
@@ -38,7 +38,10 @@ export async function executeTask(taskData: TaskData) {
             finishedAt,
             errorMessage,
             logs: capturedLogs,
-            ...taskData,
+            userId: taskData.userId,
+            taskId: taskData.taskId,
+            taskName: taskData.taskName,
+            triggeredBy: taskData.triggeredBy,
         });
     }
 }
