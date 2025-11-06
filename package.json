@@ -6,6 +6,7 @@
         ">0.3%, defaults, supports es6-module"
     ],
     "scripts": {
+        "test": "vitest",
         "dk": "drizzle-kit",
         "ui": "bunx shadcn@latest",
         "build:server": "vite build",
@@ -110,6 +111,7 @@
         "globals": "^16.5.0",
         "tailwindcss": "^4.1.16",
         "typescript-eslint": "^8.46.3",
-        "vite-tsconfig-paths": "^5.1.4"
+        "vite-tsconfig-paths": "^5.1.4",
+        "vitest": "^4.0.7"
     }
 }
