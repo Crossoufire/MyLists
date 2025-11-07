@@ -68,11 +68,14 @@ describe("GamesService", async () => {
 
             expect(delta.timeSpent).toBe(-120);
             expect(delta.totalEntries).toBe(-1);
+            expect(delta.entriesRated).toBe(-1);
+            expect(delta.sumEntriesRated).toBe(-8);
             expect(delta.entriesFavorites).toBe(-1);
+            expect(delta.entriesCommented).toBe(-1);
             expect(delta.statusCounts?.[Status.COMPLETED]).toBe(-1);
         });
 
-        it("should calculate delta when status updates", () => {
+        it("should calculate delta when status updates: PTP¨-> COMPLETED", () => {
             const old = makeUserState({ status: Status.PLAN_TO_PLAY, playtime: 0 });
             const newer = makeState({ status: Status.COMPLETED, playtime: 120 });
             const delta = gamesService.calculateDeltaStats(old, newer);
