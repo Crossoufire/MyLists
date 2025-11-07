@@ -18,6 +18,7 @@ import {Popover, PopoverClose, PopoverContent, PopoverTrigger} from "@/lib/clien
 import {Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger} from "@/lib/client/components/ui/sheet";
 import {ChartLine, ChevronDown, LogOut, Medal, Menu, Settings, ShieldCheck, Sparkles, User} from "lucide-react";
 import {NavigationMenu, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, navStyle} from "@/lib/client/components/ui/navigation-menu";
+import {ProfileIcon} from "@/lib/client/components/general/ProfileIcon";
 
 
 export const Navbar = () => {
@@ -165,10 +166,10 @@ export const Navbar = () => {
                                     <PopoverTrigger asChild>
                                         <div className="relative">
                                             <Button variant="invisible" className="flex items-center gap-2 text-lg font-semibold px-1">
-                                                <img
-                                                    alt="profile-picture"
-                                                    src={currentUser.image!}
-                                                    className="h-10 w-10 rounded-full"
+                                                <ProfileIcon
+                                                    className="size-10"
+                                                    fallbackSize="text-base"
+                                                    user={{ name: currentUser.name, image: currentUser.image! }}
                                                 />
                                                 <ChevronDown className="size-4 opacity-50"/>
                                             </Button>
