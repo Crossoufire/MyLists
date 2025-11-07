@@ -13,7 +13,7 @@ export class IgdbClient extends BaseClient {
     private readonly secretId = serverEnv.IGDB_CLIENT_SECRET;
     private readonly baseUrl = "https://api.igdb.com/v4/games";
     private readonly searchUrl = "https://api.igdb.com/v4/multiquery";
-    private static readonly throttleOptions = { points: 1, duration: 0.28, keyPrefix: "igdbAPI" }; // 3.57req/s (max 4)
+    private static readonly throttleOptions = { points: 3, duration: 1, keyPrefix: "igdbAPI" };
     private readonly headers = {
         "Client-ID": this.clientId,
         "Accept": "application/json",
