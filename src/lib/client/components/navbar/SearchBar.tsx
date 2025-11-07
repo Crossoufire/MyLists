@@ -9,6 +9,7 @@ import {ApiProviderType, MediaType} from "@/lib/utils/enums";
 import {useSheet} from "@/lib/client/contexts/sheet-context";
 import {Separator} from "@/lib/client/components/ui/separator";
 import {capitalize, formatDateTime} from "@/lib/utils/functions";
+import {ProfileIcon} from "@/lib/client/components/general/ProfileIcon";
 import {useOnClickOutside} from "@/lib/client/hooks/use-clicked-outside";
 import {ChevronLeft, ChevronRight, LoaderCircle, Search} from "lucide-react";
 import {Link, LinkProps, useRouter, useRouterState} from "@tanstack/react-router";
@@ -28,6 +29,7 @@ export const SearchBar = () => {
     const { data: searchResults, isLoading, error } = useQuery(navSearchOptions(debouncedSearch, page, selectDrop));
 
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setSelectDrop(currentUser?.searchSelector || ApiProviderType.TMDB);
     }, [currentUser?.searchSelector]);
 
@@ -174,12 +176,20 @@ const SearchComponent = ({ item, resetSearch }: SearchComponentProps) => {
             <CommandItem key={item.id} className={cn("cursor-pointer py-2", isLoadingItem && "cursor-auto")}>
                 <div className="flex gap-4 items-center">
                     <div className="relative">
-                        <img
-                            alt={item.name}
-                            src={item.image}
-                            height={imageHeight}
-                            className={cn("w-16 rounded-sm transition-opacity duration-200", isLoadingItem && "opacity-40")}
-                        />
+                        {item.itemType === ApiProviderType.USERS ?
+                            <ProfileIcon
+                                fallbackSize="text-2xl"
+                                className="size-16 border-2"
+                                user={{ name: item.name, image: item.image }}
+                            />
+                            :
+                            <img
+                                alt={item.name}
+                                src={item.image}
+                                height={imageHeight}
+                                className={cn("w-16 rounded-sm transition-opacity duration-200", isLoadingItem && "opacity-40")}
+                            />
+                        }
                         {isLoadingItem &&
                             <div className="absolute inset-0 flex items-center justify-center">
                                 <LoaderCircle className="size-8 animate-spin text-white"/>
