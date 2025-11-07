@@ -10,9 +10,9 @@ export class AdminRepository {
         await getDbClient()
             .insert(errorLogs)
             .values({
-                name: error.name,
-                message: error.message,
                 stack: error.stack ?? null,
+                name: error.name ?? "UnknownError",
+                message: error.message ?? "No message provided",
             });
     }
 
