@@ -1,12 +1,12 @@
 import {MediaType, Status} from "@/lib/utils/enums";
-import {MediaConfiguration} from "@/lib/client/components/media/media-config";
 import {UpdateRedo} from "@/lib/client/components/media/base/UpdateRedo";
 import {UpdateRating} from "@/lib/client/components/media/base/UpdateRating";
 import {UpdateStatus} from "@/lib/client/components/media/base/UpdateStatus";
+import {MediaConfiguration} from "@/lib/client/components/media/media-config";
 import {useUpdateUserMediaMutation} from "@/lib/client/react-query/query-mutations/user-media.mutations";
 
 
-type MoviesUserDetailsProps<T extends MediaType> = Parameters<MediaConfiguration[T]["mediaUserDetails"]>[0];
+type MoviesUserDetailsProps<T extends MediaType> = Parameters<MediaConfiguration[T]["mediaUserDetails"]>[number];
 
 
 export const MoviesUserDetails = ({ userMedia, mediaType, queryOption }: MoviesUserDetailsProps<typeof MediaType.MOVIES>) => {

@@ -4,7 +4,7 @@ import {DisplayRedoValue} from "@/lib/client/components/media/base/DisplayRedoVa
 import {BaseMediaFollowCard} from "@/lib/client/components/media/base/BaseMediaFollowCard";
 
 
-type MovieFollowCardProps<T extends MediaType> = Parameters<MediaConfiguration[T]["mediaFollowCard"]>[0];
+type MovieFollowCardProps<T extends MediaType> = Parameters<MediaConfiguration[T]["mediaFollowCard"]>[number];
 
 
 export const MovieFollowCard = ({ followData, rating }: MovieFollowCardProps<typeof MediaType.MOVIES>) => {

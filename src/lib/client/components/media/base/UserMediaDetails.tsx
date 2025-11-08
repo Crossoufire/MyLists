@@ -8,15 +8,15 @@ import {UserMedia, UserMediaItem} from "@/lib/types/query.options.types";
 import {UpdateComment} from "@/lib/client/components/media/base/UpdateComment";
 import {HistoryDetails} from "@/lib/client/components/media/base/HistoryDetails";
 import {UpdateFavorite} from "@/lib/client/components/media/base/UpdateFavorite";
+import {historyOptions} from "@/lib/client/react-query/query-options/query-options";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/lib/client/components/ui/tabs";
 import {UserMediaSpecificDetails} from "@/lib/client/components/media/base/UserMediaSpecificDetails";
-import {historyOptions} from "@/lib/client/react-query/query-options/query-options";
-import {ModifyUserMedia, useRemoveMediaFromListMutation, useUpdateUserMediaMutation} from "@/lib/client/react-query/query-mutations/user-media.mutations";
+import {useRemoveMediaFromListMutation, UserMediaQueryOption, useUpdateUserMediaMutation} from "@/lib/client/react-query/query-mutations/user-media.mutations";
 
 
 interface UserMediaDetailsProps {
     mediaType: MediaType;
-    queryOption: ModifyUserMedia;
+    queryOption: UserMediaQueryOption;
     userMedia: UserMedia | UserMediaItem;
 }
 
@@ -58,8 +58,8 @@ export const UserMediaDetails = ({ userMedia, mediaType, queryOption }: UserMedi
                     <div className="p-5 pt-3 bg-card rounded-md">
                         <UserMediaSpecificDetails
                             mediaType={mediaType}
+                            userMedia={userMedia}
                             queryOption={queryOption}
-                            userMedia={userMedia as any}
                         />
                         <UpdateComment
                             content={userMedia.comment}

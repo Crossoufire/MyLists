@@ -1,11 +1,11 @@
 import {Link} from "@tanstack/react-router";
 import {useCollapse} from "@/lib/client/hooks/use-collapse";
+import {UserFollowsType} from "@/lib/types/query.options.types";
 import {BlockLink} from "@/lib/client/components/general/BlockLink";
 import {MutedText} from "@/lib/client/components/general/MutedText";
-import {UserFollowsType} from "@/lib/types/query.options.types";
+import {ProfileIcon} from "@/lib/client/components/general/ProfileIcon";
 import {Tooltip, TooltipContent, TooltipTrigger} from "@/lib/client/components/ui/tooltip";
 import {Card, CardAction, CardContent, CardHeader, CardTitle} from "@/lib/client/components/ui/card";
-import {ProfileIcon} from "@/lib/client/components/general/ProfileIcon";
 
 
 interface ProfileFollowsProps {
@@ -28,7 +28,9 @@ export const ProfileFollows = ({ username, follows }: ProfileFollowsProps) => {
                 </CardTitle>
                 <CardAction>
                     <Link to="/profile/$username/follows" params={{ username }}>
-                        <MutedText className="text-sm hover:underline">All ({follows.total})</MutedText>
+                        <MutedText className="text-sm hover:underline">
+                            All ({follows.total})
+                        </MutedText>
                     </Link>
                 </CardAction>
             </CardHeader>

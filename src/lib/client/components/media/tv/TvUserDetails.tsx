@@ -8,7 +8,7 @@ import {UpdateSeasonsEps} from "@/lib/client/components/media/tv/UpdateSeasonsEp
 import {useUpdateUserMediaMutation} from "@/lib/client/react-query/query-mutations/user-media.mutations";
 
 
-type TvUserDetailsProps<T extends MediaType> = Parameters<MediaConfiguration[T]["mediaUserDetails"]>[0];
+type TvUserDetailsProps<T extends MediaType> = Parameters<MediaConfiguration[T]["mediaUserDetails"]>[number];
 
 
 export const TvUserDetails = ({ userMedia, mediaType, queryOption }: TvUserDetailsProps<typeof MediaType.SERIES | typeof MediaType.ANIME>) => {

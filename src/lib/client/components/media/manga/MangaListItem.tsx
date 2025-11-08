@@ -6,7 +6,7 @@ import {DisplayRedoValue} from "@/lib/client/components/media/base/DisplayRedoVa
 import {BaseMediaListItem} from "@/lib/client/components/media/base/BaseMediaListItem";
 
 
-type MangaListItemProps<T extends MediaType> = Parameters<MediaConfiguration[T]["mediaListCard"]>[0];
+type MangaListItemProps<T extends MediaType> = Parameters<MediaConfiguration[T]["mediaListCard"]>[number];
 
 
 export const MangaListItem = (props: MangaListItemProps<typeof MediaType.MANGA>) => {

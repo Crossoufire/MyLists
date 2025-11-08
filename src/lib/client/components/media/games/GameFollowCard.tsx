@@ -4,7 +4,7 @@ import {DisplayPlaytime} from "@/lib/client/components/media/games/DisplayPlayti
 import {BaseMediaFollowCard} from "@/lib/client/components/media/base/BaseMediaFollowCard";
 
 
-type GameFollowCardProps<T extends MediaType> = Parameters<MediaConfiguration[T]["mediaFollowCard"]>[0];
+type GameFollowCardProps<T extends MediaType> = Parameters<MediaConfiguration[T]["mediaFollowCard"]>[number];
 
 
 export const GameFollowCard = ({ followData, rating }: GameFollowCardProps<typeof MediaType.GAMES>) => {

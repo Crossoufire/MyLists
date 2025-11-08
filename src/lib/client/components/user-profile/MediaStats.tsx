@@ -1,19 +1,19 @@
 import {ArrowRight} from "lucide-react";
 import {Link} from "@tanstack/react-router";
+import {useIsMobile} from "@/lib/client/hooks/use-mobile";
 import {Separator} from "@/lib/client/components/ui/separator";
 import {MutedText} from "@/lib/client/components/general/MutedText";
 import {BlockLink} from "@/lib/client/components/general/BlockLink";
-import {StatusBullet} from "@/lib/client/components/general/StatusBullet";
 import {getFeelingIcon, getStatusColor} from "@/lib/utils/functions";
 import {MediaType, RatingSystemType, Status} from "@/lib/utils/enums";
-import {profileOptions} from "@/lib/client/react-query/query-options/query-options";
+import {StatusBullet} from "@/lib/client/components/general/StatusBullet";
+import {PerMediaSummaryType, UserDataType} from "@/lib/types/query.options.types";
 import {Tooltip, TooltipContent, TooltipTrigger} from "@/lib/client/components/ui/tooltip";
-import {useIsMobile} from "@/lib/client/hooks/use-mobile";
 
 
 interface MediaStatsProps {
-    user: Awaited<ReturnType<NonNullable<ReturnType<typeof profileOptions>["queryFn"]>>>["userData"];
-    media: Awaited<ReturnType<NonNullable<ReturnType<typeof profileOptions>["queryFn"]>>>["perMediaSummary"][0];
+    user: UserDataType;
+    media: PerMediaSummaryType[number];
 }
 
 
@@ -99,10 +99,7 @@ function MediaStatuses({ media, username }: { media: MediaStatsProps["media"], u
                             <TooltipTrigger asChild>
                                 <span
                                     className="grow"
-                                    style={{
-                                        width: `${st.percent}%`,
-                                        backgroundColor: getStatusColor(st.status as Status),
-                                    }}
+                                    style={{ width: `${st.percent}%`, backgroundColor: getStatusColor(st.status as Status) }}
                                 />
                             </TooltipTrigger>
                             <TooltipContent>
@@ -113,13 +110,13 @@ function MediaStatuses({ media, username }: { media: MediaStatsProps["media"], u
                 }
             </div>
             <div className="grid grid-cols-2 font-medium gap-y-2 gap-x-8 px-2 max-sm:px-0 max-sm:text-xs">
-                {media.statusList.map((st: any, idx: number) =>
+                {media.statusList.map((st, idx: number) =>
                     <div key={idx} className="flex justify-between">
                         <Link
-                            to={"/list/$mediaType/$username"}
-                            params={{ mediaType: media.mediaType, username }}
-                            search={{ status: [st.status] }}
                             className="text-neutral-500"
+                            to="/list/$mediaType/$username"
+                            search={{ status: [st.status] }}
+                            params={{ mediaType: media.mediaType, username }}
                         >
                             <StatusBullet status={st.status}/> {st.status}
                         </Link>

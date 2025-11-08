@@ -29,7 +29,6 @@ export type AdminUserOverview = Awaited<ReturnType<NonNullable<typeof adminOverv
 
 
 // --- User Media Details Types ----------------------------------------------------
-export type Media = NonNullable<MediaDetailsOptionsType["media"]>;
 export type UserMedia = NonNullable<MediaDetailsOptionsType["userMedia"]>;
 export type ExtractUserMediaByType<T extends MediaType> =
     T extends typeof MediaType.GAMES ? Extract<UserMedia, { playtime: any }> :
@@ -52,7 +51,7 @@ export type ExtractMediaDetailsByType<T extends MediaType> =
 
 
 // --- Follows List Types -----------------------------------------------------------
-export type FollowData = MediaDetailsOptionsType["followsData"][0];
+export type FollowData = MediaDetailsOptionsType["followsData"][number];
 export type FollowUserMedia = FollowData["userMedia"];
 export type ExtractFollowByType<T extends MediaType> = FollowData & { userMedia: ExtractFollowUserMediaByType<T> }
 export type ExtractFollowUserMediaByType<T extends MediaType> =
@@ -66,8 +65,8 @@ export type ExtractFollowUserMediaByType<T extends MediaType> =
 
 // --- Media List Types -------------------------------------------------------------
 export type ListUserData = MediaListOptionsType["userData"];
-export type UserMediaItem = MediaListOptionsType["results"]["items"][0];
 export type ListPagination = MediaListOptionsType["results"]["pagination"];
+export type UserMediaItem = MediaListOptionsType["results"]["items"][number];
 export type ExtractListByType<T extends MediaType> =
     T extends typeof MediaType.GAMES ? Extract<UserMediaItem, { playtime: any }> :
         T extends typeof MediaType.BOOKS ? Extract<UserMediaItem, { actualPage: any }> :
@@ -80,8 +79,8 @@ export type ExtractListByType<T extends MediaType> =
 // --- Types for ProfileOptions ------------------------------------------------------
 export type UserDataType = ProfileOptionsType["userData"];
 export type UserFollowsType = ProfileOptionsType["userFollows"];
-export type UserUpdateType = ProfileOptionsType["userUpdates"][0];
 export type AchievementsType = ProfileOptionsType["achievements"];
+export type UserUpdateType = ProfileOptionsType["userUpdates"][number];
 export type PerMediaSummaryType = ProfileOptionsType["perMediaSummary"];
 export type MediaGlobalSummaryType = ProfileOptionsType["mediaGlobalSummary"];
 export type UserSettingsType = ProfileOptionsType["userData"]["userMediaSettings"];

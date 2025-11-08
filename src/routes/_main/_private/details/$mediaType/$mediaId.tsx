@@ -95,8 +95,8 @@ function MediaDetailsPage() {
                                     <span className="sm:hidden -ml-2">({apiData.followsData.length})</span>
                                     <AvatarCircles
                                         avatarData={apiData.followsData.map((follow) => ({
-                                            image: follow.image,
                                             name: follow.name,
+                                            image: follow.image,
                                         }))}
                                     />
                                 </TabsTrigger>
@@ -104,7 +104,7 @@ function MediaDetailsPage() {
                             <TabsContent value="mediaDetails">
                                 <MediaDataDetails
                                     mediaType={mediaType}
-                                    mediaData={apiData.media as any}
+                                    mediaData={apiData.media}
                                 />
                                 <SimilarMedia
                                     mediaType={mediaType}

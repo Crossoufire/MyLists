@@ -25,6 +25,7 @@ import {getBooksColumns} from "@/lib/client/components/media/books/BooksListColu
 import {getMangaColumns} from "@/lib/client/components/media/manga/MangaListColumns";
 import {MovieFollowCard} from "@/lib/client/components/media/movies/MovieFollowCard";
 import {BooksUserDetails} from "@/lib/client/components/media/books/BookUserDetails";
+import {mediaListOptions} from "@/lib/client/react-query/query-options/query-options";
 import {MangaUserDetails} from "@/lib/client/components/media/manga/MangaUserDetails";
 import {GamesUserDetails} from "@/lib/client/components/media/games/GamesUserDetails";
 import {getMoviesColumns} from "@/lib/client/components/media/movies/MoviesListColumns";
@@ -32,17 +33,16 @@ import {MoviesUserDetails} from "@/lib/client/components/media/movies/MoviesUser
 import {getMangaActiveFilters} from "@/lib/client/components/media/manga/MangaActiveFilters";
 import {getBooksActiveFilters} from "@/lib/client/components/media/books/BooksActiveFilters";
 import {getGamesActiveFilters} from "@/lib/client/components/media/games/GamesActiveFilters";
-import {ModifyUserMedia} from "@/lib/client/react-query/query-mutations/user-media.mutations";
 import {getMoviesActiveFilters} from "@/lib/client/components/media/movies/MoviesActiveFilters";
+import {UserMediaQueryOption} from "@/lib/client/react-query/query-mutations/user-media.mutations";
 import {ExtractFollowByType, ExtractListByType, ExtractMediaDetailsByType, ExtractUserMediaByType} from "@/lib/types/query.options.types";
-import {mediaListOptions} from "@/lib/client/react-query/query-options/query-options";
 
 
 export type MediaConfiguration = {
     [T in MediaType]: {
         mediaUserDetails: React.FC<{
             mediaType: T;
-            queryOption: ModifyUserMedia;
+            queryOption: UserMediaQueryOption;
             userMedia: ExtractUserMediaByType<T>;
         }>;
         mediaFollowCard: React.FC<{
@@ -62,8 +62,8 @@ export type MediaConfiguration = {
             userMedia: ExtractListByType<T>,
             queryOption: ReturnType<typeof mediaListOptions>;
         }>;
-        mediaListColumns: (props: ColumnConfigProps) => (ColumnDef<ExtractListByType<T>>)[];
         sheetFilters: () => SheetFilterObject[];
+        mediaListColumns: (props: ColumnConfigProps) => (ColumnDef<ExtractListByType<T>>)[];
     };
 };
 

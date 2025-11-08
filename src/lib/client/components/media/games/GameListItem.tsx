@@ -5,7 +5,7 @@ import {DisplayPlaytime} from "@/lib/client/components/media/games/DisplayPlayti
 import {BaseMediaListItem} from "@/lib/client/components/media/base/BaseMediaListItem";
 
 
-type GameListItemProps<T extends MediaType> = Parameters<MediaConfiguration[T]["mediaListCard"]>[0];
+type GameListItemProps<T extends MediaType> = Parameters<MediaConfiguration[T]["mediaListCard"]>[number];
 
 
 export const GameListItem = (props: GameListItemProps<typeof MediaType.GAMES>) => {

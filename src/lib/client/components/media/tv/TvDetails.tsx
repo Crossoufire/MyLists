@@ -8,7 +8,7 @@ import {GenericDetails} from "@/lib/client/components/media/base/GenericDetails"
 import {DisplayAllEpsPerSeason} from "@/lib/client/components/media/tv/DisplayAllEpsPerSeason";
 
 
-type TvDetailsProps<T extends MediaType> = Parameters<MediaConfiguration[T]["mediaDetails"]>[0];
+type TvDetailsProps<T extends MediaType> = Parameters<MediaConfiguration[T]["mediaDetails"]>[number];
 
 
 export const TvDetails = ({ mediaType, mediaData }: TvDetailsProps<typeof MediaType.SERIES | typeof MediaType.ANIME>) => {

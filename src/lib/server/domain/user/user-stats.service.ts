@@ -107,7 +107,7 @@ export class UserStatsService {
             const favoritesMedia = await mediaService.getUserFavorites(userId, limit);
 
             const statusList = Object.entries(setting.statusCounts).map(([status, count]) =>
-                ({ status, count, percent: (count / setting.totalEntries) * 100 })
+                ({ status: status as Status, count, percent: (count / setting.totalEntries) * 100 })
             );
 
             const summary = {

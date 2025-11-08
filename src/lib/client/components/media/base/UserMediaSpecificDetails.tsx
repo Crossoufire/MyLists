@@ -1,12 +1,12 @@
 import {MediaType} from "@/lib/utils/enums";
 import {mediaConfig} from "@/lib/client/components/media/media-config";
 import {ExtractUserMediaByType} from "@/lib/types/query.options.types";
-import {ModifyUserMedia} from "@/lib/client/react-query/query-mutations/user-media.mutations";
+import {UserMediaQueryOption} from "@/lib/client/react-query/query-mutations/user-media.mutations";
 
 
 interface UserMediaSpecificDetailsProps<T extends MediaType> {
     mediaType: T;
-    queryOption: ModifyUserMedia;
+    queryOption: UserMediaQueryOption;
     userMedia: ExtractUserMediaByType<T>;
 }
 

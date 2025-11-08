@@ -7,14 +7,14 @@ import {Badge} from "@/lib/client/components/ui/badge";
 import {Separator} from "@/lib/client/components/ui/separator";
 import {MutedText} from "@/lib/client/components/general/MutedText";
 import {LabelsDialog} from "@/lib/client/components/media/base/LabelsDialog";
-import {ModifyUserMedia} from "@/lib/client/react-query/query-mutations/user-media.mutations";
+import {UserMediaQueryOption} from "@/lib/client/react-query/query-mutations/user-media.mutations";
 
 
 interface LabelListsProps {
     mediaId: number;
     mediaLabels: Label[];
     mediaType: MediaType;
-    queryOption: ModifyUserMedia;
+    queryOption: UserMediaQueryOption;
 }
 
 

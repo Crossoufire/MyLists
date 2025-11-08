@@ -1,5 +1,5 @@
-import {useSuspenseQuery} from "@tanstack/react-query";
 import {createFileRoute} from "@tanstack/react-router";
+import {useSuspenseQuery} from "@tanstack/react-query";
 import {MediaLevels} from "@/lib/client/components/user-profile/MediaLevels";
 import {UserUpdates} from "@/lib/client/components/user-profile/UserUpdates";
 import {GlobalStats} from "@/lib/client/components/user-profile/GlobalStats";

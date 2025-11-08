@@ -1,22 +1,22 @@
 import {Trash2} from "lucide-react";
 import {cn} from "@/lib/utils/helpers";
+import {formatDateTime} from "@/lib/utils/functions";
 import {Button} from "@/lib/client/components/ui/button";
-import {Payload} from "@/lib/client/components/general/Payload";
 import {Separator} from "@/lib/client/components/ui/separator";
+import {UserUpdateType} from "@/lib/types/query.options.types";
+import {Payload} from "@/lib/client/components/general/Payload";
 import {BlockLink} from "@/lib/client/components/general/BlockLink";
 import {MutedText} from "@/lib/client/components/general/MutedText";
-import {profileOptions} from "@/lib/client/react-query/query-options/query-options";
 import {MediaAndUserIcon} from "@/lib/client/components/media/base/MediaAndUserIcon";
-import {formatDateTime} from "@/lib/utils/functions";
 
 
 interface UserUpdateProps {
     canDelete: boolean;
     isPending?: boolean;
+    update: UserUpdateType;
     username?: string | null;
     mediaIdBeingDeleted?: number;
     onDelete: (updateId: number) => void;
-    update: Awaited<ReturnType<NonNullable<ReturnType<typeof profileOptions>["queryFn"]>>>["userUpdates"][0];
 }
 
 
@@ -57,7 +57,11 @@ export function UserUpdate({ update, username, onDelete, canDelete, isPending, m
                         {formatDateTime(update.timestamp)}
                         {username &&
                             <> by{" "}
-                                <BlockLink to="/profile/$username" params={{ username }} className="text-blue-500">
+                                <BlockLink
+                                    params={{ username }}
+                                    to="/profile/$username"
+                                    className="text-blue-500"
+                                >
                                     {username}
                                 </BlockLink>
                             </>

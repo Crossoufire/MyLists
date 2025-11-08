@@ -5,7 +5,7 @@ import {DisplayRedoValue} from "@/lib/client/components/media/base/DisplayRedoVa
 import {BaseMediaListItem} from "@/lib/client/components/media/base/BaseMediaListItem";
 
 
-type MovieListItemProps<T extends MediaType> = Parameters<MediaConfiguration[T]["mediaListCard"]>[0];
+type MovieListItemProps<T extends MediaType> = Parameters<MediaConfiguration[T]["mediaListCard"]>[number];
 
 
 export const MovieListItem = (props: MovieListItemProps<typeof MediaType.MOVIES>) => {

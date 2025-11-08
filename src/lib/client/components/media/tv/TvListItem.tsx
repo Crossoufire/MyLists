@@ -1,11 +1,11 @@
 import {MediaType} from "@/lib/utils/enums";
-import {MediaConfiguration} from "@/lib/client/components/media/media-config";
 import {DisplayTvRedo} from "@/lib/client/components/media/tv/DisplayTvRedo";
+import {MediaConfiguration} from "@/lib/client/components/media/media-config";
 import {BaseMediaListItem} from "@/lib/client/components/media/base/BaseMediaListItem";
 import {DisplayEpsAndSeasons} from "@/lib/client/components/media/tv/DisplayEpsAndSeasons";
 
 
-type TvListItemProps<T extends MediaType> = Parameters<MediaConfiguration[T]["mediaListCard"]>[0];
+type TvListItemProps<T extends MediaType> = Parameters<MediaConfiguration[T]["mediaListCard"]>[number];
 
 
 export const TvListItem = (props: TvListItemProps<typeof MediaType.SERIES | typeof MediaType.ANIME>) => {

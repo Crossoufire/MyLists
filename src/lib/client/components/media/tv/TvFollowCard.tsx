@@ -1,11 +1,11 @@
 import {MediaType} from "@/lib/utils/enums";
-import {MediaConfiguration} from "@/lib/client/components/media/media-config";
 import {DisplayTvRedo} from "@/lib/client/components/media/tv/DisplayTvRedo";
+import {MediaConfiguration} from "@/lib/client/components/media/media-config";
 import {BaseMediaFollowCard} from "@/lib/client/components/media/base/BaseMediaFollowCard";
 import {DisplayEpsAndSeasons} from "@/lib/client/components/media/tv/DisplayEpsAndSeasons";
 
 
-type TvFollowCardProps<T extends MediaType> = Parameters<MediaConfiguration[T]["mediaFollowCard"]>[0];
+type TvFollowCardProps<T extends MediaType> = Parameters<MediaConfiguration[T]["mediaFollowCard"]>[number];
 
 
 export const TvFollowCard = ({ followData, rating }: TvFollowCardProps<typeof MediaType.SERIES | typeof MediaType.ANIME>) => {

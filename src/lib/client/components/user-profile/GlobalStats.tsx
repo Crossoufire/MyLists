@@ -1,10 +1,10 @@
 import {Cell, Pie, PieChart} from "recharts";
-import {useCollapse} from "@/lib/client/hooks/use-collapse";
 import {RatingSystemType} from "@/lib/utils/enums";
+import {useCollapse} from "@/lib/client/hooks/use-collapse";
 import {getFeelingIcon, getMediaColor} from "@/lib/utils/functions";
+import {MediaGlobalSummaryType, UserDataType} from "@/lib/types/query.options.types";
 import {Card, CardContent, CardHeader, CardTitle} from "@/lib/client/components/ui/card";
 import {Tooltip, TooltipContent, TooltipTrigger} from "@/lib/client/components/ui/tooltip";
-import {MediaGlobalSummaryType, UserDataType} from "@/lib/types/query.options.types";
 
 
 interface GlobalStatsProps {
@@ -50,7 +50,9 @@ export const GlobalStats = ({ userData, global }: GlobalStatsProps) => {
                 <CardTitle>
                     <div className="flex gap-2">
                         {caret}
-                        <div role="button" onClick={toggleCollapse}>Statistics</div>
+                        <div role="button" onClick={toggleCollapse}>
+                            Statistics
+                        </div>
                     </div>
                 </CardTitle>
             </CardHeader>

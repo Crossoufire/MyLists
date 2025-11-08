@@ -1,5 +1,5 @@
-import {capitalize} from "@/lib/utils/functions";
 import {MediaType} from "@/lib/utils/enums";
+import {capitalize} from "@/lib/utils/functions";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {createFileRoute} from "@tanstack/react-router";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";

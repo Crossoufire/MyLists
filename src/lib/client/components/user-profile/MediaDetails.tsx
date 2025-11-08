@@ -2,8 +2,8 @@ import {capitalize} from "@/lib/utils/functions";
 import {useIsMobile} from "@/lib/client/hooks/use-mobile";
 import {useCollapse} from "@/lib/client/hooks/use-collapse";
 import {MediaStats} from "@/lib/client/components/user-profile/MediaStats";
-import {MediaAndUserIcon} from "@/lib/client/components/media/base/MediaAndUserIcon";
 import {PerMediaSummaryType, UserDataType} from "@/lib/types/query.options.types";
+import {MediaAndUserIcon} from "@/lib/client/components/media/base/MediaAndUserIcon";
 import {Card, CardContent, CardHeader, CardTitle} from "@/lib/client/components/ui/card";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/lib/client/components/ui/tabs";
 

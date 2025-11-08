@@ -1,7 +1,7 @@
 import {MediaType} from "@/lib/utils/enums";
 import {formatRating} from "@/lib/utils/functions";
-import {mediaConfig} from "@/lib/client/components/media/media-config";
 import {ExtractFollowByType} from "@/lib/types/query.options.types";
+import {mediaConfig} from "@/lib/client/components/media/media-config";
 
 
 interface MediaFollowCard<T extends MediaType> {

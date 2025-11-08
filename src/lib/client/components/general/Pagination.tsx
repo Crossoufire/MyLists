@@ -1,5 +1,5 @@
-import {Button} from "@/lib/client/components/ui/button";
 import {ChevronLeft, ChevronRight} from "lucide-react";
+import {Button} from "@/lib/client/components/ui/button";
 
 
 interface PaginationProps {
@@ -74,7 +74,9 @@ export const Pagination = ({ currentPage, totalPages, onChangePage, showNav = tr
                 {pages.map((page, idx) =>
                     <li key={`${page}-${idx}`}>
                         {page === "..." ?
-                            <span className="px-3 py-2 text-sm text-muted-foreground" aria-hidden="true">...</span>
+                            <span className="px-3 py-2 text-sm text-muted-foreground" aria-hidden="true">
+                                ...
+                            </span>
                             :
                             <Button
                                 size="sm"

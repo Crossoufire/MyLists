@@ -1,15 +1,15 @@
 import {Award} from "lucide-react";
 import {cn} from "@/lib/utils/helpers";
+import {AchCard} from "@/lib/types/query.options.types";
 import {Button} from "@/lib/client/components/ui/button";
 import {Progress} from "@/lib/client/components/ui/progress";
 import {capitalize, diffColors} from "@/lib/utils/functions";
-import {achievementOptions} from "@/lib/client/react-query/query-options/query-options";
 import {Popover, PopoverContent, PopoverTrigger} from "@/lib/client/components/ui/popover";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/lib/client/components/ui/table";
 
 
 interface TierDetailsProps {
-    achievement: Awaited<ReturnType<NonNullable<ReturnType<typeof achievementOptions>["queryFn"]>>>["result"][0];
+    achievement: AchCard;
 }
 
 
@@ -32,7 +32,7 @@ export const TiersDetails = ({ achievement }: TierDetailsProps) => {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {achievement.tiers.map(tier => {
+                        {achievement.tiers.map((tier) => {
                             const iconColorClass = diffColors(tier.difficulty);
                             return (
                                 <TableRow key={tier.id}>
@@ -44,7 +44,10 @@ export const TiersDetails = ({ achievement }: TierDetailsProps) => {
                                     </TableCell>
                                     <TableCell>
                                         <div className="flex items-center space-x-2">
-                                            <Progress value={tier.progress} className="w-24 h-2"/>
+                                            <Progress
+                                                value={tier.progress}
+                                                className="w-24 h-2"
+                                            />
                                             <span className="text-xs">
                                                 {tier.count}/{tier.criteria.count}
                                             </span>

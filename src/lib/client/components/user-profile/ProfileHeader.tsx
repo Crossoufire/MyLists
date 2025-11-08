@@ -1,11 +1,10 @@
 import {Link} from "@tanstack/react-router";
-import {useAuth} from "@/lib/client/hooks/use-auth";
 import {CalendarDays, Users} from "lucide-react";
-import {computeLevel, formatDateTime} from "@/lib/utils/functions";
-import {FollowButton} from "@/lib/client/components/user-profile/FollowButton";
-
+import {useAuth} from "@/lib/client/hooks/use-auth";
 import {UserDataType} from "@/lib/types/query.options.types";
+import {computeLevel, formatDateTime} from "@/lib/utils/functions";
 import {ProfileIcon} from "@/lib/client/components/general/ProfileIcon";
+import {FollowButton} from "@/lib/client/components/user-profile/FollowButton";
 
 
 interface ProfileHeaderProps {
@@ -28,8 +27,8 @@ export const ProfileHeader = ({ user, followStatus, followId }: ProfileHeaderPro
                     <div className="flex flex-wrap items-center gap-8 max-sm:justify-center max-sm:gap-5">
                         <div className="relative">
                             <ProfileIcon
-                                className="size-25 border-4 border-amber-600"
                                 user={{ image: user.image, name: user.name }}
+                                className="size-25 border-4 border-amber-600"
                             />
                             <div className="absolute -bottom-2 -right-2 text-xs font-bold px-2 py-1 rounded-full
                             bg-gradient-to-r from-blue-600 to-violet-600">

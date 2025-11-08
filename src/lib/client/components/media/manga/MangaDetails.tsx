@@ -6,7 +6,7 @@ import {GenericDetails} from "@/lib/client/components/media/base/GenericDetails"
 import {capitalize, formatDateTime, formatMinutes} from "@/lib/utils/functions";
 
 
-type MangaDetailsProps<T extends MediaType> = Parameters<MediaConfiguration[T]["mediaDetails"]>[0];
+type MangaDetailsProps<T extends MediaType> = Parameters<MediaConfiguration[T]["mediaDetails"]>[number];
 
 
 export const MangaDetails = ({ mediaType, mediaData }: MangaDetailsProps<typeof MediaType.MANGA>) => {

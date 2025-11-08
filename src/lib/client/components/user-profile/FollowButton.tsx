@@ -22,7 +22,12 @@ export const FollowButton = ({ followStatus, followId }: FollowButtonProps) => {
     };
 
     return (
-        <Button variant={followStatus ? "destructive" : "outline"} size="sm" onClick={handleFollow}>
+        <Button
+            size="sm"
+            onClick={handleFollow}
+            disabled={updateFollowMutation.isPending}
+            variant={followStatus ? "destructive" : "outline"}
+        >
             {followStatus ?
                 <><UserMinus className="mr-1 h-4 w-4"/>Unfollow</>
                 :

@@ -10,22 +10,19 @@ interface MediaIconProps {
 }
 
 
-const getMediaAndUserIcon = (type: MediaType | "user") => {
-    const icons = {
-        user: User,
-        series: Monitor,
-        anime: Cat,
-        movies: Popcorn,
-        games: Gamepad2,
-        books: Library,
-        manga: BookImage,
-    };
-    return icons[type];
-};
+const ICONS_MAP = {
+    user: User,
+    series: Monitor,
+    anime: Cat,
+    movies: Popcorn,
+    games: Gamepad2,
+    books: Library,
+    manga: BookImage,
+} as const;
 
 
 export const MediaAndUserIcon = ({ type, size, className }: MediaIconProps) => {
-    const IconComp = getMediaAndUserIcon(type);
+    const IconComp = ICONS_MAP[type];
     if (!IconComp) return null;
 
     return (

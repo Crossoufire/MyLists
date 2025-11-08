@@ -42,7 +42,9 @@ export const UserUpdates = ({ updates, followers = false }: UserUpdatesProps) =>
                 {!followers &&
                     <CardAction>
                         <Link to="/profile/$username/history" params={{ username }}>
-                            <MutedText className="text-sm hover:underline">All</MutedText>
+                            <MutedText className="text-sm hover:underline">
+                                All
+                            </MutedText>
                         </Link>
                     </CardAction>
                 }
@@ -51,7 +53,7 @@ export const UserUpdates = ({ updates, followers = false }: UserUpdatesProps) =>
                 {updates.length === 0 ?
                     <MutedText>No updates to display yet</MutedText>
                     :
-                    updates.map(update =>
+                    updates.map((update) =>
                         <UserUpdate
                             key={update.id}
                             update={update}

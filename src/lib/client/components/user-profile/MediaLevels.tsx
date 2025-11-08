@@ -28,7 +28,7 @@ export const MediaLevels = ({ username, settings }: MediaLevelsProps) => {
                 </CardTitle>
             </CardHeader>
             <CardContent className={contentClasses}>
-                {settings.filter(s => s.active).map(data =>
+                {settings.filter((s) => s.active).map((data) =>
                     <MediaLevelBar
                         username={username}
                         key={data.mediaType}
@@ -63,7 +63,7 @@ const MediaLevelBar = ({ mediaType, username, level }: MediaLevelBarProps) => {
             <div className="w-[81%] max-sm:w-[86%]">
                 <div className="flex justify-between mb-1.5">
                     <Link
-                        to={`/list/$mediaType/$username`}
+                        to="/list/$mediaType/$username"
                         params={{ mediaType, username }}
                         className="hover:underline hover:underline-offset-2"
                     >
@@ -71,7 +71,10 @@ const MediaLevelBar = ({ mediaType, username, level }: MediaLevelBarProps) => {
                     </Link>
                     <div>{zeroPad(percent.toFixed(0))} %</div>
                 </div>
-                <Progress value={percent} color={getMediaColor(mediaType)}/>
+                <Progress
+                    value={percent}
+                    color={getMediaColor(mediaType)}
+                />
             </div>
         </div>
     );

@@ -13,7 +13,7 @@ import {
 } from "@/lib/client/react-query/query-options/query-options";
 
 
-export type ModifyUserMedia = ReturnType<typeof mediaDetailsOptions> | ReturnType<typeof mediaListOptions>;
+export type UserMediaQueryOption = ReturnType<typeof mediaDetailsOptions> | ReturnType<typeof mediaListOptions>;
 
 
 export const useDeleteProfileUpdateMutation = (username: string) => {
@@ -67,7 +67,7 @@ export const useDeleteHistoryUpdatesMutation = (mediaType: MediaType, mediaId: n
 };
 
 
-export const useAddMediaToListMutation = (queryOption: ModifyUserMedia) => {
+export const useAddMediaToListMutation = (queryOption: UserMediaQueryOption) => {
     const queryClient = useQueryClient();
 
     return useMutation({
@@ -101,7 +101,7 @@ export const useAddMediaToListMutation = (queryOption: ModifyUserMedia) => {
 };
 
 
-export const useRemoveMediaFromListMutation = (queryOption: ModifyUserMedia) => {
+export const useRemoveMediaFromListMutation = (queryOption: UserMediaQueryOption) => {
     const queryClient = useQueryClient();
 
     return useMutation({
@@ -130,7 +130,7 @@ export const useRemoveMediaFromListMutation = (queryOption: ModifyUserMedia) => 
 };
 
 
-export const useUpdateUserMediaMutation = (mediaType: MediaType, mediaId: number, queryOption: ModifyUserMedia) => {
+export const useUpdateUserMediaMutation = (mediaType: MediaType, mediaId: number, queryOption: UserMediaQueryOption) => {
     const queryClient = useQueryClient();
 
     return useMutation({

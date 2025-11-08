@@ -7,7 +7,7 @@ import {formatDateTime, formatMinutes, getLangCountryName} from "@/lib/utils/fun
 import {GenericDetails} from "@/lib/client/components/media/base/GenericDetails";
 
 
-type MoviesDetailsProps<T extends MediaType> = Parameters<MediaConfiguration[T]["mediaDetails"]>[0];
+type MoviesDetailsProps<T extends MediaType> = Parameters<MediaConfiguration[T]["mediaDetails"]>[number];
 
 
 export const MoviesDetails = ({ mediaType, mediaData }: MoviesDetailsProps<typeof MediaType.MOVIES>) => {

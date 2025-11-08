@@ -5,10 +5,10 @@ import {FollowData} from "@/lib/types/query.options.types";
 import {Separator} from "@/lib/client/components/ui/separator";
 import {Card, CardContent} from "@/lib/client/components/ui/card";
 import {getStatusColor, getTextColor} from "@/lib/utils/functions";
+import {ProfileIcon} from "@/lib/client/components/general/ProfileIcon";
 import {DisplayRating} from "@/lib/client/components/media/base/DisplayRating";
 import {DisplayComment} from "@/lib/client/components/media/base/DisplayComment";
 import {DisplayFavorite} from "@/lib/client/components/media/base/DisplayFavorite";
-import {ProfileIcon} from "@/lib/client/components/general/ProfileIcon";
 
 
 interface BaseMediaFollowCardrops {
