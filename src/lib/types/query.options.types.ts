@@ -7,9 +7,11 @@ import {
     listFiltersOptions,
     mediaDetailsOptions,
     mediaListOptions,
+    platformStatsOptions,
     profileOptions,
     trendsOptions,
     upcomingOptions,
+    userStatsOptions,
 } from "@/lib/client/react-query/query-options/query-options";
 
 
@@ -26,7 +28,8 @@ export type HofUserRank = Awaited<ReturnType<NonNullable<ReturnType<typeof hallO
 export type TrendItemType = Awaited<ReturnType<NonNullable<typeof trendsOptions.queryFn>>>["seriesTrends"][number];
 export type ComingNextItem = Awaited<ReturnType<NonNullable<typeof upcomingOptions.queryFn>>>[number]["items"][number];
 export type AdminUserOverview = Awaited<ReturnType<NonNullable<typeof adminOverviewOptions.queryFn>>>["recentUsers"];
-
+export type UserStats = Awaited<ReturnType<NonNullable<ReturnType<typeof userStatsOptions>["queryFn"]>>>;
+export type PlatformStats = Awaited<ReturnType<NonNullable<ReturnType<typeof platformStatsOptions>["queryFn"]>>>;
 
 // --- User Media Details Types ----------------------------------------------------
 export type UserMedia = NonNullable<MediaDetailsOptionsType["userMedia"]>;

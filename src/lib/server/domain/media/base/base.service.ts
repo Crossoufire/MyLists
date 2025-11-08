@@ -6,8 +6,8 @@ import {JobType, LabelAction, Status, UpdateType} from "@/lib/utils/enums";
 import {BaseRepository} from "@/lib/server/domain/media/base/base.repository";
 import {BaseProviderService} from "@/lib/server/domain/media/base/provider.service";
 import {MediaListArgs, SearchType, UpdateUserMedia} from "@/lib/types/zod.schema.types";
-import {Label, UpdateHandlerFn, UpdateUserMediaDetails, UserMediaWithLabels} from "@/lib/types/base.types";
 import {GenreTable, LabelTable, ListTable, MediaSchemaConfig, MediaTable} from "@/lib/types/media.config.types";
+import {Label, StatsCTE, UpdateHandlerFn, UpdateUserMediaDetails, UserMediaWithLabels} from "@/lib/types/base.types";
 
 
 export abstract class BaseService<
@@ -15,7 +15,7 @@ export abstract class BaseService<
     R extends BaseRepository<TConfig>
 > {
     protected repository: R;
-    protected abstract readonly achievementHandlers: Record<any, (achievement: Achievement, userId?: number) => any>;
+    protected abstract readonly achievementHandlers: Record<string, (achievement: Achievement, userId?: number) => StatsCTE>;
     protected updateHandlers: Partial<Record<UpdateType, UpdateHandlerFn<TConfig["listTable"]["$inferSelect"], any, TConfig["mediaTable"]["$inferSelect"]>>>;
 
     protected constructor(repository: R) {

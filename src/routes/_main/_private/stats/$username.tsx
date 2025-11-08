@@ -1,7 +1,7 @@
-import {dataToLoad} from "@/lib/client/media-stats";
 import {useEffect, useState} from "react";
-import {capitalize} from "@/lib/utils/functions";
 import {MediaType} from "@/lib/utils/enums";
+import {capitalize} from "@/lib/utils/functions";
+import {dataToLoad} from "@/lib/client/media-stats";
 import {createFileRoute} from "@tanstack/react-router";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
@@ -30,6 +30,7 @@ function StatsPage() {
     const [selectedData, setSelectedData] = useState(() => statsData[0]);
 
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setSelectedData(statsData[0]);
     }, [filters.mediaType, statsData]);
 

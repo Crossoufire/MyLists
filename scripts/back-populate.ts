@@ -1,16 +1,11 @@
 import {db} from "@/lib/server/database/db";
 import {MediaType} from "@/lib/utils/enums";
 import {getTableName, sql} from "drizzle-orm";
+import {ListTable} from "@/lib/types/media.config.types";
 import {animeList, booksList, gamesList, mangaList, moviesList, seriesList} from "@/lib/server/database/schema";
 
 
-interface MediaListConfig {
-    listTable: any;
-    mediaType: MediaType;
-}
-
-
-const mediaListTables: MediaListConfig[] = [
+const mediaListTables: { mediaType: MediaType, listTable: ListTable }[] = [
     { mediaType: MediaType.SERIES, listTable: seriesList },
     { mediaType: MediaType.ANIME, listTable: animeList },
     { mediaType: MediaType.MOVIES, listTable: moviesList },

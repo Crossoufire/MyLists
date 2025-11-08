@@ -4,7 +4,7 @@ import {Achievement} from "@/lib/types/achievements.types";
 import {getDbClient} from "@/lib/server/database/async-storage";
 import {BaseRepository} from "@/lib/server/domain/media/base/base.repository";
 import {books, booksAuthors, booksGenre, booksList} from "@/lib/server/database/schema";
-import {Book, UpsertBooksWithDetails} from "@/lib/server/domain/media/books/books.types";
+import {Book, InsertBooksWithDetails, UpdateBooksWithDetails} from "@/lib/server/domain/media/books/books.types";
 import {booksConfig, MangaSchemaConfig} from "@/lib/server/domain/media/books/books.config";
 import {and, asc, count, countDistinct, eq, getTableColumns, gte, isNotNull, isNull, lte, max, ne, sql} from "drizzle-orm";
 
@@ -197,7 +197,7 @@ export class BooksRepository extends BaseRepository<MangaSchemaConfig> {
         return result;
     }
 
-    async storeMediaWithDetails({ mediaData, authorsData }: UpsertBooksWithDetails) {
+    async storeMediaWithDetails({ mediaData, authorsData }: InsertBooksWithDetails) {
         const tx = getDbClient();
 
         const [media] = await tx
@@ -221,7 +221,7 @@ export class BooksRepository extends BaseRepository<MangaSchemaConfig> {
         return mediaId;
     }
 
-    async updateMediaWithDetails({ mediaData, authorsData, genresData }: UpsertBooksWithDetails) {
+    async updateMediaWithDetails({ mediaData, authorsData, genresData }: UpdateBooksWithDetails) {
         const tx = getDbClient();
 
         const [media] = await tx

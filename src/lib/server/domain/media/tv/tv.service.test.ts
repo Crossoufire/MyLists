@@ -20,7 +20,7 @@ describe("TvService", () => {
             const tvService = container.registries.mediaService.getService(mediaType);
 
             beforeEach(() => {
-                //@ts-expect-error - "protected" repository attribute
+                // @ts-expect-error - "protected" repository attribute
                 vi.spyOn(tvService.repository, "getMediaEpsPerSeason").mockResolvedValue(epsPerSeasonMock);
             });
 

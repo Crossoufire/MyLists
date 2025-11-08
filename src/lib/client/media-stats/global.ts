@@ -1,13 +1,10 @@
-import {ApiData} from "@/lib/client/media-stats/index";
 import {StatSection} from "@/lib/types/stats.types";
+import {GlobalData} from "@/lib/client/media-stats/index";
 import {MAIN_CARDS_CONFIG, MAIN_GRAPHS_CONFIG} from "@/lib/client/media-stats/constants";
 import {createRatingStatCard, createStatCard, createStatList} from "@/lib/client/media-stats/helpers";
 
 
-type GlobalStatsData = Extract<ApiData, { mediaType: undefined }>;
-
-
-export const globalData = (data: GlobalStatsData, forUser = false): StatSection[] => {
+export const globalData = (data: GlobalData, forUser = false): StatSection[] => {
     return [
         {
             sidebarTitle: "Main Statistics",

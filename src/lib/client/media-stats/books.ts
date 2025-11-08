@@ -1,15 +1,11 @@
-import {MediaType} from "@/lib/utils/enums";
-import type {StatSection} from "@/lib/types/stats.types";
-import {SpecificMediaData} from "@/lib/client/media-stats/index";
+import {StatSection} from "@/lib/types/stats.types";
+import {BooksData} from "@/lib/client/media-stats/index";
 import {formatNumberWithKM, formatNumberWithSpaces} from "@/lib/utils/functions";
 import {MAIN_CARDS_CONFIG, MAIN_GRAPHS_CONFIG, SIDE_CARD_CONFIG, SIDE_LISTS_CONFIG} from "@/lib/client/media-stats/constants";
 import {createRatingStatCard, createStatCard, createStatList, getCardsData, getListsData} from "@/lib/client/media-stats/helpers";
 
 
-type BooksStats = SpecificMediaData<typeof MediaType.BOOKS>
-
-
-export const booksData = (data: BooksStats): StatSection[] => {
+export const booksData = (data: BooksData): StatSection[] => {
     const sp = data.specificMediaStats;
     const topLang = sp.langsStats.topValues[0];
 

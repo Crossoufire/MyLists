@@ -1,11 +1,11 @@
-import {dataToLoad} from "@/lib/client/media-stats";
 import {useEffect, useState} from "react";
 import {capitalize} from "@/lib/utils/functions";
+import {dataToLoad} from "@/lib/client/media-stats";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {createFileRoute} from "@tanstack/react-router";
+import {MediaType, RatingSystemType} from "@/lib/utils/enums";
 import {RatingProvider} from "@/lib/client/contexts/rating-context";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
-import {MediaType, RatingSystemType} from "@/lib/utils/enums";
 import {Sidebar, SideBarItem} from "@/lib/client/components/general/Sidebar";
 import {StatsDisplay} from "@/lib/client/components/media-stats/StatsDisplay";
 import {platformStatsOptions} from "@/lib/client/react-query/query-options/query-options";
@@ -28,6 +28,7 @@ function GlobalStatsPage() {
     const [selectedData, setSelectedData] = useState(() => statsData[0]);
 
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setSelectedData(statsData[0]);
     }, [filters.mediaType, statsData]);
 

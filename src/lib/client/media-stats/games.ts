@@ -1,15 +1,11 @@
-import type {StatSection} from "@/lib/types/stats.types";
-import {MediaType} from "@/lib/utils/enums";
-import {SpecificMediaData} from "@/lib/client/media-stats/index";
+import {StatSection} from "@/lib/types/stats.types";
+import {GamesData} from "@/lib/client/media-stats/index";
 import {formatNumberWithKM} from "@/lib/utils/functions";
 import {MAIN_CARDS_CONFIG, MAIN_GRAPHS_CONFIG, SIDE_CARD_CONFIG, SIDE_LISTS_CONFIG} from "@/lib/client/media-stats/constants";
 import {createRatingStatCard, createStatCard, createStatList, getCardsData, getListsData} from "@/lib/client/media-stats/helpers";
 
 
-type GamesStats = SpecificMediaData<typeof MediaType.GAMES>
-
-
-export const gamesData = (data: GamesStats): StatSection[] => {
+export const gamesData = (data: GamesData): StatSection[] => {
     const sp = data.specificMediaStats;
     const topMode = sp.gameModes.topValues[0];
     const topEngine = sp.enginesStats.topValues[0];

@@ -1,15 +1,11 @@
-import {SpecificMediaData} from "@/lib/client/media-stats/index";
+import {MangaData} from "@/lib/client/media-stats/index";
 import type {StatSection} from "@/lib/types/stats.types";
-import {MediaType} from "@/lib/utils/enums";
 import {formatNumberWithKM, formatNumberWithSpaces} from "@/lib/utils/functions";
 import {MAIN_CARDS_CONFIG, MAIN_GRAPHS_CONFIG, SIDE_CARD_CONFIG, SIDE_LISTS_CONFIG} from "@/lib/client/media-stats/constants";
 import {createRatingStatCard, createStatCard, createStatList, getCardsData, getListsData} from "@/lib/client/media-stats/helpers";
 
 
-type MangaStats = SpecificMediaData<typeof MediaType.MANGA>
-
-
-export const mangaData = (data: MangaStats): StatSection[] => {
+export const mangaData = (data: MangaData): StatSection[] => {
     const sp = data.specificMediaStats;
 
     return [

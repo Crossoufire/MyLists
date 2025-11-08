@@ -142,7 +142,6 @@ description: ${book.synopsis}
     async addGenresToBook(bookApiId: string, booksGenres: string[]) {
         const mediaData = { apiId: bookApiId };
         const genresData = booksGenres.map((g) => ({ name: g }));
-        // @ts-expect-error - mediaData does not contains pages, covers, etc... not a problem
         await this.repository.updateMediaWithDetails({ mediaData, genresData });
     }
 
