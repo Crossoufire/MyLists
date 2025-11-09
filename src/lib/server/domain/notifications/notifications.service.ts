@@ -15,7 +15,7 @@ export class NotificationsService {
             if (mediaType === MediaType.SERIES || mediaType === MediaType.ANIME) {
                 if (
                     notification &&
-                    notification.payload.releaseDate.startsWith(item?.date?.substring(0, 10)) &&
+                    notification.payload.release_date.startsWith(item?.date?.substring(0, 10)) &&
                     item.episodeToAir === notification.payload.episode &&
                     item.seasonToAir === notification.payload.season
                 ) {
