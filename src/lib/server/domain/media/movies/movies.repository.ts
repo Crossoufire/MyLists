@@ -258,13 +258,20 @@ export class MoviesRepository extends BaseRepository<MovieSchemaConfig> {
                         THEN json_array()
                         ELSE (
                             SELECT COALESCE(json_group_array(json_object(
-                                'mediaId', m2.id, 
-                                'mediaName', m2.name, 
-                                'mediaCover', m2.image_cover
+                                'mediaId', x.id, 
+                                'mediaName', x.name, 
+                                'mediaCover', x.image_cover
                             )), json_array())
-                            FROM movies m2
-                            WHERE m2.collection_id = ${movies.collectionId} 
-                            AND m2.id != ${movies.id}
+                            FROM (
+                                SELECT
+                                    m2.id,
+                                    m2.name,
+                                    m2.image_cover,
+                                    m2.release_date
+                                FROM movies m2
+                                WHERE m2.collection_id = ${movies.collectionId} AND m2.id != ${movies.id}
+                                ORDER BY m2.release_date ASC, m2.id ASC
+                            ) AS x
                         )
                     END
                 `.mapWith(JSON.parse),
