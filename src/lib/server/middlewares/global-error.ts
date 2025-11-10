@@ -29,11 +29,12 @@ export const errorMiddleware = createMiddleware({ type: "function" }).server(asy
             console.error("Error:", { err });
         }
 
-        await saveError(err);
-
         if ("options" in err && isRedirect(err)) {
             throw err;
         }
+
+        await saveError(err);
+
         if (err instanceof FormattedError) {
             if (err?.sendMail && process.env.NODE_ENV === "production") {
                 await sendAdminErrorMail(err, "A Specific Formatted Error occurred");
@@ -62,8 +63,8 @@ export const errorMiddleware = createMiddleware({ type: "function" }).server(asy
 const saveError = async (err: any) => {
     const adminService = await getContainer().then((c) => c.services.admin);
     await adminService.saveErrorToDb({
-        name: err.name,
-        stack: err.stack,
-        message: err.message,
+        name: err?.name,
+        stack: err?.stack,
+        message: err?.message,
     });
 }
