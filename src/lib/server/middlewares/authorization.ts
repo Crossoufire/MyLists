@@ -1,11 +1,11 @@
 import {auth} from "@/lib/server/core/auth";
 import {PrivacyType} from "@/lib/utils/enums";
+import {updateLastSeen} from "@/lib/utils/last-seen";
+import {tryNotFound} from "@/lib/utils/try-not-found";
 import {createMiddleware} from "@tanstack/react-start";
 import {getRequest} from "@tanstack/react-start/server";
 import {getContainer} from "@/lib/server/core/container";
 import {notFound, redirect} from "@tanstack/react-router";
-import {updateLastSeen} from "@/lib/utils/last-seen";
-import {tryNotFound} from "@/lib/utils/try-not-found";
 import {baseUsernameSchema} from "@/lib/types/zod.schema.types";
 
 
@@ -15,7 +15,9 @@ export const authorizationMiddleware = createMiddleware({ type: "function" })
         const userService = await getContainer().then(c => c.services.user);
 
         const user = await userService.getUserByUsername(username);
-        if (!user) throw notFound();
+        if (!user) {
+            throw notFound();
+        }
 
         const { headers } = getRequest()!;
         const session = await auth.api.getSession({ headers, query: { disableCookieCache: true } });
@@ -32,7 +34,7 @@ export const authorizationMiddleware = createMiddleware({ type: "function" })
         return next({
             context: {
                 user: user,
-                currentUser: session?.user ? { ...session.user, id: parseInt(session.user.id) } : undefined,
+                currentUser: session?.user ? { ...session.user, id: Number(session.user.id) } : undefined,
             }
         });
     });

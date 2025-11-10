@@ -29,8 +29,8 @@ export const MediaType = {
     SERIES: "series",
     ANIME: "anime",
     MOVIES: "movies",
-    GAMES: "games",
     BOOKS: "books",
+    GAMES: "games",
     MANGA: "manga",
 } as const;
 export type MediaType = (typeof MediaType)[keyof typeof MediaType];

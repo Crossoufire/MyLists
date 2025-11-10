@@ -41,7 +41,6 @@ const getAuthConfig = createServerOnlyFn(() => betterAuth({
                 },
                 after: async (user) => {
                     const mediaTypes = Object.values(MediaType);
-
                     const userMediaSettingsData = mediaTypes.map((mt) => ({
                         mediaType: mt,
                         userId: Number(user.id),

@@ -187,7 +187,7 @@ export class UserRepository {
     static async findByUsername(username: string) {
         const userResult = await getDbClient().query.user.findFirst({
             where: eq(user.name, username),
-            with: { userMediaSettings: true }
+            with: { userMediaSettings: true },
         });
         if (!userResult) return null;
 
