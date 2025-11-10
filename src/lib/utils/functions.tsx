@@ -15,7 +15,7 @@ export const statusUtils = {
             case MediaType.MOVIES:
                 return [Status.COMPLETED, Status.PLAN_TO_WATCH];
             case MediaType.GAMES:
-                return [Status.PLAYING, Status.COMPLETED, Status.ENDLESS, Status.MULTIPLAYER, Status.DROPPED, Status.PLAN_TO_PLAY];
+                return [Status.PLAYING, Status.COMPLETED, Status.ENDLESS, Status.MULTIPLAYER, Status.ON_HOLD, Status.DROPPED, Status.PLAN_TO_PLAY];
             case MediaType.BOOKS:
                 return [Status.READING, Status.COMPLETED, Status.ON_HOLD, Status.DROPPED, Status.PLAN_TO_READ];
             case MediaType.MANGA:

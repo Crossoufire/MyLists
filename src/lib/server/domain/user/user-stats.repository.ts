@@ -261,14 +261,14 @@ export class UserStatsRepository {
     static async updateAllUsersPreComputedStats(mediaType: MediaType, userStats: UserMediaStats[]) {
         const tx = getDbClient();
 
-        for (const stat of userStats) {
+        for (const stats of userStats) {
             await tx
                 .update(userMediaSettings)
                 .set({
-                    mediaType: mediaType,
-                    ...userStats,
+                    ...stats,
+                    mediaType,
                 })
-                .where(and(eq(userMediaSettings.userId, stat.userId), eq(userMediaSettings.mediaType, mediaType)));
+                .where(and(eq(userMediaSettings.userId, stats.userId), eq(userMediaSettings.mediaType, mediaType)));
         }
     }
 

@@ -1,4 +1,5 @@
 import {notFound} from "@tanstack/react-router";
+import {statusUtils} from "@/lib/utils/functions";
 import {Achievement} from "@/lib/types/achievements.types";
 import {MediaListArgs} from "@/lib/types/zod.schema.types";
 import {getDbClient} from "@/lib/server/database/async-storage";
@@ -564,22 +565,13 @@ export abstract class BaseRepository<TConfig extends MediaSchemaConfig<MediaTabl
     }
 
     protected async _computeAllUsersStats(timeSpentStat: SQL, totalSpecificStat: SQL, totalRedoStat?: SQL) {
-        const { listTable, mediaTable } = this.config;
+        const { listTable, mediaTable, mediaType } = this.config;
 
-        let redoStat;
-        if (totalRedoStat) {
-            redoStat = totalRedoStat;
-        }
-        else if (listTable?.redo) {
-            redoStat = sql<number>`COALESCE(SUM(${listTable.redo}), 0)`
-        }
-        else {
-            redoStat = sql<number>`0`;
-        }
+        const redoStat = totalRedoStat ?? (listTable?.redo ? sql`COALESCE(SUM(${listTable.redo}), 0)` : sql`0`);
 
         const results = await getDbClient()
             .select({
-                userId: sql<number>`${listTable.userId}`,
+                userId: listTable.userId,
                 timeSpent: timeSpentStat.as("timeSpent"),
                 totalSpecific: totalSpecificStat.as("totalSpecific"),
                 statusCounts: sql`
@@ -611,20 +603,30 @@ export abstract class BaseRepository<TConfig extends MediaSchemaConfig<MediaTabl
             })
             .from(listTable)
             .innerJoin(mediaTable, eq(listTable.mediaId, mediaTable.id))
-            .groupBy(listTable.userId)
-            .execute();
+            .groupBy(listTable.userId);
+
+        const expectedStatuses = statusUtils.byMediaType(mediaType) ?? [];
 
         return results.map((row) => {
-            let statusCounts: Record<string, number> = {};
-            try {
-                const parsed = typeof row.statusCounts === "string" ? JSON.parse(row.statusCounts) : row.statusCounts;
-                if (typeof parsed === "object" && parsed !== null) {
-                    statusCounts = parsed;
+            let parsed: unknown = row.statusCounts;
+
+            if (typeof parsed === "string") {
+                try {
+                    parsed = JSON.parse(parsed);
+                }
+                catch (err) {
+                    parsed = {};
+                    console.error(`Failed to parse statusCounts for user ${row.userId}:`, row.statusCounts, err);
                 }
             }
-            catch (e) {
-                console.error(`Failed to parse statusCounts for user ${row.userId}:`, row.statusCounts, e);
-            }
+
+            const parsedObj = (parsed && typeof parsed === "object") ? (parsed as Record<Status, number>) : {} as Record<Status, number>;
+
+            const statusCounts = expectedStatuses.reduce<Record<Status, number>>((acc, status) => {
+                const v = parsedObj[status];
+                acc[status] = typeof v === "number" && Number.isFinite(v) ? v : 0;
+                return acc;
+            }, {} as Record<Status, number>);
 
             return {
                 userId: row.userId,

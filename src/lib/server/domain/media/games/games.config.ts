@@ -1,4 +1,4 @@
-import {JobType, Status} from "@/lib/utils/enums";
+import {JobType, MediaType, Status} from "@/lib/utils/enums";
 import {MediaSchemaConfig} from "@/lib/types/media.config.types";
 import {and, asc, desc, eq, getTableColumns, like} from "drizzle-orm";
 import {createArrayFilterDef} from "@/lib/server/domain/media/base/base.repository";
@@ -19,6 +19,7 @@ export const gamesConfig: GamesSchemaConfig = {
     listTable: gamesList,
     genreTable: gamesGenre,
     labelTable: gamesLabels,
+    mediaType: MediaType.GAMES,
     mediaList: {
         baseSelection: {
             mediaName: games.name,

@@ -1,7 +1,7 @@
 import {Column, SQL, Table} from "drizzle-orm";
-import {JobType, Status} from "@/lib/utils/enums";
 import {SQLiteColumn} from "drizzle-orm/sqlite-core";
 import {FilterDefinitions} from "@/lib/types/base.types";
+import {JobType, MediaType, Status} from "@/lib/utils/enums";
 import {AchievementSeedData} from "@/lib/types/achievements.types";
 
 
@@ -14,7 +14,7 @@ type MediaTableColumns = {
     imageCover: Column<any, any, any>;
     releaseDate: Column<any, any, any>;
     lastApiUpdate: Column<any, any, any>;
-}
+};
 
 
 type ListTableColumns = {
@@ -77,10 +77,11 @@ export interface MediaSchemaConfig<
     TGenreTable extends GenreTable,
     TLabelTable extends LabelTable
 > {
-    mediaTable: TMediaTable;
-    listTable: TListTable;
-    genreTable: TGenreTable;
-    labelTable: TLabelTable;
+    mediaTable: TMediaTable,
+    listTable: TListTable,
+    genreTable: TGenreTable,
+    labelTable: TLabelTable,
+    mediaType: MediaType,
     mediaList: {
         defaultStatus: Status;
         defaultSortName: string;

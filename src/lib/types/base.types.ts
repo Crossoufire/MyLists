@@ -74,7 +74,7 @@ export type UserMediaStats = {
     sumEntriesRated: number;
     entriesFavorites: number;
     entriesCommented: number;
-    statusCounts: Record<string, number>;
+    statusCounts: Record<Status, number>;
 };
 
 export type UpComingMedia = {

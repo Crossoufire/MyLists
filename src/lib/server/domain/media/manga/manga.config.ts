@@ -1,5 +1,5 @@
-import {JobType, Status} from "@/lib/utils/enums";
 import {asc, desc, getTableColumns} from "drizzle-orm";
+import {JobType, MediaType, Status} from "@/lib/utils/enums";
 import {MediaSchemaConfig} from "@/lib/types/media.config.types";
 import {createArrayFilterDef} from "@/lib/server/domain/media/base/base.repository";
 import {mangaAchievements} from "@/lib/server/domain/media/manga/achievements.seed";
@@ -19,6 +19,7 @@ export const mangaConfig: MangaSchemaConfig = {
     listTable: mangaList,
     genreTable: mangaGenre,
     labelTable: mangaLabels,
+    mediaType: MediaType.MANGA,
     mediaList: {
         baseSelection: {
             mediaName: manga.name,

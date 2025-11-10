@@ -1,5 +1,5 @@
-import {JobType, Status} from "@/lib/utils/enums";
 import {asc, desc, getTableColumns} from "drizzle-orm";
+import {JobType, MediaType, Status} from "@/lib/utils/enums";
 import {MediaSchemaConfig} from "@/lib/types/media.config.types";
 import {createArrayFilterDef} from "@/lib/server/domain/media/base/base.repository";
 import {moviesAchievements} from "@/lib/server/domain/media/movies/achievements.seed";
@@ -19,6 +19,7 @@ export const moviesConfig: MovieSchemaConfig = {
     listTable: moviesList,
     genreTable: moviesGenre,
     labelTable: moviesLabels,
+    mediaType: MediaType.MOVIES,
     mediaList: {
         baseSelection: {
             mediaName: movies.name,

@@ -1,5 +1,5 @@
-import {JobType, Status} from "@/lib/utils/enums";
 import {asc, desc, getTableColumns, sql} from "drizzle-orm";
+import {JobType, MediaType, Status} from "@/lib/utils/enums";
 import {TvSchemaConfig} from "@/lib/types/media.config.types";
 import {createArrayFilterDef} from "@/lib/server/domain/media/base/base.repository";
 import {seriesAchievements} from "@/lib/server/domain/media/tv/series/achievements.seed";
@@ -25,6 +25,7 @@ export const seriesConfig: SeriesSchemaConfig = {
     actorTable: seriesActors,
     networkTable: seriesNetwork,
     epsPerSeasonTable: seriesEpisodesPerSeason,
+    mediaType: MediaType.SERIES,
     mediaList: {
         baseSelection: {
             mediaName: series.name,
