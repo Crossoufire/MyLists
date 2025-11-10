@@ -11,7 +11,7 @@ interface PaginationProps {
 }
 
 
-export const Pagination = ({ currentPage, totalPages, onChangePage, showNav = true, maxVisible = 6 }: PaginationProps) => {
+export const Pagination = ({ currentPage, totalPages, onChangePage, showNav = true, maxVisible = 8 }: PaginationProps) => {
     if (totalPages <= 1) {
         return null;
     }
@@ -57,12 +57,13 @@ export const Pagination = ({ currentPage, totalPages, onChangePage, showNav = tr
 
     return (
         <nav className="flex justify-center items-center mt-8" aria-label="Pagination navigation">
-            <ul className="flex items-center gap-2">
+            <ul className="flex items-center gap-2 max-sm:gap-1">
                 {showNav &&
                     <li>
                         <Button
                             size="sm"
                             disabled={!canGoPrevious}
+                            className="has-[>svg]:px-1.5"
                             aria-label="Go to previous page"
                             variant={canGoPrevious ? "secondary" : "ghost"}
                             onClick={() => handlePageChange(safePage - 1)}
@@ -74,12 +75,13 @@ export const Pagination = ({ currentPage, totalPages, onChangePage, showNav = tr
                 {pages.map((page, idx) =>
                     <li key={`${page}-${idx}`}>
                         {page === "..." ?
-                            <span className="px-3 py-2 text-sm text-muted-foreground" aria-hidden="true">
+                            <span className="px-1 py-2 text-sm text-muted-foreground" aria-hidden="true">
                                 ...
                             </span>
                             :
                             <Button
                                 size="sm"
+                                className="px-2.5"
                                 aria-label={`Go to page ${page}`}
                                 onClick={() => handlePageChange(page)}
                                 variant={page === safePage ? "default" : "ghost"}
@@ -96,6 +98,7 @@ export const Pagination = ({ currentPage, totalPages, onChangePage, showNav = tr
                             size="sm"
                             disabled={!canGoNext}
                             aria-label="Go to next page"
+                            className="has-[>svg]:px-1.5"
                             variant={canGoNext ? "secondary" : "ghost"}
                             onClick={() => handlePageChange(safePage + 1)}
                         >
