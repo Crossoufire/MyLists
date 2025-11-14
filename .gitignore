@@ -34,3 +34,4 @@ dist
 !**/public/static/profile-back-covers/default.jpg
 
 .tanstack
+/tsconfig.tsbuildinfo

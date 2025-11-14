@@ -20,7 +20,7 @@ export const AvatarCircles = ({ className, avatarData }: AvatarCirclesProps) => 
             {avatarData.slice(0, showPeople).map((data, idx) =>
                 <ProfileIcon
                     key={idx}
-                    fallbackSize="text-xs"
+                    fallbackSize="text-[9px]"
                     className="size-5 border-1 border-black"
                     user={{ image: data.image, name: data.name }}
                 />

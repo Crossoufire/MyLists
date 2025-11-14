@@ -11,7 +11,7 @@ export const useAuth = () => {
     };
 
     return {
-        currentUser: currentUser,
+        currentUser: currentUser!,
         setCurrentUser,
         isLoading,
         isPending,

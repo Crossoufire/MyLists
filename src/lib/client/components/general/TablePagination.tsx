@@ -1,3 +1,5 @@
+/* eslint-disable react-compiler/react-compiler */
+
 import {cn} from "@/lib/utils/helpers";
 import {Table} from "@tanstack/react-table";
 import {Button} from "@/lib/client/components/ui/button";
@@ -11,6 +13,8 @@ interface TablePaginationProps<TData> {
 
 
 export function TablePagination<TData>({ table, withSelection = true }: TablePaginationProps<TData>) {
+    "use no memo";
+
     return (
         <div className={cn("flex items-center justify-between", !withSelection && "justify-end")}>
             {withSelection &&
