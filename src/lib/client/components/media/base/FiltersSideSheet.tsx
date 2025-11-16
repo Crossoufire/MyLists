@@ -215,7 +215,7 @@ const CheckboxGroup = ({ title, items, onChange, defaultChecked, renderLabel }: 
                 {visibleItems.length === 0 ?
                     <MutedText className="text-sm">Nothing to display.</MutedText>
                     :
-                    visibleItems.map(item =>
+                    visibleItems.map((item) =>
                         <div key={item.name} className="flex items-center space-x-2">
                             <Checkbox
                                 id={item.name + "-id"}

@@ -35,4 +35,4 @@ dist
 
 .tanstack
 /tsconfig.tsbuildinfo
-src/routeTree.gen.ts
+**/routeTree.gen.ts

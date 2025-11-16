@@ -171,7 +171,7 @@ export const getStatusColor = (status: Status) => {
 };
 
 
-export const diffColors = (difficulty: AchievementDifficulty | "total", variant: Variant = "text") => {
+export const diffColors = (difficulty: AchievementDifficulty | "total", variant: "text" | "border" | "bg" = "text") => {
     if (!difficulty) return null;
     const colors: { [key: string]: string } = {
         "border-bronze": "border-amber-700",
@@ -297,13 +297,17 @@ export const sliceIntoParts = (array: [string, any][], slices: number) => {
 };
 
 
-export const getLangCountryName = (name: string | undefined | null, type: LangType) => {
+export const getLangCountryName = (name: string | undefined | null, type: "language" | "region") => {
     if (!name) return "-";
 
-    const languageNames = new Intl.DisplayNames(["en"], { type });
-    if (name === "cn") return "Chinese";
-
-    return languageNames.of(name.trim()) || "N/A";
+    try {
+        const languageNames = new Intl.DisplayNames(["en"], { type });
+        if (name === "cn") return "Chinese";
+        return languageNames.of(name.trim()) || "N/A";
+    }
+    catch {
+        return name;
+    }
 };
 
 
@@ -435,10 +439,6 @@ export function jsonToCsv(items: any[]) {
 
     return [headerString, ...rowItems].join("\r\n");
 }
-
-
-type LangType = "language" | "region";
-type Variant = "text" | "border" | "bg";
 
 
 interface FormatDateTimeOptions {
