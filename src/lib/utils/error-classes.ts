@@ -42,11 +42,3 @@ export const formZodErrorAdapter = createSerializationAdapter({
     toSerializable: ({ message, issues }) => ({ message, issues }),
     fromSerializable: ({ message, issues }) => new FormZodError({ issues } as z.ZodError, message),
 });
-
-
-export class CancelJobError extends Error {
-    constructor(message?: string) {
-        super(message || "Job was cancelled.");
-        this.name = "CancellationError";
-    }
-}

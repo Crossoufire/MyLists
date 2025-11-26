@@ -117,7 +117,7 @@ export class BooksService extends BaseService<MangaSchemaConfig, BooksRepository
         await this.repository.updateMediaWithDetails({ mediaData: fields, authorsData });
     }
 
-    async batchBooksWithoutGenres(batchSize = 5) {
+    async batchBooksWithoutGenres(batchSize: number) {
         const booksWithoutGenres = await this.repository.getBooksWithoutGenres();
 
         const booksPrompts: string[] = [];

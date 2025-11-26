@@ -329,6 +329,7 @@ export class TasksService {
         await this.runComputeAllUsersStats(ctx);
         await this.runCalculateAchievements(ctx);
         await this.runDbMaintenance(ctx);
+        await this.runAddGenresToBooksUsingLlm(ctx);
 
         ctx.logger.info("Completed: MaintenanceTasks execution.");
     }
@@ -341,16 +342,29 @@ export class TasksService {
         const booksProvider = this.mediaProviderRegistry.getService(MediaType.BOOKS);
 
         const booksGenres = booksService.getAvailableGenres();
-        const batchedBooks = await booksService.batchBooksWithoutGenres(5);
+        const batchedBooks = await booksService.batchBooksWithoutGenres(10);
         ctx.logger.info(`${batchedBooks.length} batches of books to treat.`);
 
         const mainPrompt = `
-Add genres to the following books. 
-For each book, choose the top genres for this book (MAX 4) from this list: 
-${booksGenres.join(", ")}.
+You are given a list of books. Your task is to assign up to 4 relevant genres to each book from the provided genre list.
+Genres to choose from:
+${booksGenres.join(", ")}
+
+Instructions:
+1. Choose a MAXIMUM of 4 genres per book.
+2. ONLY choose genres from the above list.
+3. Output your answer as a JSON array following this schema:
+   [
+     {
+       "bookApiId": string,
+       "genres": string[]
+     }
+   ]
+
+Make sure your response is **valid JSON** and strictly follows the schema.
 `;
 
-        for (const booksBatch of batchedBooks) {
+        for (const booksBatch of batchedBooks.slice(0, 10)) {
             const promptToSend = `${mainPrompt}\n${booksBatch.join("\n")}`;
 
             try {
