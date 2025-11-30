@@ -35,6 +35,7 @@ export class TasksService {
         this.taskHandlers = {
             dbMaintenance: this.runDbMaintenance.bind(this),
             lockOldMovies: this.runLockOldMovies.bind(this),
+            checkHLTBWorks: this.runCheckHLTBWorks.bind(this),
             updateIgdbToken: this.runUpdateIgdbToken.bind(this),
             bulkMediaRefresh: this.runBulkMediaRefresh.bind(this),
             seedAchievements: this.runSeedAchievements.bind(this),
@@ -66,6 +67,16 @@ export class TasksService {
 
         const duration = (Date.now() - startTime);
         taskLogger.info({ durationMs: duration }, "Task completed");
+    }
+
+    protected async runCheckHLTBWorks(ctx: TaskContext) {
+        ctx.logger.info("Starting: checkHLTBWorks execution.");
+
+        const gamesProviderService = this.mediaProviderRegistry.getService(MediaType.GAMES);
+        const halo3Data = await gamesProviderService.checkHLTBWorks("Halo 3");
+
+        ctx.logger.info({ json: halo3Data }, "Halo 3 HLTB data");
+        ctx.logger.info("Completed: checkHLTBWorks execution.");
     }
 
     protected async runBulkMediaRefresh(ctx: TaskContext) {

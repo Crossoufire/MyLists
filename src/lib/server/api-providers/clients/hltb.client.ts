@@ -67,7 +67,13 @@ export class HltbClient extends BaseClient {
     }
 
     private async _sendWebRequest(gameName: string) {
-        const headers = this._getSearchRequestHeaders();
+        const ua = new UserAgent();
+        const headers = {
+            "accept": "*/*",
+            "User-Agent": ua.toString(),
+            "referer": HltbClient.baseUrl,
+            "content-type": "application/json",
+        };
 
         const searchInfo = await this._getSearchInfo(false);
         if (!searchInfo?.apiKey) {
@@ -113,10 +119,14 @@ export class HltbClient extends BaseClient {
     }
 
     private async _getSearchInfo(searchAll: boolean) {
-        const headers = this._getTitleRequestHeaders();
+        const ua = new UserAgent();
+        const headers = {
+            "User-Agent": ua.toString(),
+            "referer": HltbClient.baseUrl,
+        }
 
         try {
-            const response = await fetch(HltbClient.baseUrl, { headers, method: "GET" });
+            const response = await fetch(HltbClient.baseUrl, { method: "GET", headers });
             if (!response.ok) return null;
 
             const htmlResult = await response.text();
@@ -149,24 +159,6 @@ export class HltbClient extends BaseClient {
         catch (err) {
             console.error("Error getting search info:", err);
             return null;
-        }
-    }
-
-    private _getSearchRequestHeaders() {
-        const ua = new UserAgent();
-        return {
-            "accept": "*/*",
-            "User-Agent": ua.toString(),
-            "referer": HltbClient.baseUrl,
-            "content-type": "application/json",
-        }
-    }
-
-    private _getTitleRequestHeaders() {
-        const ua = new UserAgent();
-        return {
-            "User-Agent": ua.toString(),
-            "referer": HltbClient.baseUrl,
         }
     }
 
@@ -238,8 +230,8 @@ export class HltbClient extends BaseClient {
                 games: {
                     userId: 0,
                     platform: "",
-                    sortCategory: "popular",
                     rangeCategory: "main",
+                    sortCategory: "popular",
                     rangeTime: { min: 0, max: 0 },
                     rangeYear: { max: "", min: "" },
                     gameplay: {
@@ -249,11 +241,11 @@ export class HltbClient extends BaseClient {
                         perspective: "",
                     },
                 },
-                users: { sortCategory: "postcount" },
-                lists: { sortCategory: "follows" },
-                filter: "",
                 sort: 0,
+                filter: "",
                 randomizer: 0,
+                lists: { sortCategory: "follows" },
+                users: { sortCategory: "postcount" },
             },
             useCache: true,
         };

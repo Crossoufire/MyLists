@@ -25,6 +25,10 @@ export class GamesProviderService extends BaseProviderService<
         return response?.access_token;
     }
 
+    async checkHLTBWorks(gameName: string) {
+        return this.hltbClient.search(gameName);
+    }
+
     protected _fetchRawDetails(apiId: number) {
         return this.client.getGameDetails(apiId);
     }

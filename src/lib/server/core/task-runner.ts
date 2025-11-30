@@ -19,7 +19,7 @@ export async function executeTask(taskData: TaskData) {
 
     try {
         await tasksService.runTask({ data: taskData, logger: taskLogger });
-        taskLogger.info(`Task ${taskData.taskName} completed via ${taskData.triggeredBy}...`);
+        taskLogger.info(`Task ${taskData.taskName} completed via ${taskData.triggeredBy}.`);
     }
     catch (err) {
         status = "failed";
