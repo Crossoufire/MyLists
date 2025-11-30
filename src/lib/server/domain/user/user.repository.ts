@@ -8,6 +8,7 @@ import {ProviderSearchResult, ProviderSearchResults} from "@/lib/types/provider.
 
 export class UserRepository {
     // --- Tasks & Admin ----------------------------------------------------
+
     static async deleteNonActivatedOldUsers() {
         const result = await getDbClient()
             .delete(user)
@@ -112,6 +113,13 @@ export class UserRepository {
     }
 
     // --------------------------------------------------------------------
+
+    static async updateUserLastSeen(userId: number) {
+        await getDbClient()
+            .update(user)
+            .set({ updatedAt: sql`datetime('now')` })
+            .where(eq(user.id, userId));
+    }
 
     static async findUserByName(name: string) {
         return getDbClient()

@@ -1,9 +1,9 @@
 import {RoleType} from "@/lib/utils/enums";
 import {auth} from "@/lib/server/core/auth";
 import {redirect} from "@tanstack/react-router";
-import {updateLastSeen} from "@/lib/utils/last-seen";
 import {createMiddleware} from "@tanstack/react-start";
 import {verifyAdminToken} from "@/lib/utils/jwt-utils";
+import {getContainer} from "@/lib/server/core/container";
 import {getCookie, getRequest} from "@tanstack/react-start/server";
 
 
@@ -18,13 +18,15 @@ export const authMiddleware = createMiddleware({ type: "function" }).server(asyn
         throw redirect({ to: "/", search: { authExpired: true } });
     }
 
-    await updateLastSeen(session.user.name);
+    const container = await getContainer();
+    const userService = container.services.user;
+    await userService.updateUserLastSeen(container.cacheManager, Number(session.user.id));
 
     return next({
         context: {
             currentUser: {
                 ...session.user,
-                id: parseInt(session.user.id),
+                id: Number(session.user.id),
             }
         }
     });
@@ -39,13 +41,15 @@ export const managerAuthMiddleware = createMiddleware({ type: "function" }).serv
         throw redirect({ to: "/", search: { authExpired: true } });
     }
 
-    await updateLastSeen(session.user.name);
+    const container = await getContainer();
+    const userService = container.services.user;
+    await userService.updateUserLastSeen(container.cacheManager, Number(session.user.id));
 
     return next({
         context: {
             currentUser: {
                 ...session.user,
-                id: parseInt(session.user.id),
+                id: Number(session.user.id),
             }
         }
     });

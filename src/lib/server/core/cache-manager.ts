@@ -3,10 +3,14 @@ import {serverEnv} from "@/env/server";
 import {getRedisConnection} from "@/lib/server/core/redis-client";
 
 
+export type CacheManager = Awaited<ReturnType<typeof initCacheManager>>;
+
+
 interface CacheStore {
     getStoreType(): string;
     del(key: string): Promise<void>;
     get<T>(key: string): Promise<T | undefined>;
+    increment(key: string, amount?: number): Promise<number>;
     set(key: string, value: any, ttl?: number): Promise<void>;
     wrap<T>(key: string, fn: () => Promise<T>, options?: { ttl?: number }): Promise<T>;
 }
@@ -43,6 +47,11 @@ class RedisCacheStore implements CacheStore {
         await this.set(key, result, options?.ttl);
 
         return result;
+    }
+
+    async increment(key: string, amount = 1) {
+        const newValue = await this.redis.incrby(key, amount);
+        return newValue;
     }
 
     getStoreType(): string {
@@ -90,6 +99,23 @@ class MemoryCacheStore implements CacheStore {
         await this.set(key, result, options?.ttl);
 
         return result;
+    }
+
+    async increment(key: string, amount = 1) {
+        const cached = this.cache.get(key);
+        const ttl = this.defaultTtl;
+
+        let newValue = 0;
+        if (cached && cached.expires > Date.now() && typeof cached.value === "number") {
+            newValue = cached.value + amount;
+        }
+        else {
+            newValue = amount;
+        }
+
+        this.cache.set(key, { value: newValue, expires: Date.now() + ttl });
+
+        return newValue;
     }
 
     getStoreType() {

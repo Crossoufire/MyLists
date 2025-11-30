@@ -1,21 +1,27 @@
 import {MediaType} from "@/lib/utils/enums";
 import {user} from "@/lib/server/database/schema";
 import {FormattedError} from "@/lib/utils/error-classes";
+import {CacheManager} from "@/lib/server/core/cache-manager";
 import {UserRepository} from "@/lib/server/domain/user/user.repository";
 import {AdminUpdatePayload, SearchTypeAdmin} from "@/lib/types/zod.schema.types";
 
 
+const LAST_SEEN_CACHE_KEY = "lastSeen";
+export const VISITS_CACHE_KEY = "visits";
+const UPDATE_THRESHOLD_MS = 5 * 60 * 1000;
+
+
 export class UserService {
-    constructor(private userRepository: typeof UserRepository) {
+    constructor(private repository: typeof UserRepository) {
     }
 
     // --- Admin functions --------------------------------------------
 
     async getUserOverviewForAdmin() {
-        const userStats = await this.userRepository.getUserStatsForAdmin();
-        const recentUsers = await this.userRepository.getActiveUsersForAdmin(20);
-        const usersPerPrivacy = await this.userRepository.getUsersPerPrivacyValueForAdmin();
-        const cumulativeUsersPerMonth = await this.userRepository.getCumUsersPerMonthForAdmin();
+        const userStats = await this.repository.getUserStatsForAdmin();
+        const recentUsers = await this.repository.getActiveUsersForAdmin(20);
+        const usersPerPrivacy = await this.repository.getUsersPerPrivacyValueForAdmin();
+        const cumulativeUsersPerMonth = await this.repository.getCumUsersPerMonthForAdmin();
 
         return {
             ...userStats,
@@ -26,12 +32,12 @@ export class UserService {
     }
 
     async getPaginatedUsersForAdmin(data: SearchTypeAdmin) {
-        return this.userRepository.getAdminPaginatedUsers(data);
+        return this.repository.getAdminPaginatedUsers(data);
     }
 
     async updateUserForAdmin(userId: number | undefined, payload: AdminUpdatePayload) {
         if (!userId && payload.showUpdateModal) {
-            return this.userRepository.adminUpdateFeaturesFlag(payload.showUpdateModal);
+            return this.repository.adminUpdateFeaturesFlag(payload.showUpdateModal);
         }
 
         if (!userId) return;
@@ -48,72 +54,83 @@ export class UserService {
             throw new FormattedError("Invalid payload");
         }
 
-        await this.userRepository.adminUpdateUser(userId, payload);
+        await this.repository.adminUpdateUser(userId, payload);
     }
 
     // ----------------------------------------------------------------
 
+    async updateUserLastSeen(cacheManager: CacheManager, userId: number) {
+        const visitCounterKey = `${VISITS_CACHE_KEY}:${new Date().getFullYear()}-${new Date().getMonth() + 1}`;
+        await cacheManager.increment(visitCounterKey);
+
+        const cacheKey = `${LAST_SEEN_CACHE_KEY}:${userId}`;
+        if (await cacheManager.get(cacheKey)) return;
+        await cacheManager.set(cacheKey, true, UPDATE_THRESHOLD_MS);
+
+        return this.repository.updateUserLastSeen(userId);
+    }
+
     async deleteUserAccount(userId: number) {
-        return this.userRepository.deleteUserAccount(userId);
+        return this.repository.deleteUserAccount(userId);
     }
 
     async updateUserSettings(userId: number, payload: Partial<typeof user.$inferInsert>) {
-        await this.userRepository.updateUserSettings(userId, payload);
+        await this.repository.updateUserSettings(userId, payload);
     }
 
     async isFollowing(userId: number, followedId: number) {
         if (userId === followedId) return false;
-        return this.userRepository.isFollowing(userId, followedId);
+        return this.repository.isFollowing(userId, followedId);
     }
 
     async updateNotificationsReadTime(userId: number) {
-        return this.userRepository.updateNotificationsReadTime(userId);
+        return this.repository.updateNotificationsReadTime(userId);
     }
 
     async hasActiveMediaType(userId: number, mediaType: MediaType) {
-        return this.userRepository.hasActiveMediaType(userId, mediaType);
+        return this.repository.hasActiveMediaType(userId, mediaType);
     }
 
     async getUserByUsername(username: string) {
-        return this.userRepository.findByUsername(username);
+        return this.repository.findByUsername(username);
     }
 
     async getUserById(userId: number) {
-        return this.userRepository.findById(userId);
+        return this.repository.findById(userId);
     }
 
     async findUserByName(name: string) {
-        const isUsernameTaken = await this.userRepository.findUserByName(name);
+        const isUsernameTaken = await this.repository.findUserByName(name);
         if (isUsernameTaken) {
             throw new FormattedError("Invalid username. Please select another one.");
         }
     }
 
     async updateFeatureFlag(userId: number) {
-        return this.userRepository.updateFeatureFlag(userId);
+        return this.repository.updateFeatureFlag(userId);
     }
 
     async updateFollowStatus(userId: number, followedId: number) {
-        return this.userRepository.updateFollowStatus(userId, followedId);
+        return this.repository.updateFollowStatus(userId, followedId);
     }
 
     async incrementProfileView(userId: number) {
-        return this.userRepository.incrementProfileView(userId);
+        return this.repository.incrementProfileView(userId);
     }
 
     async incrementMediaTypeView(userId: number, mediaType: MediaType) {
-        return this.userRepository.incrementMediaTypeView(userId, mediaType);
+        return this.repository.incrementMediaTypeView(userId, mediaType);
     }
 
     async getUserFollowers(userId: number, limit = 8) {
-        return this.userRepository.getUserFollowers(userId, limit);
+        return this.repository.getUserFollowers(userId, limit);
     }
 
     async getUserFollows(userId: number, limit = 8) {
-        return this.userRepository.getUserFollows(userId, limit);
+        return this.repository.getUserFollows(userId, limit);
     }
 
     async searchUsers(query: string, page: number = 1) {
-        return this.userRepository.searchUsers(query, page);
+        return this.repository.searchUsers(query, page);
     }
 }

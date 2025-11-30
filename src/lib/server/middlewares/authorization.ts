@@ -1,6 +1,5 @@
 import {auth} from "@/lib/server/core/auth";
 import {PrivacyType} from "@/lib/utils/enums";
-import {updateLastSeen} from "@/lib/utils/last-seen";
 import {tryNotFound} from "@/lib/utils/try-not-found";
 import {createMiddleware} from "@tanstack/react-start";
 import {getRequest} from "@tanstack/react-start/server";
@@ -12,8 +11,9 @@ import {baseUsernameSchema} from "@/lib/types/zod.schema.types";
 export const authorizationMiddleware = createMiddleware({ type: "function" })
     .inputValidator((data) => tryNotFound(() => baseUsernameSchema.parse(data)))
     .server(async ({ next, data: { username } }) => {
-        const userService = await getContainer().then(c => c.services.user);
+        const container = await getContainer();
 
+        const userService = container.services.user;
         const user = await userService.getUserByUsername(username);
         if (!user) {
             throw notFound();
@@ -28,7 +28,7 @@ export const authorizationMiddleware = createMiddleware({ type: "function" })
         }
 
         if (session?.user) {
-            await updateLastSeen(session.user.name);
+            await userService.updateUserLastSeen(container.cacheManager, Number(session.user.id));
         }
 
         return next({

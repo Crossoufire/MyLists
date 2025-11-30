@@ -27,59 +27,71 @@ function OverviewPage() {
                 heading="Users Overview"
                 description="Overview of the user statistics and growth of MyLists."
             />
-            <div className="grid gap-4 grid-cols-5 max-sm:grid-cols-2 max-sm:gap-3">
-                <UserStats
-                    icon={Users}
-                    title="Total Users"
-                    value={apiData.totalUsers.count}
-                    description="Users that registered"
-                />
-                <UserStats
-                    icon={UserPlus}
-                    title="New Users"
-                    value={apiData.newUsers.count}
-                    description={`${newUsers ? "+" : ""}${apiData.newUsers.comparedToLastMonth} compared to last month`}
-                />
-                <UserStats
-                    icon={Activity}
-                    title="Active Users"
-                    description="Users seen this month"
-                    value={apiData.usersSeenThisMonth.count}
-                />
-                {apiData.usersPerPrivacy.map((privacyValue, idx) =>
+            <div className="space-y-4">
+                <div className="grid gap-4 grid-cols-3 max-sm:grid-cols-2 max-sm:gap-3">
                     <UserStats
-                        key={idx}
-                        icon={Shield}
-                        value={privacyValue.count}
-                        title={capitalize(privacyValue.privacy) + " Users"}
-                        description={"Users with privacy set to " + privacyValue.privacy}
+                        icon={Users}
+                        title="Total Users"
+                        value={apiData.totalUsers.count}
+                        description="Users that registered"
                     />
-                )}
-                <Card className="col-span-3 max-sm:col-span-2">
-                    <CardHeader>
-                        <CardTitle>User Growth</CardTitle>
-                        <CardDescription>Cumulative number of users per month</CardDescription>
-                    </CardHeader>
-                    <CardContent className="mt-3">
-                        <ResponsiveContainer width="100%" height={350} className="-ml-4">
-                            <BarChart data={apiData.cumulativeUsersPerMonth}>
-                                <XAxis dataKey="month" stroke="#888888" fontSize={12} tickLine={false} axisLine={false}/>
-                                <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `${value}`}/>
-                                <Tooltip contentStyle={{ backgroundColor: "#111827", color: "#fff", border: "none", borderRadius: "8px" }}/>
-                                <Bar dataKey="count" fill="currentColor" radius={[4, 4, 0, 0]} className="fill-primary"/>
-                            </BarChart>
-                        </ResponsiveContainer>
-                    </CardContent>
-                </Card>
-                <Card className="col-span-2 max-sm:col-span-2">
-                    <CardHeader>
-                        <CardTitle>Recent Users</CardTitle>
-                        <CardDescription>Latest user activity on MyLists</CardDescription>
-                    </CardHeader>
-                    <CardContent className="mt-3">
-                        <RecentUsers users={apiData.recentUsers}/>
-                    </CardContent>
-                </Card>
+                    <UserStats
+                        icon={UserPlus}
+                        title="Interaction This Month"
+                        value={apiData.visitsThisMonth}
+                        description="Total authed interaction this month"
+                    />
+                    <UserStats
+                        icon={UserPlus}
+                        title="New Users"
+                        value={apiData.newUsers.count}
+                        description={`${newUsers ? "+" : ""}${apiData.newUsers.comparedToLastMonth} compared to last month`}
+                    />
+                    <UserStats
+                        icon={Activity}
+                        title="Unique Users This Month"
+                        value={apiData.usersSeenThisMonth.count}
+                        description="Unique users seen this month"
+                    />
+                    {apiData.usersPerPrivacy.map((privacyValue, idx) =>
+                        <UserStats
+                            key={idx}
+                            icon={Shield}
+                            value={privacyValue.count}
+                            title={capitalize(privacyValue.privacy) + " Users"}
+                            description={"Users with privacy set to " + privacyValue.privacy}
+                        />
+                    )}
+                </div>
+                <div className="grid gap-4 grid-cols-7 max-sm:grid-cols-2 max-sm:gap-3">
+                    <Card className="col-span-4 max-sm:col-span-5">
+                        <CardHeader>
+                            <CardTitle>User Growth</CardTitle>
+                            <CardDescription>Cumulative number of users per month</CardDescription>
+                        </CardHeader>
+                        <CardContent className="mt-3">
+                            <ResponsiveContainer width="100%" height={350} className="-ml-4">
+                                <BarChart data={apiData.cumulativeUsersPerMonth}>
+                                    <XAxis dataKey="month" stroke="#888888" fontSize={12} tickLine={false} axisLine={false}/>
+                                    <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `${value}`}/>
+                                    <Tooltip contentStyle={{ backgroundColor: "#111827", color: "#fff", border: "none", borderRadius: "8px" }}/>
+                                    <Bar dataKey="count" fill="currentColor" radius={[4, 4, 0, 0]} className="fill-primary"/>
+                                </BarChart>
+                            </ResponsiveContainer>
+                        </CardContent>
+                    </Card>
+                    <Card className="col-span-3 max-sm:col-span-5 pr-3">
+                        <CardHeader>
+                            <CardTitle>Recent Users</CardTitle>
+                            <CardDescription>Latest user activity on MyLists</CardDescription>
+                        </CardHeader>
+                        <CardContent className="mt-3 overflow-y-auto">
+                            <RecentUsers
+                                users={apiData.recentUsers}
+                            />
+                        </CardContent>
+                    </Card>
+                </div>
             </div>
         </DashboardShell>
     );

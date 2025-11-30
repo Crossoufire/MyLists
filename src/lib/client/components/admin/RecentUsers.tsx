@@ -11,7 +11,7 @@ interface RecentUsersProps {
 
 export function RecentUsers({ users }: RecentUsersProps) {
     return (
-        <div className="space-y-5 overflow-y-auto max-h-86 pr-4">
+        <div className="space-y-5 max-h-86">
             {users.map((user) =>
                 <div key={user.id} className="flex items-center">
                     <ProfileIcon
@@ -19,13 +19,19 @@ export function RecentUsers({ users }: RecentUsersProps) {
                         className="size-9 border-2"
                         user={{ image: user.image, name: user.name }}
                     />
-                    <div className="ml-4 space-y-1">
+                    <div className="ml-3 space-y-1">
                         <p className="text-sm font-medium leading-none">
-                            <Link to="/profile/$username" params={{ username: user.name }} className="hover:underline hover:underline-offset-2">
+                            <Link
+                                to="/profile/$username"
+                                params={{ username: user.name }}
+                                className="hover:underline hover:underline-offset-2"
+                            >
                                 {user.name}
                             </Link>
                         </p>
-                        <p className="text-sm text-muted-foreground">{user.email}</p>
+                        <p className="text-sm text-muted-foreground max-w-[280px] truncate" title={user.email}>
+                            {user.email}
+                        </p>
                     </div>
                     <div className="ml-auto text-sm">
                         <div className="flex items-center gap-2">

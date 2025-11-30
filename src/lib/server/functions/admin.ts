@@ -18,6 +18,7 @@ import {
     searchTypeAdminSchema,
     searchTypeSchema
 } from "@/lib/types/zod.schema.types";
+import {VISITS_CACHE_KEY} from "@/lib/server/domain/user";
 
 
 export const checkAdminAuth = createServerFn({ method: "GET" })
@@ -62,8 +63,15 @@ export const adminLogout = createServerFn({ method: "POST" })
 export const getAdminOverview = createServerFn({ method: "GET" })
     .middleware([managerAuthMiddleware, adminAuthMiddleware])
     .handler(async () => {
-        const userService = await getContainer().then((c) => c.services.user);
-        return userService.getUserOverviewForAdmin();
+        const container = await getContainer();
+        const userService = container.services.user;
+        const cacheManager = container.cacheManager;
+
+        const visitCounterKey = `${VISITS_CACHE_KEY}:${new Date().getFullYear()}-${new Date().getMonth() + 1}`;
+        const visitsThisMonth = await cacheManager.get<number>(visitCounterKey) ?? 0;
+        const data = await userService.getUserOverviewForAdmin();
+
+        return { ...data, visitsThisMonth };
     });
 
 
