@@ -4,14 +4,15 @@ import {closest} from "@/lib/utils/levenshtein";
 import {RateLimiterAbstract} from "rate-limiter-flexible";
 import {createRateLimiter} from "@/lib/server/core/rate-limiter";
 import {BaseClient} from "@/lib/server/api-providers/clients/base.client";
-import {HltbApiResponse, HltbGameEntry, SearchInfo} from "@/lib/types/provider.types";
+import {HltbApiResponse, HltbGameEntry} from "@/lib/types/provider.types";
 
 
 export class HltbClient extends BaseClient {
     private static readonly consumeKey = "hltb-API";
     private static readonly baseUrl = "https://howlongtobeat.com/";
-    private static readonly throttleOptions = { points: 4, duration: 1, keyPrefix: "hltbAPI" };
     private static searchUrl = HltbClient.baseUrl + "api/s/"
+    private static tokenUrl = HltbClient.baseUrl + "api/search/init";
+    private static readonly throttleOptions = { points: 4, duration: 1, keyPrefix: "hltbAPI" };
 
     constructor(limiter: RateLimiterAbstract, consumeKey: string) {
         super(limiter, consumeKey);
@@ -68,26 +69,26 @@ export class HltbClient extends BaseClient {
 
     private async _sendWebRequest(gameName: string) {
         const ua = new UserAgent();
-        const headers = {
+        const headers: Record<string, string> = {
             "accept": "*/*",
             "User-Agent": ua.toString(),
             "referer": HltbClient.baseUrl,
             "content-type": "application/json",
         };
 
-        const searchInfo = await this._getSearchInfo(false);
-        if (!searchInfo?.apiKey) {
-            console.warn("Could not extract API key");
-            return null;
+        const authToken = await this._getAuthToken();
+        if (authToken) {
+            headers["x-auth-token"] = authToken;
         }
 
-        if (searchInfo.searchUrl) {
-            HltbClient.searchUrl = `${HltbClient.baseUrl}${searchInfo.searchUrl}`;
+        const searchUrl = await this._getSearchInfo(false);
+        if (searchUrl) {
+            HltbClient.searchUrl = `${HltbClient.baseUrl}${searchUrl}`;
         }
 
         try {
             const payload = this._getSearchPayload(gameName);
-            const response = await fetch(`${HltbClient.searchUrl}${searchInfo.apiKey}`, {
+            const response = await fetch(HltbClient.searchUrl, {
                 headers,
                 method: "POST",
                 body: JSON.stringify(payload),
@@ -100,21 +101,28 @@ export class HltbClient extends BaseClient {
         catch (err) {
             console.warn("First request failed, trying alternative:", err);
         }
+    }
 
-        // Fallback - try with API key in payload
-        const payloadWithApiKey = this._getSearchPayload(gameName, searchInfo);
+    private async _getAuthToken() {
+        const ua = new UserAgent();
+        const headers = {
+            "User-Agent": ua.toString(),
+            "referer": HltbClient.baseUrl,
+        };
+
         try {
-            const response = await fetch(HltbClient.searchUrl, {
-                headers,
-                method: "POST",
-                body: JSON.stringify(payloadWithApiKey),
-            });
-
-            return response.ok ? await response.text() : null;
+            const response = await fetch(`${HltbClient.tokenUrl}?t=${Date.now()}`, { method: "GET", headers });
+            if (response.ok) {
+                const data = await response.json();
+                const token = data?.token ?? data?.data?.token;
+                return String(token) as string;
+            }
+            else {
+                console.error("Request failed with status", response.status);
+            }
         }
         catch (err) {
-            console.error("Both requests failed:", err);
-            return null;
+            console.error("Error fetching auth token:", err);
         }
     }
 
@@ -127,13 +135,13 @@ export class HltbClient extends BaseClient {
 
         try {
             const response = await fetch(HltbClient.baseUrl, { method: "GET", headers });
-            if (!response.ok) return null;
+            if (!response.ok) return;
 
             const htmlResult = await response.text();
             const $ = cheerio.load(htmlResult);
             const scripts = $("script[src]");
-            const matchingScripts: string[] = [];
 
+            const matchingScripts: string[] = [];
             scripts.each((_, elem) => {
                 const src = $(elem).attr("src");
                 if (src && (searchAll || src.includes("_app-"))) {
@@ -145,82 +153,43 @@ export class HltbClient extends BaseClient {
                 try {
                     const scriptResponse = await fetch(`${HltbClient.baseUrl}${scriptUrl}`, { headers, method: "GET" });
                     if (scriptResponse.ok) {
-                        const searchInfo = this._extractSearchInfo(await scriptResponse.text());
-                        if (searchInfo.apiKey) return searchInfo;
+                        const scriptContent = await scriptResponse.text();
+                        let searchUrl = this._extractSearchUrlFromScript(scriptContent);
+                        if (searchUrl && HltbClient.baseUrl.endsWith("/")) {
+                            searchUrl = searchUrl.replace(/^\/+/, "");
+                        }
+                        return searchUrl;
                     }
                 }
                 catch (err) {
                     console.warn(`Failed to fetch script ${scriptUrl}:`, err);
                 }
             }
-
-            return null;
         }
         catch (err) {
             console.error("Error getting search info:", err);
-            return null;
         }
     }
 
-    private _extractSearchInfo(scriptContent: string) {
-        const apiKey = this._extractApiFromScript(scriptContent);
-        let searchUrl = this._extractSearchUrlFromScript(scriptContent, apiKey);
-
-        if (searchUrl && HltbClient.baseUrl.endsWith("/")) {
-            searchUrl = searchUrl.replace(/^\/+/, "");
-        }
-
-        return { apiKey, searchUrl };
-    }
-
-    private _extractApiFromScript(scriptContent: string) {
-        // Test 1 - The API Key is in the user id in the request json
-        const pattern = /users\s*:\s*{\s*id\s*:\s*"([^"]+)"/g;
-        let matches = scriptContent.match(pattern);
-        if (matches) {
-            const apiKey = matches.map((m) => {
-                const res = /users\s*:\s*{\s*id\s*:\s*"([^"]+)"/.exec(m);
-                return res ? res[1] : "";
-            }).join("");
-
-            return apiKey;
-        }
-
-        // Test 2 - The API Key is in concat format
-        const apiKeyPattern = /\/api\/\w+\/"(?:\.concat\("[^"]*"\))*/g;
-        matches = scriptContent.match(apiKeyPattern);
-        if (matches) {
-            let splitMatches = matches.join("").split(".concat");
-            splitMatches = splitMatches.slice(1).map((match) => match.replace(/["()[\]']/g, ''));
-            return splitMatches.join("");
-        }
-
-        return;
-    }
-
-    private _extractSearchUrlFromScript(scriptContent: string, apiKey?: string) {
-        if (!apiKey) return;
-
+    private _extractSearchUrlFromScript(scriptContent: string) {
         const pattern = new RegExp(
-            String.raw`fetch\(\s*["'](\/api\/[^"']*)["']` +
-            String.raw`((?:\s*\.concat\(\s*["']([^"']*)["']\s*\))+)\s*,`,
-            'gs'
+            String.raw`fetch\s*\(\s*["']/api/([a-zA-Z0-9_/]+)[^"']*["']\s*,\s*{[^}]*method:\s*["']POST["'][^}]*}`,
+            "gis",
         );
 
-        const matches = scriptContent.matchAll(pattern);
-        for (const match of matches) {
-            const endpoint = match[1];
-            const concatCalls = match[2];
-            const concatStrings = Array.from(concatCalls.matchAll(/\.concat\(\s*["']([^"']*)["']\s*\)/g)).map((m) => m[1]);
-            if (concatStrings.join("") === apiKey) {
-                return endpoint;
+        const match = pattern.exec(scriptContent);
+        if (match) {
+            const pathSuffix = match[1];
+            const basePath = pathSuffix.includes("/") ? pathSuffix.split("/")[0] : pathSuffix;
+            if (basePath !== "find") {
+                return `/api/${basePath}`;
             }
         }
 
         return;
     }
 
-    private _getSearchPayload(gameName: string, searchInfo?: SearchInfo) {
+    private _getSearchPayload(gameName: string) {
         const payload = {
             size: 10,
             searchPage: 1,
@@ -249,10 +218,6 @@ export class HltbClient extends BaseClient {
             },
             useCache: true,
         };
-
-        if (searchInfo?.apiKey) {
-            (payload.searchOptions.users as any).id = searchInfo.apiKey;
-        }
 
         return payload;
     }
