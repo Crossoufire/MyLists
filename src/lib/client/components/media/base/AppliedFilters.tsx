@@ -1,9 +1,9 @@
 import {X} from "lucide-react";
 import {Badge} from "@/lib/client/components/ui/badge";
-import {capitalize, getLangCountryName} from "@/lib/utils/functions";
 import {MediaListArgs} from "@/lib/types/zod.schema.types";
 import {useParams, useSearch} from "@tanstack/react-router";
 import {MutedText} from "@/lib/client/components/general/MutedText";
+import {capitalize, getLangCountryName} from "@/lib/utils/functions";
 
 
 interface AppliedFiltersProps {
@@ -55,25 +55,27 @@ export const AppliedFilters = ({ totalItems, onFilterRemove }: AppliedFiltersPro
                             <Badge key={`${key}-${item}`} className="h-8 px-4 text-sm gap-2" variant="secondary">
                                 {key === "langs" ? getLangCountryName(item, "language") : item}
                                 <div role="button" className="hover:opacity-80 -mr-1" onClick={() => removeFilter(key as keyof MediaListArgs, item)}>
-                                    <X className="w-4 h-4"/>
+                                    <X className="size-4"/>
                                 </div>
                             </Badge>
                         )
                         :
                         <Badge key={key} className="h-8 px-4 text-sm gap-2" variant="secondary">
-                            {(key === "common" && value === true) ? `No common` :
+                            {(key === "hideCommon" && value === true) ? `No common` :
                                 (key === "favorite" && value === true) ? `Favorites` :
                                     (key === "comment" && value === true) ? `Commented` :
                                         value as string
                             }
                             <div role="button" className="hover:opacity-80 -mr-1" onClick={() => removeFilter(key as keyof MediaListArgs, value)}>
-                                <X className="w-4 h-4"/>
+                                <X className="size-4"/>
                             </div>
                         </Badge>
                 )}
                 {Object.keys(localFilters).length > 0 &&
                     <div role="button" className="ml-2" onClick={() => removeAllFilters()}>
-                        <MutedText italic={false}>Clear All</MutedText>
+                        <MutedText italic={false}>
+                            Clear All
+                        </MutedText>
                     </div>
                 }
             </>

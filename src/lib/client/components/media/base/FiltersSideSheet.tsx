@@ -1,19 +1,19 @@
 import React, {useRef, useState} from "react";
 import {useQuery} from "@tanstack/react-query";
+import {statusUtils} from "@/lib/utils/functions";
 import {Input} from "@/lib/client/components/ui/input";
 import {Badge} from "@/lib/client/components/ui/badge";
 import {Button} from "@/lib/client/components/ui/button";
-import {statusUtils} from "@/lib/utils/functions";
-import {useDebounce} from "@/lib/client/hooks/use-debounce";
-import {Checkbox} from "@/lib/client/components/ui/checkbox";
 import {MediaListArgs} from "@/lib/types/zod.schema.types";
 import {useParams, useSearch} from "@tanstack/react-router";
+import {useDebounce} from "@/lib/client/hooks/use-debounce";
+import {Checkbox} from "@/lib/client/components/ui/checkbox";
 import {MutedText} from "@/lib/client/components/general/MutedText";
+import {GamesPlatformsEnum, JobType, Status} from "@/lib/utils/enums";
 import {mediaConfig} from "@/lib/client/components/media/media-config";
 import {useOnClickOutside} from "@/lib/client/hooks/use-clicked-outside";
-import {GamesPlatformsEnum, JobType, Status} from "@/lib/utils/enums";
-import {Popover, PopoverContent, PopoverTrigger} from "@/lib/client/components/ui/popover";
 import {ChevronDown, ChevronUp, CircleHelp, LoaderCircle, Search, X} from "lucide-react";
+import {Popover, PopoverContent, PopoverTrigger} from "@/lib/client/components/ui/popover";
 import {Command, CommandEmpty, CommandItem, CommandList} from "@/lib/client/components/ui/command";
 import {filterSearchOptions, listFiltersOptions} from "@/lib/client/react-query/query-options/query-options";
 import {Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle} from "@/lib/client/components/ui/sheet";
@@ -36,6 +36,8 @@ export const FiltersSideSheet = ({ isCurrent, onClose, onFilterApply }: FiltersS
     const activeFiltersConfig = mediaConfig[mediaType].sheetFilters();
 
     const handleRegisterChange = (filterType: keyof MediaListArgs, value: string[] | boolean) => {
+        console.log({ filterType, value });
+
         const updatedFilters = { ...localFilters };
 
         if (Array.isArray(value)) {
@@ -67,6 +69,8 @@ export const FiltersSideSheet = ({ isCurrent, onClose, onFilterApply }: FiltersS
         }
 
         Object.assign(localFilters, updatedFilters);
+
+        console.log({ updatedFilters });
     };
 
     const handleOnSubmit = async (ev: React.FormEvent<HTMLFormElement>) => {
@@ -136,7 +140,9 @@ export const FiltersSideSheet = ({ isCurrent, onClose, onFilterApply }: FiltersS
                                     return null;
                                 })}
                                 <div className="space-y-2">
-                                    <h3 className="font-medium">Miscellaneous</h3>
+                                    <h3 className="font-medium">
+                                        Miscellaneous
+                                    </h3>
                                     <div className="grid grid-cols-2 gap-2">
                                         <div className="flex items-center space-x-2">
                                             <Checkbox
@@ -144,7 +150,9 @@ export const FiltersSideSheet = ({ isCurrent, onClose, onFilterApply }: FiltersS
                                                 defaultChecked={search.favorite}
                                                 onCheckedChange={() => handleRegisterChange("favorite", !search.favorite)}
                                             />
-                                            <label htmlFor="favoriteCheck" className="text-sm cursor-pointer">Favorites</label>
+                                            <label htmlFor="favoriteCheck" className="text-sm cursor-pointer">
+                                                Favorites
+                                            </label>
                                         </div>
                                         <div className="flex items-center space-x-2">
                                             <Checkbox
@@ -152,16 +160,23 @@ export const FiltersSideSheet = ({ isCurrent, onClose, onFilterApply }: FiltersS
                                                 defaultChecked={search.comment}
                                                 onCheckedChange={() => handleRegisterChange("comment", !search.comment)}
                                             />
-                                            <label htmlFor="commentCheck" className="text-sm cursor-pointer">Comments</label>
+                                            <label htmlFor="commentCheck" className="text-sm cursor-pointer">
+                                                Comments
+                                            </label>
                                         </div>
                                         {!isCurrent &&
                                             <div className="flex items-center space-x-2">
                                                 <Checkbox
                                                     id="commonCheck"
                                                     defaultChecked={search?.hideCommon ?? false}
-                                                    onCheckedChange={() => handleRegisterChange("hideCommon", search?.hideCommon ?? false)}
+                                                    onCheckedChange={() => handleRegisterChange(
+                                                        "hideCommon",
+                                                        search.hideCommon ? !search.hideCommon : true,
+                                                    )}
                                                 />
-                                                <label htmlFor="commonCheck" className="text-sm cursor-pointer">Hide Common</label>
+                                                <label htmlFor="commonCheck" className="text-sm cursor-pointer">
+                                                    Hide Common
+                                                </label>
                                             </div>
                                         }
                                     </div>
