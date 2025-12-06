@@ -302,7 +302,10 @@ export const getLangCountryName = (name: string | undefined | null, type: "langu
 
     try {
         const languageNames = new Intl.DisplayNames(["en"], { type });
-        if (name === "cn") return "Chinese";
+        if (name === "cn") {
+            return "Chinese";
+        }
+
         return languageNames.of(name.trim()) || "N/A";
     }
     catch {

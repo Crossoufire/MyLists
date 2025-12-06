@@ -1,4 +1,5 @@
 import {X} from "lucide-react";
+import {MediaType} from "@/lib/utils/enums";
 import {Badge} from "@/lib/client/components/ui/badge";
 import {MediaListArgs} from "@/lib/types/zod.schema.types";
 import {useParams, useSearch} from "@tanstack/react-router";
@@ -13,12 +14,10 @@ interface AppliedFiltersProps {
 
 
 export const AppliedFilters = ({ totalItems, onFilterRemove }: AppliedFiltersProps) => {
-    const search = useSearch({ from: "/_main/_private/list/$mediaType/$username" });
     const { mediaType } = useParams({ from: "/_main/_private/list/$mediaType/$username" });
+    const { page: _page, sort: _sort, ...rawFilters } = useSearch({ from: "/_main/_private/list/$mediaType/$username" });
 
-    const localFilters = { ...search };
-    delete localFilters.page;
-    delete localFilters.sort;
+    const localFilters = rawFilters as Partial<MediaListArgs>;
 
     const removeFilter = <K extends keyof MediaListArgs>(filterKey: K, filterValue: any) => {
         onFilterRemove({ [filterKey]: Array.isArray(localFilters[filterKey]) ? [filterValue] : null });
@@ -53,13 +52,25 @@ export const AppliedFilters = ({ totalItems, onFilterRemove }: AppliedFiltersPro
                     Array.isArray(value) ?
                         value.map((item) =>
                             <Badge key={`${key}-${item}`} className="h-8 px-4 text-sm gap-2" variant="secondary">
-                                {key === "langs" ? getLangCountryName(item, "language") : item}
-                                <div role="button" className="hover:opacity-80 -mr-1" onClick={() => removeFilter(key as keyof MediaListArgs, item)}>
+                                {key === "langs" ?
+                                    getLangCountryName(
+                                        item,
+                                        (mediaType === MediaType.SERIES || mediaType === MediaType.ANIME) ? "region" : "language",
+                                    )
+                                    :
+                                    item
+                                }
+                                <div
+                                    role="button"
+                                    className="hover:opacity-80 -mr-1"
+                                    onClick={() => removeFilter(key as keyof MediaListArgs, item)}
+                                >
                                     <X className="size-4"/>
                                 </div>
                             </Badge>
                         )
                         :
+                        // TODO: Not typesafe
                         <Badge key={key} className="h-8 px-4 text-sm gap-2" variant="secondary">
                             {(key === "hideCommon" && value === true) ? `No common` :
                                 (key === "favorite" && value === true) ? `Favorites` :

@@ -27,18 +27,15 @@ interface FiltersSideSheetProps {
 
 
 export const FiltersSideSheet = ({ isCurrent, onClose, onFilterApply }: FiltersSideSheetProps) => {
+    const localFiltersRef = useRef<Partial<MediaListArgs>>({});
     const search = useSearch({ from: "/_main/_private/list/$mediaType/$username" });
     const { username, mediaType } = useParams({ from: "/_main/_private/list/$mediaType/$username" });
     const { data: listFilters, isPending } = useQuery(listFiltersOptions(mediaType, username));
-    const localFiltersRef = useRef<Partial<MediaListArgs>>({});
 
-    // const localFilters: Partial<MediaListArgs> = {};
     const allStatuses = statusUtils.byMediaType(mediaType);
     const activeFiltersConfig = mediaConfig[mediaType].sheetFilters();
 
     const handleRegisterChange = (filterType: keyof MediaListArgs, value: string[] | boolean) => {
-        console.log({ filterType, value });
-
         const updatedFilters = { ...localFiltersRef.current };
 
         if (Array.isArray(value)) {
@@ -70,8 +67,6 @@ export const FiltersSideSheet = ({ isCurrent, onClose, onFilterApply }: FiltersS
         }
 
         localFiltersRef.current = updatedFilters;
-
-        console.log({ updatedFilters });
     };
 
     const handleOnSubmit = async (ev: React.FormEvent<HTMLFormElement>) => {
@@ -226,7 +221,7 @@ const CheckboxGroup = ({ title, items, onChange, defaultChecked, renderLabel }: 
             </h3>
             <div className="grid grid-cols-2 gap-2">
                 {visibleItems.length === 0 ?
-                    <MutedText className="text-sm">Nothing to display.</MutedText>
+                    <MutedText className="text-sm">Nothing to display</MutedText>
                     :
                     visibleItems.map((item) =>
                         <div key={item.name} className="flex items-center space-x-2">
