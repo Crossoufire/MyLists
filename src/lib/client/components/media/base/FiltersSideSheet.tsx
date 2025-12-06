@@ -30,15 +30,16 @@ export const FiltersSideSheet = ({ isCurrent, onClose, onFilterApply }: FiltersS
     const search = useSearch({ from: "/_main/_private/list/$mediaType/$username" });
     const { username, mediaType } = useParams({ from: "/_main/_private/list/$mediaType/$username" });
     const { data: listFilters, isPending } = useQuery(listFiltersOptions(mediaType, username));
+    const localFiltersRef = useRef<Partial<MediaListArgs>>({});
 
-    const localFilters: Partial<MediaListArgs> = {};
+    // const localFilters: Partial<MediaListArgs> = {};
     const allStatuses = statusUtils.byMediaType(mediaType);
     const activeFiltersConfig = mediaConfig[mediaType].sheetFilters();
 
     const handleRegisterChange = (filterType: keyof MediaListArgs, value: string[] | boolean) => {
         console.log({ filterType, value });
 
-        const updatedFilters = { ...localFilters };
+        const updatedFilters = { ...localFiltersRef.current };
 
         if (Array.isArray(value)) {
             const prev = updatedFilters[filterType] as string[] | undefined;
@@ -68,7 +69,7 @@ export const FiltersSideSheet = ({ isCurrent, onClose, onFilterApply }: FiltersS
             updatedFilters[filterType] = value as any;
         }
 
-        Object.assign(localFilters, updatedFilters);
+        localFiltersRef.current = updatedFilters;
 
         console.log({ updatedFilters });
     };
@@ -76,7 +77,7 @@ export const FiltersSideSheet = ({ isCurrent, onClose, onFilterApply }: FiltersS
     const handleOnSubmit = async (ev: React.FormEvent<HTMLFormElement>) => {
         onClose();
         ev.preventDefault();
-        onFilterApply(localFilters);
+        onFilterApply(localFiltersRef.current);
     };
 
     return (
@@ -148,7 +149,7 @@ export const FiltersSideSheet = ({ isCurrent, onClose, onFilterApply }: FiltersS
                                             <Checkbox
                                                 id="favoriteCheck"
                                                 defaultChecked={search.favorite}
-                                                onCheckedChange={() => handleRegisterChange("favorite", !search.favorite)}
+                                                onCheckedChange={(checked) => handleRegisterChange("favorite", !!checked)}
                                             />
                                             <label htmlFor="favoriteCheck" className="text-sm cursor-pointer">
                                                 Favorites
@@ -158,7 +159,7 @@ export const FiltersSideSheet = ({ isCurrent, onClose, onFilterApply }: FiltersS
                                             <Checkbox
                                                 id="commentCheck"
                                                 defaultChecked={search.comment}
-                                                onCheckedChange={() => handleRegisterChange("comment", !search.comment)}
+                                                onCheckedChange={(checked) => handleRegisterChange("comment", !!checked)}
                                             />
                                             <label htmlFor="commentCheck" className="text-sm cursor-pointer">
                                                 Comments
@@ -169,10 +170,7 @@ export const FiltersSideSheet = ({ isCurrent, onClose, onFilterApply }: FiltersS
                                                 <Checkbox
                                                     id="commonCheck"
                                                     defaultChecked={search?.hideCommon ?? false}
-                                                    onCheckedChange={() => handleRegisterChange(
-                                                        "hideCommon",
-                                                        search.hideCommon ? !search.hideCommon : true,
-                                                    )}
+                                                    onCheckedChange={(checked) => handleRegisterChange("hideCommon", !!checked)}
                                                 />
                                                 <label htmlFor="commonCheck" className="text-sm cursor-pointer">
                                                     Hide Common
