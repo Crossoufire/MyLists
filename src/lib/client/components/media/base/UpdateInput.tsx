@@ -1,6 +1,6 @@
-import {Input} from "@/lib/client/components/ui/input";
-import React, {useEffect, useState} from "react";
 import {UpdateType} from "@/lib/utils/enums";
+import React, {useEffect, useState} from "react";
+import {Input} from "@/lib/client/components/ui/input";
 import {useUpdateUserMediaMutation} from "@/lib/client/react-query/query-mutations/user-media.mutations";
 
 
@@ -14,30 +14,62 @@ interface UpdateInputProps {
 
 
 export const UpdateInput = ({ total, initValue, updateInput, payloadName, updateType }: UpdateInputProps) => {
-    const [currentValue, setCurrentValue] = useState<number>(initValue ?? 0);
+    const [currentValue, setCurrentValue] = useState(initValue?.toString() ?? "0");
 
     useEffect(() => {
-        setCurrentValue(initValue ?? 0);
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setCurrentValue(initValue?.toString() ?? "0");
     }, [initValue]);
+
+    const validateAndMutate = () => {
+        if (currentValue.trim() === "") {
+            setCurrentValue(initValue?.toString() ?? "0");
+            return;
+        }
+
+        const parsed = Number(currentValue);
+        if (isNaN(parsed)) {
+            setCurrentValue(initValue?.toString() ?? "0");
+            return;
+        }
+
+        if (parsed === initValue) return;
+
+        if (total !== undefined && total !== null && (parsed > total || parsed < 0)) {
+            setCurrentValue(initValue?.toString() ?? "0");
+            return;
+        }
+
+        updateInput.mutate({
+            payload: {
+                type: updateType,
+                [payloadName]: parsed,
+            },
+        });
+    };
 
     const handleOnBlur = (ev: React.FocusEvent<HTMLInputElement>) => {
         ev.preventDefault();
-        if (currentValue === initValue) return;
+        validateAndMutate();
+    };
 
-        if (total !== undefined && total !== null && (currentValue > total || currentValue < 0)) {
-            return setCurrentValue(initValue ?? 0);
+    const handleOnKeyDown = (ev: React.KeyboardEvent<HTMLInputElement>) => {
+        if (ev.key === "Enter") {
+            ev.preventDefault();
+            ev.currentTarget.blur();
+            validateAndMutate();
         }
-
-        updateInput.mutate({ payload: { [payloadName]: currentValue, type: updateType } });
     };
 
     return (
         <div className="w-[135px] text-sm">
             <Input
+                inputMode="numeric"
                 value={currentValue}
                 onBlur={handleOnBlur}
+                onKeyDown={handleOnKeyDown}
                 disabled={updateInput.isPending}
-                onChange={(ev) => setCurrentValue(parseInt(ev.target.value))}
+                onChange={(ev) => setCurrentValue(ev.target.value)}
                 className="w-[50px] px-1 text-base border-none bg-transparent cursor-pointer inline-block"
             />
             <span>{" "}/{" "}{total ?? "?"}</span>
