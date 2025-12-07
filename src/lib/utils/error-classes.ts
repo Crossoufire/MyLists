@@ -3,11 +3,8 @@ import {createSerializationAdapter} from "@tanstack/react-router";
 
 
 export class FormattedError extends Error {
-    public readonly sendMail: boolean | undefined;
-
-    constructor(message: string, sendMail?: boolean) {
+    constructor(message: string) {
         super(message);
-        this.sendMail = sendMail;
         this.name = "FormattedError";
 
         if (Error.captureStackTrace) {

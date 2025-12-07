@@ -84,6 +84,7 @@ function ResetPasswordPage() {
                                     rules={{
                                         required: "The password confirmation is required.",
                                         validate: (val) => {
+                                            // eslint-disable-next-line react-hooks/incompatible-library
                                             if (form.watch("newPassword") !== val) return "The passwords do not match.";
                                         }
                                     }}

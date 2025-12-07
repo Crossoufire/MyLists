@@ -229,7 +229,7 @@ export class TvService extends BaseService<AnimeSchemaConfig | SeriesSchemaConfi
 
         // Safety check - Should not happen
         if (currentState.redo2?.length !== epsPerSeason.length || payload.redo2?.length !== epsPerSeason.length) {
-            throw new FormattedError("Sorry, an error occurred. This will be fixed shortly.", true);
+            throw new FormattedError("Sorry, an error occurred. This will be fixed shortly.");
         }
 
         const newState = { ...currentState, redo2: payload.redo2 };

@@ -56,10 +56,12 @@ export class MediadleService {
 
     async addMediadleGuess(userId: number, guess: string, movieService: MoviesService) {
         const dailyMediadle = await this.repository.getTodayMoviedle();
-        if (!dailyMediadle) throw new FormattedError("Today's mediadle not found", true);
+        if (!dailyMediadle) {
+            throw new FormattedError("Today's mediadle not found");
+        }
 
         const progress = await this.repository.getUserProgress(userId, dailyMediadle.id);
-        if (!progress) throw new FormattedError("Progress not found", true);
+        if (!progress) throw new FormattedError("Progress not found");
         if (progress.completed) throw new FormattedError("Mediadle already completed");
 
         const selectedMovie = await movieService.findById(dailyMediadle.mediaId);

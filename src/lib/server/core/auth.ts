@@ -7,9 +7,9 @@ import {betterAuth} from "better-auth";
 import {db} from "@/lib/server/database/db";
 import {sendEmail} from "@/lib/utils/mail-sender";
 import {createServerOnlyFn} from "@tanstack/react-start";
-import {reactStartCookies} from "better-auth/react-start";
 import {drizzleAdapter} from "better-auth/adapters/drizzle";
 import {getDbClient} from "@/lib/server/database/async-storage";
+import {tanstackStartCookies} from "better-auth/tanstack-start";
 import {user as userTable, userMediaSettings} from "@/lib/server/database/schema";
 import {ApiProviderType, MediaType, PrivacyType, RatingSystemType, RoleType} from "@/lib/utils/enums";
 
@@ -171,7 +171,7 @@ const getAuthConfig = createServerOnlyFn(() => betterAuth({
         },
     },
     plugins: [
-        reactStartCookies(),
+        tanstackStartCookies(),
     ]
 }));
 

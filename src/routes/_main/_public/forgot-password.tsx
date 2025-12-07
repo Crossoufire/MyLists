@@ -25,7 +25,7 @@ function ForgotPasswordPage() {
     });
 
     const onSubmit = async (submitted: { email: string }) => {
-        await authClient.forgetPassword({
+        await authClient.requestPasswordReset({
             email: submitted.email,
             redirectTo: "/reset-password",
         }, {
