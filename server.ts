@@ -34,8 +34,8 @@ const startServer = async () => {
             const file = Bun.file(filepath);
             return new Response(file, {
                 headers: {
-                    "Content-Type": file.type || "application/octet-stream",
                     "Cache-Control": "public, max-age=31536000, immutable",
+                    "Content-Type": file.type || "application/octet-stream",
                 },
             })
         }
@@ -50,7 +50,7 @@ const startServer = async () => {
             ...routes,
             "/*": (req: Request) => handler.fetch(req),
         },
-        error(err: unknown) {
+        error(err) {
             console.error("[ERROR]", err);
             return new Response("Internal Server Error", { status: 500 });
         },
@@ -61,6 +61,6 @@ const startServer = async () => {
 
 
 startServer().catch((err) => {
-    console.error('[ERROR] Failed to start server:', err);
+    console.error("[ERROR] Failed to start server:", err);
     process.exit(1);
 })

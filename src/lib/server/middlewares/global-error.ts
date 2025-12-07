@@ -49,6 +49,23 @@ export const funcErrorMiddleware = createMiddleware({ type: "function" }).server
 });
 
 
+export const reqErrorMiddleware = createMiddleware({ type: "request" }).server(async ({ next }) => {
+    try {
+        const results = await next();
+        return results;
+    }
+    catch (err: any) {
+        if (process.env.NODE_ENV !== "production") {
+            console.error("Request Error:", { err });
+        }
+
+        await saveErrorToDb(err).catch();
+
+        throw new Error("An Unexpected error occurred. Please try again later.");
+    }
+});
+
+
 const saveErrorToDb = async (err: any) => {
     const request = getRequest();
     const session = await auth.api.getSession({ headers: request.headers });
