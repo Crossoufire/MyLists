@@ -59,7 +59,7 @@ export function ErrorLogCard({ errorLog }: { errorLog: ErrorLogType }) {
                         {showStack &&
                             <div className="mt-2 p-2 bg-zinc-900 rounded text-xs font-mono overflow-auto">
                                 <pre className="text-zinc-300 whitespace-pre-wrap break-words">
-                                    {errorLog.stack}
+                                    {JSON.stringify(JSON.parse(errorLog.stack), null, 4)}
                                 </pre>
                             </div>
                         }

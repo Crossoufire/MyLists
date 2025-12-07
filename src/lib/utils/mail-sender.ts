@@ -1,10 +1,9 @@
-import z from "zod";
 import nodemailer from "nodemailer";
 import {serverEnv} from "@/env/server";
 import {Options} from "nodemailer/lib/mailer";
 import {render} from "@react-email/components";
 import {createServerOnlyFn} from "@tanstack/react-start";
-import {ErrorEmail, PasswordResetEmail, RegisterEmail} from "@/lib/client/components/emails";
+import {PasswordResetEmail, RegisterEmail} from "@/lib/client/components/emails";
 
 
 interface EmailOptions {
@@ -38,36 +37,6 @@ export const sendEmail = createServerOnlyFn(() => async (options: EmailOptions) 
         html: htmlContent,
         subject: options.subject,
         from: serverEnv.ADMIN_MAIL_USERNAME,
-    };
-
-    await transporter.sendMail(mailOptions);
-})();
-
-
-export const sendAdminErrorMail = createServerOnlyFn(() => async (error: Error | z.ZodError, message: string) => {
-    const transporter = nodemailer.createTransport({
-        service: "gmail",
-        auth: {
-            user: serverEnv.ADMIN_MAIL_USERNAME,
-            pass: serverEnv.ADMIN_MAIL_PASSWORD,
-        },
-    });
-
-    const errorData = {
-        message: message,
-        stack: error.stack,
-        errorName: error.name,
-        errorMessage: error.message,
-        timestamp: new Date().toISOString(),
-    }
-
-    const htmlContent = await render(ErrorEmail({ ctx: errorData }));
-
-    const mailOptions: Options = {
-        html: htmlContent,
-        to: serverEnv.ADMIN_MAIL_USERNAME,
-        from: serverEnv.ADMIN_MAIL_USERNAME,
-        subject: "MyLists - An Error Occurred",
     };
 
     await transporter.sendMail(mailOptions);

@@ -1,6 +1,8 @@
 import z from "zod";
+import {auth} from "@/lib/server/core/auth";
 import {isRedirect} from "@tanstack/react-router";
 import {createMiddleware} from "@tanstack/react-start";
+import {getRequest} from "@tanstack/react-start/server";
 import {getContainer} from "@/lib/server/core/container";
 import {FormattedError, FormZodError} from "@/lib/utils/error-classes";
 
@@ -10,11 +12,11 @@ import {FormattedError, FormZodError} from "@/lib/utils/error-classes";
  * redirect: thrown in code but returned and handled frontend side by tanstack router.
  * notFound: thrown in code but returned and handled frontend side by tanstack router.
  * FormattedError: Expected Error with pre-formatted message for frontend side.
- * FormZodError: Error occurred during Form submission, return the whole error.
- * ZodError: Unexpected Error on validation, send admin email, return generic error message.
- * Error: Unexpected Error anywhere, send admin email, return generic error message.
+ * FormZodError: Error occurred during Form submission, return the Zod error.
+ * ZodError: Unexpected Error on validation, return generic error message.
+ * Error: Unexpected Error anywhere, return generic error message.
  **/
-export const errorMiddleware = createMiddleware({ type: "function" }).server(async ({ next }) => {
+export const funcErrorMiddleware = createMiddleware({ type: "function" }).server(async ({ next }) => {
     try {
         const results = await next();
         if ("error" in results && isRedirect(results.error)) {
@@ -25,14 +27,14 @@ export const errorMiddleware = createMiddleware({ type: "function" }).server(asy
     }
     catch (err: any) {
         if (process.env.NODE_ENV !== "production") {
-            console.error("Error:", { err });
+            console.error("ServerFunc Error:", { err });
         }
 
         if ("options" in err && isRedirect(err)) {
             throw err;
         }
 
-        await saveError(err);
+        await saveErrorToDb(err).catch();
 
         if (err instanceof FormattedError || err instanceof FormZodError) {
             throw err;
@@ -47,12 +49,24 @@ export const errorMiddleware = createMiddleware({ type: "function" }).server(asy
 });
 
 
-const saveError = async (err: any) => {
+const saveErrorToDb = async (err: any) => {
+    const request = getRequest();
+    const session = await auth.api.getSession({ headers: request.headers });
     const adminService = await getContainer().then((c) => c.services.admin);
 
+    const stack = {
+        url: request.url,
+        method: request.method,
+        referer: request.headers.get("Referer"),
+        userAgent: request.headers.get("User-agent"),
+        userInfo: session?.user ? { id: session.user.id, username: session.user.name } : null,
+        stack: err?.stack ?? null,
+        extra: err instanceof z.ZodError ? { issues: err.issues } : null,
+    }
+
     await adminService.saveErrorToDb({
-        name: err?.name,
-        stack: err?.stack,
-        message: err?.message,
+        stack: JSON.stringify(stack),
+        name: err?.name ?? "UnknownError",
+        message: err?.message ?? "No message provided",
     });
 }

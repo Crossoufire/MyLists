@@ -231,9 +231,9 @@ export type AdvancedMediaStats = {
 export type LogPayload = { oldValue: any; newValue: any } | null;
 
 export type ErrorLog = {
-    name?: string;
-    message?: string;
-    stack?: string | null;
+    name: string,
+    message: string,
+    stack: string | null,
 }
 
 export type StatsCTE = any;
