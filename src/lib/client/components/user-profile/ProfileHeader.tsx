@@ -23,7 +23,7 @@ export const ProfileHeader = ({ user, followStatus, followId }: ProfileHeaderPro
     return (
         <div className="relative h-72 bg-cover border-b bg-center bg-no-repeat" style={{ backgroundImage: `url(${user.backgroundImage})` }}>
             <div className="absolute left-6 bottom-6 max-sm:-bottom-2 max-sm:left-[50%] max-sm:-translate-x-1/2">
-                <div className="py-5 px-5 pt-4 rounded-lg sm:bg-gradient-to-r sm:from-slate-900 sm:to-slate-700">
+                <div className="py-5 px-5 pt-4 rounded-lg sm:bg-linear-to-r sm:from-slate-900 sm:to-slate-700">
                     <div className="flex flex-wrap items-center gap-8 max-sm:justify-center max-sm:gap-5">
                         <div className="relative">
                             <ProfileIcon
@@ -31,14 +31,21 @@ export const ProfileHeader = ({ user, followStatus, followId }: ProfileHeaderPro
                                 className="size-25 border-4 border-amber-600"
                             />
                             <div className="absolute -bottom-2 -right-2 text-xs font-bold px-2 py-1 rounded-full
-                            bg-gradient-to-r from-blue-600 to-violet-600">
+                            bg-linear-to-r from-blue-600 to-violet-600">
                                 Lvl {userLevel.toFixed(0)}
                             </div>
                         </div>
-                        <div className="space-y-2 max-sm:bg-gradient-to-r max-sm:from-slate-900 max-sm:to-slate-700 max-sm:py-2
+                        <div className="space-y-2 max-sm:bg-linear-to-r max-sm:from-slate-900 max-sm:to-slate-700 max-sm:py-2
                         max-sm:px-4 max-sm:rounded-lg">
                             <div className="flex items-center gap-4">
-                                <h2 className="text-2xl font-bold">{user.name}</h2>
+                                <h2 className="text-2xl font-bold">
+                                    <Link
+                                        className="hover:underline hover:underline-offset-2"
+                                        to="/profile/$username" params={{ username: user.name }}
+                                    >
+                                        {user.name}
+                                    </Link>
+                                </h2>
                                 {(!isCurrent && isConnected) &&
                                     <FollowButton
                                         followId={followId}
