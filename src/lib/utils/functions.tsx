@@ -1,3 +1,4 @@
+import {BookImage, Cat, Gamepad2, Library, Monitor, Popcorn, User} from "lucide-react";
 import {FaAngry, FaFrown, FaGrinAlt, FaGrinStars, FaPoop, FaSmile} from "react-icons/fa";
 import {AchievementDifficulty, MediaType, RatingSystemType, Status} from "@/lib/utils/enums";
 
@@ -36,6 +37,7 @@ export const getTextColor = (backColor: string) => {
     const r = parseInt(hex.substring(0, 2), 16);
     const g = parseInt(hex.substring(2, 2 + 2), 16);
     const b = parseInt(hex.substring(4, 4 + 2), 16);
+
     return (0.299 * r + 0.587 * g + 0.114 * b) > 128 ? "#000000" : "#e2e2e2";
 };
 
@@ -190,6 +192,20 @@ export const diffColors = (difficulty: AchievementDifficulty | "total", variant:
     return colors[`${variant}-${difficulty}`];
 };
 
+
+export const getMediaIcon = (mediaType: MediaType | "user") => {
+    const ICONS_MAP = {
+        user: User,
+        series: Monitor,
+        anime: Cat,
+        movies: Popcorn,
+        games: Gamepad2,
+        books: Library,
+        manga: BookImage,
+    } as const;
+
+    return ICONS_MAP[mediaType];
+}
 
 // --- Time Format ------------------------------------------------------------------------------------------
 

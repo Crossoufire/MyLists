@@ -13,6 +13,7 @@ import {
     upcomingOptions,
     userStatsOptions,
 } from "@/lib/client/react-query/query-options/query-options";
+import {mediaStatsOptions} from "@/lib/client/hooks/use-media-stats";
 
 
 // --- Inferred Query Options Types -----------------------------------------------------
@@ -29,6 +30,7 @@ export type TrendItemType = Awaited<ReturnType<NonNullable<typeof trendsOptions.
 export type ComingNextItem = Awaited<ReturnType<NonNullable<typeof upcomingOptions.queryFn>>>[number]["items"][number];
 export type AdminUserOverview = Awaited<ReturnType<NonNullable<typeof adminOverviewOptions.queryFn>>>["recentUsers"];
 export type UserStats = Awaited<ReturnType<NonNullable<ReturnType<typeof userStatsOptions>["queryFn"]>>>;
+export type UserStatsCard = Awaited<ReturnType<NonNullable<ReturnType<typeof mediaStatsOptions>["queryFn"]>>>;
 export type PlatformStats = Awaited<ReturnType<NonNullable<ReturnType<typeof platformStatsOptions>["queryFn"]>>>;
 
 // --- User Media Details Types ----------------------------------------------------

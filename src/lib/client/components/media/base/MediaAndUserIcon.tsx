@@ -1,6 +1,5 @@
 import {MediaType} from "@/lib/utils/enums";
-import {getMediaColor} from "@/lib/utils/functions";
-import {BookImage, Cat, Gamepad2, Library, Monitor, Popcorn, User} from "lucide-react";
+import {getMediaColor, getMediaIcon} from "@/lib/utils/functions";
 
 
 interface MediaIconProps {
@@ -10,19 +9,8 @@ interface MediaIconProps {
 }
 
 
-const ICONS_MAP = {
-    user: User,
-    series: Monitor,
-    anime: Cat,
-    movies: Popcorn,
-    games: Gamepad2,
-    books: Library,
-    manga: BookImage,
-} as const;
-
-
 export const MediaAndUserIcon = ({ type, size, className }: MediaIconProps) => {
-    const IconComp = ICONS_MAP[type];
+    const IconComp = getMediaIcon(type);
     if (!IconComp) return null;
 
     return (

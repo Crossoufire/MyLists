@@ -158,6 +158,14 @@ main {
     --color-sidebar-primary: var(--sidebar-primary);
     --color-sidebar-foreground: var(--sidebar-foreground);
     --color-sidebar: var(--sidebar);
+
+    --color-series: #267f90;
+    --color-anime: #ab5e4b;
+    --color-movies: #a28b27;
+    --color-books: #6b5c86;
+    --color-games: #217f21;
+    --color-manga: #a04646;
+    --color-user: #6e6e6e;
 }
 
 @layer base {

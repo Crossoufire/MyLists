@@ -238,6 +238,8 @@ export type ErrorLog = {
 
 export type StatsCTE = any;
 
+export type Todo = any;
+
 export type NameObj = { name: string };
 
 type IdNamePair = { id: number, name: string };
