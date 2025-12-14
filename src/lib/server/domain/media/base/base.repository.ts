@@ -87,8 +87,7 @@ export abstract class BaseRepository<TConfig extends MediaSchemaConfig<MediaTabl
 
         return getDbClient()
             .select({ imageCover: mediaTable.imageCover })
-            .from(mediaTable)
-            .execute()
+            .from(mediaTable);
     }
 
     async getNonListMediaIds() {
@@ -98,8 +97,7 @@ export abstract class BaseRepository<TConfig extends MediaSchemaConfig<MediaTabl
             .select({ id: sql<number>`${mediaTable.id}` })
             .from(mediaTable)
             .leftJoin(listTable, eq(listTable.mediaId, mediaTable.id))
-            .where(isNull(listTable.userId))
-            .execute();
+            .where(isNull(listTable.userId));
 
         return mediaToDelete.map((media) => media.id);
     }
@@ -121,15 +119,13 @@ export abstract class BaseRepository<TConfig extends MediaSchemaConfig<MediaTabl
         for (const table of tablesForDeletion) {
             await getDbClient()
                 .delete(table)
-                .where(inArray(table.mediaId, mediaIds))
-                .execute();
+                .where(inArray(table.mediaId, mediaIds));
         }
 
         // Delete on main table
         await getDbClient()
             .delete(mediaTable)
-            .where(inArray(mediaTable.id, mediaIds))
-            .execute();
+            .where(inArray(mediaTable.id, mediaIds));
     }
 
     async searchByName(query: string, limit: number = 20) {
@@ -148,13 +144,11 @@ export abstract class BaseRepository<TConfig extends MediaSchemaConfig<MediaTabl
 
         await getDbClient()
             .delete(listTable)
-            .where(and(eq(listTable.userId, userId), eq(listTable.mediaId, mediaId)))
-            .execute();
+            .where(and(eq(listTable.userId, userId), eq(listTable.mediaId, mediaId)));
 
         await getDbClient()
             .delete(labelTable)
-            .where(and(eq(labelTable.userId, userId), eq(labelTable.mediaId, mediaId)))
-            .execute();
+            .where(and(eq(labelTable.userId, userId), eq(labelTable.mediaId, mediaId)));
     }
 
     async findSimilarMedia(mediaId: number) {
@@ -245,14 +239,12 @@ export abstract class BaseRepository<TConfig extends MediaSchemaConfig<MediaTabl
         else if (action === LabelAction.DELETE_ONE) {
             await getDbClient()
                 .delete(labelTable)
-                .where(and(eq(labelTable.userId, userId), eq(labelTable.name, label.name), eq(labelTable.mediaId, mediaId)))
-                .execute();
+                .where(and(eq(labelTable.userId, userId), eq(labelTable.name, label.name), eq(labelTable.mediaId, mediaId)));
         }
         else if (action === LabelAction.DELETE_ALL) {
             await getDbClient()
                 .delete(labelTable)
-                .where(and(eq(labelTable.userId, userId), eq(labelTable.name, label.name)))
-                .execute();
+                .where(and(eq(labelTable.userId, userId), eq(labelTable.name, label.name)));
         }
     }
 
@@ -316,8 +308,7 @@ export abstract class BaseRepository<TConfig extends MediaSchemaConfig<MediaTabl
             .select({ name: sql<string>`${labelTable.name}` })
             .from(labelTable)
             .where(and(eq(labelTable.mediaId, mediaId), eq(labelTable.userId, userId)))
-            .orderBy(asc(labelTable.name))
-            .execute();
+            .orderBy(asc(labelTable.name));
 
         if (!associatedLabels) {
             return null;
@@ -441,8 +432,7 @@ export abstract class BaseRepository<TConfig extends MediaSchemaConfig<MediaTabl
             const commonMediaIdsResult = await getDbClient()
                 .select({ mediaId: listTable.mediaId })
                 .from(listTable)
-                .where(and(eq(listTable.userId, currentUserId), inArray(listTable.mediaId, mediaIds)))
-                .execute();
+                .where(and(eq(listTable.userId, currentUserId), inArray(listTable.mediaId, mediaIds)));
 
             commonIdsSet = new Set(commonMediaIdsResult.map(m => m.mediaId));
         }
@@ -490,8 +480,7 @@ export abstract class BaseRepository<TConfig extends MediaSchemaConfig<MediaTabl
                 gte(mediaTable.releaseDate, sql`datetime('now')`),
                 maxAWeek ? lte(mediaTable.releaseDate, sql`datetime('now', '+7 days')`) : undefined,
             ))
-            .orderBy(asc(mediaTable.releaseDate))
-            .execute();
+            .orderBy(asc(mediaTable.releaseDate));
     }
 
     async getMediaJobDetails(userId: number, job: JobType, name: string, offset: number, limit = 25) {
@@ -554,8 +543,7 @@ export abstract class BaseRepository<TConfig extends MediaSchemaConfig<MediaTabl
             .selectDistinct({ name: sql<string>`${nameColumn}` })
             .from(sourceTable)
             .innerJoin(listTable, eq(listTable.mediaId, mediaIdColumn))
-            .where(and(eq(listTable.userId, userId), like(nameColumn, `%${query}%`)))
-            .execute();
+            .where(and(eq(listTable.userId, userId), like(nameColumn, `%${query}%`)));
 
         if (postProcess) {
             return postProcess(results);
@@ -733,8 +721,7 @@ export abstract class BaseRepository<TConfig extends MediaSchemaConfig<MediaTabl
             .from(listTable)
             .where(and(forUser, isNotNull(listTable.rating)))
             .groupBy(listTable.rating)
-            .orderBy(asc(listTable.rating))
-            .execute();
+            .orderBy(asc(listTable.rating));
 
         const buckets = Array.from({ length: 21 }, (_, i) => ({
             name: (i * 0.5).toFixed(1),
@@ -765,8 +752,7 @@ export abstract class BaseRepository<TConfig extends MediaSchemaConfig<MediaTabl
             .innerJoin(listTable, eq(listTable.mediaId, mediaTable.id))
             .where(and(forUser, isNotNull(mediaTable.releaseDate)))
             .groupBy(decadeExpression)
-            .orderBy(asc(decadeExpression))
-            .execute();
+            .orderBy(asc(decadeExpression));
 
         return releaseDates;
     }

@@ -1,3 +1,4 @@
+import {LogUpdateParams} from "@/lib/types/base.types";
 import {MediaType, PrivacyType} from "@/lib/utils/enums";
 import {AllUpdatesSearch} from "@/lib/types/zod.schema.types";
 import {getDbClient} from "@/lib/server/database/async-storage";
@@ -6,6 +7,8 @@ import {and, count, desc, eq, getTableColumns, inArray, like, sql} from "drizzle
 
 
 export class UserUpdatesRepository {
+    static readonly updateThresholdSec = 300;
+
     static async getUserUpdates(userId: number, limit = 8) {
         return getDbClient().query.userMediaUpdate.findMany({
             where: eq(userMediaUpdate.userId, userId),
@@ -121,5 +124,39 @@ export class UserUpdatesRepository {
         await getDbClient()
             .delete(userMediaUpdate)
             .where(and(eq(userMediaUpdate.mediaType, mediaType), inArray(userMediaUpdate.mediaId, mediaIds)));
+    }
+
+    static async logUpdate({ userId, mediaType, media, updateType, payload }: LogUpdateParams) {
+        const newUpdate = {
+            userId,
+            payload,
+            mediaType,
+            updateType,
+            mediaId: media.id,
+            mediaName: media.name,
+        };
+
+        const previousUpdate = await getDbClient()
+            .select()
+            .from(userMediaUpdate).where(and(
+                eq(userMediaUpdate.userId, userId),
+                eq(userMediaUpdate.mediaId, media.id),
+                eq(userMediaUpdate.mediaType, mediaType),
+            ))
+            .orderBy(desc(userMediaUpdate.timestamp))
+            .get();
+
+        if (previousUpdate) {
+            const elapsedSec = (Date.now() - new Date(previousUpdate.timestamp + "Z").getTime()) / 1000;
+            if (elapsedSec <= this.updateThresholdSec) {
+                await getDbClient()
+                    .delete(userMediaUpdate)
+                    .where(eq(userMediaUpdate.id, previousUpdate.id));
+            }
+        }
+
+        await getDbClient()
+            .insert(userMediaUpdate)
+            .values(newUpdate);
     }
 }

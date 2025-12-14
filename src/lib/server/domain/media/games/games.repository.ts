@@ -234,8 +234,7 @@ export class GamesRepository extends BaseRepository<GamesSchemaConfig> {
             .select({ modes: games.gameModes })
             .from(games)
             .innerJoin(gamesList, eq(gamesList.mediaId, games.id))
-            .where(and(forUser, ne(gamesList.status, Status.PLAN_TO_PLAY), isNotNull(games.gameModes)))
-            .execute();
+            .where(and(forUser, ne(gamesList.status, Status.PLAN_TO_PLAY), isNotNull(games.gameModes)));
 
         const gameModes = data.flatMap((r) => (r.modes ? r.modes.split(",") : []));
 

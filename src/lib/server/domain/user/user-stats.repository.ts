@@ -198,8 +198,7 @@ export class UserStatsRepository {
         const rankedUsers = await finalQueryBase
             .orderBy(orderByColumn)
             .limit(perPage)
-            .offset(offset)
-            .execute();
+            .offset(offset);
 
         // Add user settings to map
         const userIds = rankedUsers.map((u) => u.id);

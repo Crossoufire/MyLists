@@ -1,23 +1,11 @@
-import {and, desc, eq} from "drizzle-orm";
-import {LogPayloadDb} from "@/lib/types/base.types";
-import {MediaType, UpdateType} from "@/lib/utils/enums";
-import {userMediaUpdate} from "@/lib/server/database/schema";
+import {MediaType} from "@/lib/utils/enums";
+import {LogUpdateParams} from "@/lib/types/base.types";
 import {AllUpdatesSearch} from "@/lib/types/zod.schema.types";
-import {getDbClient} from "@/lib/server/database/async-storage";
 import {UserUpdatesRepository} from "@/lib/server/domain/user/user-updates.repository";
 
 
-interface LogUpdateParams {
-    media: any;
-    userId: number;
-    payload: LogPayloadDb;
-    mediaType: MediaType;
-    updateType: UpdateType;
-}
-
-
 export class UserUpdatesService {
-    private readonly updateThresholdSec = 300;
+
 
     constructor(private repository: typeof UserUpdatesRepository) {
     }
@@ -53,47 +41,6 @@ export class UserUpdatesService {
     }
 
     async logUpdate({ userId, mediaType, media, updateType, payload }: LogUpdateParams) {
-        const [previousEntry] = await getDbClient()
-            .select()
-            .from(userMediaUpdate).where(and(
-                eq(userMediaUpdate.userId, userId),
-                eq(userMediaUpdate.mediaId, media.id),
-                eq(userMediaUpdate.mediaType, mediaType),
-            ))
-            .orderBy(desc(userMediaUpdate.timestamp))
-            .limit(1)
-            .execute()
-
-        let timeDifference = Number.POSITIVE_INFINITY;
-        if (previousEntry) {
-            timeDifference = (Date.now() - new Date(previousEntry.timestamp + "Z").getTime()) / 1000;
-        }
-
-        const newUpdateData = {
-            userId,
-            payload,
-            mediaType,
-            updateType,
-            mediaId: media.id,
-            mediaName: media.name,
-        };
-
-        if (timeDifference > this.updateThresholdSec) {
-            await getDbClient()
-                .insert(userMediaUpdate)
-                .values(newUpdateData)
-                .execute();
-        }
-        else {
-            await getDbClient()
-                .delete(userMediaUpdate)
-                .where(eq(userMediaUpdate.id, previousEntry.id))
-                .execute();
-
-            await getDbClient()
-                .insert(userMediaUpdate)
-                .values(newUpdateData)
-                .execute();
-        }
+        this.repository.logUpdate({ userId, mediaType, media, updateType, payload });
     }
 }

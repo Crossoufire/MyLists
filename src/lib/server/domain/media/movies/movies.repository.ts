@@ -22,14 +22,12 @@ export class MoviesRepository extends BaseRepository<MovieSchemaConfig> {
         const [{ count }] = await getDbClient()
             .select({ count: sql<number>`count(*)` })
             .from(movies)
-            .where(and(eq(movies.lockStatus, false), lte(movies.releaseDate, sql`datetime('now', '-6 months')`)))
-            .execute();
+            .where(and(eq(movies.lockStatus, false), lte(movies.releaseDate, sql`datetime('now', '-6 months')`)));
 
         await getDbClient()
             .update(movies)
             .set({ lockStatus: true })
-            .where(and(eq(movies.lockStatus, false), lte(movies.releaseDate, sql`datetime('now', '-6 months')`)))
-            .execute();
+            .where(and(eq(movies.lockStatus, false), lte(movies.releaseDate, sql`datetime('now', '-6 months')`)));
 
         return count;
     }

@@ -27,8 +27,7 @@ export class TvRepository extends BaseRepository<AnimeSchemaConfig | SeriesSchem
             })
             .from(epsPerSeasonTable)
             .where(eq(epsPerSeasonTable.mediaId, mediaId))
-            .orderBy(asc(epsPerSeasonTable.season))
-            .execute();
+            .orderBy(asc(epsPerSeasonTable.season));
     }
 
     async getMediaIdsToBeRefreshed(apiIds: number[]) {
@@ -231,8 +230,7 @@ export class TvRepository extends BaseRepository<AnimeSchemaConfig | SeriesSchem
                 gte(mediaTable.nextEpisodeToAir, sql`datetime('now')`),
                 maxAWeek ? lte(mediaTable.nextEpisodeToAir, sql`datetime('now', '+7 days')`) : undefined,
             ))
-            .orderBy(asc(mediaTable.nextEpisodeToAir))
-            .execute();
+            .orderBy(asc(mediaTable.nextEpisodeToAir));
     }
 
     async addMediaToUserList(userId: number, media: TvType, newStatus: Status) {
@@ -467,8 +465,7 @@ export class TvRepository extends BaseRepository<AnimeSchemaConfig | SeriesSchem
         return getDbClient()
             .select()
             .from(listTable)
-            .where(eq(listTable.mediaId, mediaId))
-            .execute()
+            .where(eq(listTable.mediaId, mediaId));
     }
 
     private _reorderSeasEps(totEpsWatched: number, epsList: number[]) {
