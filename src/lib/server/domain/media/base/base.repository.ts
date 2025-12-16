@@ -762,7 +762,7 @@ export abstract class BaseRepository<TConfig extends MediaSchemaConfig<MediaTabl
         const forUser = userId ? eq(labelTable.userId, userId) : undefined;
 
         const result = await getDbClient()
-            .selectDistinct({ count: count(labelTable.name) })
+            .select({ count: countDistinct(labelTable.name) })
             .from(labelTable)
             .where(and(forUser))
             .get();
