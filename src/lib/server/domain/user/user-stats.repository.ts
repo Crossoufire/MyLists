@@ -5,8 +5,8 @@ import {DeltaStats} from "@/lib/types/stats.types";
 import {UserMediaStats} from "@/lib/types/base.types";
 import {SearchTypeHoF} from "@/lib/types/zod.schema.types";
 import {getDbClient} from "@/lib/server/database/async-storage";
-import {user, userMediaSettings} from "@/lib/server/database/schema";
 import {and, count, countDistinct, eq, gt, inArray, ne, SQL, sql, sum} from "drizzle-orm";
+import {user, userMediaSettings, userMediaStatsHistory} from "@/lib/server/database/schema";
 
 
 export class UserStatsRepository {
@@ -29,7 +29,9 @@ export class UserStatsRepository {
     }
 
     static async updateUserPreComputedStatsWithDelta(userId: number, mediaType: MediaType, delta: DeltaStats) {
-        const setUpdates: Record<string, any> = {};
+        type UserMediaSettingsUpdate = Partial<{ [K in keyof typeof userMediaSettings]: typeof userMediaSettings[K] | ReturnType<typeof sql> }>;
+
+        const setUpdates: UserMediaSettingsUpdate = {};
 
         const numericFields: (keyof DeltaStats)[] = [
             "timeSpent", "views", "totalEntries", "totalRedo", "entriesRated",
@@ -37,9 +39,9 @@ export class UserStatsRepository {
         ];
 
         for (const field of numericFields) {
-            if (delta[field] !== undefined && delta[field] !== 0) {
-                const column = userMediaSettings[field];
-                setUpdates[field] = sql`${column} + ${delta[field]!}`;
+            const deltaValue = delta[field];
+            if (deltaValue !== undefined && deltaValue !== 0) {
+                setUpdates[field] = sql`${userMediaSettings[field]} + ${deltaValue}`;
             }
         }
 
@@ -67,12 +69,22 @@ export class UserStatsRepository {
                 (COALESCE(${userMediaSettings.entriesRated}, 0) + ${deltaEntriesRated}))
             END`;
 
-        if (Object.keys(setUpdates).length === 0) return;
+        if (Object.keys(setUpdates).length === 0) {
+            return;
+        }
 
-        await getDbClient()
+        const [lastUpdate] = await getDbClient()
             .update(userMediaSettings)
             .set(setUpdates)
             .where(and(eq(userMediaSettings.userId, userId), eq(userMediaSettings.mediaType, mediaType)))
+            .returning();
+
+        if (lastUpdate) {
+            const { id: _id, ...updateSnapshot } = lastUpdate;
+            await getDbClient()
+                .insert(userMediaStatsHistory)
+                .values(updateSnapshot);
+        }
     }
 
     static async userHallofFameData(userId: number, filters: SearchTypeHoF) {

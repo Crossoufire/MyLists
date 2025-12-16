@@ -43,6 +43,13 @@
       "when": 1762343203877,
       "tag": "0005_material_frightful_four",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1765877021708,
+      "tag": "0006_chunky_may_parker",
+      "breakpoints": true
     }
   ]
 }
