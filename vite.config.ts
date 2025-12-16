@@ -1,15 +1,21 @@
+import path from "path";
 import {defineConfig} from "vite";
 import tailwindcss from "@tailwindcss/vite";
 import viteReact from "@vitejs/plugin-react";
-import tsConfigPaths from "vite-tsconfig-paths";
 import {devtools} from "@tanstack/devtools-vite";
+import viteTsConfigPaths from "vite-tsconfig-paths";
 import {tanstackStart} from "@tanstack/react-start/plugin/vite";
 
 
 export default defineConfig({
+    resolve: {
+        alias: {
+            "@": path.resolve(__dirname, "./src"),
+        },
+    },
     plugins: [
+        viteTsConfigPaths({ projects: ["./tsconfig.json"] }),
         devtools(),
-        tsConfigPaths({ projects: ["./tsconfig.json"] }),
         tanstackStart({
             spa: {
                 enabled: true,
