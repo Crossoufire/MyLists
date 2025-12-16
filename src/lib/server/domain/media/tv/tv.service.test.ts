@@ -114,7 +114,7 @@ describe("TvService", () => {
                     const delta = tvService.calculateDeltaStats(old, newer, baseTv);
 
                     expect(delta.totalSpecific).toBe(1);
-                    expect(delta.timeSpent).toBe(1 * baseTv.duration);
+                    expect(delta.timeSpent).toBe(baseTv.duration);
                 });
 
                 it("should calculate delta for redoing a season", () => {

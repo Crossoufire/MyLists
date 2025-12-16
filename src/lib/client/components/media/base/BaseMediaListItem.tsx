@@ -1,4 +1,4 @@
-import {useState} from "react";
+import React, {useState} from "react";
 import {Settings2} from "lucide-react";
 import {MediaType, Status} from "@/lib/utils/enums";
 import {Badge} from "@/lib/client/components/ui/badge";
@@ -58,20 +58,20 @@ export const BaseMediaListItem = (props: BaseMediaListItemProps) => {
                 }
                 <div className="absolute bottom-0 w-full space-y-3 rounded-b-sm bg-gray-900 px-3 pb-3 pt-2">
                     <div className="flex w-full items-center justify-between space-x-2 max-sm:text-sm">
-                        <h3 className="flex-grow truncate font-semibold" title={userMedia.mediaName}>
+                        <h3 className="grow truncate font-semibold" title={userMedia.mediaName}>
                             {userMedia.mediaName}
                         </h3>
-                        <div className="flex-shrink-0">
+                        <div className="shrink-0">
                             {rating &&
                                 <DisplayRating rating={rating}/>
                             }
                         </div>
                     </div>
                     <div className="flex w-full flex-wrap items-center justify-between">
-                        <Badge variant="outline" className="flex-shrink-0">
+                        <Badge variant="outline" className="shrink-0">
                             {userMedia.status}
                         </Badge>
-                        <div className="flex flex-shrink-0 items-center gap-2">
+                        <div className="flex shrink-0 items-center gap-2">
                             {userMedia.favorite &&
                                 <DisplayFavorite isFavorite={userMedia.favorite} size={16}/>
                             }

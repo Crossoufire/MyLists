@@ -9,7 +9,8 @@ export const getNotifications = createServerFn({ method: "GET" })
         const container = await getContainer();
         const userService = container.services.user;
         const notificationsService = container.services.notifications;
-        userService.updateNotificationsReadTime(currentUser.id);
+
+        await userService.updateNotificationsReadTime(currentUser.id);
         return notificationsService.getLastNotifications(currentUser.id);
     });
 

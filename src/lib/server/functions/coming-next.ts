@@ -8,8 +8,8 @@ export const getComingNextMedia = createServerFn({ method: "GET" })
     .middleware([authMiddleware])
     .handler(async ({ context: { currentUser } }) => {
         const container = await getContainer()
-        const mediaTypes = mediaTypeUtils.getTypesForComingNext();
-        
+        const mediaTypes = mediaTypeUtils.getComingNextTypes();
+
         const comingNextData = await Promise.all(
             mediaTypes.map(async (mediaType) => {
                 const mediaService = container.registries.mediaService.getService(mediaType);

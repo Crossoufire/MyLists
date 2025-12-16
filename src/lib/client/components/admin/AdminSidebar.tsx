@@ -16,17 +16,18 @@ import {
 
 export function AdminSidebar() {
     const { currentUser } = useAuth();
-
     if (!currentUser) return null;
 
     return (
         <Sidebar>
-            <SidebarHeader className="mt-[64px]">
+            <SidebarHeader className="mt-16">
                 <div className="flex items-center gap-3 px-2 py-2">
                     <div className="flex size-8 items-center justify-center rounded-md bg-primary text-primary-foreground">
                         <Settings className="size-4"/>
                     </div>
-                    <div className="font-semibold">Admin Dashboard</div>
+                    <div className="font-semibold">
+                        Admin Dashboard
+                    </div>
                 </div>
             </SidebarHeader>
             <SidebarContent>

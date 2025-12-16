@@ -1,3 +1,4 @@
+import React from "react";
 import {MessageCircle} from "lucide-react";
 import {Link} from "@tanstack/react-router";
 import {Badge} from "@/lib/client/components/ui/badge";

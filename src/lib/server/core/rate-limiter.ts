@@ -4,11 +4,7 @@ import {IRateLimiterOptions, RateLimiterMemory, RateLimiterRedis} from "rate-lim
 
 
 export const createRateLimiter = async (options: Partial<IRateLimiterOptions>) => {
-    if (!serverEnv.REDIS_ENABLED) {
-        console.log(`Creating In-Memory rate limiter with options:`, options);
-        return new RateLimiterMemory(options);
-    }
-    else {
+    if (serverEnv.REDIS_ENABLED) {
         try {
             const connection = await getRedisConnection();
             console.log(`Creating Redis rate limiter with options:`, options);
@@ -17,5 +13,9 @@ export const createRateLimiter = async (options: Partial<IRateLimiterOptions>) =
         catch (err) {
             throw new Error(`Failed to create rate limiter: ${err}`);
         }
+    }
+    else {
+        console.log(`Creating In-Memory rate limiter with options:`, options);
+        return new RateLimiterMemory(options);
     }
 };

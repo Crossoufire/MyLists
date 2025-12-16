@@ -105,7 +105,7 @@ class MemoryCacheStore implements CacheStore {
         const cached = this.cache.get(key);
         const ttl = this.defaultTtl;
 
-        let newValue = 0;
+        let newValue: number;
         if (cached && cached.expires > Date.now() && typeof cached.value === "number") {
             newValue = cached.value + amount;
         }

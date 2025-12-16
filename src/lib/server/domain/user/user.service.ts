@@ -84,7 +84,7 @@ export class UserService {
     }
 
     async updateNotificationsReadTime(userId: number) {
-        return this.repository.updateNotificationsReadTime(userId);
+        await this.repository.updateNotificationsReadTime(userId);
     }
 
     async hasActiveMediaType(userId: number, mediaType: MediaType) {

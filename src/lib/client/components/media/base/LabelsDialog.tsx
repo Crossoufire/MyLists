@@ -199,7 +199,7 @@ export const LabelsDialog = ({ mediaType, mediaId, mediaLabels, updateUserMediaL
                                                     }}
                                                 />
                                                 :
-                                                <Badge variant={!mediaLabels.map(l => l.name).includes(label.name) ? "labelToAdd" : "label"}>
+                                                <Badge variant={mediaLabels.map((l) => l.name).includes(label.name) ? "label" : "labelToAdd"}>
                                                     {label.name}
                                                 </Badge>
                                             }

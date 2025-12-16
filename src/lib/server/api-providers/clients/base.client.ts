@@ -4,9 +4,9 @@ import {RateLimiterAbstract, RateLimiterQueue} from "rate-limiter-flexible";
 
 
 export class BaseClient {
-    private consumeKey: string;
     readonly resultsPerPage = 20;
     private queues: RateLimiterQueue[];
+    private readonly consumeKey: string;
 
     constructor(limiterInstances: RateLimiterAbstract | RateLimiterAbstract[], consumeKey: string) {
         this.consumeKey = consumeKey;

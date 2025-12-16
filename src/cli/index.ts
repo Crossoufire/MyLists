@@ -22,9 +22,9 @@ program
 taskDefinitions.forEach((task) => registerTaskCommand(program, task));
 
 
-if (!process.argv.slice(2).length) {
-    program.outputHelp();
+if (process.argv.slice(2).length) {
+    program.parse(process.argv);
 }
 else {
-    program.parse(process.argv);
+    program.outputHelp();
 }

@@ -1,8 +1,8 @@
-import {useState} from "react";
 import {Search} from "lucide-react";
-import {Input} from "@/lib/client/components/ui/input";
-import {capitalize} from "@/lib/utils/functions";
+import React, {useState} from "react";
 import {MediaType} from "@/lib/utils/enums";
+import {capitalize} from "@/lib/utils/functions";
+import {Input} from "@/lib/client/components/ui/input";
 import {createFileRoute} from "@tanstack/react-router";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
@@ -10,8 +10,8 @@ import {MutedText} from "@/lib/client/components/general/MutedText";
 import {useDebounceCallback} from "@/lib/client/hooks/use-debounce";
 import {HofCard} from "@/lib/client/components/hall-of-fame/HofCard";
 import {Pagination} from "@/lib/client/components/general/Pagination";
-import {HofRanking} from "@/lib/client/components/hall-of-fame/HofRanking";
 import {HofSorting, SearchTypeHoF} from "@/lib/types/zod.schema.types";
+import {HofRanking} from "@/lib/client/components/hall-of-fame/HofRanking";
 import {hallOfFameOptions} from "@/lib/client/react-query/query-options/query-options";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/lib/client/components/ui/select";
 

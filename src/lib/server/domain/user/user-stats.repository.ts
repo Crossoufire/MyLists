@@ -140,7 +140,7 @@ export class UserStatsRepository {
             .as("base_sub");
 
         // Dynamically construct Ranking window functions
-        const rankColumns: Record<string, SQL.Aliased<unknown>> = {};
+        const rankColumns: Record<string, SQL.Aliased> = {};
         mediaTypes.forEach((mt) => {
             const scoreCol = baseQuery[`${mt}Score` as keyof typeof baseQuery];
             rankColumns[`${mt}Rank`] = sql`row_number() OVER (ORDER BY ${scoreCol} DESC)`.as(`${mt}_rank`);

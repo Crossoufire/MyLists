@@ -12,7 +12,6 @@ export const trendsCacheMiddleware = createMiddleware({ type: "function" }).serv
             async () => next(),
             { ttl: 60 * 60 * 1000 },
         ));
-    ;
 });
 
 
@@ -26,5 +25,4 @@ export const platformStatsCacheMiddleware = createMiddleware({ type: "function" 
             async () => next(),
             { ttl: 24 * 60 * 60 * 1000 },
         ));
-    ;
 });

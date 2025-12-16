@@ -19,7 +19,7 @@ import {MediaProviderServiceRegistry, MediaServiceRegistry} from "@/lib/server/d
 
 
 export class TasksService {
-    private mediaTypes: MediaType[];
+    private readonly mediaTypes: MediaType[];
     private readonly taskHandlers: Record<TaskName, TaskHandler>;
 
     constructor(

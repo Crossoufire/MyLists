@@ -1,5 +1,5 @@
 import {toast} from "sonner";
-import {useState} from "react";
+import React, {useState} from "react";
 import {useForm, useWatch} from "react-hook-form";
 import {CircleHelp, Download} from "lucide-react";
 import {useAuth} from "@/lib/client/hooks/use-auth";
@@ -214,7 +214,7 @@ export const MediaListForm = () => {
             <div className="w-[320px] max-sm:w-full space-y-4 rounded-lg border bg-card p-4 text-card-foreground shadow-sm">
                 <h3 className="text-base font-medium">Export Your List as CSV</h3>
                 <div className="flex flex-wrap items-end gap-3">
-                    <div className="flex-grow">
+                    <div className="grow">
                         <Select onValueChange={(value) => setSelectedListForExport(value as MediaType)} value={selectedListForExport}>
                             <SelectTrigger id="list-export-select">
                                 <SelectValue placeholder="Select a list..."/>

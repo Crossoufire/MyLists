@@ -1,7 +1,7 @@
 import {Search} from "lucide-react";
-import {useMemo, useState} from "react";
-import {Input} from "@/lib/client/components/ui/input";
+import React, {useMemo, useState} from "react";
 import {formatDateTime} from "@/lib/utils/functions";
+import {Input} from "@/lib/client/components/ui/input";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {SearchType} from "@/lib/types/zod.schema.types";
 import {createFileRoute, Link} from "@tanstack/react-router";

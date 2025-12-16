@@ -41,6 +41,6 @@ export class UserUpdatesService {
     }
 
     async logUpdate({ userId, mediaType, media, updateType, payload }: LogUpdateParams) {
-        this.repository.logUpdate({ userId, mediaType, media, updateType, payload });
+        await this.repository.logUpdate({ userId, mediaType, media, updateType, payload });
     }
 }
