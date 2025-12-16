@@ -114,7 +114,7 @@ export class GamesService extends BaseService<GamesSchemaConfig, GamesRepository
         await this.repository.updateMediaWithDetails({ mediaData: fields });
     }
 
-    calculateDeltaStats(oldState: UserMediaWithLabels<GamesList> | null, newState: GamesList | null) {
+    calculateDeltaStats(oldState: UserMediaWithLabels<GamesList> | null, newState: GamesList | null, _media: Game) {
         const delta: DeltaStats = {};
         const statusCounts: Partial<Record<Status, number>> = {};
 

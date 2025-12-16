@@ -26,7 +26,7 @@ export const postAddMediaToList = createServerFn({ method: "POST" })
         const mediaService = container.registries.mediaService.getService(mediaType);
 
         const { newState, media, delta, logPayload } = await mediaService.addMediaToUserList(currentUser.id, mediaId, status);
-        await userStatsService.updateUserPreComputedStatsWithDelta(mediaType, currentUser.id, delta);
+        await userStatsService.updateUserPreComputedStatsWithDelta(currentUser.id, mediaType, mediaId, delta);
 
         await userUpdatesService.logUpdate({
             media,
@@ -52,7 +52,7 @@ export const postUpdateUserMedia = createServerFn({ method: "POST" })
         const mediaService = container.registries.mediaService.getService(mediaType);
 
         const { newState, media, delta, logPayload } = await mediaService.updateUserMediaDetails(currentUser.id, mediaId, payload);
-        await userStatsService.updateUserPreComputedStatsWithDelta(mediaType, currentUser.id, delta);
+        await userStatsService.updateUserPreComputedStatsWithDelta(currentUser.id, mediaType, mediaId, delta);
 
         if (logPayload) {
             await userUpdatesService.logUpdate({
@@ -81,7 +81,7 @@ export const postRemoveMediaFromList = createServerFn({ method: "POST" })
         const delta = await mediaService.removeMediaFromUserList(currentUser.id, mediaId);
         await userUpdatesService.deleteMediaUpdatesForUser(currentUser.id, mediaType, mediaId);
         await notifService.deleteUserMediaNotifications(currentUser.id, mediaType, mediaId);
-        await userStatsService.updateUserPreComputedStatsWithDelta(mediaType, currentUser.id, delta);
+        await userStatsService.updateUserPreComputedStatsWithDelta(currentUser.id, mediaType, mediaId, delta);
     });
 
 

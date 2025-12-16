@@ -28,8 +28,10 @@ export class UserStatsRepository {
             .where(eq(userMediaSettings.userId, userId))
     }
 
-    static async updateUserPreComputedStatsWithDelta(userId: number, mediaType: MediaType, delta: DeltaStats) {
-        type UserMediaSettingsUpdate = Partial<{ [K in keyof typeof userMediaSettings]: typeof userMediaSettings[K] | ReturnType<typeof sql> }>;
+    static async updateUserPreComputedStatsWithDelta(userId: number, mediaType: MediaType, mediaId: number, delta: DeltaStats) {
+        type UserMediaSettingsUpdate = Partial<{
+            [K in keyof typeof userMediaSettings]: (typeof userMediaSettings)[K] | ReturnType<typeof sql>;
+        }>;
 
         const setUpdates: UserMediaSettingsUpdate = {};
 
@@ -83,7 +85,10 @@ export class UserStatsRepository {
             const { id: _id, ...updateSnapshot } = lastUpdate;
             await getDbClient()
                 .insert(userMediaStatsHistory)
-                .values(updateSnapshot);
+                .values({
+                    mediaId: mediaId,
+                    ...updateSnapshot,
+                });
         }
     }
 
@@ -275,10 +280,7 @@ export class UserStatsRepository {
         for (const stats of userStats) {
             await tx
                 .update(userMediaSettings)
-                .set({
-                    ...stats,
-                    mediaType,
-                })
+                .set({ ...stats, mediaType })
                 .where(and(eq(userMediaSettings.userId, stats.userId), eq(userMediaSettings.mediaType, mediaType)));
         }
     }

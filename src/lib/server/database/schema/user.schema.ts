@@ -83,6 +83,7 @@ export const userMediaSettings = sqliteTable("user_media_settings", {
 export const userMediaStatsHistory = sqliteTable("user_media_stats_history", {
     id: integer().primaryKey().notNull(),
     userId: integer().notNull().references(() => user.id, { onDelete: "cascade" }),
+    mediaId: integer(),
     mediaType: text().$type<MediaType>().notNull(),
     timeSpent: integer().default(0).notNull(),
     views: integer().default(0).notNull(),

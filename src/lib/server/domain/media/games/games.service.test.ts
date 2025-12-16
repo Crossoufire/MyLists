@@ -53,7 +53,7 @@ describe("GamesService", async () => {
 
     describe("calculateDeltaStats", () => {
         it("should calculate delta when adding new game", () => {
-            const delta = gamesService.calculateDeltaStats(null, makeState({ playtime: 120 }));
+            const delta = gamesService.calculateDeltaStats(null, makeState({ playtime: 120 }), baseGame);
 
             expect(delta.timeSpent).toBe(120);
             expect(delta.totalEntries).toBe(1);
@@ -64,7 +64,7 @@ describe("GamesService", async () => {
 
         it("should calculate delta when removing game", () => {
             const old = makeUserState({ favorite: true, rating: 8, comment: "Great", playtime: 120 });
-            const delta = gamesService.calculateDeltaStats(old, null);
+            const delta = gamesService.calculateDeltaStats(old, null, baseGame);
 
             expect(delta.timeSpent).toBe(-120);
             expect(delta.totalEntries).toBe(-1);
@@ -78,7 +78,7 @@ describe("GamesService", async () => {
         it("should calculate delta when status updates: PTP¨-> COMPLETED", () => {
             const old = makeUserState({ status: Status.PLAN_TO_PLAY, playtime: 0 });
             const newer = makeState({ status: Status.COMPLETED, playtime: 120 });
-            const delta = gamesService.calculateDeltaStats(old, newer);
+            const delta = gamesService.calculateDeltaStats(old, newer, baseGame);
 
             expect(delta.timeSpent).toBe(120);
             expect(delta.statusCounts?.[Status.PLAN_TO_PLAY]).toBe(-1);
@@ -87,7 +87,7 @@ describe("GamesService", async () => {
 
         it("should return no delta when states are identical", () => {
             const state = makeUserState({ rating: 8, favorite: true, comment: "Nice", playtime: 120 });
-            const delta = gamesService.calculateDeltaStats(state, { ...state });
+            const delta = gamesService.calculateDeltaStats(state, { ...state }, baseGame);
 
             expect(Object.values(delta).every((v) => v === 0 || v === undefined)).toBe(true);
         });
@@ -95,7 +95,7 @@ describe("GamesService", async () => {
         it("should handle playtime change correctly", () => {
             const old = makeUserState({ status: Status.COMPLETED, playtime: 100 });
             const newer = makeState({ status: Status.COMPLETED, playtime: 150 });
-            const delta = gamesService.calculateDeltaStats(old, newer);
+            const delta = gamesService.calculateDeltaStats(old, newer, baseGame);
 
             expect(delta.timeSpent).toBe(50);
         });
@@ -108,7 +108,7 @@ describe("GamesService", async () => {
             "should handle rating changes (old: $oldRating → new: $newRating)", ({ oldRating, newRating, expectedSum }) => {
                 const old = makeUserState({ rating: oldRating });
                 const newer = makeState({ rating: newRating });
-                const delta = gamesService.calculateDeltaStats(old, newer);
+                const delta = gamesService.calculateDeltaStats(old, newer, baseGame);
 
                 expect(delta.sumEntriesRated).toBe(expectedSum);
             });
@@ -120,7 +120,7 @@ describe("GamesService", async () => {
             "should handle comment changes (old: $oldComment → new: $newComment)", ({ oldComment, newComment, expected }) => {
                 const old = makeUserState({ comment: oldComment });
                 const newer = makeState({ comment: newComment });
-                const delta = gamesService.calculateDeltaStats(old, newer);
+                const delta = gamesService.calculateDeltaStats(old, newer, baseGame);
 
                 expect(delta.entriesCommented).toBe(expected);
             }
@@ -133,7 +133,7 @@ describe("GamesService", async () => {
             "should handle favorite changes (old: $oldFav → new: $newFav)", ({ oldFav, newFav, expected }) => {
                 const old = makeUserState({ favorite: oldFav });
                 const newer = makeState({ favorite: newFav });
-                const delta = gamesService.calculateDeltaStats(old, newer);
+                const delta = gamesService.calculateDeltaStats(old, newer, baseGame);
 
                 expect(delta.entriesFavorites).toBe(expected);
             });

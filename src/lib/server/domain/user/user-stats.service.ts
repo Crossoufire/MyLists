@@ -22,8 +22,8 @@ export class UserStatsService {
         await this.repository.updateUserMediaListSettings(userId, payload);
     }
 
-    async updateUserPreComputedStatsWithDelta(mediaType: MediaType, userId: number, delta: DeltaStats) {
-        await this.repository.updateUserPreComputedStatsWithDelta(userId, mediaType, delta);
+    async updateUserPreComputedStatsWithDelta(userId: number, mediaType: MediaType, mediaId: number, delta: DeltaStats) {
+        await this.repository.updateUserPreComputedStatsWithDelta(userId, mediaType, mediaId, delta);
     }
 
     async updateAllUsersPreComputedStats(mediaType: MediaType, userStats: UserMediaStats[]) {
