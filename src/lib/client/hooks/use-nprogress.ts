@@ -21,6 +21,9 @@ export const useNProgress = ({ pendingMs = 80, pendingMinMs = 200 }: ProgressOpt
         let showTimer: ReturnType<typeof setTimeout> | undefined;
 
         const handleStart = () => {
+            clearTimeout(showTimer);
+            clearTimeout(minTimer);
+
             startedAt = 0;
             showTimer = setTimeout(() => {
                 NProgress.start();
