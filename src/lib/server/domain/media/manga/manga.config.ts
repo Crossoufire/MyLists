@@ -40,7 +40,7 @@ export const mangaConfig: MangaSchemaConfig = {
                 filterColumn: manga.publishers,
             }),
         },
-        defaultStatus: Status.READING,
+        defaultStatus: Status.PLAN_TO_READ,
         defaultSortName: "Title A-Z",
         availableSorts: {
             "Title A-Z": asc(manga.name),

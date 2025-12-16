@@ -39,7 +39,7 @@ export const gamesConfig: GamesSchemaConfig = {
                 filterColumn: gamesCompanies.name,
             }),
         },
-        defaultStatus: Status.PLAYING,
+        defaultStatus: Status.PLAN_TO_PLAY,
         defaultSortName: "Playtime +",
         availableSorts: {
             "Title A-Z": asc(games.name),

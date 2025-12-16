@@ -56,7 +56,7 @@ export const animeConfig: AnimeSchemaConfig = {
                 filterColumn: anime.originCountry,
             }),
         },
-        defaultStatus: Status.WATCHING,
+        defaultStatus: Status.PLAN_TO_WATCH,
         defaultSortName: "Title A-Z",
         availableSorts: {
             "Title A-Z": asc(anime.name),

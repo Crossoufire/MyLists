@@ -44,7 +44,7 @@ export const moviesConfig: MovieSchemaConfig = {
                 filterColumn: movies.directorName,
             }),
         },
-        defaultStatus: Status.COMPLETED,
+        defaultStatus: Status.PLAN_TO_WATCH,
         defaultSortName: "Title A-Z",
         availableSorts: {
             "Title A-Z": asc(movies.name),

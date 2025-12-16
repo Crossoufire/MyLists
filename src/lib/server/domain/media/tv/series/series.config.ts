@@ -65,7 +65,7 @@ export const seriesConfig: SeriesSchemaConfig = {
                 filterColumn: series.originCountry,
             }),
         },
-        defaultStatus: Status.WATCHING,
+        defaultStatus: Status.PLAN_TO_WATCH,
         defaultSortName: "Title A-Z",
         availableSorts: {
             "Title A-Z": asc(series.name),
