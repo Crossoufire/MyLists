@@ -192,7 +192,7 @@ export class TvRepository extends BaseRepository<AnimeSchemaConfig | SeriesSchem
 
         const timeSpentStat = sql<number>`COALESCE(SUM(${listTable.total} * ${mediaTable.duration}), 0)`;
         const totalSpecificStat = sql<number>`COALESCE(SUM(${listTable.total}), 0)`;
-        const totalRedoStat = sql<number>`(SELECT COALESCE(SUM(value), 0) FROM json_each(${listTable.redo2}))`;
+        const totalRedoStat = sql<number>`COALESCE(SUM((SELECT COALESCE(SUM(value), 0) FROM json_each(${listTable.redo2}))), 0)`;
 
         return this._computeAllUsersStats(timeSpentStat, totalSpecificStat, totalRedoStat)
     }

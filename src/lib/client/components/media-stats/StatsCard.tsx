@@ -8,7 +8,7 @@ import {Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle} f
 
 export const StatsCard = ({ card }: { card: StatCardData }) => {
     return (
-        <Card className="lg:min-w-[220px]">
+        <Card className="lg:min-w-55">
             <CardHeader>
                 <CardTitle className="max-sm:text-base">
                     {card.title}
@@ -26,7 +26,7 @@ export const StatsCard = ({ card }: { card: StatCardData }) => {
                                     </TooltipContent>
                                 </Tooltip>
                             </PopoverTrigger>
-                            <PopoverContent align="end" className="max-h-[500px] overflow-auto">
+                            <PopoverContent align="end" className="max-h-125 overflow-auto">
                                 <StatsTable
                                     title={card.title}
                                     dataList={card.valuesList}
@@ -35,7 +35,9 @@ export const StatsCard = ({ card }: { card: StatCardData }) => {
                         </Popover>
                     </CardAction>
                 }
-                <CardDescription>{card.subtitle}</CardDescription>
+                <CardDescription>
+                    {card.subtitle}
+                </CardDescription>
             </CardHeader>
             <CardContent className="grid items-center grid-cols-1 h-full">
                 <div className="text-3xl font-bold max-sm:text-xl" title={card.value?.toString() ?? ""}>
