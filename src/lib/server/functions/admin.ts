@@ -189,3 +189,12 @@ export const postAdminDeleteErrorLog = createServerFn({ method: "POST" })
         const adminService = await getContainer().then((c) => c.services.admin);
         return adminService.deleteErrorLog(errorId);
     });
+
+
+export const getAdminUserTracking = createServerFn({ method: "GET" })
+    .middleware([managerAuthMiddleware, adminAuthMiddleware])
+    .inputValidator((data) => data as { userId: number })
+    .handler(async ({ data: { userId } }) => {
+        const adminService = await getContainer().then((c) => c.services.admin);
+        return adminService.getAdminUserTracking(userId);
+    });

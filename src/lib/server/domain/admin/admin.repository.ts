@@ -2,7 +2,7 @@ import {desc, eq} from "drizzle-orm";
 import {ErrorLog} from "@/lib/types/base.types";
 import {SaveToDbProps} from "@/lib/types/tasks.types";
 import {getDbClient} from "@/lib/server/database/async-storage";
-import {errorLogs, taskHistory} from "@/lib/server/database/schema";
+import {errorLogs, taskHistory, userMediaStatsHistory} from "@/lib/server/database/schema";
 
 
 export class AdminRepository {
@@ -56,5 +56,12 @@ export class AdminRepository {
             .select()
             .from(taskHistory)
             .orderBy(desc(taskHistory.startedAt));
+    }
+
+    static async getAdminUserTracking(userId: number) {
+        return getDbClient()
+            .select()
+            .from(userMediaStatsHistory)
+            .where(eq(userMediaStatsHistory.userId, userId))
     }
 }

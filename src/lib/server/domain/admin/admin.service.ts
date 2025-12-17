@@ -53,4 +53,8 @@ export class AdminService {
             updatedPerMediaType: mediaStats.map(({ mediaType, updated }) => ({ mediaType, ...updated })),
         };
     }
+
+    async getAdminUserTracking(userId: number) {
+        return this.repository.getAdminUserTracking(userId);
+    }
 }
