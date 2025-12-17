@@ -1,7 +1,7 @@
 import {useSearch} from "@tanstack/react-router";
 import {NameValuePair} from "@/lib/types/base.types";
-import {useRatingSystem} from "@/lib/client/contexts/rating-context";
 import {MediaType, RatingSystemType} from "@/lib/utils/enums";
+import {useRatingSystem} from "@/lib/client/contexts/rating-context";
 import {formatNumberWithKM, getFeelingList, getMediaColor} from "@/lib/utils/functions";
 import {Bar, BarChart, Cell, LabelList, ResponsiveContainer, Tooltip as RechartsTooltip, XAxis, YAxis} from "recharts";
 
@@ -60,7 +60,7 @@ export const StatsGraph = ({ title, dataList }: StatsGraphProps) => {
             <div className="text-xl font-medium text-center">
                 {title} Distribution
             </div>
-            <div className="flex items-center justify-center h-[300px] max-sm:h-[200px] mt-3">
+            <div className="flex items-center justify-center h-75 max-sm:h-50 mt-3">
                 <ResponsiveContainer>
                     <BarChart data={newDataList} margin={{ top: 8, right: 15, left: 0, bottom: 5 }}>
                         {title === "Rating" && ratingSystem === RatingSystemType.FEELING ?

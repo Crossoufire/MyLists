@@ -1,4 +1,4 @@
-import React, {useState, useMemo} from "react";
+import React, {useMemo, useState} from "react";
 import {useQuery} from "@tanstack/react-query";
 import {Input} from "@/lib/client/components/ui/input";
 import {Label} from "@/lib/client/components/ui/label";
@@ -16,8 +16,8 @@ import {MediaAndUserIcon} from "@/lib/client/components/media/base/MediaAndUserI
 import {navSearchOptions} from "@/lib/client/react-query/query-options/query-options";
 import {adminUserTracking} from "@/lib/client/react-query/query-options/admin-options";
 import {Card, CardAction, CardContent, CardHeader, CardTitle} from "@/lib/client/components/ui/card";
-import {LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart} from "recharts";
-import {Clock, Star, MessageSquare, Heart, BarChart3, TrendingUp, ArrowUp, ArrowDown, Percent, Search, X, Loader2, type LucideIcon} from "lucide-react";
+import {Area, AreaChart, Bar, BarChart, CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis} from "recharts";
+import {ArrowDown, ArrowUp, BarChart3, Clock, Heart, Loader2, type LucideIcon, MessageSquare, Percent, Search, Star, TrendingUp, X} from "lucide-react";
 
 
 type Granularity = "day" | "week" | "month";
@@ -411,6 +411,23 @@ function UserTrackingContent({ userId }: { userId: number }) {
         };
     }, [rawData, filteredData, selectedMediaType]);
 
+    function getSpecificLabel(mediaType: MediaType) {
+        switch (mediaType) {
+            case MediaType.SERIES:
+            case MediaType.ANIME:
+                return "Episodes";
+            case MediaType.MOVIES:
+                return "Movies";
+            case MediaType.GAMES:
+                return "Hours Played";
+            case MediaType.BOOKS:
+            case MediaType.MANGA:
+                return "Pages";
+            default:
+                return "Items";
+        }
+    }
+
     if (isLoading) {
         return (
             <div className="flex items-center justify-center py-12">
@@ -463,7 +480,7 @@ function UserTrackingContent({ userId }: { userId: number }) {
                     </div>
                 </div>
             </div>
-            <div className="grid grid-cols-6 gap-3 max-sm:grid-cols-2">
+            <div className="grid grid-cols-7 gap-3 max-sm:grid-cols-2">
                 <StatCard
                     unit="h"
                     icon={Clock}
@@ -480,6 +497,14 @@ function UserTrackingContent({ userId }: { userId: number }) {
                     trend={trends.entries}
                     total={totalStats.totalEntries}
                     periodDelta={totalStats.entriesAdded}
+                />
+                <StatCard
+                    color={color}
+                    icon={TrendingUp}
+                    trend={trends.specific}
+                    total={totalStats.totalSpecific}
+                    periodDelta={totalStats.specificAdded}
+                    label={getSpecificLabel(selectedMediaType)}
                 />
                 <StatCard
                     icon={Star}
@@ -689,7 +714,7 @@ function StatCard({ icon: Icon, label, total, periodDelta, color, trend, unit = 
                 <CardTitle className="text-base font-medium text-muted-foreground">
                     {label}
                 </CardTitle>
-                <CardAction>
+                <CardAction className="mt-1">
                     <Icon className="size-4" style={{ color }}/>
                 </CardAction>
             </CardHeader>
