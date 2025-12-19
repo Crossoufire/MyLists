@@ -179,72 +179,51 @@ export class GamesRepository extends BaseRepository<GamesSchemaConfig> {
             .groupBy(playtimeHoursLog)
             .orderBy(asc(playtimeHoursLog));
 
-        return playtimeDistrib.map((p) => ({ name: Math.pow(2, p.name), value: p.value }));
+        return playtimeDistrib.map((p) => ({ name: String(Math.pow(2, p.name)), value: p.value }));
     }
 
-    async specificTopMetrics(userId?: number) {
+    async specificTopMetrics(mediaAvgRating: number | null, userId?: number) {
         const developersConfig = {
             minRatingCount: 3,
             metricIdCol: games.id,
             metricTable: gamesCompanies,
-            mediaLinkCol: gamesCompanies.mediaId,
             metricNameCol: gamesCompanies.name,
+            mediaLinkCol: gamesCompanies.mediaId,
             filters: [ne(gamesList.status, Status.PLAN_TO_PLAY), eq(gamesCompanies.developer, true)],
         };
-
         const publishersConfig = {
             ...developersConfig,
             filters: [ne(gamesList.status, Status.PLAN_TO_PLAY), eq(gamesCompanies.publisher, true)],
         };
         const platformsConfig = {
-            metricTable: gamesList,
-            metricNameCol: gamesList.platform,
             metricIdCol: games.id,
+            metricTable: gamesList,
             mediaLinkCol: gamesList.mediaId,
+            metricNameCol: gamesList.platform,
             filters: [ne(gamesList.status, Status.PLAN_TO_PLAY)],
         };
         const enginesConfig = {
             metricTable: games,
-            metricNameCol: games.gameEngine,
             metricIdCol: games.id,
+            metricNameCol: games.gameEngine,
             mediaLinkCol: gamesList.mediaId,
             filters: [ne(gamesList.status, Status.PLAN_TO_PLAY)],
         };
         const perspectivesConfig = {
             metricTable: games,
-            metricNameCol: games.playerPerspective,
             metricIdCol: games.id,
             mediaLinkCol: gamesList.mediaId,
+            metricNameCol: games.playerPerspective,
             filters: [ne(gamesList.status, Status.PLAN_TO_PLAY)],
         };
 
-        const developersStats = await this.computeTopMetricStats(developersConfig, userId);
-        const publishersStats = await this.computeTopMetricStats(publishersConfig, userId);
-        const platformsStats = await this.computeTopMetricStats(platformsConfig, userId);
-        const enginesStats = await this.computeTopMetricStats(enginesConfig, userId);
-        const perspectivesStats = await this.computeTopMetricStats(perspectivesConfig, userId);
+        const developersStats = await this.computeTopAffinityStats(developersConfig, mediaAvgRating, userId);
+        const publishersStats = await this.computeTopAffinityStats(publishersConfig, mediaAvgRating, userId);
+        const platformsStats = await this.computeTopAffinityStats(platformsConfig, mediaAvgRating, userId);
+        const enginesStats = await this.computeTopAffinityStats(enginesConfig, mediaAvgRating, userId);
+        const perspectivesStats = await this.computeTopAffinityStats(perspectivesConfig, mediaAvgRating, userId);
 
         return { developersStats, publishersStats, platformsStats, enginesStats, perspectivesStats };
-    }
-
-    async gameModesCount(userId?: number) {
-        const forUser = userId ? eq(gamesList.userId, userId) : undefined;
-
-        const data = await getDbClient()
-            .select({ modes: games.gameModes })
-            .from(games)
-            .innerJoin(gamesList, eq(gamesList.mediaId, games.id))
-            .where(and(forUser, ne(gamesList.status, Status.PLAN_TO_PLAY), isNotNull(games.gameModes)));
-
-        const gameModes = data.flatMap((r) => (r.modes ? r.modes.split(",") : []));
-
-        const modeCounts: Record<string, number> = {};
-        for (const mode of gameModes) {
-            modeCounts[mode] = (modeCounts[mode] || 0) + 1;
-        }
-        const topValuesResult = Object.entries(modeCounts).map(([name, value]) => ({ name, value: Number(value) || 0 }));
-
-        return { topValues: topValuesResult.length > 0 ? topValuesResult : [{ name: "-", value: 0 }] };
     }
 
     // --- Implemented Methods ----------------------------------------------

@@ -6,7 +6,7 @@ import {getDbClient} from "@/lib/server/database/async-storage";
 import {JobType, LabelAction, MediaType, Status} from "@/lib/utils/enums";
 import {GenreTable, LabelTable, ListTable, MediaSchemaConfig, MediaTable} from "@/lib/types/media.config.types";
 import {animeList, booksList, followers, gamesList, mangaList, moviesList, seriesList, user} from "@/lib/server/database/schema";
-import {and, asc, avgDistinct, count, countDistinct, desc, eq, getTableColumns, gte, inArray, isNotNull, isNull, like, lt, lte, ne, notInArray, SQL, sql} from "drizzle-orm";
+import {and, asc, count, countDistinct, desc, eq, getTableColumns, gte, inArray, isNotNull, isNull, like, lt, lte, ne, notInArray, SQL, sql} from "drizzle-orm";
 import {
     AddedMediaDetails,
     ExpandedListFilters,
@@ -15,12 +15,12 @@ import {
     Label,
     ListFilterDefinition,
     MediaListData,
-    TopMetricObject,
     UpComingMedia,
     UserFollowsMediaData,
     UserMediaStats,
     UserMediaWithLabels,
 } from "@/lib/types/base.types";
+import {TopAffinityConfig} from "@/lib/types/stats.types";
 
 
 const DEFAULT_PER_PAGE = 25;
@@ -770,7 +770,7 @@ export abstract class BaseRepository<TConfig extends MediaSchemaConfig<MediaTabl
         return result?.count ?? 0;
     }
 
-    async computeTopGenresStats(userId?: number) {
+    async computeTopGenresStats(mediaAvgRating: number | null, userId?: number) {
         const { genreTable, listTable } = this.config;
 
         const metricStatsConfig = {
@@ -781,73 +781,64 @@ export abstract class BaseRepository<TConfig extends MediaSchemaConfig<MediaTabl
             filters: [notInArray(listTable.status, [Status.PLAN_TO_WATCH, Status.PLAN_TO_PLAY, Status.PLAN_TO_READ])],
         };
 
-        return this.computeTopMetricStats(metricStatsConfig, userId);
+        return this.computeTopAffinityStats(metricStatsConfig, mediaAvgRating, userId);
     }
 
-    async computeTopMetricStats(statsConfig: TopMetricObject, userId?: number) {
+    async computeTopAffinityStats(statsConfig: TopAffinityConfig, mediaAvgRating: number | null, userId?: number) {
         const { mediaTable, listTable } = this.config;
         const forUser = userId ? eq(listTable.userId, userId) : undefined;
-        const { metricTable, metricIdCol, metricNameCol, mediaLinkCol, filters, limit = 10, minRatingCount = 5 } = statsConfig;
-        const isDifferentTable = (metricTable !== mediaTable) && (metricTable !== listTable);
+        const { metricTable, metricIdCol, metricNameCol, mediaLinkCol, filters, limit = 10, minRatingCount = 3 } = statsConfig;
 
-        const countAlias = count(metricNameCol);
-        let topValuesBuilder = getDbClient()
+        const isDifferentTable = metricTable !== mediaTable && metricTable !== listTable;
+
+        const userAvg = mediaAvgRating ?? 5;
+
+        // Define raw aggregate aliases
+        const entriesCountSql = sql<number>`CAST(COUNT(${metricNameCol}) AS FLOAT)`;
+        const avgRatingSql = sql<number>`COALESCE(AVG(${listTable.rating}), ${userAvg})`;
+        const favoriteCountSql = sql<number>`CAST(SUM(CASE WHEN ${listTable.favorite} = true THEN 1 ELSE 0 END) AS FLOAT)`;
+
+        const qualityFactor = sql`(${avgRatingSql} / NULLIF(${userAvg}, 0))`;
+        const favoriteBoost = sql`(1 + (${favoriteCountSql} / NULLIF(${entriesCountSql}, 0)))`;
+        const confidence = sql`LN(${entriesCountSql} + 1) / 3`;
+
+        const affinityExpr = sql<number>`
+            10 * (EXP(2 * (${qualityFactor} * ${favoriteBoost} * ${confidence})) - 1) / 
+                 (EXP(2 * (${qualityFactor} * ${favoriteBoost} * ${confidence})) + 1)
+            `;
+
+        let builder = getDbClient()
             .select({
+                affinity: affinityExpr,
+                avgRating: avgRatingSql,
+                entriesCount: entriesCountSql,
+                favoriteCount: favoriteCountSql,
                 name: sql<string>`${metricNameCol}`,
-                value: countAlias,
             })
             .from(listTable)
             .innerJoin(mediaTable, eq(listTable.mediaId, mediaTable.id))
             .$dynamic();
-        if (isDifferentTable) topValuesBuilder = topValuesBuilder.innerJoin(metricTable, eq(mediaLinkCol, metricIdCol));
-        const topValuesQuery = topValuesBuilder
+
+        if (isDifferentTable) {
+            builder = builder.innerJoin(metricTable, eq(mediaLinkCol, metricIdCol));
+        }
+
+        const results = await builder
             .where(and(forUser, isNotNull(metricNameCol), ...filters))
             .groupBy(metricNameCol)
-            .orderBy(desc(countAlias))
+            .having(gte(sql`COUNT(${metricNameCol})`, minRatingCount))
+            .orderBy(desc(affinityExpr))
             .limit(limit);
 
-        const avgRatingAlias = avgDistinct(listTable.rating);
-        const ratingCountAlias = count(listTable.rating);
-        let topRatedBuilder = getDbClient()
-            .select({
-                name: sql<string>`${metricNameCol}`,
-                value: avgRatingAlias,
-            })
-            .from(listTable)
-            .innerJoin(mediaTable, eq(listTable.mediaId, mediaTable.id))
-            .$dynamic();
-        if (isDifferentTable) topRatedBuilder = topRatedBuilder.innerJoin(metricTable, eq(mediaLinkCol, metricIdCol));
-        const topRatedQuery = topRatedBuilder
-            .where(and(forUser, isNotNull(metricNameCol), isNotNull(listTable.rating), ...filters))
-            .groupBy(metricNameCol)
-            .having(gte(ratingCountAlias, minRatingCount))
-            .orderBy(desc(avgRatingAlias))
-            .limit(limit);
-
-        const favoriteCountAlias = count(metricNameCol);
-        let topFavoritedBuilder = getDbClient()
-            .select({
-                name: sql<string>`${metricNameCol}`,
-                value: favoriteCountAlias,
-            })
-            .from(listTable)
-            .innerJoin(mediaTable, eq(listTable.mediaId, mediaTable.id))
-            .$dynamic();
-        if (isDifferentTable) topFavoritedBuilder = topFavoritedBuilder.innerJoin(metricTable, eq(mediaLinkCol, metricIdCol));
-        const topFavoritedQuery = topFavoritedBuilder
-            .where(and(forUser, isNotNull(metricNameCol), eq(listTable.favorite, true), ...filters))
-            .groupBy(metricNameCol)
-            .orderBy(desc(favoriteCountAlias))
-            .limit(limit);
-
-        const [topValues, topRated, topFavorited] = await Promise.all([topValuesQuery, topRatedQuery, topFavoritedQuery]);
-        const defaultEntry = [{ name: "-", value: "-" }];
-
-        return {
-            topValues: topValues.length ? topValues.map(row => ({ name: row.name, value: row.value || 0 })) : defaultEntry,
-            topRated: topRated.length ? topRated.map(row => ({ name: row.name, value: Number(row.value).toFixed(2) || "-" })) : defaultEntry,
-            topFavorited: topFavorited.length ? topFavorited.map(row => ({ name: row.name, value: row.value || 0 })) : defaultEntry,
-        };
+        return results.map((row) => ({
+            name: row.name,
+            value: Number(row.affinity).toFixed(2),
+            metadata: {
+                entriesCount: Number(row.entriesCount),
+                favoriteCount: Number(row.favoriteCount),
+                avgRating: Number(row.avgRating).toFixed(2),
+            },
+        }));
     }
 
     // --- Abstract Methods -----------------------------------------------------------------

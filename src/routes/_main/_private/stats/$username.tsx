@@ -1,14 +1,15 @@
-import {useEffect, useState} from "react";
+import {useState} from "react";
 import {MediaType} from "@/lib/utils/enums";
-import {capitalize} from "@/lib/utils/functions";
-import {dataToLoad} from "@/lib/client/media-stats";
-import {createFileRoute} from "@tanstack/react-router";
+import {TabValue} from "@/lib/types/stats.types";
 import {useSuspenseQuery} from "@tanstack/react-query";
+import {Button} from "@/lib/client/components/ui/button";
+import {Award, EllipsisVertical, User} from "lucide-react";
+import {createFileRoute, Link} from "@tanstack/react-router";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
-import {RatingProvider} from "@/lib/client/contexts/rating-context";
-import {Sidebar, SideBarItem} from "@/lib/client/components/general/Sidebar";
-import {StatsDisplay} from "@/lib/client/components/media-stats/StatsDisplay";
+import {MediaTypeTabs} from "@/lib/client/media-stats/MediaTypeTabs";
+import {DashboardContent} from "@/lib/client/media-stats/DashboardContent";
 import {userStatsOptions} from "@/lib/client/react-query/query-options/query-options";
+import {Popover, PopoverContent, PopoverTrigger} from "@/lib/client/components/ui/popover";
 
 
 export const Route = createFileRoute("/_main/_private/stats/$username")({
@@ -17,81 +18,67 @@ export const Route = createFileRoute("/_main/_private/stats/$username")({
     loader: async ({ context: { queryClient }, params: { username }, deps: { search } }) => {
         return queryClient.ensureQueryData(userStatsOptions(username, search));
     },
-    component: StatsPage,
+    component: UserStatsPage,
 });
 
 
-function StatsPage() {
+function UserStatsPage() {
     const filters = Route.useSearch();
+    const navigate = Route.useNavigate();
     const { username } = Route.useParams();
     const apiData = useSuspenseQuery(userStatsOptions(username, filters)).data;
+    const [selectedTab, setSelectedTab] = useState<TabValue>(filters?.mediaType ?? "overview");
 
-    const statsData = dataToLoad({ apiData, forUser: true });
-    const [selectedData, setSelectedData] = useState(() => statsData[0]);
-
-    useEffect(() => {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setSelectedData(statsData[0]);
-    }, [filters.mediaType, statsData]);
-
-    if (!selectedData) {
-        return null;
-    }
-
-    const sidebarItems: SideBarItem<typeof selectedData>[] = [
-        ...statsData.map((data): SideBarItem<typeof selectedData> => ({
-            is: "tab",
-            data: data,
-        })),
-        "separator",
-        {
-            is: "link",
-            mediaType: undefined,
-            params: { username },
-            to: "/stats/$username",
-            sidebarTitle: "Overall stats",
-            isSelected: filters.mediaType === undefined,
-        },
-        ...apiData.activatedMediaTypes.map((mt): SideBarItem<typeof selectedData> => ({
-            is: "link",
-            mediaType: mt,
-            params: { username },
-            to: "/stats/$username",
-            search: { mediaType: mt },
-            isSelected: mt === filters.mediaType,
-            sidebarTitle: `${capitalize(mt)} stats`,
-        })),
-        "separator",
-        {
-            is: "link",
-            external: true,
-            params: { username },
-            to: "/profile/$username",
-            sidebarTitle: "User's profile",
-        },
-        {
-            is: "link",
-            external: true,
-            params: { username },
-            to: "/achievements/$username",
-            sidebarTitle: "User's achievements",
-        },
-    ];
+    const handleTabChange = async (value: string) => {
+        setSelectedTab(value as TabValue);
+        await navigate({ search: value === "overview" ? undefined : { mediaType: value as MediaType } });
+    };
 
     return (
-        <PageTitle title={`${username} ${capitalize(filters.mediaType) ?? "Overall"} Stats`} subtitle="Detailed stats for the user">
-            <div className="grid md:grid-cols-[180px_1fr] lg:grid-cols-[190px_1fr] gap-8 mt-4">
-                <Sidebar
-                    items={sidebarItems}
-                    selectedItem={selectedData}
-                    onTabChange={setSelectedData}
-                />
-                <div>
-                    <RatingProvider value={apiData.ratingSystem}>
-                        <StatsDisplay statsData={selectedData}/>
-                    </RatingProvider>
+        <PageTitle title={`${username} Statistics`} subtitle="Comprehensive media tracking insights">
+            <div className="mt-2">
+                <div className="flex flex-row gap-y-3 justify-between items-center max-sm:flex-col-reverse max-sm:items-start mb-4">
+                    <MediaTypeTabs
+                        selectedTab={selectedTab}
+                        onTabChange={handleTabChange}
+                        activatedMediaTypes={apiData.activatedMediaTypes}
+                    />
+
+                    <QuickActions username={username}/>
                 </div>
+
+                <DashboardContent
+                    data={apiData}
+                    selectedTab={selectedTab}
+                />
             </div>
         </PageTitle>
+    );
+}
+
+
+export function QuickActions({ username }: { username: string }) {
+    return (
+        <Popover>
+            <PopoverTrigger asChild>
+                <Button variant="outline" size="icon">
+                    <EllipsisVertical className="size-4"/>
+                </Button>
+            </PopoverTrigger>
+            <PopoverContent align="end" className="w-42 p-2">
+                <Link to="/profile/$username" params={{ username }}>
+                    <Button variant="ghost" className="w-full inline-flex items-center justify-start">
+                        <User className="size-4 text-muted-foreground"/>
+                        User's Profile
+                    </Button>
+                </Link>
+                <Link to="/achievements/$username" params={{ username }}>
+                    <Button variant="ghost" className="w-full inline-flex items-center justify-start">
+                        <Award className="size-4 text-muted-foreground"/>
+                        Achievements
+                    </Button>
+                </Link>
+            </PopoverContent>
+        </Popover>
     );
 }

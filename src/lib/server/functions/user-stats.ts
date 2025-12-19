@@ -2,6 +2,7 @@ import {createServerFn} from "@tanstack/react-start";
 import {tryNotFound} from "@/lib/utils/try-not-found";
 import {getContainer} from "@/lib/server/core/container";
 import {FormattedError} from "@/lib/utils/error-classes";
+import {AdvancedMediaStats} from "@/lib/types/stats.types";
 import {getUserStatsSchema} from "@/lib/types/zod.schema.types";
 import {authorizationMiddleware} from "@/lib/server/middlewares/authorization";
 
@@ -33,5 +34,5 @@ export const getUserStats = createServerFn({ method: "GET" })
             mediaType,
             activatedMediaTypes,
             ratingSystem: user.ratingSystem,
-        };
+        } as AdvancedMediaStats;
     });

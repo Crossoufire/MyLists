@@ -99,7 +99,7 @@ export class UserUpdatesRepository {
         const totalUpdates = monthlyCounts.reduce((a, c) => a + c.value, 0);
 
         return {
-            totalUpdates,
+            totalUpdates: totalUpdates,
             updatesDistribution: monthlyCounts,
             avgUpdates: monthlyCounts.length ? (totalUpdates / monthlyCounts.length) : null,
         };

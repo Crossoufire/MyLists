@@ -1,4 +1,3 @@
-import {db} from "@/lib/server/database/db";
 import {MediaType} from "@/lib/utils/enums";
 import {alias} from "drizzle-orm/sqlite-core";
 import {DeltaStats} from "@/lib/types/stats.types";
@@ -291,11 +290,11 @@ export class UserStatsRepository {
             conditions.push(eq(userMediaSettings.userId, userId));
         }
 
-        const stats = await db
+        const stats = await getDbClient()
             .select({
                 totalEntries: sum(userMediaSettings.totalEntries).mapWith(Number),
                 totalRedo: sum(userMediaSettings.totalRedo).mapWith(Number),
-                timeSpentHours: sql<number>`SUM(${userMediaSettings.timeSpent}) / 60.0`.mapWith(Number),
+                timeSpentHours: sql`SUM(${userMediaSettings.timeSpent}) / 60.0`.mapWith(Number),
                 totalRated: sum(userMediaSettings.entriesRated).mapWith(Number),
                 sumOfAllRatings: sum(userMediaSettings.sumEntriesRated).mapWith(Number),
                 totalFavorites: sum(userMediaSettings.entriesFavorites).mapWith(Number),
@@ -305,11 +304,12 @@ export class UserStatsRepository {
             .from(userMediaSettings)
             .where(and(...conditions))
             .get();
+
         if (!stats) {
             throw new Error("No stats found");
         }
 
-        const statusCountsResult = await db
+        const statusCountsResult = await getDbClient()
             .select({ statusCounts: userMediaSettings.statusCounts })
             .from(userMediaSettings)
             .where(and(...conditions));
@@ -320,7 +320,10 @@ export class UserStatsRepository {
             }
             return acc;
         }, {});
-        const statusesCounts = Object.entries(totalStatusCounts).map(([status, count]) => ({ status, count }));
+
+        const statusesCounts = Object
+            .entries(totalStatusCounts)
+            .map(([status, count]) => ({ name: status, value: count }));
 
         return {
             statusesCounts,

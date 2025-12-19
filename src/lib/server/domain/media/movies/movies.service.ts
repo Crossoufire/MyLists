@@ -49,16 +49,16 @@ export class MoviesService extends BaseService<MovieSchemaConfig, MoviesReposito
         return this.repository.findByTitleAndYear(title, year);
     }
 
-    async calculateAdvancedMediaStats(userId?: number) {
+    async calculateAdvancedMediaStats(mediaAvgRating: number | null, userId?: number) {
         // If userId not provided, calculations are platform-wide
 
-        const { ratings, genresStats, totalLabels, releaseDates } = await super.calculateAdvancedMediaStats(userId);
+        const { ratings, genresStats, totalLabels, releaseDates } = await super.calculateAdvancedMediaStats(mediaAvgRating, userId);
 
         // Specific stats
         const avgDuration = await this.repository.avgMovieDuration(userId);
         const durationDistrib = await this.repository.movieDurationDistrib(userId);
         const { totalBudget, totalRevenue } = await this.repository.budgetRevenueStats(userId);
-        const { directorsStats, actorsStats, langsStats } = await this.repository.specificTopMetrics(userId);
+        const { directorsStats, actorsStats, langsStats } = await this.repository.specificTopMetrics(mediaAvgRating, userId);
 
         return {
             ratings,

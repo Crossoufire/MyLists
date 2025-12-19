@@ -31,6 +31,7 @@ export type AdminUserOverview = Awaited<ReturnType<NonNullable<typeof adminOverv
 export type UserStats = Awaited<ReturnType<NonNullable<ReturnType<typeof userStatsOptions>["queryFn"]>>>;
 export type PlatformStats = Awaited<ReturnType<NonNullable<ReturnType<typeof platformStatsOptions>["queryFn"]>>>;
 
+
 // --- User Media Details Types ----------------------------------------------------
 export type UserMedia = NonNullable<MediaDetailsOptionsType["userMedia"]>;
 export type ExtractUserMediaByType<T extends MediaType> =

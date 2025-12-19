@@ -137,50 +137,52 @@ export class TvRepository extends BaseRepository<AnimeSchemaConfig | SeriesSchem
         const { mediaTable, listTable } = this.config;
         const forUser = userId ? eq(listTable.userId, userId) : undefined;
 
-        return getDbClient()
+        const data = await getDbClient()
             .select({
-                name: sql<number>`(floor((${mediaTable.duration} * ${mediaTable.totalEpisodes}) / 600.0) * 600) / 60`,
+                name: sql`(floor((${mediaTable.duration} * ${mediaTable.totalEpisodes}) / 600.0) * 600) / 60`.mapWith(String),
                 value: count(mediaTable.id).as("count"),
             })
             .from(mediaTable)
             .innerJoin(listTable, eq(listTable.mediaId, mediaTable.id))
             .where(and(forUser, notInArray(listTable.status, [Status.RANDOM, Status.PLAN_TO_WATCH])))
-            .groupBy(sql<number>`floor((${mediaTable.duration} * ${listTable.total}) / 600.0) * 600`)
-            .orderBy(asc(sql<number>`floor((${mediaTable.duration} * ${listTable.total}) / 600.0) * 600`));
+            .groupBy(sql<number>`floor((${mediaTable.duration} * ${mediaTable.totalEpisodes}) / 600.0) * 600`)
+            .orderBy(asc(sql<number>`floor((${mediaTable.duration} * ${mediaTable.totalEpisodes}) / 600.0) * 600`));
+
+        return data;
     }
 
-    async specificTopMetrics(userId?: number) {
+    async specificTopMetrics(mediaAvgRating: number | null, userId?: number) {
         const { mediaTable, listTable, networkTable, actorTable } = this.config;
 
         const filters = [notInArray(listTable.status, [Status.RANDOM, Status.PLAN_TO_WATCH])]
 
         const networkConfig = {
+            filters,
+            minRatingCount: 3,
             metricTable: networkTable,
+            mediaLinkCol: listTable.mediaId,
             metricNameCol: networkTable.name,
             metricIdCol: networkTable.mediaId,
-            mediaLinkCol: listTable.mediaId,
-            minRatingCount: 3,
-            filters,
         };
         const countriesConfig = {
+            filters,
             metricTable: mediaTable,
             metricIdCol: mediaTable.id,
             mediaLinkCol: listTable.mediaId,
             metricNameCol: mediaTable.originCountry,
-            filters,
         };
         const actorsConfig = {
+            filters,
+            minRatingCount: 3,
             metricTable: actorTable,
             metricNameCol: actorTable.name,
             metricIdCol: actorTable.mediaId,
             mediaLinkCol: listTable.mediaId,
-            minRatingCount: 3,
-            filters,
         };
 
-        const actorsStats = await this.computeTopMetricStats(actorsConfig, userId);
-        const networksStats = await this.computeTopMetricStats(networkConfig, userId);
-        const countriesStats = await this.computeTopMetricStats(countriesConfig, userId);
+        const actorsStats = await this.computeTopAffinityStats(actorsConfig, mediaAvgRating, userId);
+        const networksStats = await this.computeTopAffinityStats(networkConfig, mediaAvgRating, userId);
+        const countriesStats = await this.computeTopAffinityStats(countriesConfig, mediaAvgRating, userId);
 
         return { countriesStats, actorsStats, networksStats };
     }

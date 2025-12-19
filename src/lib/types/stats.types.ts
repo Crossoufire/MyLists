@@ -1,6 +1,15 @@
 import {JSX} from "react";
-import {Status} from "@/lib/utils/enums";
+import {SQL} from "drizzle-orm";
 import {NameValuePair} from "@/lib/types/base.types";
+import {TvService} from "@/lib/server/domain/media/tv";
+import {MangaService} from "@/lib/server/domain/media/manga";
+import {GamesService} from "@/lib/server/domain/media/games";
+import {BooksService} from "@/lib/server/domain/media/books";
+import {MoviesService} from "@/lib/server/domain/media/movies";
+import {SQLiteColumn, SQLiteTable} from "drizzle-orm/sqlite-core";
+import {MediaType, RatingSystemType, Status} from "@/lib/utils/enums";
+import {UserStatsRepository, UserStatsService, UserUpdatesRepository} from "@/lib/server/domain/user";
+import {BaseRepository} from "@/lib/server/domain/media/base/base.repository";
 
 
 export type StatCardData = {
@@ -49,3 +58,52 @@ export type DeltaStats = {
     entriesFavorites?: number;
     statusCounts?: Partial<Record<Status, number>>;
 };
+
+
+export type TopAffinityConfig = {
+    limit?: number,
+    filters: SQL[],
+    minRatingCount?: number,
+    metricTable: SQLiteTable,
+    metricIdCol: SQLiteColumn,
+    mediaLinkCol: SQLiteColumn,
+    metricNameCol: SQLiteColumn,
+}
+
+
+type BaseMediaStats = Awaited<ReturnType<typeof UserStatsRepository.getAggregatedMediaStats>>;
+type UpdatesStats = Awaited<ReturnType<typeof UserUpdatesRepository.mediaUpdatesStatsPerMonth>>;
+type OtherBase = { activatedMediaTypes: MediaType[]; ratingSystem: RatingSystemType; };
+type TvSpecificStats = Awaited<ReturnType<TvService["calculateAdvancedMediaStats"]>>;
+type MoviesSpecificStats = Awaited<ReturnType<MoviesService["calculateAdvancedMediaStats"]>>;
+type GamesSpecificStats = Awaited<ReturnType<GamesService["calculateAdvancedMediaStats"]>>;
+type BooksSpecificStats = Awaited<ReturnType<BooksService["calculateAdvancedMediaStats"]>>;
+type MangaSpecificStats = Awaited<ReturnType<MangaService["calculateAdvancedMediaStats"]>>;
+
+
+export type AdvancedMediaStats =
+    | (BaseMediaStats & UpdatesStats & OtherBase & { mediaType: typeof MediaType.SERIES; specificMediaStats: TvSpecificStats })
+    | (BaseMediaStats & UpdatesStats & OtherBase & { mediaType: typeof MediaType.ANIME; specificMediaStats: TvSpecificStats })
+    | (BaseMediaStats & UpdatesStats & OtherBase & { mediaType: typeof MediaType.MOVIES; specificMediaStats: MoviesSpecificStats })
+    | (BaseMediaStats & UpdatesStats & OtherBase & { mediaType: typeof MediaType.GAMES; specificMediaStats: GamesSpecificStats })
+    | (BaseMediaStats & UpdatesStats & OtherBase & { mediaType: typeof MediaType.BOOKS; specificMediaStats: BooksSpecificStats })
+    | (BaseMediaStats & UpdatesStats & OtherBase & { mediaType: typeof MediaType.MANGA; specificMediaStats: MangaSpecificStats });
+
+export type OverviewStats = Awaited<ReturnType<UserStatsService["userAdvancedSummaryStats"]>> & OtherBase & { mediaType: undefined };
+
+export type UserStatsResult = OverviewStats | AdvancedMediaStats;
+
+export type TabValue = MediaType | "overview";
+
+export type NamedValue = { name: number | string; value: number };
+
+export type MediaNaming = {
+    redo?: string;
+    totalSpecific?: string;
+    durationDistribution: string;
+    durationDistributionUnit: string;
+}
+
+export type TopAffinity = Awaited<ReturnType<BaseRepository<any>["computeTopAffinityStats"]>>;
+
+export type ExtractStatsByType<T extends MediaType | undefined> = Extract<UserStatsResult, { mediaType: T }>;

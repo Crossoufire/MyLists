@@ -122,12 +122,12 @@ export class MangaRepository extends BaseRepository<MangaSchemaConfig> {
     async mangaDurationDistrib(userId?: number) {
         const forUser = userId ? eq(mangaList.userId, userId) : undefined;
 
-        const binning = sql<number>`floor(${manga.chapters} / 50.0) * 50`;
+        const binning = sql<number>`floor(${manga.chapters} / 50.0) * 50`.mapWith(String);
 
         return getDbClient()
             .select({
                 name: binning,
-                value: sql<number>`cast(count(${manga.id}) as int)`.as("count"),
+                value: sql`cast(count(${manga.id}) as int)`.mapWith(Number).as("count"),
             })
             .from(manga)
             .innerJoin(mangaList, eq(mangaList.mediaId, manga.id))
@@ -136,7 +136,7 @@ export class MangaRepository extends BaseRepository<MangaSchemaConfig> {
             .orderBy(asc(binning));
     }
 
-    async specificTopMetrics(userId?: number) {
+    async specificTopMetrics(mediaAvgRating: number | null, userId?: number) {
         const publishersConfig = {
             metricTable: manga,
             metricNameCol: manga.publishers,
@@ -152,8 +152,8 @@ export class MangaRepository extends BaseRepository<MangaSchemaConfig> {
             filters: [ne(mangaList.status, Status.PLAN_TO_READ)],
         };
 
-        const authorsStats = await this.computeTopMetricStats(authorsConfig, userId);
-        const publishersStats = await this.computeTopMetricStats(publishersConfig, userId);
+        const authorsStats = await this.computeTopAffinityStats(authorsConfig, mediaAvgRating, userId);
+        const publishersStats = await this.computeTopAffinityStats(publishersConfig, mediaAvgRating, userId);
 
         return { publishersStats, authorsStats };
     }

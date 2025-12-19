@@ -1,6 +1,7 @@
 import {createServerFn} from "@tanstack/react-start";
 import {getContainer} from "@/lib/server/core/container";
-import {RatingSystemType} from "@/lib/utils/enums";
+import {AdvancedMediaStats} from "@/lib/types/stats.types";
+import {MediaType, RatingSystemType} from "@/lib/utils/enums";
 import {platformStatsSchema} from "@/lib/types/zod.schema.types";
 import {authMiddleware} from "@/lib/server/middlewares/authentication";
 import {platformStatsCacheMiddleware} from "@/lib/server/middlewares/caching";
@@ -14,9 +15,19 @@ export const getPlatformStats = createServerFn({ method: "GET" })
 
         if (!mediaType) {
             const platformStats = await userStatsService.platformAdvancedStatsSummary();
-            return { ...platformStats, ratingSystem: RatingSystemType.SCORE, mediaType: undefined };
+            return {
+                ...platformStats,
+                mediaType: undefined,
+                ratingSystem: RatingSystemType.SCORE,
+                activatedMediaTypes: Object.values(MediaType),
+            };
         }
 
         const mediaStats = await userStatsService.platformMediaAdvancedStats(mediaType);
-        return { ...mediaStats, ratingSystem: RatingSystemType.SCORE, mediaType };
+        return {
+            ...mediaStats,
+            mediaType,
+            ratingSystem: RatingSystemType.SCORE,
+            activatedMediaTypes: Object.values(MediaType),
+        } as AdvancedMediaStats;
     });

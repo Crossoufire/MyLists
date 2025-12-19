@@ -5,19 +5,19 @@ import {PanelLeftIcon} from "lucide-react";
 import {Input} from "@/lib/client/components/ui/input";
 import {Button} from "@/lib/client/components/ui/button";
 import {useIsMobile} from "@/lib/client/hooks/use-mobile";
+import {cva, VariantProps} from "class-variance-authority";
 import {Skeleton} from "@/lib/client/components/ui/skeleton";
 import {Separator} from "@/lib/client/components/ui/separator";
-import {cva, VariantProps} from "class-variance-authority";
 import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from "@/lib/client/components/ui/tooltip";
 import {Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle} from "@/lib/client/components/ui/sheet";
 
 
-const SIDEBAR_WIDTH = "16rem"
-const SIDEBAR_WIDTH_ICON = "3rem"
-const SIDEBAR_WIDTH_MOBILE = "18rem"
-const SIDEBAR_KEYBOARD_SHORTCUT = "b"
-const SIDEBAR_COOKIE_NAME = "sidebar_state"
-const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
+const SIDEBAR_WIDTH = "16rem";
+const SIDEBAR_WIDTH_ICON = "3rem";
+const SIDEBAR_WIDTH_MOBILE = "18rem";
+const SIDEBAR_KEYBOARD_SHORTCUT = "b";
+const SIDEBAR_COOKIE_NAME = "sidebar_state";
+const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7;
 
 
 type SidebarContextProps = {
@@ -31,15 +31,15 @@ type SidebarContextProps = {
 }
 
 
-const SidebarContext = React.createContext<SidebarContextProps | null>(null)
+const SidebarContext = React.createContext<SidebarContextProps | null>(null);
 
 
 function useSidebar() {
-    const context = React.use(SidebarContext)
+    const context = React.use(SidebarContext);
     if (!context) {
-        throw new Error("useSidebar must be used within a SidebarProvider.")
+        throw new Error("useSidebar must be used within a SidebarProvider.");
     }
-    return context
+    return context;
 }
 
 
@@ -95,18 +95,15 @@ function SidebarProvider({ defaultOpen = true, open: openProp, onOpenChange: set
 
     const state = open ? "expanded" : "collapsed"
 
-    const contextValue = React.useMemo<SidebarContextProps>(
-        () => ({
-            state,
-            open,
-            setOpen,
-            isMobile,
-            openMobile,
-            setOpenMobile,
-            toggleSidebar,
-        }),
-        [state, open, setOpen, isMobile, openMobile, setOpenMobile, toggleSidebar]
-    )
+    const contextValue = React.useMemo<SidebarContextProps>(() => ({
+        state,
+        open,
+        setOpen,
+        isMobile,
+        openMobile,
+        setOpenMobile,
+        toggleSidebar,
+    }), [state, open, setOpen, isMobile, openMobile, setOpenMobile, toggleSidebar])
 
     return (
         <SidebarContext value={contextValue}>
@@ -120,7 +117,7 @@ function SidebarProvider({ defaultOpen = true, open: openProp, onOpenChange: set
                             ...style,
                         } as React.CSSProperties
                     }
-                    className={cn("group/sidebar-wrapper has-data-[variant=inset]:bg-sidebar flex min-h-[calc(100vh_-_358px)] w-full", className)}
+                    className={cn("group/sidebar-wrapper has-data-[variant=inset]:bg-sidebar flex min-h-[calc(100vh-358px)] w-full", className)}
                     {...props}
                 >
                     {children}
@@ -131,14 +128,7 @@ function SidebarProvider({ defaultOpen = true, open: openProp, onOpenChange: set
 }
 
 
-function Sidebar({
-                     side = "left",
-                     variant = "sidebar",
-                     collapsible = "offcanvas",
-                     className,
-                     children,
-                     ...props
-                 }: React.ComponentProps<"div"> & {
+function Sidebar({ side = "left", variant = "sidebar", collapsible = "offcanvas", className, children, ...props }: React.ComponentProps<"div"> & {
     side?: "left" | "right"
     variant?: "sidebar" | "floating" | "inset"
     collapsible?: "offcanvas" | "icon" | "none"
@@ -255,14 +245,15 @@ function SidebarRail({ className, ...props }: React.ComponentProps<"button">) {
     return (
         <button
             type="button"
+            tabIndex={-1}
             data-sidebar="rail"
+            title="Toggle Sidebar"
+            onClick={toggleSidebar}
             data-slot="sidebar-rail"
             aria-label="Toggle Sidebar"
-            tabIndex={-1}
-            onClick={toggleSidebar}
-            title="Toggle Sidebar"
             className={cn(
-                "hover:after:bg-sidebar-border absolute inset-y-0 z-20 hidden w-4 -translate-x-1/2 transition-all ease-linear group-data-[side=left]:-right-4 group-data-[side=right]:left-0 after:absolute after:inset-y-0 after:left-1/2 after:w-[2px] sm:flex",
+                "hover:after:bg-sidebar-border absolute inset-y-0 z-20 hidden w-4 -translate-x-1/2 transition-all ease-linear group-data-[side=left]:-right-4 " +
+                "group-data-[side=right]:left-0 after:absolute after:inset-y-0 after:left-1/2 after:w-0.5 sm:flex",
                 "in-data-[side=left]:cursor-w-resize in-data-[side=right]:cursor-e-resize",
                 "[[data-side=left][data-state=collapsed]_&]:cursor-e-resize [[data-side=right][data-state=collapsed]_&]:cursor-w-resize",
                 "hover:group-data-[collapsible=offcanvas]:bg-sidebar group-data-[collapsible=offcanvas]:translate-x-0 group-data-[collapsible=offcanvas]:after:left-full",

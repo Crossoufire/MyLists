@@ -693,11 +693,11 @@ function UserTrackingContent({ userId }: { userId: number }) {
 
 
 interface StatCardProps {
-    icon: LucideIcon;
     label: string;
     color: string;
     unit?: string;
     trend?: number;
+    icon: LucideIcon;
     total: number | string;
     periodDelta?: number | string;
 }

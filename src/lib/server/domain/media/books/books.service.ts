@@ -42,15 +42,15 @@ export class BooksService extends BaseService<MangaSchemaConfig, BooksRepository
         }
     }
 
-    async calculateAdvancedMediaStats(userId?: number) {
+    async calculateAdvancedMediaStats(mediaAvgRating: number | null, userId?: number) {
         // If userId not provided, calculations are platform-wide
 
-        const { ratings, genresStats, totalLabels, releaseDates } = await super.calculateAdvancedMediaStats(userId);
+        const { ratings, genresStats, totalLabels, releaseDates } = await super.calculateAdvancedMediaStats(mediaAvgRating, userId);
 
         // Specific stats
         const avgDuration = await this.repository.avgBooksDuration(userId);
         const durationDistrib = await this.repository.booksDurationDistrib(userId);
-        const { publishersStats, authorsStats, langsStats } = await this.repository.specificTopMetrics(userId);
+        const { publishersStats, authorsStats, langsStats } = await this.repository.specificTopMetrics(mediaAvgRating, userId);
 
         return {
             ratings,

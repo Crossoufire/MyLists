@@ -1,8 +1,8 @@
 import {statusUtils} from "@/lib/utils/functions";
-import {DeltaStats} from "@/lib/types/stats.types";
 import {MediaType, Status} from "@/lib/utils/enums";
 import {UserMediaStats} from "@/lib/types/base.types";
 import {SearchTypeHoF} from "@/lib/types/zod.schema.types";
+import {DeltaStats} from "@/lib/types/stats.types";
 import {MediaServiceRegistry} from "@/lib/server/domain/media/media.registries";
 import {UserStatsRepository} from "@/lib/server/domain/user/user-stats.repository";
 import {UserUpdatesRepository} from "@/lib/server/domain/user/user-updates.repository";
@@ -157,12 +157,12 @@ export class UserStatsService {
     async userAdvancedMediaStats(userId: number, mediaType: MediaType) {
         const mediaService = this.mediaServiceRegistry.getService(mediaType);
 
-        const specificMediaStats = await mediaService.calculateAdvancedMediaStats(userId);
-        const userPreComputedMediaStats = await this.repository.getAggregatedMediaStats({ userId, mediaType });
+        const preComputedMediaStats = await this.repository.getAggregatedMediaStats({ userId, mediaType });
+        const specificMediaStats = await mediaService.calculateAdvancedMediaStats(preComputedMediaStats.avgRated, userId);
         const mediaUpdatesPerMonthStats = await this.userUpdatesRepository.mediaUpdatesStatsPerMonth({ mediaType, userId });
 
         return {
-            ...userPreComputedMediaStats,
+            ...preComputedMediaStats,
             ...mediaUpdatesPerMonthStats,
             specificMediaStats,
         };
@@ -193,12 +193,12 @@ export class UserStatsService {
     async platformMediaAdvancedStats(mediaType: MediaType) {
         const mediaService = this.mediaServiceRegistry.getService(mediaType);
 
-        const specificMediaStats = await mediaService.calculateAdvancedMediaStats();
-        const platformMediaPreComputedStats = await this.repository.getAggregatedMediaStats({ mediaType });
+        const platformPreComputedStats = await this.repository.getAggregatedMediaStats({ mediaType });
         const mediaUpdatesPerMonthStats = await this.userUpdatesRepository.mediaUpdatesStatsPerMonth({ mediaType });
+        const specificMediaStats = await mediaService.calculateAdvancedMediaStats(platformPreComputedStats.avgRated);
 
         return {
-            ...platformMediaPreComputedStats,
+            ...platformPreComputedStats,
             ...mediaUpdatesPerMonthStats,
             specificMediaStats,
         };

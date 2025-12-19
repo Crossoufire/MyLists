@@ -149,8 +149,8 @@ export class MoviesRepository extends BaseRepository<MovieSchemaConfig> {
 
         return getDbClient()
             .select({
-                name: sql<number>`floor(${movies.duration} / 30.0) * 30`,
-                value: sql<number>`cast(count(${movies.id}) as int)`.as("count"),
+                name: sql`floor(${movies.duration} / 30.0) * 30`.mapWith(String),
+                value: sql`cast(count(${movies.id}) as int)`.mapWith(Number).as("count"),
             })
             .from(movies)
             .innerJoin(moviesList, eq(moviesList.mediaId, movies.id))
@@ -175,32 +175,32 @@ export class MoviesRepository extends BaseRepository<MovieSchemaConfig> {
         return { totalBudget: data?.totalBudget ?? 0, totalRevenue: data?.totalRevenue ?? 0 };
     }
 
-    async specificTopMetrics(userId?: number) {
+    async specificTopMetrics(mediaAvgRating: number | null, userId?: number) {
         const langsConfig = {
             metricTable: movies,
-            metricNameCol: movies.originalLanguage,
             metricIdCol: movies.id,
             mediaLinkCol: moviesList.mediaId,
+            metricNameCol: movies.originalLanguage,
             filters: [ne(moviesList.status, Status.PLAN_TO_WATCH)],
         };
         const directorsConfig = {
             metricTable: movies,
-            metricNameCol: movies.directorName,
             metricIdCol: movies.id,
             mediaLinkCol: moviesList.mediaId,
+            metricNameCol: movies.directorName,
             filters: [ne(moviesList.status, Status.PLAN_TO_WATCH)],
         };
         const actorsConfig = {
             metricTable: moviesActors,
             metricNameCol: moviesActors.name,
-            metricIdCol: moviesActors.mediaId,
             mediaLinkCol: moviesList.mediaId,
+            metricIdCol: moviesActors.mediaId,
             filters: [ne(moviesList.status, Status.PLAN_TO_WATCH)],
         };
 
-        const langsStats = await this.computeTopMetricStats(langsConfig, userId);
-        const actorsStats = await this.computeTopMetricStats(actorsConfig, userId);
-        const directorsStats = await this.computeTopMetricStats(directorsConfig, userId);
+        const langsStats = await this.computeTopAffinityStats(langsConfig, mediaAvgRating, userId);
+        const actorsStats = await this.computeTopAffinityStats(actorsConfig, mediaAvgRating, userId);
+        const directorsStats = await this.computeTopAffinityStats(directorsConfig, mediaAvgRating, userId);
 
         return { directorsStats, actorsStats, langsStats };
     }

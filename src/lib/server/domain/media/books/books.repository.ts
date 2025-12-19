@@ -106,8 +106,8 @@ export class BooksRepository extends BaseRepository<MangaSchemaConfig> {
 
         return getDbClient()
             .select({
-                name: sql<number>`floor(${books.pages} / 100.0) * 100`,
-                value: sql<number>`cast(count(${books.id}) as int)`.as("count"),
+                name: sql`floor(${books.pages} / 100.0) * 100`.mapWith(String),
+                value: sql`cast(count(${books.id}) as int)`.mapWith(Number).as("count"),
             })
             .from(books)
             .innerJoin(booksList, eq(booksList.mediaId, books.id))
@@ -116,11 +116,11 @@ export class BooksRepository extends BaseRepository<MangaSchemaConfig> {
             .orderBy(asc(sql<number>`floor(${books.pages} / 100.0) * 100`));
     }
 
-    async specificTopMetrics(userId?: number) {
+    async specificTopMetrics(mediaAvgRating: number | null, userId?: number) {
         const langsConfig = {
             metricTable: books,
-            metricNameCol: books.language,
             metricIdCol: books.id,
+            metricNameCol: books.language,
             mediaLinkCol: booksList.mediaId,
             filters: [ne(booksList.status, Status.PLAN_TO_READ)],
         };
@@ -133,15 +133,15 @@ export class BooksRepository extends BaseRepository<MangaSchemaConfig> {
         };
         const authorsConfig = {
             metricTable: booksAuthors,
+            mediaLinkCol: booksList.mediaId,
             metricNameCol: booksAuthors.name,
             metricIdCol: booksAuthors.mediaId,
-            mediaLinkCol: booksList.mediaId,
             filters: [ne(booksList.status, Status.PLAN_TO_READ)],
         };
 
-        const langsStats = await this.computeTopMetricStats(langsConfig, userId);
-        const authorsStats = await this.computeTopMetricStats(authorsConfig, userId);
-        const publishersStats = await this.computeTopMetricStats(publishersConfig, userId);
+        const langsStats = await this.computeTopAffinityStats(langsConfig, mediaAvgRating, userId);
+        const authorsStats = await this.computeTopAffinityStats(authorsConfig, mediaAvgRating, userId);
+        const publishersStats = await this.computeTopAffinityStats(publishersConfig, mediaAvgRating, userId);
 
         return { publishersStats, authorsStats, langsStats };
     }

@@ -175,16 +175,6 @@ export type SimpleMedia = {
     mediaCover: string,
 }
 
-export type TopMetricObject = {
-    limit?: number,
-    filters: SQL[],
-    minRatingCount?: number,
-    metricTable: SQLiteTable,
-    metricIdCol: SQLiteColumn,
-    mediaLinkCol: SQLiteColumn,
-    metricNameCol: SQLiteColumn,
-}
-
 export type LogPayloadDb = { old_value: any; new_value: any };
 
 export type Label = { oldName?: string, name: string };

@@ -36,6 +36,7 @@ export const getTextColor = (backColor: string) => {
     const r = parseInt(hex.substring(0, 2), 16);
     const g = parseInt(hex.substring(2, 2 + 2), 16);
     const b = parseInt(hex.substring(4, 4 + 2), 16);
+
     return (0.299 * r + 0.587 * g + 0.114 * b) > 128 ? "#000000" : "#e2e2e2";
 };
 
@@ -90,9 +91,9 @@ export const getFeelingList = ({ className, size = 20 }: FeelListProps) => {
 
 
 export const getScoreList = () => {
+    const STEP = 0.5;
     const MIN_SCORE = 0;
     const MAX_SCORE = 10;
-    const STEP = 0.5;
 
     const scores = Array.from({ length: (MAX_SCORE - MIN_SCORE) / STEP + 1 }, (_, i) => MIN_SCORE + i * STEP);
 
@@ -135,17 +136,18 @@ export const getRedoList = () => {
 
 // --- Icons & Colors ---------------------------------------------------------------------------------------
 
-export const getMediaColor = (mediaType: MediaType | "user" | undefined) => {
+export const getMediaColor = (mediaType: MediaType | "user" | "overview" | undefined) => {
     if (!mediaType) return "#575757";
 
     const colors = {
         user: "#6e6e6e",
-        series: "#267f90",
-        anime: "#ab5e4b",
-        movies: "#a28b27",
-        books: "#6b5c86",
-        games: "#217f21",
-        manga: "#a04646",
+        overview: "#b6b6b6",
+        [MediaType.SERIES]: "#267f90",
+        [MediaType.ANIME]: "#ab5e4b",
+        [MediaType.MOVIES]: "#a28b27",
+        [MediaType.BOOKS]: "#6b5c86",
+        [MediaType.GAMES]: "#217f21",
+        [MediaType.MANGA]: "#a04646",
     };
 
     return colors[mediaType] ?? "#989898";
@@ -192,41 +194,6 @@ export const diffColors = (difficulty: AchievementDifficulty | "total", variant:
 
 
 // --- Time Format ------------------------------------------------------------------------------------------
-
-
-export const globalStatsTimeFormat = (minutes: number) => {
-    const HOURS_PER_DAY = 24;
-    const MINUTES_PER_HOUR = 60;
-    const DAYS_PER_YEAR = 365.25;
-    const MONTHS_ARRAY = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
-
-    const years = Math.floor(minutes / (MINUTES_PER_HOUR * HOURS_PER_DAY * DAYS_PER_YEAR));
-    minutes %= MINUTES_PER_HOUR * HOURS_PER_DAY * DAYS_PER_YEAR;
-
-    let months = 0;
-    let days = Math.floor(minutes / (MINUTES_PER_HOUR * HOURS_PER_DAY));
-
-    while (days >= MONTHS_ARRAY[months % 12]) {
-        days -= MONTHS_ARRAY[months % 12];
-        months++;
-    }
-
-    minutes %= MINUTES_PER_HOUR * HOURS_PER_DAY;
-    const hours = Math.floor(minutes / MINUTES_PER_HOUR);
-
-    const parts = [];
-    if (years > 0) parts.push(`${years} year${years > 1 ? "s" : ""}`);
-    if (months > 0) parts.push(`${months} month${months > 1 ? "s" : ""}`);
-    if (days > 0) parts.push(`${days} day${days > 1 ? "s" : ""}`);
-    if (hours > 0) parts.push(`${hours} hour${hours > 1 ? "s" : ""}`);
-
-    if (parts.length === 0) return "Less than an hour";
-    if (parts.length === 1) return parts[0];
-    if (parts.length === 2) return parts.join(" and ");
-
-    const lastPart = parts.pop();
-    return parts.join(", ") + ", and " + lastPart;
-};
 
 
 export const formatMinutes = (minutes: number | string | null | undefined, onlyHours = false) => {
@@ -306,7 +273,7 @@ export const getLangCountryName = (name: string | undefined | null, type: "langu
             return "Chinese";
         }
 
-        return languageNames.of(name.trim()) || "N/A";
+        return languageNames.of(name.trim()) || "-";
     }
     catch {
         return name;
