@@ -19,9 +19,10 @@ interface UserUpdatesProps {
 export const UserUpdates = ({ updates, followers = false }: UserUpdatesProps) => {
     const { currentUser } = useAuth();
     const { caret, toggleCollapse, contentClasses } = useCollapse();
-    const { username } = useParams({ from: "/_main/_private/profile/$username" });
-    const deleteUpdatesMutation = useDeleteProfileUpdateMutation(username);
     const [mediaIdBeingDeleted, setMediaIdBeingDeleted] = useState<undefined | number>();
+
+    const { username } = useParams({ from: "/_main/_private/profile/$username/_header" });
+    const deleteUpdatesMutation = useDeleteProfileUpdateMutation(username);
 
     const deleteUpdate = (updateId: number) => {
         setMediaIdBeingDeleted(updateId);

@@ -49,11 +49,12 @@ export const ProfileHeader = ({ user, followStatus, followId }: ProfileHeaderPro
                                 {(!isCurrent && isConnected) &&
                                     <FollowButton
                                         followId={followId}
+                                        username={user.name}
                                         followStatus={followStatus}
                                     />
                                 }
                             </div>
-                            <div className="text-gray-300 text-sm font-medium space-y-1 max-sm:min-w-[220px]">
+                            <div className="text-gray-300 text-sm font-medium space-y-1 max-sm:min-w-55">
                                 <div className="flex items-center">
                                     <CalendarDays className="w-4 h-4 mr-2"/>
                                     <div>Joined: {formatDateTime(user.createdAt, { noTime: true })}</div>
