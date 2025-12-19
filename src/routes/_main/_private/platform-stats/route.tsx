@@ -1,4 +1,3 @@
-import {useState} from "react";
 import {MediaType} from "@/lib/utils/enums";
 import {TabValue} from "@/lib/types/stats.types";
 import {useSuspenseQuery} from "@tanstack/react-query";
@@ -22,11 +21,10 @@ export const Route = createFileRoute("/_main/_private/platform-stats")({
 function PlatformStatsPage() {
     const filters = Route.useSearch();
     const navigate = Route.useNavigate();
+    const selectedTab: TabValue = filters?.mediaType ?? "overview";
     const apiData = useSuspenseQuery(platformStatsOptions(filters)).data;
-    const [selectedTab, setSelectedTab] = useState<TabValue>(filters?.mediaType ?? "overview");
 
     const handleTabChange = async (value: string) => {
-        setSelectedTab(value as TabValue);
         await navigate({ search: value === "overview" ? undefined : { mediaType: value as MediaType } });
     };
 

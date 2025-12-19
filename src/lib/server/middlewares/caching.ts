@@ -20,7 +20,7 @@ export const platformStatsCacheMiddleware = createMiddleware({ type: "function" 
 
     // Cached for 24 hours
     return getContainer()
-        .then(c => c.cacheManager.wrap(
+        .then((c) => c.cacheManager.wrap(
             cacheKey,
             async () => next(),
             { ttl: 24 * 60 * 60 * 1000 },
