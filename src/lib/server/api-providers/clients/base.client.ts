@@ -53,10 +53,12 @@ export class BaseClient {
                 await new Promise((resolve) => setTimeout(resolve, retryAfterSecs * 1000))
 
                 const waitMessage = retryAfter ? `Please wait ${retryAfter}s and try again.` : "Please try again later.";
-                throw new FormattedError(`[API] Too many requests. ${waitMessage}`);
+                throw new FormattedError(`Too many requests. ${waitMessage}`);
             }
             case 410:
                 throw new FormattedError("Media no longer available on the API.");
+            case 401:
+                throw new FormattedError("API not accessible. Please try again later.");
             case 500:
             case 502:
             case 503:

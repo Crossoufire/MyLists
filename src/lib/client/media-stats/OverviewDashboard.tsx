@@ -1,8 +1,8 @@
 import {ExtractStatsByType} from "@/lib/types/stats.types";
 import {StatCard} from "@/lib/client/media-stats/StatCard";
 import {DistributionChart} from "@/lib/client/media-stats/DistributionChart";
-import {ChartColumn, Clock, Heart, MessageSquare, RefreshCw, Star, Tag, TrendingUp, Trophy, User} from "lucide-react";
 import {formatAvgRating, formatDuration, formatNumber, formatPercent} from "@/lib/client/media-stats/stats-utils";
+import {ChartColumn, Clock, Heart, MessageSquare, RefreshCw, Star, Tag, TrendingUp, Trophy, User} from "lucide-react";
 
 
 interface OverviewDashboardProps {
