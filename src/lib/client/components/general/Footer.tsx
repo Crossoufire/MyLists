@@ -10,7 +10,7 @@ export const Footer = () => {
 
     return (
         <footer className="w-full p-3 pb-3 border-t border-t-neutral-700 bg-background mt-16">
-            <div className="grid md:grid-cols-12 mx-auto gap-4 md:max-w-screen-xl text-center md:text-left mb-4">
+            <div className="grid md:grid-cols-12 mx-auto gap-4 md:max-w-7xl text-center md:text-left mb-4">
                 <div className="md:col-span-6 flex flex-col gap-y-1">
                     <div className="text-xl flex gap-x-2 font-bold items-center justify-center md:justify-start">
                         <img width={16} alt="favicon" className="mt-0.5" src="/favicon.ico"/>

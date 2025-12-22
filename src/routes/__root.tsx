@@ -45,33 +45,31 @@ function RootComponent() {
         </head>
         <body>
 
-        <div id="root">
-            <Toaster/>
-            <SheetProvider>
-                <Navbar/>
-            </SheetProvider>
-            <Outlet/>
-            <Footer/>
+        <Toaster/>
+        <SheetProvider>
+            <Navbar/>
+        </SheetProvider>
+        <Outlet/>
+        <Footer/>
 
-            {import.meta.env.DEV &&
-                <TanStackDevtools
-                    eventBusConfig={{
-                        debug: false,
-                        connectToServerBus: true,
-                    }}
-                    plugins={[
-                        {
-                            name: "TanStack Query",
-                            render: <ReactQueryDevtoolsPanel/>,
-                        },
-                        {
-                            name: "TanStack Router",
-                            render: <TanStackRouterDevtoolsPanel/>,
-                        },
-                    ]}
-                />
-            }
-        </div>
+        {import.meta.env.DEV &&
+            <TanStackDevtools
+                eventBusConfig={{
+                    debug: false,
+                    connectToServerBus: true,
+                }}
+                plugins={[
+                    {
+                        name: "TanStack Query",
+                        render: <ReactQueryDevtoolsPanel/>,
+                    },
+                    {
+                        name: "TanStack Router",
+                        render: <TanStackRouterDevtoolsPanel/>,
+                    },
+                ]}
+            />
+        }
 
         <Scripts/>
         </body>

@@ -1,6 +1,6 @@
 import * as React from "react";
 import {cn} from "@/lib/utils/helpers";
-import {useIsMobile} from "@/lib/client/hooks/use-mobile";
+import {useBreakpoint} from "@/lib/client/hooks/use-mobile";
 import {Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger} from "@/lib/client/components/ui/dialog"
 import {Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger} from "@/lib/client/components/ui/drawer"
 
@@ -34,8 +34,8 @@ const useCredenzaContext = () => {
 }
 
 const Credenza = ({ children, ...props }: RootCredenzaProps) => {
-    const isMobile = useIsMobile()
-    const Credenza = isMobile ? Drawer : Dialog
+    const isMobile = useBreakpoint("sm");
+    const Credenza = isMobile ? Drawer : Dialog;
 
     return (
         <CredenzaContext value={{ isMobile }}>

@@ -1,10 +1,9 @@
 import {Link} from "@tanstack/react-router";
 import {MediaType} from "@/lib/utils/enums";
-import {useCollapse} from "@/lib/client/hooks/use-collapse";
 import {Progress} from "@/lib/client/components/ui/progress";
 import {UserSettingsType} from "@/lib/types/query.options.types";
-import {MediaLevelCircle} from "@/lib/client/components/general/MediaLevelCircle";
-import {capitalize, computeLevel, getMediaColor, zeroPad} from "@/lib/utils/functions";
+import {computeLevel, getMediaColor} from "@/lib/utils/functions";
+import {MediaAndUserIcon} from "@/lib/client/components/media/base/MediaAndUserIcon";
 import {Card, CardContent, CardHeader, CardTitle} from "@/lib/client/components/ui/card";
 
 
@@ -15,27 +14,24 @@ interface MediaLevelsProps {
 
 
 export const MediaLevels = ({ username, settings }: MediaLevelsProps) => {
-    const { caret, toggleCollapse, contentClasses } = useCollapse();
-
     return (
         <Card>
             <CardHeader>
                 <CardTitle>
-                    <div className="flex gap-2">
-                        {caret}
-                        <div role="button" onClick={toggleCollapse}>List Levels</div>
-                    </div>
+                    Level Breakdown
                 </CardTitle>
             </CardHeader>
-            <CardContent className={contentClasses}>
-                {settings.filter((s) => s.active).map((data) =>
-                    <MediaLevelBar
-                        username={username}
-                        key={data.mediaType}
-                        mediaType={data.mediaType}
-                        level={computeLevel(data.timeSpent)}
-                    />,
-                )}
+            <CardContent>
+                <div className="space-y-6">
+                    {settings.filter((s) => s.active).map((data) =>
+                        <MediaLevelBar
+                            username={username}
+                            key={data.mediaType}
+                            mediaType={data.mediaType}
+                            level={computeLevel(data.timeSpent)}
+                        />
+                    )}
+                </div>
             </CardContent>
         </Card>
     );
@@ -54,28 +50,30 @@ const MediaLevelBar = ({ mediaType, username, level }: MediaLevelBarProps) => {
     const percent = (level - intLevel) * 100;
 
     return (
-        <div className="flex flex-row py-1 gap-4 items-center">
-            <MediaLevelCircle
-                className="mt-1"
-                intLevel={intLevel}
-                mediaType={mediaType}
-            />
-            <div className="w-[81%] max-sm:w-[86%]">
-                <div className="flex justify-between mb-1.5">
-                    <Link
-                        to="/list/$mediaType/$username"
-                        params={{ mediaType, username }}
-                        className="hover:underline hover:underline-offset-2"
-                    >
-                        {capitalize(mediaType)}
+        <div>
+            <div className="flex justify-between items-end mb-1">
+                <div className="flex items-center gap-2 text-sm font-medium text-primary">
+                    <MediaAndUserIcon
+                        type={mediaType}
+                    />
+                    <Link to="/list/$mediaType/$username" params={{ mediaType, username }}>
+                            <span className="capitalize">
+                                {mediaType}
+                            </span>
                     </Link>
-                    <div>{zeroPad(percent.toFixed(0))} %</div>
                 </div>
-                <Progress
-                    value={percent}
-                    color={getMediaColor(mediaType)}
-                />
+                <span className="inline-block text-sm font-semibold tracking-wide text-app-accent">
+                        <div className="inline-block text-xs text-muted-foreground text-right mt-0.5">
+                            ({Math.round(percent)}%)
+                        </div>
+                    &nbsp; Lvl {intLevel}
+                    </span>
             </div>
+            <Progress
+                value={percent}
+                className={"h-2"}
+                color={getMediaColor(mediaType)}
+            />
         </div>
     );
 };

@@ -1,66 +1,72 @@
+import {UserRoundX} from "lucide-react";
 import {Link} from "@tanstack/react-router";
-import {useCollapse} from "@/lib/client/hooks/use-collapse";
+import {Button} from "@/lib/client/components/ui/button";
 import {UserFollowsType} from "@/lib/types/query.options.types";
 import {BlockLink} from "@/lib/client/components/general/BlockLink";
-import {MutedText} from "@/lib/client/components/general/MutedText";
 import {ProfileIcon} from "@/lib/client/components/general/ProfileIcon";
+import {EmptyState} from "@/lib/client/components/user-profile/EmptyState";
 import {Tooltip, TooltipContent, TooltipTrigger} from "@/lib/client/components/ui/tooltip";
 import {Card, CardAction, CardContent, CardHeader, CardTitle} from "@/lib/client/components/ui/card";
 
 
 interface ProfileFollowsProps {
     username: string;
+    followsCount: number;
     follows: UserFollowsType;
 }
 
 
-export const ProfileFollows = ({ username, follows }: ProfileFollowsProps) => {
-    const { caret, toggleCollapse, contentClasses } = useCollapse();
-
+export const ProfileFollows = ({ username, followsCount, follows }: ProfileFollowsProps) => {
     return (
         <Card>
             <CardHeader>
                 <CardTitle>
-                    <div className="flex gap-2">
-                        {caret}
-                        <div role="button" onClick={toggleCollapse}>Following</div>
-                    </div>
+                    Follows
                 </CardTitle>
-                <CardAction>
-                    <Link to="/profile/$username/follows" params={{ username }}>
-                        <MutedText className="text-sm hover:underline">
-                            All ({follows.total})
-                        </MutedText>
-                    </Link>
+                <CardAction className="text-xs text-muted-foreground mt-1.5">
+                    {followsCount} Users
                 </CardAction>
             </CardHeader>
-            <CardContent className={contentClasses}>
-                <div className="flex justify-start flex-wrap gap-4">
-                    {follows.total === 0 ?
-                        <MutedText>No follows to display yet</MutedText>
+            <CardContent>
+                <div className="grid grid-cols-4 gap-3">
+                    {followsCount === 0 ?
+                        <EmptyState
+                            icon={UserRoundX}
+                            className="col-span-4"
+                            message="No follows added yet."
+                        />
                         :
                         follows.follows.map((follow) =>
-                            <Tooltip key={follow.id}>
-                                <TooltipTrigger asChild>
-                                    <BlockLink
-                                        key={follow.username}
-                                        to="/profile/$username"
-                                        privacy={follow.privacy}
-                                        params={{ username: follow.username }}
-                                    >
-                                        <ProfileIcon
-                                            fallbackSize="text-lg"
-                                            className="size-14 border-2"
-                                            user={{ image: follow.image, name: follow.username }}
-                                        />
-                                    </BlockLink>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                    {follow.username}
-                                </TooltipContent>
-                            </Tooltip>
+                            <div key={follow.id} className="flex flex-col items-center group">
+                                <div className="group-hover:border-app-accent">
+                                    <Tooltip key={follow.id}>
+                                        <TooltipTrigger asChild>
+                                            <BlockLink
+                                                key={follow.username}
+                                                to="/profile/$username"
+                                                privacy={follow.privacy}
+                                                params={{ username: follow.username }}
+                                            >
+                                                <ProfileIcon
+                                                    fallbackSize="text-lg"
+                                                    className="size-12 border"
+                                                    user={{ image: follow.image, name: follow.username }}
+                                                />
+                                            </BlockLink>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            {follow.username}
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </div>
+                            </div>
                         )}
                 </div>
+                <Button className="mt-4" variant="dashed" asChild>
+                    <Link to="/profile/$username/follows" params={{ username }}>
+                        View all {followsCount} follows
+                    </Link>
+                </Button>
             </CardContent>
         </Card>
     );

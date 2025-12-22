@@ -14,9 +14,12 @@ interface ProfileIconProps {
 
 export const ProfileIcon = ({ user, className, fallbackSize }: ProfileIconProps) => {
     return (
-        <Avatar className={cn("rounded-full border-black bg-gray-900", className)}>
-            <AvatarImage src={user.image ?? ""} alt={user.name}/>
-            <AvatarFallback className={cn("text-3xl font-medium tracking-wide bg-gray-800", fallbackSize)}>
+        <Avatar className={cn("rounded-full object-cover border-4 border-background bg-accent overflow-hidden shadow-2xl", className)}>
+            <AvatarImage
+                alt={user.name}
+                src={user.image ?? ""}
+            />
+            <AvatarFallback className={cn("text-3xl font-medium tracking-wide bg-accent", fallbackSize)}>
                 {user.name.charAt(0).toUpperCase() + user.name.charAt(1).toUpperCase()}
             </AvatarFallback>
         </Avatar>

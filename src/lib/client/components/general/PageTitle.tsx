@@ -18,16 +18,18 @@ export const PageTitle = ({ children, title, subtitle, onlyHelmet = false }: Pag
             {onlyHelmet ?
                 children
                 :
-                <div className="mt-8 mb-5 flex flex-col mx-auto">
-                    <div className="text-2xl font-medium">{title}</div>
-                    <MutedText className="text-muted-foreground" italic={false}>
-                        {subtitle}
-                    </MutedText>
-                    <Separator className="mt-0.5 mb-3"/>
+                <div className="flex flex-col mx-auto mb-8 pt-4">
+                    <div>
+                        <h2 className="text-xl font-bold text-primary flex items-center gap-2">
+                            {title}
+                        </h2>
+                        <p className="text-sm text-muted-foreground">
+                            {subtitle}
+                        </p>
+                    </div>
                     {children}
                 </div>
             }
         </>
     );
 };
-

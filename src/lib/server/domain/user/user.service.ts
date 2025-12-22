@@ -122,12 +122,16 @@ export class UserService {
         return this.repository.incrementMediaTypeView(userId, mediaType);
     }
 
-    async getUserFollowers(userId: number, limit = 8) {
-        return this.repository.getUserFollowers(userId, limit);
+    async getUserFollowers(currentUserId: number | undefined, userId: number, limit = 8) {
+        return this.repository.getUserFollowers(currentUserId, userId, limit);
     }
 
-    async getUserFollows(userId: number, limit = 8) {
-        return this.repository.getUserFollows(userId, limit);
+    async getUserFollows(currentUserId: number | undefined, userId: number, limit = 8) {
+        return this.repository.getUserFollows(currentUserId, userId, limit);
+    }
+
+    async getFollowCount(userId: number) {
+        return this.repository.getFollowCount(userId);
     }
 
     async searchUsers(query: string, page: number = 1) {

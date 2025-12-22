@@ -15,6 +15,7 @@ export const authorizationMiddleware = createMiddleware({ type: "function" })
 
         const userService = container.services.user;
         const user = await userService.getUserByUsername(username);
+
         if (!user) {
             throw notFound();
         }

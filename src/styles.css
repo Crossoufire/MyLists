@@ -3,30 +3,6 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* --- BODY ------------------------------------------------------------------------------- */
-
-html {
-    scrollbar-gutter: stable;
-}
-
-body {
-    width: 100%;
-    font-family: -apple-system, BlinkMacSystemFont, "Roboto", "Segoe UI", "Arial", "Oxygen", "Ubuntu",
-    "Helvetica", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-}
-
-#root {
-    display: flex;
-    flex-direction: column;
-    min-height: calc(100vh - 64px);
-    margin-top: 64px;
-}
-
-main {
-    flex: 1;
-}
 
 /* --- SCROLLBAR -------------------------------------------------------------------------- */
 
@@ -85,29 +61,38 @@ main {
     position: absolute;
 }
 
-/* --- TAILWIND --------------------------------------------------------------------------- */
-
 :root {
-    --background: hsl(0 0% 6%);
-    --foreground: hsl(0 0% 98%);
-    --card: hsl(206 18% 10%);
+    --app-accent: oklch(69.6% 0.17 162.48);
+    --app-rating: oklch(76.9% 0.188 70.08);
+
+    --background: hsl(0, 0%, 6%);
+    --foreground: hsl(0 0% 96%);
+
+    --card: hsl(0, 0%, 6%);
     --card-foreground: hsl(0 0% 89%);
+
     --popover: hsl(0 0% 3.9%);
     --popover-foreground: hsl(0 0% 98%);
-    --primary: hsl(0 0% 98%);
+
+    --primary: hsl(0 0% 90%);
     --primary-foreground: hsl(0 0% 9%);
+
     --secondary: hsl(0 0% 14.9%);
     --secondary-foreground: hsl(0 0% 98%);
+
     --muted: hsl(0 0% 14.9%);
     --muted-foreground: hsl(0 0% 63.9%);
+
     --accent: hsl(0 0% 14.9%);
     --accent-foreground: hsl(0 0% 98%);
-    --destructive: hsl(0 62.8% 30.6%);
+
+    --destructive: hsl(0, 79%, 33%);
     --destructive-foreground: hsl(0 0% 98%);
-    --border: hsl(0 0% 14.9%);
-    --input: hsl(0 0% 14.9%);
-    --ring: hsl(0 0% 83.1%);
+
     --radius: 0.5rem;
+    --ring: hsl(0 0% 83.1%);
+    --input: hsl(0 0% 14.9%);
+    --border: hsl(0 0% 14.9%);
 
     --color-1: hsl(0 100% 63%);
     --color-2: hsl(270 100% 63%);
@@ -116,40 +101,54 @@ main {
     --color-5: hsl(90 100% 63%);
 
     --sidebar: hsl(240 5.9% 10%);
-    --sidebar-foreground: hsl(240 4.8% 95.9%);
     --sidebar-primary: hsl(224.3 76.3% 48%);
     --sidebar-primary-foreground: hsl(0 0% 100%);
+    --sidebar-foreground: hsl(240 4.8% 95.9%);
     --sidebar-accent: hsl(240 3.7% 15.9%);
     --sidebar-accent-foreground: hsl(240 4.8% 95.9%);
     --sidebar-border: hsl(240 3.7% 15.9%);
     --sidebar-ring: hsl(217.2 91.2% 59.8%);
 }
 
+/* --- TAILWIND --------------------------------------------------------------------------- */
+
 @theme inline {
+    --color-app-accent: var(--app-accent);
+    --color-app-rating: var(--app-rating);
+
     --color-background: var(--background);
     --color-foreground: var(--foreground);
+
     --color-card: var(--card);
     --color-card-foreground: var(--card-foreground);
+
     --color-popover: var(--popover);
     --color-popover-foreground: var(--popover-foreground);
+
     --color-primary: var(--primary);
     --color-primary-foreground: var(--primary-foreground);
+
     --color-secondary: var(--secondary);
     --color-secondary-foreground: var(--secondary-foreground);
+
     --color-muted: var(--muted);
     --color-muted-foreground: var(--muted-foreground);
+
     --color-accent: var(--accent);
     --color-accent-foreground: var(--accent-foreground);
+
     --color-destructive: var(--destructive);
     --color-destructive-foreground: var(--destructive-foreground);
-    --color-border: var(--border);
-    --color-input: var(--input);
+
     --color-ring: var(--ring);
+    --color-input: var(--input);
+    --color-border: var(--border);
 
     --radius-sm: calc(var(--radius) - 4px);
     --radius-md: calc(var(--radius) - 2px);
     --radius-lg: var(--radius);
     --radius-xl: calc(var(--radius) + 4px);
+
     --color-sidebar-ring: var(--sidebar-ring);
     --color-sidebar-border: var(--sidebar-border);
     --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -173,6 +172,10 @@ main {
         margin: auto;
     }
 
+    a:hover {
+        @apply text-app-accent;
+    }
+
     button:not(:disabled), [role="button"]:not(:disabled) {
         cursor: pointer;
     }
@@ -186,7 +189,8 @@ main {
     }
 
     body {
-        @apply bg-background text-foreground;
+        overflow-x: hidden;
+        @apply bg-background text-foreground selection:bg-emerald-500/30;
     }
 
     @keyframes float {
@@ -215,5 +219,30 @@ main {
 
     .glow-animation {
         animation: glow 3s ease-in-out infinite;
+    }
+}
+
+@layer utilities {
+    .scrollbar-thin::-webkit-scrollbar {
+        height: 4px;
+        width: 4px;
+    }
+
+    .scrollbar-thin::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .scrollbar-thin::-webkit-scrollbar-thumb {
+        background: #3f3f46;
+        border-radius: 20px;
+    }
+
+    .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+        background: #52525b;
+    }
+
+    .scrollbar-thin {
+        scrollbar-width: thin;
+        scrollbar-color: #3f3f46 transparent;
     }
 }

@@ -22,7 +22,8 @@ export const getUserProfile = createServerFn({ method: "GET" })
             await userService.incrementProfileView(profileOwnerId);
         }
 
-        const userFollows = await userService.getUserFollows(profileOwnerId);
+        const { followersCount, followsCount } = await userService.getFollowCount(profileOwnerId);
+        const userFollows = await userService.getUserFollows(undefined, profileOwnerId);
         const userUpdates = await userUpdatesService.getUserUpdates(profileOwnerId);
         const followsUpdates = await userUpdatesService.getFollowsUpdates(profileOwnerId, !currentUser);
         const isFollowing = currentUser ? await userService.isFollowing(currentUser.id, profileOwnerId) : false;
@@ -35,6 +36,8 @@ export const getUserProfile = createServerFn({ method: "GET" })
 
         return {
             userData: user,
+            followersCount,
+            followsCount,
             userUpdates,
             userFollows,
             followsUpdates,
@@ -77,17 +80,17 @@ export const postUpdateFollowStatus = createServerFn({ method: "POST" })
 
 export const getUsersFollowers = createServerFn({ method: "GET" })
     .middleware([authorizationMiddleware])
-    .handler(async ({ context: { user } }) => {
-        const userService = await getContainer().then(c => c.services.user);
-        return userService.getUserFollowers(user.id, 999999);
+    .handler(async ({ context: { user, currentUser } }) => {
+        const userService = await getContainer().then((c) => c.services.user);
+        return userService.getUserFollowers(currentUser?.id, user.id, 999999);
     });
 
 
 export const getUsersFollows = createServerFn({ method: "GET" })
     .middleware([authorizationMiddleware])
-    .handler(async ({ context: { user } }) => {
-        const userService = await getContainer().then(c => c.services.user);
-        return userService.getUserFollows(user.id, 999999);
+    .handler(async ({ context: { user, currentUser } }) => {
+        const userService = await getContainer().then((c) => c.services.user);
+        return userService.getUserFollows(currentUser?.id, user.id, 999999);
     });
 
 
@@ -95,6 +98,6 @@ export const getAllUpdatesHistory = createServerFn({ method: "GET" })
     .middleware([authorizationMiddleware])
     .inputValidator(allUpdatesHistorySchema)
     .handler(async ({ data, context: { user } }) => {
-        const userUpdatesService = await getContainer().then(c => c.services.userUpdates);
+        const userUpdatesService = await getContainer().then((c) => c.services.userUpdates);
         return userUpdatesService.getUserUpdatesPaginated(user.id, data);
     });

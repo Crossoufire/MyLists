@@ -1,13 +1,15 @@
+import {useState} from "react";
+import {MediaType} from "@/lib/utils/enums";
 import {createFileRoute} from "@tanstack/react-router";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {MediaLevels} from "@/lib/client/components/user-profile/MediaLevels";
-import {UserUpdates} from "@/lib/client/components/user-profile/UserUpdates";
-import {GlobalStats} from "@/lib/client/components/user-profile/GlobalStats";
-import {MediaDetails} from "@/lib/client/components/user-profile/MediaDetails";
+import {OverviewTab} from "@/lib/client/components/user-profile/OverviewTab";
+import {MediaStatsTab} from "@/lib/client/components/user-profile/MediaStatsTab";
 import {ProfileFollows} from "@/lib/client/components/user-profile/ProfileFollows";
 import {profileOptions} from "@/lib/client/react-query/query-options/query-options";
-import {ProfileMiscInfo} from "@/lib/client/components/user-profile/ProfileMiscInfo";
-import {AchievementsDisplay} from "@/lib/client/components/user-profile/AchievementProfile";
+import {AchievementsCard} from "@/lib/client/components/user-profile/AchievementCard";
+import {ProfileTabHeader} from "@/lib/client/components/user-profile/ProfileTabHeader";
+import {FollowsUpdates, UserUpdates} from "@/lib/client/components/user-profile/UserUpdates";
 
 
 export const Route = createFileRoute("/_main/_private/profile/$username/_header/")({
@@ -18,52 +20,58 @@ export const Route = createFileRoute("/_main/_private/profile/$username/_header/
 function ProfileMain() {
     const { username } = Route.useParams();
     const apiData = useSuspenseQuery(profileOptions(username)).data;
+    const [activeTab, setActiveTab] = useState<MediaType | "overview">("overview");
+    const activeMediaTypes = apiData.userData.userMediaSettings.filter((s) => s.active).map((s) => s.mediaType);
 
     return (
-        <div className="grid grid-cols-12 mt-4 mb-5 gap-x-4">
-            <div className="col-span-12 md:col-span-4 lg:col-span-3">
+        <div className="grid grid-cols-[0.26fr_0.74fr] gap-6 pt-2 max-lg:grid-cols-5 max-sm:grid-cols-1">
+            <div className="space-y-4 max-lg:col-span-2 max-sm:space-y-6">
                 <MediaLevels
                     username={username}
                     settings={apiData.userData.userMediaSettings}
                 />
-                <div className="mt-4"/>
                 <UserUpdates
-                    followers={false}
                     updates={apiData.userUpdates}
                 />
-                <div className="mt-4"/>
-                <ProfileMiscInfo
-                    userData={apiData.userData}
-                />
-                <div className="mt-4"/>
-            </div>
-            <div className="col-span-12 md:col-span-8 lg:col-span-6">
-                <GlobalStats
-                    userData={apiData.userData}
-                    global={apiData.mediaGlobalSummary}
-                />
-                <div className="mt-4"/>
-                <MediaDetails
-                    userData={apiData.userData}
-                    mediaData={apiData.perMediaSummary}
-                />
-                <div className="mt-4"/>
-                <AchievementsDisplay
-                    username={username}
-                    achievements={apiData.achievements}
-                />
-                <div className="mt-4"/>
-            </div>
-            <div className="col-span-12 md:col-span-12 lg:col-span-3">
                 <ProfileFollows
                     username={username}
                     follows={apiData.userFollows}
+                    followsCount={apiData.followsCount}
                 />
-                <div className="mt-4"/>
-                <UserUpdates
-                    followers={true}
-                    updates={apiData.followsUpdates}
+            </div>
+
+            <div className="space-y-6 max-lg:col-span-3 max-sm:col-span-2 max-sm:space-y-4 max-sm:mt-4">
+                <ProfileTabHeader
+                    activeTab={activeTab}
+                    setActiveTab={setActiveTab}
+                    mediaTypes={activeMediaTypes}
                 />
+                <div className="min-h-113 animate-in fade-in duration-300">
+                    {activeTab === "overview" ?
+                        <OverviewTab
+                            username={username}
+                            perMedia={apiData.perMediaSummary}
+                            globalStats={apiData.mediaGlobalSummary}
+                        />
+                        :
+                        <MediaStatsTab
+                            username={username}
+                            mediaSummary={apiData.perMediaSummary.find((p) => p.mediaType === activeTab)!}
+                        />
+                    }
+                </div>
+
+                <div className="grid grid-cols-[0.42fr_0.58fr] gap-6 pt-6 border-t-2 max-lg:grid-cols-1 max-sm:grid-cols-1">
+                    <div className="max-lg:order-2">
+                        <AchievementsCard
+                            username={username}
+                            achievements={apiData.achievements}
+                        />
+                    </div>
+                    <FollowsUpdates
+                        updates={apiData.followsUpdates}
+                    />
+                </div>
             </div>
         </div>
     );

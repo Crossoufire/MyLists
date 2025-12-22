@@ -1,3 +1,4 @@
+import {alias} from "drizzle-orm/sqlite-core";
 import {getDbClient} from "@/lib/server/database/async-storage";
 import {and, asc, count, desc, eq, like, sql} from "drizzle-orm";
 import {ApiProviderType, MediaType, PrivacyType} from "@/lib/utils/enums";
@@ -199,13 +200,7 @@ export class UserRepository {
         });
         if (!userResult) return null;
 
-        const followersCount = await getDbClient()
-            .select({ count: count() })
-            .from(followers)
-            .where(eq(followers.followedId, userResult.id))
-            .get().then((res) => res?.count ?? 0);
-
-        return { ...userResult, followersCount };
+        return userResult;
     }
 
     static async updateNotificationsReadTime(userId: number) {
@@ -275,35 +270,32 @@ export class UserRepository {
             .where(eq(user.id, userId));
     }
 
-    static async getUserFollowers(userId: number, limit: number = 8) {
-        const totalCount = await getDbClient()
-            .select({ value: sql<number>`count()` })
-            .from(followers)
-            .where(eq(followers.followedId, userId))
-            .get().then((res) => res?.value ?? 0);
+    static async getUserFollowers(currentUserId: number | undefined, userId: number, limit: number = 8) {
+        const currentUserFollows = alias(followers, "currentUserFollows");
 
         const followersUsers = await getDbClient()
             .select({
                 id: user.id,
-                username: user.name,
                 image: user.image,
+                username: user.name,
                 privacy: user.privacy,
+                isFollowedByMe: sql<boolean>`CASE WHEN ${currentUserFollows.followerId} IS NOT NULL THEN 1 ELSE 0 END`,
             })
             .from(followers)
             .innerJoin(user, eq(followers.followerId, user.id))
+            .leftJoin(currentUserFollows, and(
+                eq(currentUserFollows.followedId, user.id),
+                eq(currentUserFollows.followerId, currentUserId ?? -1),
+            ))
             .where(eq(followers.followedId, userId))
             .orderBy(asc(user.name))
             .limit(limit);
 
-        return { total: totalCount, followers: followersUsers };
+        return { followers: followersUsers };
     }
 
-    static async getUserFollows(userId: number, limit: number = 8) {
-        const totalCount = await getDbClient()
-            .select({ value: sql<number>`count()` })
-            .from(followers)
-            .where(eq(followers.followerId, userId))
-            .get().then((res) => res?.value ?? 0);
+    static async getUserFollows(currentUserId: number | undefined, userId: number, limit: number = 8) {
+        const currentUserFollows = alias(followers, "currentUserFollows");
 
         const followedUsers = await getDbClient()
             .select({
@@ -311,15 +303,37 @@ export class UserRepository {
                 image: user.image,
                 username: user.name,
                 privacy: user.privacy,
+                isFollowedByMe: sql<boolean>`CASE WHEN ${currentUserFollows.followerId} IS NOT NULL THEN 1 ELSE 0 END`,
             })
             .from(followers)
             .innerJoin(user, eq(followers.followedId, user.id))
+            .leftJoin(currentUserFollows, and(
+                eq(currentUserFollows.followedId, user.id),
+                eq(currentUserFollows.followerId, currentUserId ?? -1),
+            ))
             .where(eq(followers.followerId, userId))
             .orderBy(asc(user.name))
             .limit(limit);
 
-        return { total: totalCount, follows: followedUsers };
+        return { follows: followedUsers };
     }
+
+    static async getFollowCount(userId: number) {
+        const followsCount = await getDbClient()
+            .select({ value: sql<number>`count()` })
+            .from(followers)
+            .where(eq(followers.followerId, userId))
+            .get().then((res) => res?.value ?? 0);
+
+        const followersCount = await getDbClient()
+            .select({ value: sql<number>`count()` })
+            .from(followers)
+            .where(eq(followers.followedId, userId))
+            .get().then((res) => res?.value ?? 0);
+
+        return { followersCount, followsCount };
+    }
+
 
     static async searchUsers(query: string, page: number = 1): Promise<ProviderSearchResults> {
         const usersCount = await getDbClient()

@@ -4,7 +4,7 @@ import {AchievementDifficulty} from "@/lib/utils/enums";
 import {AchievementTier} from "@/lib/types/zod.schema.types";
 import {getDbClient} from "@/lib/server/database/async-storage";
 import {AchievementSeedData} from "@/lib/types/achievements.types";
-import {and, asc, count, eq, inArray, max, notInArray, SQL, sql} from "drizzle-orm";
+import {and, asc, count, desc, eq, inArray, max, notInArray, SQL, sql} from "drizzle-orm";
 import {achievement, achievementTier, user, userAchievement} from "@/lib/server/database/schema";
 
 
@@ -117,30 +117,18 @@ export class AchievementsRepository {
     }
 
     static async getAchievementsDetails(userId: number, limit = 6) {
-        const tierOrder = this._getSQLTierOrdering();
-
-        const highestCompletedTierSubquery = getDbClient()
-            .select({
-                achievementId: userAchievement.achievementId,
-                maxTierOrder: max(tierOrder).as("maxTierOrder"),
-            })
-            .from(userAchievement)
-            .innerJoin(achievementTier, eq(userAchievement.tierId, achievementTier.id))
-            .where(and(eq(userAchievement.userId, userId), eq(userAchievement.completed, true)))
-            .groupBy(userAchievement.achievementId)
-            .as("highestCompleted");
-
         const results = await getDbClient()
             .select({
                 name: achievement.name,
                 description: achievement.description,
                 difficulty: achievementTier.difficulty,
+                completedAt: userAchievement.completedAt,
             })
-            .from(achievement)
-            .innerJoin(highestCompletedTierSubquery, eq(achievement.id, highestCompletedTierSubquery.achievementId))
-            .innerJoin(achievementTier, eq(achievement.id, achievementTier.achievementId))
-            .where(eq(tierOrder, highestCompletedTierSubquery.maxTierOrder))
-            .orderBy(sql`RANDOM()`)
+            .from(userAchievement)
+            .innerJoin(achievementTier, eq(userAchievement.tierId, achievementTier.id))
+            .innerJoin(achievement, eq(userAchievement.achievementId, achievement.id))
+            .where(and(eq(userAchievement.userId, userId), eq(userAchievement.completed, true)))
+            .orderBy(desc(userAchievement.completedAt))
             .limit(limit);
 
         return results;

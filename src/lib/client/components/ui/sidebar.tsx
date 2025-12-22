@@ -4,8 +4,8 @@ import {Slot} from "@radix-ui/react-slot";
 import {PanelLeftIcon} from "lucide-react";
 import {Input} from "@/lib/client/components/ui/input";
 import {Button} from "@/lib/client/components/ui/button";
-import {useIsMobile} from "@/lib/client/hooks/use-mobile";
 import {cva, VariantProps} from "class-variance-authority";
+import {useBreakpoint} from "@/lib/client/hooks/use-mobile";
 import {Skeleton} from "@/lib/client/components/ui/skeleton";
 import {Separator} from "@/lib/client/components/ui/separator";
 import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from "@/lib/client/components/ui/tooltip";
@@ -48,7 +48,7 @@ function SidebarProvider({ defaultOpen = true, open: openProp, onOpenChange: set
     defaultOpen?: boolean;
     onOpenChange?: (open: boolean) => void;
 }) {
-    const isMobile = useIsMobile();
+    const isMobile = useBreakpoint("sm");
     const [openMobile, setOpenMobile] = React.useState(false);
 
     // This is the internal state of the sidebar.

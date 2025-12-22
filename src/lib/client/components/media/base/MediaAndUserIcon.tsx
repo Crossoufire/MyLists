@@ -1,11 +1,11 @@
 import {MediaType} from "@/lib/utils/enums";
 import {getMediaColor} from "@/lib/utils/functions";
-import {BookImage, Cat, Gamepad2, Library, Monitor, PanelsTopLeft, Popcorn, User} from "lucide-react";
+import {BookImage, Cat, Gamepad2, Library, Monitor, Popcorn, LayoutGrid, User} from "lucide-react";
 
 
 const ICONS_MAP = {
     user: User,
-    overview: PanelsTopLeft,
+    overview: LayoutGrid,
     series: Monitor,
     anime: Cat,
     movies: Popcorn,

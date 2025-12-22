@@ -28,9 +28,9 @@ export const FollowButton = ({ username, followStatus, followId }: FollowButtonP
             variant={followStatus ? "destructive" : "outline"}
         >
             {followStatus ?
-                <><UserMinus className="mr-1 h-4 w-4"/>Unfollow</>
+                <><UserMinus className="mr-1 size-4"/>Unfollow</>
                 :
-                <><UserPlus className="mr-1 h-4 w-4"/>Follow</>
+                <><UserPlus className="mr-1 size-4"/>Follow</>
             }
         </Button>
     );

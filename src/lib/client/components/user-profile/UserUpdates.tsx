@@ -1,26 +1,24 @@
 import {useState} from "react";
+import {Activity, Trophy, UserRoundX} from "lucide-react";
 import {cn} from "@/lib/utils/helpers";
 import {useAuth} from "@/lib/client/hooks/use-auth";
 import {Link, useParams} from "@tanstack/react-router";
-import {useCollapse} from "@/lib/client/hooks/use-collapse";
+import {Button} from "@/lib/client/components/ui/button";
 import {UserUpdateType} from "@/lib/types/query.options.types";
-import {MutedText} from "@/lib/client/components/general/MutedText";
 import {UserUpdate} from "@/lib/client/components/general/UserUpdate";
-import {Card, CardAction, CardContent, CardHeader, CardTitle} from "@/lib/client/components/ui/card";
+import {Card, CardContent, CardHeader, CardTitle} from "@/lib/client/components/ui/card";
 import {useDeleteProfileUpdateMutation} from "@/lib/client/react-query/query-mutations/user-media.mutations";
+import {EmptyState} from "@/lib/client/components/user-profile/EmptyState";
 
 
 interface UserUpdatesProps {
-    followers?: boolean;
     updates: (UserUpdateType & { username?: string | null })[];
 }
 
 
-export const UserUpdates = ({ updates, followers = false }: UserUpdatesProps) => {
+export const UserUpdates = ({ updates }: UserUpdatesProps) => {
     const { currentUser } = useAuth();
-    const { caret, toggleCollapse, contentClasses } = useCollapse();
     const [mediaIdBeingDeleted, setMediaIdBeingDeleted] = useState<undefined | number>();
-
     const { username } = useParams({ from: "/_main/_private/profile/$username/_header" });
     const deleteUpdatesMutation = useDeleteProfileUpdateMutation(username);
 
@@ -30,42 +28,73 @@ export const UserUpdates = ({ updates, followers = false }: UserUpdatesProps) =>
     };
 
     return (
-        <Card>
+        <Card className={cn(updates.length === 0 && "h-fit")}>
             <CardHeader>
                 <CardTitle>
-                    <div className="flex gap-2">
-                        {caret}
-                        <div role="button" onClick={toggleCollapse}>
-                            {followers ? "Follows Last Updates" : "Last Updates"}
-                        </div>
-                    </div>
+                    Recent Activity
                 </CardTitle>
-                {!followers &&
-                    <CardAction>
-                        <Link to="/profile/$username/history" params={{ username }}>
-                            <MutedText className="text-sm hover:underline">
-                                All
-                            </MutedText>
-                        </Link>
-                    </CardAction>
-                }
             </CardHeader>
-            <CardContent className={cn("relative", contentClasses)}>
+            <CardContent>
                 {updates.length === 0 ?
-                    <MutedText>No updates to display yet</MutedText>
+                    <EmptyState
+                        icon={Activity}
+                        message="No recent activity found."
+                    />
                     :
-                    updates.map((update) =>
-                        <UserUpdate
-                            key={update.id}
-                            update={update}
-                            onDelete={deleteUpdate}
-                            mediaIdBeingDeleted={mediaIdBeingDeleted}
-                            isPending={deleteUpdatesMutation.isPending}
-                            username={followers ? update?.username : ""}
-                            canDelete={(currentUser?.id === update.userId) && !followers}
-                        />
-                    )
+                    <div className="flex flex-col gap-1">
+                        {updates.map((update) =>
+                            <UserUpdate
+                                key={update.id}
+                                update={update}
+                                onDelete={deleteUpdate}
+                                mediaIdBeingDeleted={mediaIdBeingDeleted}
+                                isPending={deleteUpdatesMutation.isPending}
+                                canDelete={(currentUser?.id === update.userId)}
+                            />
+                        )}
+                    </div>
                 }
+                {updates.length !== 0 &&
+                    <Button className="mt-4" variant="dashed" asChild>
+                        <Link to="/profile/$username/history" params={{ username }}>
+                            View all Activities
+                        </Link>
+                    </Button>
+                }
+            </CardContent>
+        </Card>
+    );
+};
+
+
+export const FollowsUpdates = ({ updates }: UserUpdatesProps) => {
+    return (
+        <Card className={cn("h-120", updates.length === 0 && "h-fit")}>
+            <CardHeader>
+                <CardTitle>
+                    Follows Recent Activity
+                </CardTitle>
+            </CardHeader>
+            <CardContent className="overflow-y-auto">
+                <div className="pr-2">
+                    {updates.length === 0 ?
+                        <EmptyState
+                            icon={Activity}
+                            message="No follows activity found."
+                        />
+                        :
+                        <div className="flex flex-col gap-1 ">
+                            {updates.map((update) =>
+                                <UserUpdate
+                                    key={update.id}
+                                    update={update}
+                                    canDelete={false}
+                                    username={update.username}
+                                />
+                            )}
+                        </div>
+                    }
+                </div>
             </CardContent>
         </Card>
     );

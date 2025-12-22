@@ -1,5 +1,6 @@
+import {Globe, Shield, Lock} from "lucide-react";
 import {FaAngry, FaFrown, FaGrinAlt, FaGrinStars, FaPoop, FaSmile} from "react-icons/fa";
-import {AchievementDifficulty, MediaType, RatingSystemType, Status} from "@/lib/utils/enums";
+import {AchievementDifficulty, MediaType, PrivacyType, RatingSystemType, Status} from "@/lib/utils/enums";
 
 
 // --- Ratings / Redo / Playtime ----------------------------------------------------------------------------
@@ -161,7 +162,7 @@ export const getStatusColor = (status: Status) => {
         [Status.WATCHING]: "#334d5c",
         [Status.COMPLETED]: "#45b29d",
         [Status.ON_HOLD]: "#efc94c",
-        [Status.MULTIPLAYER]: "#efc94c",
+        [Status.MULTIPLAYER]: "#b19026",
         [Status.RANDOM]: "#e27a3f",
         [Status.DROPPED]: "#df5a49",
         [Status.ENDLESS]: "#48792c",
@@ -190,6 +191,19 @@ export const diffColors = (difficulty: AchievementDifficulty | "total", variant:
         "text-platinum": "text-teal-600",
     };
     return colors[`${variant}-${difficulty}`];
+};
+
+
+export const PrivacyIcon = ({ type }: { type: PrivacyType }) => {
+    switch (type) {
+        case "public":
+            return <Globe className="size-3 text-emerald-400"/>;
+        case "private":
+            return <Lock className="size-3 text-red-400"/>;
+        case "restricted":
+        default:
+            return <Shield className="size-3 text-amber-400"/>;
+    }
 };
 
 
@@ -326,23 +340,23 @@ export const formatRelativeTime = (dateString: string | null | undefined) => {
     if (diff < 60) return "Just now";
     if (diff < 3600) {
         const mins = Math.floor(diff / 60);
-        return mins === 1 ? "1 minute ago" : `${mins} minutes ago`;
+        return mins === 1 ? "1min ago" : `${mins} min ago`;
     }
     if (diff < 86400) {
         const hours = Math.floor(diff / 3600);
-        return hours === 1 ? "1 hour ago" : `${hours} hours ago`;
+        return hours === 1 ? "1h ago" : `${hours} h ago`;
     }
     if (diff < 2592000) {
         const days = Math.floor(diff / 86400);
-        return days === 1 ? "1 day ago" : `${days} days ago`;
+        return days === 1 ? "1d ago" : `${days}d ago`;
     }
     if (diff < 31536000) {
         const months = Math.floor(diff / 2592000);
-        return months === 1 ? "1 month ago" : `${months} months ago`;
+        return months === 1 ? "1mo ago" : `${months}mo ago`;
     }
     const years = Math.floor(diff / 31536000);
 
-    return years === 1 ? "1 year ago" : `${years} years ago`;
+    return years === 1 ? "1y ago" : `${years}y ago`;
 };
 
 

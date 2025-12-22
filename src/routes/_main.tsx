@@ -9,7 +9,7 @@ export const Route = createFileRoute("/_main")({
 
 function MainLayout() {
     return (
-        <main className="flex-1 w-[100%] max-w-[1320px] px-2 mx-auto">
+        <main className="min-h-screen w-full max-w-7xl mx-auto px-8 max-sm:px-2">
             <Outlet/>
         </main>
     );

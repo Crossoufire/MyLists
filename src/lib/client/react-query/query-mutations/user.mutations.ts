@@ -2,7 +2,7 @@ import {useAuth} from "@/lib/client/hooks/use-auth";
 import {ListSettings} from "@/lib/types/zod.schema.types";
 import {useMutation, useQueryClient} from "@tanstack/react-query";
 import {postUpdateFollowStatus} from "@/lib/server/functions/user-profile";
-import {profileOptions} from "@/lib/client/react-query/query-options/query-options";
+import {followersOptions, followsOptions, profileOptions} from "@/lib/client/react-query/query-options/query-options";
 import {
     getDownloadListAsCSV,
     postDeleteUserAccount,
@@ -19,18 +19,9 @@ export const useFollowMutation = (username: string) => {
     return useMutation({
         mutationFn: postUpdateFollowStatus,
         onSuccess: (_data, variables) => {
-            queryClient.setQueryData(profileOptions(username).queryKey, (oldData) => {
-                if (!oldData) return;
-
-                return {
-                    ...oldData,
-                    isFollowing: variables.data.followStatus,
-                    userData: {
-                        ...oldData.userData,
-                        followersCount: variables.data.followStatus ? oldData.userData.followersCount + 1 : oldData.userData.followersCount - 1,
-                    }
-                };
-            });
+            queryClient.invalidateQueries({ queryKey: followersOptions(username).queryKey });
+            queryClient.invalidateQueries({ queryKey: followsOptions(username).queryKey });
+            queryClient.invalidateQueries({ queryKey: profileOptions(username).queryKey });
         },
     });
 };

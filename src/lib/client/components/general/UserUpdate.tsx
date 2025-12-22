@@ -1,12 +1,10 @@
-import {Trash2} from "lucide-react";
+import {Trash} from "lucide-react";
 import {cn} from "@/lib/utils/helpers";
-import {formatDateTime} from "@/lib/utils/functions";
 import {Button} from "@/lib/client/components/ui/button";
-import {Separator} from "@/lib/client/components/ui/separator";
+import {formatRelativeTime} from "@/lib/utils/functions";
 import {UserUpdateType} from "@/lib/types/query.options.types";
 import {Payload} from "@/lib/client/components/general/Payload";
 import {BlockLink} from "@/lib/client/components/general/BlockLink";
-import {MutedText} from "@/lib/client/components/general/MutedText";
 import {MediaAndUserIcon} from "@/lib/client/components/media/base/MediaAndUserIcon";
 
 
@@ -16,71 +14,61 @@ interface UserUpdateProps {
     update: UserUpdateType;
     username?: string | null;
     mediaIdBeingDeleted?: number;
-    onDelete: (updateId: number) => void;
+    onDelete?: (updateId: number) => void;
 }
 
 
 export function UserUpdate({ update, username, onDelete, canDelete, isPending, mediaIdBeingDeleted }: UserUpdateProps) {
     const handleDeleteUpdate = (updateId: number) => {
         if (!window.confirm("This update will be definitively deleted, are you sure?")) return;
-        onDelete(updateId);
+        onDelete?.(updateId);
     };
 
     return (
-        <>
-            <div
-                className={cn(
-                    "grid grid-cols-[auto_1fr_auto] gap-x-3 py-1 pr-2 group relative",
-                    (mediaIdBeingDeleted === update.id && isPending) && "opacity-20"
-                )}
-            >
-                <MediaAndUserIcon
-                    size={18}
-                    type={update.mediaType}
-                    className="mt-1 row-span-3"
-                />
-                <div className="col-span-2">
-                    <BlockLink
-                        disabled={isPending}
-                        to="/details/$mediaType/$mediaId"
-                        params={{ mediaType: update.mediaType, mediaId: update.mediaId }}
-                    >
-                        <div className="truncate hover:underline hover:underline-offset-2" title={update.mediaName}>
-                            {update.mediaName}
-                        </div>
-                    </BlockLink>
+        <div className={cn("relative group flex gap-3 py-3 px-2 border-b hover:bg-muted/30 rounded-lg",
+            (mediaIdBeingDeleted === update.id && isPending) && "opacity-30")}>
+            <div className="mt-0.5">
+                <div className="flex items-center justify-center">
+                    <MediaAndUserIcon
+                        type={update.mediaType}
+                        className="size-4 mt-0.5"
+                    />
+                </div>
+            </div>
+            <div className="flex-1">
+                <div className="flex justify-between items-start">
+                    <p className="text-sm">
+                        <BlockLink
+                            disabled={isPending}
+                            to="/details/$mediaType/$mediaId"
+                            params={{ mediaType: update.mediaType, mediaId: update.mediaId }}
+                        >
+                             <span title={update.mediaName} className="font-medium text-foreground line-clamp-1 hover:text-app-accent">
+                                {update.mediaName}
+                            </span>
+                        </BlockLink>
+                    </p>
+                    <span className="text-xs text-muted-foreground whitespace-nowrap ml-2">
+                            {formatRelativeTime(update.timestamp)}
+                        </span>
+                </div>
+                <div className="flex justify-between">
                     <Payload
                         update={update}
-                        className="text-neutral-300"
+                        username={username}
                     />
-                    <MutedText className="text-sm" italic={false}>
-                        {formatDateTime(update.timestamp)}
-                        {username &&
-                            <> by{" "}
-                                <BlockLink
-                                    params={{ username }}
-                                    to="/profile/$username"
-                                    className="text-blue-500"
-                                >
-                                    {username}
-                                </BlockLink>
-                            </>
-                        }
-                    </MutedText>
                 </div>
-                {canDelete &&
-                    <Button
-                        variant="invisible"
-                        disabled={isPending}
-                        onClick={() => handleDeleteUpdate(update.id)}
-                        className="p-1 h-6 absolute top-0 right-0 bg-background/80 backdrop-blur-sm rounded transition-all
-                        duration-200 ease-out opacity-0 group-hover:opacity-100 disabled:opacity-0 disabled:pointer-events-none"
-                    >
-                        <Trash2 className="w-4 h-4"/>
-                    </Button>
-                }
             </div>
-            <Separator className="my-1 last:hidden"/>
-        </>
+            {canDelete &&
+                <Button
+                    variant="invisible"
+                    disabled={isPending}
+                    onClick={() => handleDeleteUpdate(update.id)}
+                    className="absolute bottom-0 right-0 opacity-0 group-hover:opacity-80 disabled:opacity-0 disabled:pointer-events-none"
+                >
+                    <Trash className="size-4"/>
+                </Button>
+            }
+        </div>
     );
 }

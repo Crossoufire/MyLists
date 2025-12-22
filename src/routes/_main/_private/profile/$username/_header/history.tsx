@@ -1,7 +1,6 @@
-import React, {useState} from "react";
 import {Search} from "lucide-react";
+import React, {useState} from "react";
 import {useAuth} from "@/lib/client/hooks/use-auth";
-import {formatDateTime} from "@/lib/utils/functions";
 import {Input} from "@/lib/client/components/ui/input";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {SearchType} from "@/lib/types/zod.schema.types";
@@ -11,6 +10,7 @@ import {createFileRoute, Link} from "@tanstack/react-router";
 import {Payload} from "@/lib/client/components/general/Payload";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
 import {useDebounceCallback} from "@/lib/client/hooks/use-debounce";
+import {formatDateTime, formatRelativeTime} from "@/lib/utils/functions";
 import {TablePagination} from "@/lib/client/components/general/TablePagination";
 import {MediaAndUserIcon} from "@/lib/client/components/media/base/MediaAndUserIcon";
 import {allUpdatesOptions} from "@/lib/client/react-query/query-options/query-options";
@@ -64,8 +64,11 @@ const getHistoryColumns = (isCurrent: boolean): ColumnDef<any>[] => {
             header: "Name",
             cell: ({ row: { original } }) => {
                 return (
-                    <div className="flex items-center gap-4">
-                        <MediaAndUserIcon type={original.mediaType} size={16}/>
+                    <div className="flex items-center gap-3">
+                        <MediaAndUserIcon
+                            size={15}
+                            type={original.mediaType}
+                        />
                         <Link
                             search={{ external: false }}
                             to="/details/$mediaType/$mediaId"
@@ -85,7 +88,16 @@ const getHistoryColumns = (isCurrent: boolean): ColumnDef<any>[] => {
         {
             accessorKey: "timestamp",
             header: "Date",
-            cell: ({ row }) => formatDateTime(row.original.timestamp),
+            cell: ({ row }) => {
+                return (
+                    <div className="flex gap-3 justify-start items-center">
+                        {formatRelativeTime(row.original.timestamp)}
+                        <div className="text-xs text-muted-foreground">
+                            {formatDateTime(row.original.timestamp)}
+                        </div>
+                    </div>
+                );
+            },
         },
     ]
 }
@@ -145,8 +157,8 @@ function AllUpdates() {
     useDebounceCallback(currentSearch, 300, () => fetchData({ search: currentSearch, page: 1 }));
 
     return (
-        <PageTitle title="History" subtitle="History of all media updates">
-            <div className="w-full max-w-screen-lg mx-auto mt-4">
+        <PageTitle title="History" subtitle={isCurrent ? "All of your media updates." : `All the updates of ${username}.`}>
+            <div className="w-full max-w-5xl mx-auto mt-6">
                 <div className="flex justify-between items-center pb-3">
                     <div className="flex items-center gap-2">
                         <div className="relative">

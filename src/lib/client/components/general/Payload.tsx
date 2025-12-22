@@ -1,93 +1,118 @@
-import React from "react";
-import {cn} from "@/lib/utils/helpers";
 import {MoveRight} from "lucide-react";
-import {zeroPad} from "@/lib/utils/functions";
-import {LogPayloadDb} from "@/lib/types/base.types";
+import {Link} from "@tanstack/react-router";
 import {MediaType, UpdateType} from "@/lib/utils/enums";
-import {profileOptions} from "@/lib/client/react-query/query-options/query-options";
+import {UserUpdateType} from "@/lib/types/query.options.types";
 
 
 interface PayloadProps {
-    className?: string;
-    update: Awaited<ReturnType<NonNullable<ReturnType<typeof profileOptions>["queryFn"]>>>["userUpdates"][0];
+    update: UserUpdateType;
+    username?: string | null;
 }
 
 
-export const Payload = ({ update, className }: PayloadProps) => {
-    const FormattedPayload = getUpdatePayload(update.updateType)!;
+export const Payload = ({ update, username }: PayloadProps) => {
+    const { payload, mediaType, updateType } = update;
+    if (!payload) return null;
 
-    return (
-        <div className={cn("flex flex-row gap-2 items-center", className)}>
-            <FormattedPayload
-                payload={update.payload!}
-                mediaType={update.mediaType}
-            />
-        </div>
-    );
+    const oldValue = payload.old_value;
+    const newValue = payload.new_value;
+
+    switch (updateType) {
+        case UpdateType.STATUS:
+            return (
+                <PayloadLayout
+                    oldVal={oldValue}
+                    newVal={newValue}
+                    username={username}
+                />
+            );
+
+        case UpdateType.TV:
+            return (
+                <PayloadLayout
+                    username={username}
+                    oldVal={`S${newValue[0]}.E${oldValue[1]}`}
+                    newVal={`S${newValue[0]}.E${newValue[1]}`}
+                />
+            );
+
+        case UpdateType.REDO: {
+            const label = mediaType === MediaType.BOOKS ? "Re-read" : "Re-watched";
+            const suffix = mediaType === MediaType.SERIES || mediaType === MediaType.ANIME ? "x S." : "x";
+            return (
+                <PayloadLayout
+                    username={username}
+                    newVal={`${newValue}${suffix}`}
+                    oldVal={`${label} ${oldValue}${suffix}`}
+                />
+            );
+        }
+
+        case UpdateType.PLAYTIME:
+            return (
+                <PayloadLayout
+                    username={username}
+                    oldVal={`${oldValue / 60} h`}
+                    newVal={`${newValue / 60} h`}
+                />
+            );
+
+        case UpdateType.PAGE:
+            return (
+                <PayloadLayout
+                    username={username}
+                    oldVal={`p. ${oldValue}`}
+                    newVal={`p. ${newValue}`}
+                />
+            );
+
+        case UpdateType.CHAPTER:
+            return (
+                <PayloadLayout
+                    username={username}
+                    oldVal={`chpt. ${oldValue}`}
+                    newVal={`chpt. ${newValue}`}
+                />
+            );
+
+        default:
+            return null;
+    }
 };
 
 
-const getUpdatePayload = (updateType: UpdateType) => {
-    const choosePayload: Partial<Record<UpdateType, React.FC<{ mediaType: MediaType; payload: LogPayloadDb }>>> = {
-        [UpdateType.TV]: TVPayload,
-        [UpdateType.REDO]: RedoPayload,
-        [UpdateType.PAGE]: PagePayload,
-        [UpdateType.STATUS]: StatusPayload,
-        [UpdateType.CHAPTER]: ChapterPayload,
-        [UpdateType.PLAYTIME]: PlaytimePayload,
-    };
-
-    return choosePayload[updateType];
-};
+interface PayloadLayoutProps {
+    newVal: React.ReactNode;
+    oldVal?: React.ReactNode;
+    username?: string | null;
+}
 
 
-const StatusPayload = ({ payload }: { payload: LogPayloadDb }) => {
+const PayloadLayout = ({ oldVal, newVal, username }: PayloadLayoutProps) => {
     return (
         <>
-            {payload.old_value ?
-                <>{payload.old_value} <MoveRight className="w-4 h-4"/> {payload.new_value}</>
-                :
-                payload.new_value
+            <div>
+                <div className="mt-1 flex items-center gap-1.5 text-xs font-semibold">
+                    {oldVal &&
+                        <span className="text-muted-foreground">
+                            {oldVal}
+                        </span>
+                    }
+                    {oldVal &&
+                        <MoveRight className="size-4 text-app-accent"/>
+                    }
+                    <span className="text-neutral-300">
+                        {newVal}
+                    </span>
+                </div>
+            </div>
+            {username &&
+                <Link to="/profile/$username" params={{ username }}>
+                    <div className="text-xs font-semibold text-app-accent">
+                        {username}{"  "}
+                    </div>
+                </Link>
             }
         </>
     );
-};
-
-
-const TVPayload = ({ payload }: { payload: LogPayloadDb }) => {
-    return (
-        <>
-            S{zeroPad(payload.old_value[0])}.E{zeroPad(payload.old_value[1])} <MoveRight className="w-4 h-4"/> S{zeroPad(payload.new_value[0])}.E{zeroPad(payload.new_value[1])}
-        </>
-    );
-};
-
-
-const RedoPayload = ({ payload, mediaType }: { payload: LogPayloadDb, mediaType: MediaType }) => {
-    const name = (mediaType === MediaType.BOOKS) ? "Re-read" : "Re-watched";
-
-    if (mediaType === MediaType.SERIES || mediaType === MediaType.ANIME) {
-        return (
-            <>{name} {payload.old_value}x S. <MoveRight className="w-4 h-4"/> {payload.new_value}x S.</>
-        );
-    }
-
-    return (
-        <>{name} {payload.old_value}x <MoveRight className="w-4 h-4"/> {payload.new_value}x</>
-    );
-};
-
-
-const PlaytimePayload = ({ payload }: { payload: LogPayloadDb }) => {
-    return <>{payload.old_value / 60} h <MoveRight className="w-4 h-4"/> {payload.new_value / 60} h</>;
-};
-
-
-const PagePayload = ({ payload }: { payload: LogPayloadDb }) => {
-    return <>p. {payload.old_value} <MoveRight className="w-4 h-4"/> p. {payload.new_value}</>;
-};
-
-
-const ChapterPayload = ({ payload }: { payload: LogPayloadDb }) => {
-    return <>chpt. {payload.old_value} <MoveRight className="w-4 h-4"/> chpt. {payload.new_value}</>;
-};
+}

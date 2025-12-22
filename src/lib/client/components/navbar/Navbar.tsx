@@ -1,24 +1,24 @@
 import {SearchBar} from "./SearchBar";
 import {cn} from "@/lib/utils/helpers";
-import {useAuth} from "@/lib/client/hooks/use-auth";
+import {RoleType} from "@/lib/utils/enums";
 import React, {useRef, useState} from "react";
 import authClient from "@/lib/utils/auth-client";
-import {RoleType} from "@/lib/utils/enums";
-import {Button} from "@/lib/client/components/ui/button";
+import {useAuth} from "@/lib/client/hooks/use-auth";
 import {useQueryClient} from "@tanstack/react-query";
+import {Button} from "@/lib/client/components/ui/button";
 import {useSheet} from "@/lib/client/contexts/sheet-context";
 import {LoginForm} from "@/lib/client/components/auth/LoginForm";
 import {RegisterForm} from "@/lib/client/components/auth/RegisterForm";
+import {ProfileIcon} from "@/lib/client/components/general/ProfileIcon";
 import {NavMediaDrop} from "@/lib/client/components/navbar/NavMediaDrop";
 import {NavMediaItem} from "@/lib/client/components/navbar/NavMediaItem";
 import {Notifications} from "@/lib/client/components/navbar/Notifications";
-import {authOptions} from "@/lib/client/react-query/query-options/query-options";
 import {Link as NavLink, useNavigate, useRouter} from "@tanstack/react-router";
+import {authOptions} from "@/lib/client/react-query/query-options/query-options";
 import {Popover, PopoverClose, PopoverContent, PopoverTrigger} from "@/lib/client/components/ui/popover";
 import {Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger} from "@/lib/client/components/ui/sheet";
 import {ChartLine, ChevronDown, LogOut, Medal, Menu, Settings, ShieldCheck, Sparkles, User} from "lucide-react";
 import {NavigationMenu, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, navStyle} from "@/lib/client/components/ui/navigation-menu";
-import {ProfileIcon} from "@/lib/client/components/general/ProfileIcon";
 
 
 export const Navbar = () => {
@@ -42,8 +42,8 @@ export const Navbar = () => {
     // Login page and public pages when not logged
     if (!currentUser) {
         return (
-            <nav className="w-screen z-50 flex items-center fixed top-0 h-16 border-b border-b-neutral-700 bg-background">
-                <div className="max-sm:px-4 max-w-[1320px] flex w-full justify-between items-center container mx-auto">
+            <nav className="sticky top-0 z-50 w-full bg-neutral-950 border-b border-neutral-800">
+                <div className="mx-auto max-w-7xl flex w-full justify-between items-center max-sm:px-4">
                     <NavLink to="/" className="text-xl font-bold">
                         MyLists
                     </NavLink>
@@ -69,9 +69,9 @@ export const Navbar = () => {
     }
 
     return (
-        <nav className="w-screen z-50 flex items-center fixed top-0 h-16 border-b border-b-neutral-700 bg-background">
-            <div className="mx-auto max-w-[1320px] flex w-full justify-between items-center container">
-                <div className="hidden lg:block">
+        <nav className="sticky top-0 z-50 w-full bg-neutral-950 border-b border-neutral-800">
+            <div className="mx-auto max-w-7xl flex w-full justify-between items-center max-sm:px-4">
+                <div className="hidden lg:block h-16">
                     <NavigationMenu>
                         <NavigationMenuList>
                             <NavigationMenuItem>

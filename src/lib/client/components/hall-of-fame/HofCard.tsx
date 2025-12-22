@@ -3,12 +3,12 @@ import {Trophy} from "lucide-react";
 import {cn} from "@/lib/utils/helpers";
 import {Link} from "@tanstack/react-router";
 import {useAuth} from "@/lib/client/hooks/use-auth";
-import {useIsMobile} from "@/lib/client/hooks/use-mobile";
-import {Card, CardContent} from "@/lib/client/components/ui/card";
 import {HofUserData} from "@/lib/types/query.options.types";
+import {useBreakpoint} from "@/lib/client/hooks/use-mobile";
 import {capitalize, computeLevel} from "@/lib/utils/functions";
-import {MediaLevelCircle} from "@/lib/client/components/general/MediaLevelCircle";
+import {Card, CardContent} from "@/lib/client/components/ui/card";
 import {ProfileIcon} from "@/lib/client/components/general/ProfileIcon";
+import {MediaLevelCircle} from "@/lib/client/components/general/MediaLevelCircle";
 
 
 interface HofCardProps {
@@ -17,12 +17,12 @@ interface HofCardProps {
 
 
 export const HofCard = ({ userData }: HofCardProps) => {
-    const isMobile = useIsMobile();
     const { currentUser } = useAuth();
+    const isBelowSm = useBreakpoint("sm");
     const [isOpen, setIsOpen] = useState(false);
 
     const handleMobileToggle = () => {
-        if (isMobile) {
+        if (isBelowSm) {
             setIsOpen((prev) => !prev);
         }
     };

@@ -14,15 +14,17 @@ export const Route = createFileRoute("/_main/_private/profile/$username/_header"
 
 
 function ProfileTop() {
-    const { username } = Route.useParams();
-    const apiData = useSuspenseQuery(profileOptions(username)).data;
+    const { username: profileOwner } = Route.useParams();
+    const apiData = useSuspenseQuery(profileOptions(profileOwner)).data;
 
     return (
-        <PageTitle title={`${username} Profile`} onlyHelmet>
+        <PageTitle title={`${profileOwner} Profile`} onlyHelmet>
             <ProfileHeader
                 user={apiData.userData}
                 followId={apiData.userData.id}
                 followStatus={apiData.isFollowing}
+                followsCount={apiData.followsCount}
+                followersCount={apiData.followersCount}
             />
             <Outlet/>
         </PageTitle>
