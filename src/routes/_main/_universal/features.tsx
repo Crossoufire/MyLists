@@ -1,191 +1,396 @@
-import {Sparkles} from "lucide-react";
-import {Badge} from "@/lib/client/components/ui/badge";
-import {createFileRoute} from "@tanstack/react-router";
+import {JSX, useState} from "react";
+import {cn, mail} from "@/lib/utils/helpers";
 import {ApiProviderType} from "@/lib/utils/enums";
+import {createFileRoute} from "@tanstack/react-router";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
-import {Popover, PopoverContent, PopoverTrigger} from "@/lib/client/components/ui/popover";
-import {Card, CardAction, CardContent, CardHeader, CardTitle} from "@/lib/client/components/ui/card";
-import {mail} from "@/lib/utils/helpers";
+import {
+    Activity,
+    BarChart3,
+    BellRing,
+    BookOpen,
+    Calendar,
+    ChevronDown,
+    ChevronUp,
+    Code2,
+    Crop,
+    Edit3,
+    FileSpreadsheet,
+    Filter,
+    Gamepad2,
+    LayoutList,
+    LineChart,
+    LucideIcon,
+    Monitor,
+    Repeat,
+    Search,
+    Share2,
+    Shield,
+    Tag,
+    Trash2,
+    Trophy,
+    Users
+} from "lucide-react";
 
 
 export const Route = createFileRoute("/_main/_universal/features")({
-    component: FeatureShowcase,
+    component: FeaturesPage,
 });
 
 
-const features = [
+type FeatureData = {
+    name: string,
+    icon: LucideIcon,
+    details?: JSX.Element,
+    description: JSX.Element | string,
+    category: "New" | "Personalization" | "Analytics" | "Management" | "Social" | "Gaming" | "Media" | "Notifications" | "Other" | "Technical",
+}
+
+
+const FEATURES_DATA: FeatureData[] = [
     {
+        icon: Code2,
+        category: "New",
         name: "New Backend Language",
-        description:
-            <div>
-                MyLists is now in TypeScript. If you experience any bugs (very much expected), please{" "}
-                <a className="text-blue-500 font-medium" href={`mailto:${mail}`}>Contact me</a>.
-            </div>,
-        isNew: true,
+        description: (
+            <span>
+                MyLists is now powered by TypeScript. While this improves long-term stability, bugs are expected during the transition. If you spot one, please <a
+                className="text-app-accent hover:underline font-medium hover:text-app-accent/30 transition-colors" href={`mailto:${mail}`}>contact me</a>.
+            </span>
+        )
     },
     {
-        name: "Search MyLists using !bangs",
-        description: "You can now search MyLists Media and Users using your custom bangs.",
-        isNew: true,
-        popover: <div>
-            <div className="font-medium">How to search</div>
-            <div className="italic text-green-500">
-                https://mylists.info/search?q=
-                <span className="text-orange-400">term</span>
-                &apiProvider=<span className="text-orange-400">provider</span>
-            </div>
-
-            <div className="font-medium mt-3">Available Providers</div>
-            <div>
-                <div>- <span className="text-blue-400">{ApiProviderType.TMDB}</span> for Series, Anime, Movies.</div>
-                <div>- <span className="text-blue-400">{ApiProviderType.IGDB}</span> for Games.</div>
-                <div>- <span className="text-blue-400">{ApiProviderType.BOOKS}</span> for Books.</div>
-                <div>- <span className="text-blue-400">{ApiProviderType.MANGA}</span> for Manga.</div>
-                <div>- <span className="text-blue-400">{ApiProviderType.USERS}</span> for Users.</div>
-            </div>
-
-            <div className="font-medium mt-3">Examples</div>
-            <div>
-                <div className="italic text-green-500">
-                    https://mylists.info/search?q=
-                    <span className="text-orange-400">interstellar</span>
-                    &apiProvider=<span className="text-orange-400">{ApiProviderType.TMDB}</span>
+        icon: Search,
+        category: "New",
+        name: "Search using !bangs",
+        description: "Power user? You can now search MyLists Media and Users directly via URL parameters using custom bangs.",
+        details: (
+            <div className="space-y-4 text-sm mt-2">
+                <div className="p-3 bg-popover rounded border">
+                    <div className="font-semibold mb-1">
+                        URL Pattern
+                    </div>
+                    <div className="font-mono text-xs text-muted-foreground break-all">
+                        https://mylists.info/search?q=<span className="text-emerald-400">term</span>&apiProvider=<span className="text-orange-400">provider</span>
+                    </div>
                 </div>
-                <div className="my-3"></div>
-                <div className="italic text-green-500">
-                    https://mylists.info/search?q=
-                    <span className="text-orange-400">halo</span>
-                    &apiProvider=<span className="text-orange-400">{ApiProviderType.IGDB}</span>
+
+                <div className="grid grid-cols-2 gap-4 max-sm:grid-cols-1">
+                    <div>
+                        <div className="font-semibold mb-2">
+                            Providers
+                        </div>
+                        <ul className="space-y-1 text-xs text-slate-400 font-mono">
+                            <li><span className="text-blue-400">{ApiProviderType.TMDB}</span> - Series, Anime, Movies</li>
+                            <li><span className="text-blue-400">{ApiProviderType.IGDB}</span> - Games</li>
+                            <li><span className="text-blue-400">{ApiProviderType.BOOKS}</span> - Books</li>
+                            <li><span className="text-blue-400">{ApiProviderType.MANGA}</span> - Manga</li>
+                            <li><span className="text-blue-400">{ApiProviderType.USERS}</span> - Users</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <div className="font-semibold mb-2">
+                            Example
+                        </div>
+                        <div className="p-2 bg-popover border rounded text-xs font-mono text-muted-foreground break-all">
+                            ...?q=<span className="text-emerald-400">interstellar</span>&apiProvider=<span className="text-orange-400">tmdb</span>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
+        )
     },
     {
-        name: "New Re-watch System TV!",
-        description: "You can now add re-watch information per season, instead of per Series/Anime.",
-        isNew: true,
-        popover:
-            "Your rewatch data for Series and Anime has been redistributed to the individual seasons. " +
-            "Previously, if you had rewatched a series 5 times, it was counted as 5 rewatches for all seasons. " +
-            "You can now adjust the rewatch count for each season independently!",
+        icon: Repeat,
+        category: "New",
+        name: "Season-based Re-watch",
+        description: "Granular control: add re-watch information per individual season instead of the entire show.",
+        details: (
+            <div className="mt-2 space-y-4 text-sm">
+                <div className="rounded border bg-popover p-3">
+                    <div className="mb-1 font-semibold">
+                        Data Redistribution
+                    </div>
+                    <div className="leading-relaxed text-muted-foreground">
+                        Your rewatch data for <span className="text-series font-medium">Series</span> and{" "}
+                        <span className="text-anime font-medium">Anime</span> has been moved to a{" "}
+                        <span className="font-medium">per-season</span> basis.
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <div>
+                        <div className="mb-2 font-semibold">
+                            Old System
+                        </div>
+                        <div className="rounded bg-popover p-2 font-mono text-xs text-muted-foreground border">
+                            <div className="flex justify-between">
+                                <span>Series Global:</span>
+                                <span className="text-red-400">5x</span>
+                            </div>
+                            <div className="mt-1 opacity-70">
+                                (Applied to S1, S2, and S3 etc...)
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div className="mb-2 font-semibold">
+                            New System
+                        </div>
+                        <div className="rounded bg-popover p-2 font-mono text-xs text-muted-foreground border">
+                            <div className="flex justify-between">
+                                <span>Season 1:</span>
+                                <span>3x</span>
+                            </div>
+                            <div className="flex justify-between">
+                                <span>Season 2:</span>
+                                <span>2x</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <p className="text-xs text-muted-foreground">
+                    * All existing data was automatically migrated to match your previous totals.
+                </p>
+            </div>
+        )
     },
     {
-        name: "New Manga List!",
-        description: "You can now add manga to your list! (Need to be activated in settings)",
-        isNew: true,
+        icon: BookOpen,
+        category: "New",
+        name: "New Manga List",
+        description: "Manga is officially supported! Enable it in your settings to start tracking your reading."
     },
     {
-        name: "Cropping Pictures",
-        description: "You can now crop your profile picture and back picture (on upload).",
-        isNew: true,
+        icon: Crop,
+        category: "New",
+        name: "Image Cropping",
+        description: "No more stretched images. Crop your profile picture and back cover directly during upload."
     },
     {
+        icon: BarChart3,
+        category: "Analytics",
         name: "New Global Stats Page",
-        description: "The global stats page has been revamped, with a new 'Overall' section more stats.",
+        description: "Revamped overview with a new 'Overall' section containing aggregated metrics.",
     },
     {
-        name: "New HoF Ranking system/UI",
-        description: "The HoF page has been revamped.",
+        icon: LineChart,
+        category: "Analytics",
+        name: "Enhanced Stats Dashboard",
+        description: "Drill down into specific media lists via 'Detailed Stats' on your profile."
     },
     {
+        icon: Users,
+        category: "Analytics",
+        name: "User Stats Comparison",
+        description: "Compare your watching habits and scores directly against other users."
+    },
+    {
+        icon: Trophy,
+        category: "Analytics",
+        name: "HoF Ranking System",
+        description: "The Hall of Fame page has been redesigned with a new ranking algorithm."
+    },
+    {
+        icon: Edit3,
+        category: "Management",
         name: "Updates in /lists",
-        description: "You can now update everything about a media directly from the /list page.",
+        description: "Edit everything about a media entry directly from your main list view."
     },
     {
-        name: "Achievements system",
-        description: "Each media type has now achievements, with 4 levels of difficulty.",
+        icon: Filter,
+        category: "Management",
+        name: "Advanced Filtering",
+        description: "Refine your library with an expanded set of granular filter options."
     },
     {
-        name: "Moviedle game",
-        description: "A Wordle-like game where you guess the movie from a pixelated cover.",
+        icon: LayoutList,
+        name: "Table View",
+        category: "Management",
+        description: "Switch between Grid view and a data-dense Table layout for your lists."
     },
     {
-        name: "Privacy Mode",
-        description: "Adjust your privacy settings to control who can view your profile, lists, stats, and media updates.",
-    },
-    {
-        name: "Media Update Removal",
-        description: "Add the possibility to delete your media updates.",
+        icon: Tag,
+        name: "Custom Labels",
+        category: "Management",
+        description: "Create and apply custom tags to organize your media your way."
     },
     {
         name: "CSV Export",
-        description: "Download your media list as a CSV file.",
+        icon: FileSpreadsheet,
+        category: "Management",
+        description: "Data liberation: Download your entire media list as a CSV file."
     },
     {
+        icon: Trash2,
+        category: "Management",
+        name: "Media Update Removal",
+        description: "Made a mistake? You can now delete erroneous media history updates."
+    },
+    {
+        icon: Gamepad2,
+        category: "Gaming",
         name: "Game Platform",
-        description: "Specify the platform on which you played the game.",
+        description: "Specify exactly which console or platform (PC, PS5, Switch) you played on."
     },
     {
-        name: "Advanced Media List Filtering",
-        description: "Refine your lists with a new expanded set of filter options.",
+        icon: Monitor,
+        category: "Gaming",
+        name: "Moviedle Game",
+        description: "A Wordle-like mini-game: guess the movie from a pixelated poster."
     },
     {
-        name: "Table View",
-        description: "Switch to a table layout for your media lists.",
+        icon: Trophy,
+        category: "Gaming",
+        name: "Achievements System",
+        description: "Earn badges with 4 difficulty levels based on your viewing habits."
     },
     {
-        name: "Enhanced Stats Dashboard",
-        description: "Access detailed stats for each media list via 'Detailed Stats' in your profile.",
+        icon: Shield,
+        category: "Social",
+        name: "Privacy Mode",
+        description: "Fine-tune visibility for your profile, lists, stats, and updates."
     },
     {
-        name: "User Stats Comparison",
-        description: "Compare your stats with other users on the stats page.",
-    },
-    {
-        name: "Custom Media Labels",
-        description: "Create and apply custom labels to organize your media lists.",
-    },
-    {
+        icon: Activity,
+        category: "Social",
         name: "User Updates",
-        description: "Follow other users' to receive their updates on your profile page.",
+        description: "Follow friends to populate your personalized activity feed."
     },
     {
+        icon: Share2,
+        category: "Social",
         name: "Social Connections",
-        description: "Follow users and view their network of followers and follows.",
+        description: "View follower/following networks and discover new users."
     },
     {
+        icon: Calendar,
+        category: "Notifications",
         name: "Upcoming Releases",
-        description: "Track upcoming releases for your favorite series, anime, movies, and games.",
+        description: "Track release dates for your ongoing series, movies, and games."
     },
     {
+        icon: BellRing,
+        category: "Notifications",
         name: "Release Reminders",
-        description: "Get notified 7 days before new episodes, movies, or games drop.",
-    }
+        description: "Get notified 7 days before new episodes or game drops."
+    },
 ];
 
 
-function FeatureShowcase() {
+const FeatureCard = ({ feature }: { feature: FeatureData }) => {
+    const Icon = feature.icon;
+    const [expanded, setExpanded] = useState(false);
+
     return (
-        <PageTitle title="Features" subtitle="Discover the features and what's new and Improved">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
-                {features.map((feature, idx) =>
-                    <Card key={idx} className="hover:bg-neutral-800 transition-all duration-300">
-                        <CardHeader>
-                            <CardTitle>{feature.name}</CardTitle>
-                            <CardAction>
-                                {feature.isNew &&
-                                    <Badge variant="secondary" className="bg-gradient-to-r from-blue-600 to-violet-600">
-                                        <Sparkles className="w-3 h-3 mr-1"/> New
-                                    </Badge>
-                                }
-                            </CardAction>
-                        </CardHeader>
-                        <CardContent className="text-muted-foreground">
-                            {feature.description}{" "}
-                            {feature.popover &&
-                                <Popover>
-                                    <PopoverTrigger>
-                                        <div className="hover:underline font-semibold text-blue-500">
-                                            More Info
-                                        </div>
-                                    </PopoverTrigger>
-                                    <PopoverContent className="w-86" align="start">
-                                        {feature.popover}
-                                    </PopoverContent>
-                                </Popover>
+        <div className="relative overflow-hidden rounded-xl border transition-all duration-300 flex flex-col bg-background hover:border-app-accent">
+            {feature.category === "New" &&
+                <div className="absolute top-0 right-0">
+                    <div className="bg-app-accent text-secondary text-[10px] font-bold px-3 py-1 rounded-bl-lg">
+                        NEW
+                    </div>
+                </div>
+            }
+
+            <div className="p-5 flex-1">
+                <div className="flex items-start gap-4">
+                    <div className="p-3 rounded-lg shrink-0 bg-app-accent/10 text-muted-foreground">
+                        <Icon className="size-6"/>
+                    </div>
+                    <div>
+                        <h3 className="font-bold text-lg mb-2">
+                            {feature.name}
+                        </h3>
+                        <div className="text-sm text-muted-foreground leading-relaxed">
+                            {feature.description}
+                        </div>
+                    </div>
+                </div>
+
+                {feature.details &&
+                    <div className={cn("mt-4 overflow-hidden transition-all duration-300", expanded ? "max-h-125 opacity-100" : "max-h-0 opacity-0")}>
+                        <div className="pt-4 border-t">
+                            {feature.details}
+                        </div>
+                    </div>
+                }
+            </div>
+
+            {feature.details &&
+                <button
+                    onClick={() => setExpanded(!expanded)}
+                    className="w-full py-2 bg-popover hover:bg-popover/50 border-t text-xs font-medium text-app-accent
+                    transition-colors flex items-center justify-center gap-1"
+                >
+                    {expanded ? "Show Less" : "Learn More"}
+                    {expanded ? <ChevronUp className="size-3"/> : <ChevronDown className="size-3"/>}
+                </button>
+            }
+        </div>
+    );
+};
+
+
+interface SectionHeaderProps {
+    title: string,
+    icon: LucideIcon,
+}
+
+
+const SectionHeader = ({ title, icon: Icon }: SectionHeaderProps) => (
+    <div className="mb-8">
+        <div className="flex items-center gap-2 mb-2">
+            <Icon className="size-5 text-app-accent"/>
+            <h2 className="text-xl font-bold text-primary uppercase tracking-wide">
+                {title}
+            </h2>
+        </div>
+        <div className="h-1 w-30 bg-linear-to-r from-app-accent to-transparent rounded-full mb-2"/>
+    </div>
+);
+
+
+function FeaturesPage() {
+    const groupedFeatures = FEATURES_DATA.reduce((acc, feature) => {
+        const cat = feature.category;
+        if (!acc[cat]) {
+            acc[cat] = [];
+        }
+        acc[cat]!.push(feature);
+        return acc;
+    }, {} as Partial<Record<FeatureData["category"], FeatureData[]>>);
+
+    const activeCategories = (Object.keys(groupedFeatures) as FeatureData["category"][]).sort((a, b) => {
+        if (a === "New") return -1;
+        if (b === "New") return 1;
+        return a.localeCompare(b);
+    });
+
+    return (
+        <PageTitle title="What's New in MyLists" subtitle="Discover the latest features and what's new and Improved">
+            <div className="space-y-20 mt-10 mb-20">
+                {activeCategories.map((category) =>
+                    <section key={category}>
+                        <SectionHeader
+                            title={category}
+                            icon={category === "Analytics" ? BarChart3
+                                : category === "Management" ? Edit3
+                                    : category === "Social" ? Users
+                                        : category === "Gaming" ? Gamepad2
+                                            : category === "Notifications" ? BellRing
+                                                : category === "New" ? Activity : Search
                             }
-                        </CardContent>
-                    </Card>
+                        />
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                            {groupedFeatures[category]?.map((feature, idx) =>
+                                <FeatureCard
+                                    feature={feature}
+                                    key={`${category}-${idx}`}
+                                />
+                            )}
+                        </div>
+                    </section>
                 )}
             </div>
         </PageTitle>

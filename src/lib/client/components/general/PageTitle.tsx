@@ -1,6 +1,4 @@
 import React from "react";
-import {Separator} from "@/lib/client/components/ui/separator";
-import {MutedText} from "@/lib/client/components/general/MutedText";
 
 
 interface PageTitleProps {
@@ -18,7 +16,7 @@ export const PageTitle = ({ children, title, subtitle, onlyHelmet = false }: Pag
             {onlyHelmet ?
                 children
                 :
-                <div className="flex flex-col mx-auto mb-8 pt-4">
+                <div className="flex flex-col mx-auto mb-8 pt-6">
                     <div>
                         <h2 className="text-xl font-bold text-primary flex items-center gap-2">
                             {title}
