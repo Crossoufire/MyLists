@@ -7,19 +7,22 @@
 /* --- SCROLLBAR -------------------------------------------------------------------------- */
 
 ::-webkit-scrollbar {
-    width: 12px;
+    width: 10px;
+    scrollbar-width: thin;
+    scrollbar-color: #3f3f46 transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-    background-color: #252525;
+    background: #3f3f46;
+    border-radius: 20px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background-color: #6a6969;
+    background: #52525b;
 }
 
 ::-webkit-scrollbar-track {
-    background-color: #3d3d3d;
+    background: transparent;
 }
 
 /* --- NPROGRESS -------------------------------------------------------------------------- */
@@ -178,10 +181,6 @@
 
     button:not(:disabled), [role="button"]:not(:disabled) {
         cursor: pointer;
-    }
-
-    *, ::after, ::before, ::backdrop, ::file-selector-button {
-        border-color: var(--color-gray-200, currentColor);
     }
 
     * {
