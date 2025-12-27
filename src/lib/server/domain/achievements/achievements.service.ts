@@ -55,7 +55,7 @@ export class AchievementsService {
         for (const mt of mediaTypes) {
             mediaTypeEntries[mt] = [] as TierStat[];
         }
-        const results = { all: [] as TierStat[], ...mediaTypeEntries };
+        const results = { overview: [] as TierStat[], ...mediaTypeEntries };
 
         let grandTotal = 0;
         let grandTotalGained = 0;
@@ -85,7 +85,7 @@ export class AchievementsService {
         }
 
         allStats.push({ tier: "total", count: `${grandTotalGained}/${grandTotal}` });
-        results["all"] = allStats;
+        results["overview"] = allStats;
 
         return results;
     }

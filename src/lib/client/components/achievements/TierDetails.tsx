@@ -34,26 +34,28 @@ export const TiersDetails = ({ achievement }: TierDetailsProps) => {
                     <TableBody>
                         {achievement.tiers.map((tier) => {
                             const iconColorClass = diffColors(tier.difficulty);
+
                             return (
                                 <TableRow key={tier.id}>
-                                    <TableCell className="font-medium">
+                                    <TableCell className="text-xs">
                                         <div className="flex items-center gap-2">
-                                            <Award className={cn("w-4 h-4", iconColorClass)}/>
+                                            <Award className={cn("size-4", iconColorClass)}/>
                                             {capitalize(tier.difficulty)}
                                         </div>
                                     </TableCell>
                                     <TableCell>
                                         <div className="flex items-center space-x-2">
                                             <Progress
-                                                value={tier.progress}
                                                 className="w-24 h-2"
+                                                value={tier.progress}
+                                                color={"rgba(216,216,216,0.89)"}
                                             />
                                             <span className="text-xs">
                                                 {tier.count}/{tier.criteria.count}
                                             </span>
                                         </div>
                                     </TableCell>
-                                    <TableCell className="text-end">
+                                    <TableCell className="text-end text-xs">
                                         {tier.rarity ? tier.rarity.toFixed(1) : "- "}%
                                     </TableCell>
                                 </TableRow>

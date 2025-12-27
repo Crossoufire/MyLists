@@ -26,7 +26,7 @@ export const ProfileTabHeader = <T extends MediaType>({ activeTab, setActiveTab,
                 <button
                     key={tab.label}
                     onClick={() => setActiveTab(tab.label)}
-                    className={cn("relative flex items-center gap-2 px-5 py-3 text-sm rounded-t-lg font-bold transition-all",
+                    className={cn("relative flex items-center gap-2 px-5 py-3 text-sm rounded-t-lg font-medium transition-all",
                         activeTab === tab.label ? activeTab === "overview" ? "text-app-accent bg-accent/20"
                             : "text-primary bg-accent/20" : "text-muted-foreground hover:text-muted-foreground/110"
                     )}

@@ -1,10 +1,10 @@
 import {useMemo} from "react";
 import {cn} from "@/lib/utils/helpers";
 import {Award, CircleCheck} from "lucide-react";
+import {diffColors, formatRelativeTime} from "@/lib/utils/functions";
 import {Badge} from "@/lib/client/components/ui/badge";
 import {AchCard} from "@/lib/types/query.options.types";
 import {AchievementDifficulty} from "@/lib/utils/enums";
-import {capitalize, diffColors} from "@/lib/utils/functions";
 import {Progress} from "@/lib/client/components/ui/progress";
 import {TiersDetails} from "@/lib/client/components/achievements/TierDetails";
 import {Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle} from "@/lib/client/components/ui/card";
@@ -30,51 +30,49 @@ export const AchievementCard = ({ achievement }: AchievementCardProps) => {
         return tiers.find((tier) => !tier.completed);
     }, [tiers, fullyCompleted]);
 
-    const displayDifficulty = highestCompletedTier?.difficulty ?? tiers[0]?.difficulty ?? AchievementDifficulty.BRONZE;
+    const displayDifficulty = highestCompletedTier?.difficulty;
     const iconColorClass = diffColors(displayDifficulty);
     const borderColorClass = diffColors(displayDifficulty, "border");
-    const tierForProgressDisplay = nextTier ?? tiers[0];
+
+    const tierForProgressDisplay = nextTier ?? tiers[tiers.length - 1];
     const currentCount = tierForProgressDisplay?.count ?? 0;
-    const criteriaCount = tierForProgressDisplay?.criteria.count ?? 0;
-    const nextTierDifficulty = tierForProgressDisplay?.difficulty ?? AchievementDifficulty.BRONZE;
-    const nextTierBgColor = diffColors(nextTierDifficulty, "bg");
     const progressValue = tierForProgressDisplay?.progress ?? 0;
+    const criteriaCount = tierForProgressDisplay?.criteria.count ?? 0;
 
     return (
-        <Card className={cn("px-2 border-0 border-l-8", borderColorClass)}>
+        <Card className={cn("px-4", borderColorClass)}>
             <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                    <Award className={cn("w-6 h-6", iconColorClass)}/> {name}
+                <CardTitle>
+                    <div className="flex items-center gap-2">
+                        <Award className={cn("size-6", iconColorClass)}/>
+                        <div className="flex flex-col">
+                            {name}
+                            <div className="text-xs font-medium text-muted-foreground">
+                                {formatRelativeTime(highestCompletedTier?.completedAt)}
+                            </div>
+                        </div>
+                    </div>
                 </CardTitle>
                 <CardAction>
-                    <Badge variant="secondary">{capitalize(mediaType)}</Badge>
+                    <Badge variant="secondary" className="capitalize">
+                        {mediaType}
+                    </Badge>
                 </CardAction>
             </CardHeader>
             <CardContent className="space-y-4">
                 <CardDescription className="line-clamp-2" title={description ?? ""}>
                     {description}
                 </CardDescription>
-                {(!fullyCompleted && tierForProgressDisplay) &&
-                    <>
-                        <div className="flex justify-between items-center mb-2">
-                            <span className="font-medium">
-                                Next tier - {capitalize(nextTierDifficulty)}
-                            </span>
-                            <p className={cn("text-sm rounded-md px-1.5 py-0.5", nextTierBgColor)}>
-                                {currentCount}/{criteriaCount}
-                            </p>
-                        </div>
-                        <Progress
-                            className="w-full"
-                            value={progressValue}
-                        />
-                    </>
-                }
-                {fullyCompleted &&
-                    <div className="flex items-center justify-center font-semibold gap-2 h-11">
-                        <CircleCheck className="size-5 text-green-500"/> Achievement Completed!
+                <div>
+                    <div className="flex justify-between items-center mb-1 text-muted-foreground text-xs">
+                        <span>Next: {nextTier?.difficulty ?? "-"}</span>
+                        <p>{currentCount}/{criteriaCount} ({Math.round(currentCount / criteriaCount * 100)}%)</p>
                     </div>
-                }
+                    <Progress
+                        value={progressValue}
+                        color={"rgba(216,216,216,0.89)"}
+                    />
+                </div>
                 <TiersDetails
                     achievement={achievement}
                 />

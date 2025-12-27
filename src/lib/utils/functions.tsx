@@ -174,8 +174,9 @@ export const getStatusColor = (status: Status) => {
 };
 
 
-export const diffColors = (difficulty: AchievementDifficulty | "total", variant: "text" | "border" | "bg" = "text") => {
-    if (!difficulty) return null;
+export const diffColors = (difficulty: AchievementDifficulty | "total" | undefined, variant: "text" | "border" | "bg" = "text") => {
+    if (!difficulty) return "";
+    
     const colors: { [key: string]: string } = {
         "border-bronze": "border-amber-700",
         "border-silver": "border-slate-400",

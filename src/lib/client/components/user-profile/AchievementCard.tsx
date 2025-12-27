@@ -1,11 +1,11 @@
-import {Trophy} from "lucide-react";
+import {Award} from "lucide-react";
 import {cn} from "@/lib/utils/helpers";
 import {Link} from "@tanstack/react-router";
 import {Button} from "@/lib/client/components/ui/button";
 import {AchievementsType} from "@/lib/types/query.options.types";
 import {diffColors, formatRelativeTime} from "@/lib/utils/functions";
+import {EmptyState} from "@/lib/client/components/user-profile/EmptyState";
 import {Card, CardContent, CardHeader, CardTitle} from "@/lib/client/components/ui/card";
-import {EmptyState} from "./EmptyState";
 
 
 interface AchievementsProps {
@@ -26,7 +26,7 @@ export const AchievementsCard = ({ username, achievements }: AchievementsProps) 
                 <div className="space-y-3">
                     {achievements.details.length === 0 ?
                         <EmptyState
-                            icon={Trophy}
+                            icon={Award}
                             message="No achievements earned yet."
                         />
                         :
@@ -34,7 +34,7 @@ export const AchievementsCard = ({ username, achievements }: AchievementsProps) 
                             <div key={ach.name} className={`p-2 rounded-lg border ${diffColors(ach.difficulty, "border")}`}>
                                 <div className="flex justify-between">
                                     <div className="flex gap-2 items-center mb-1">
-                                        <Trophy className={cn("size-4", diffColors(ach.difficulty, "text"))}/>
+                                        <Award className={cn("size-4", diffColors(ach.difficulty, "text"))}/>
                                         <div className="font-bold text-sm">
                                             {ach.name}
                                         </div>

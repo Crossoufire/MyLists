@@ -8,7 +8,6 @@ import {TanStackDevtools} from "@tanstack/react-devtools";
 import {Navbar} from "@/lib/client/components/navbar/Navbar";
 import {useNProgress} from "@/lib/client/hooks/use-nprogress";
 import {Footer} from "@/lib/client/components/general/Footer";
-import {SheetProvider} from "@/lib/client/contexts/sheet-context";
 import {ReactQueryDevtoolsPanel} from "@tanstack/react-query-devtools";
 import {TanStackRouterDevtoolsPanel} from "@tanstack/react-router-devtools";
 import {authOptions} from "@/lib/client/react-query/query-options/query-options";

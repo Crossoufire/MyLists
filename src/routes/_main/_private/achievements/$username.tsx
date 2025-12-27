@@ -1,12 +1,11 @@
+import {useState} from "react";
 import {MediaType} from "@/lib/utils/enums";
-import {capitalize} from "@/lib/utils/functions";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {createFileRoute} from "@tanstack/react-router";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
-import {MediaAndUserIcon} from "@/lib/client/components/media/base/MediaAndUserIcon";
 import {AchievementCard} from "@/lib/client/components/achievements/AchievementCard";
+import {ProfileTabHeader} from "@/lib/client/components/user-profile/ProfileTabHeader";
 import {achievementOptions} from "@/lib/client/react-query/query-options/query-options";
-import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/lib/client/components/ui/tabs";
 import {AchievementSummary} from "@/lib/client/components/achievements/AchievementSummary";
 
 
@@ -20,34 +19,35 @@ export const Route = createFileRoute("/_main/_private/achievements/$username")({
 
 function AchievementPage() {
     const { username } = Route.useParams();
+    const mediaTypes = Object.values(MediaType);
     const apiData = useSuspenseQuery(achievementOptions(username)).data;
+    const [activeTab, setActiveTab] = useState<MediaType | "overview">("overview");
 
+    const activeSummary = apiData.summary[activeTab];
+    const mediaAchievements = apiData.result.filter((r) => activeTab === "overview" || r.mediaType === activeTab);
+    
     return (
         <PageTitle title={`${username} Achievements`} subtitle="View all the achievements the user gained.">
-            <Tabs defaultValue="all">
-                <TabsList className="my-3 max-sm:flex max-sm:flex-wrap max-sm:h-auto">
-                    {Object.entries(apiData.summary).map(([mt]) =>
-                        <TabsTrigger key={mt} value={mt}>
-                            <div className="flex items-center gap-2">
-                                <MediaAndUserIcon type={mt as MediaType}/> {capitalize(mt)}
-                            </div>
-                        </TabsTrigger>
+            <div className="space-y-6 mt-6">
+                <ProfileTabHeader
+                    activeTab={activeTab}
+                    mediaTypes={mediaTypes}
+                    setActiveTab={setActiveTab}
+                />
+
+                <AchievementSummary
+                    summary={activeSummary}
+                />
+
+                <div className="grid grid-cols-3 gap-6 max-lg:grid-cols-2 max-sm:grid-cols-1">
+                    {mediaAchievements.map((achievement) =>
+                        <AchievementCard
+                            key={achievement.id}
+                            achievement={achievement}
+                        />
                     )}
-                </TabsList>
-                {Object.entries(apiData.summary).map(([mt, summary]) =>
-                    <TabsContent key={mt} value={mt} className="space-y-5">
-                        <AchievementSummary summary={summary}/>
-                        <div className="grid grid-cols-3 max-lg:grid-cols-2 max-sm:grid-cols-1 gap-6">
-                            {apiData.result.filter((r) => mt === "all" || mt === r.mediaType).map((achievement) =>
-                                <AchievementCard
-                                    key={achievement.id}
-                                    achievement={achievement}
-                                />
-                            )}
-                        </div>
-                    </TabsContent>
-                )}
-            </Tabs>
+                </div>
+            </div>
         </PageTitle>
     );
 }
