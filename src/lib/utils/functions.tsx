@@ -141,7 +141,7 @@ export const getMediaColor = (mediaType: MediaType | "user" | "overview" | undef
     if (!mediaType) return "#575757";
 
     const colors = {
-        user: "#6e6e6e",
+        user: "#b6b6b6",
         overview: "#b6b6b6",
         [MediaType.SERIES]: "#267f90",
         [MediaType.ANIME]: "#ab5e4b",

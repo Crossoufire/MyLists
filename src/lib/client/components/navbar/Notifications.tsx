@@ -1,23 +1,20 @@
-import {cn} from "@/lib/utils/helpers";
 import {useRef, useState} from "react";
 import {Link} from "@tanstack/react-router";
 import {MediaType} from "@/lib/utils/enums";
-import {Badge} from "@/lib/client/components/ui/badge";
 import {Button} from "@/lib/client/components/ui/button";
-import {Bell, LoaderCircle, MoveRight} from "lucide-react";
-import {useSheet} from "@/lib/client/contexts/sheet-context";
-import {formatDateTime, zeroPad} from "@/lib/utils/functions";
-import {Separator} from "@/lib/client/components/ui/separator";
+import {useBreakpoint} from "@/lib/client/hooks/use-mobile";
 import {useQuery, useQueryClient} from "@tanstack/react-query";
-import {MutedText} from "@/lib/client/components/general/MutedText";
+import {EmptyState} from "@/lib/client/components/user-profile/EmptyState";
+import {Bell, LoaderCircle, MessageCircleOff, MoveRight} from "lucide-react";
+import {formatDateTime, formatRelativeTime, zeroPad} from "@/lib/utils/functions";
 import {MediaAndUserIcon} from "@/lib/client/components/media/base/MediaAndUserIcon";
 import {Popover, PopoverClose, PopoverContent, PopoverTrigger} from "@/lib/client/components/ui/popover";
 import {notificationsCountOptions, notificationsOptions} from "@/lib/client/react-query/query-options/query-options";
 
 
-export const Notifications = ({ isMobile }: { isMobile?: boolean }) => {
-    const { setSheetOpen } = useSheet();
+export const Notifications = () => {
     const queryClient = useQueryClient();
+    const isBelowLg = useBreakpoint("lg");
     const [isOpen, setIsOpen] = useState(false);
     const popRef = useRef<HTMLButtonElement>(null);
     const { data: notifCount = 0 } = useQuery(notificationsCountOptions);
@@ -31,31 +28,38 @@ export const Notifications = ({ isMobile }: { isMobile?: boolean }) => {
 
     const handlePopoverClose = () => {
         popRef?.current?.click();
-        setSheetOpen(false);
     };
 
     return (
-        <Popover modal={isMobile} open={isOpen} onOpenChange={setIsOpen}>
+        <Popover modal={isBelowLg} open={isOpen} onOpenChange={setIsOpen}>
             <PopoverTrigger asChild>
-                <div className="flex items-center">
-                    <Button variant="ghost" size="sm" onClick={handleOnClickOpen}>
-                        <Bell className={cn("size-5", isMobile && "size-4 text-muted-foreground ml-1")}/>
-                        {isMobile && <div className="text-base ml-2 mr-1">Notifications</div>}
-                        <Badge variant="notification" className={cn(notifCount > 0 && "bg-destructive")}>
-                            {notifCount}
-                        </Badge>
+                <div className="relative flex items-center">
+                    <Button variant="ghost" size="sm" onClick={handleOnClickOpen} className="rounded-full h-10">
+                        <Bell className="size-5"/>
+                        {notifCount > 0 &&
+                            <span className="absolute top-2.5 right-2.5 size-1 bg-red-500 rounded-full animate-pulse"/>
+                        }
                     </Button>
                 </div>
             </PopoverTrigger>
             <PopoverClose ref={popRef} className="absolute"/>
-            <PopoverContent className="p-0 w-[280px] max-h-[390px] overflow-y-auto max-sm:max-h-[350px]" align={isMobile ? "start" : "end"}>
+            <PopoverContent className="p-0 w-80 max-h-76 overflow-y-auto scrollbar-thin max-sm:max-h-88" align="end">
+                <div className="px-5 py-3 mb-1 border-b flex justify-between items-center bg-accent/20">
+                    <span className="font-semibold text-sm text-primary">
+                        Notifications
+                    </span>
+                </div>
                 {isLoading ?
-                    <div className="flex items-center justify-center p-4">
-                        <LoaderCircle className="h-6 w-6 animate-spin"/>
+                    <div className="flex items-center justify-center py-10 px-6">
+                        <LoaderCircle className="size-6 animate-spin"/>
                     </div>
                     :
                     notifs.length === 0 ?
-                        <MutedText className="p-3 text-center">No notifications to display</MutedText>
+                        <EmptyState
+                            className="py-6"
+                            icon={MessageCircleOff}
+                            message="No Notification to display"
+                        />
                         :
                         notifs.map((data, idx) =>
                             <NotificationItem
@@ -78,48 +82,90 @@ interface NotificationItemProps {
 
 
 const NotificationItem = ({ data, handlePopoverClose }: NotificationItemProps) => {
-    const to = data.mediaType ? `/details/${data.mediaType}/${data.mediaId}` : `/profile/${data.payload?.username}`;
-
     return (
-        <Link to={to} onClick={handlePopoverClose}>
-            <div className="py-2.5 px-2.5 hover:bg-neutral-600/20">
-                <div className="flex items-center gap-2">
-                    {data.mediaType ?
-                        <div className="grid grid-cols-[0fr_1fr_0fr] items-center gap-2">
-                            <MediaAndUserIcon type={data.mediaType} size={16}/>
-                            <div className="truncate">{data.payload?.name}</div>
-                            {((data.mediaType === MediaType.ANIME || data.mediaType === MediaType.SERIES) && data.payload?.finale) &&
-                                <Badge variant="passive">Finale</Badge>
-                            }
+        <div className="px-3">
+            {data.mediaType ?
+                <div className="flex gap-3 py-3 px-2 border-b hover:bg-muted/30 rounded-lg">
+                    <div className="mt-0.5">
+                        <div className="flex items-center justify-center">
+                            <MediaAndUserIcon
+                                type={data.mediaType}
+                                className="size-4 mt-0.5"
+                            />
                         </div>
-                        :
-                        <>
-                            <MediaAndUserIcon type="user" size={16}/>
-                            <div className="line-clamp-1">{data.payload?.message}</div>
-                        </>
-                    }
-                </div>
-                {data.mediaType &&
-                    <div className="flex items-center gap-2 text-neutral-400">
-                        {data.payload?.new ?
-                            <div className="line-clamp-1">{data.payload.message}</div>
-                            :
-                            <>
-                                <div>
+                    </div>
+                    <div className="flex-1">
+                        <div className="flex justify-between items-start">
+                            <p className="text-sm">
+                                <Link
+                                    search={{ external: false }}
+                                    onClick={handlePopoverClose}
+                                    to="/details/$mediaType/$mediaId"
+                                    params={{ mediaType: data.mediaType, mediaId: data.mediaId! }}
+                                >
+                                    <span title={data.payload.name} className="font-medium text-foreground line-clamp-1 hover:text-app-accent">
+                                        {data.payload.name}
+                                    </span>
+                                </Link>
+                            </p>
+                            <span className="text-xs text-muted-foreground whitespace-nowrap ml-2">
+                                {formatRelativeTime(data.timestamp)}
+                            </span>
+                        </div>
+                        <div className="flex justify-between">
+                            <div className="mt-1 flex items-center gap-1.5 text-xs font-semibold text-primary/95">
+                                <span>
                                     {(data.mediaType === MediaType.ANIME || data.mediaType === MediaType.SERIES) ?
                                         <div>S{zeroPad(data.payload?.season)}.E{zeroPad(data.payload?.episode)}</div>
                                         :
                                         <div>Release</div>
                                     }
-                                </div>
-                                <div><MoveRight size={17}/></div>
-                                <div>{formatDateTime(data.payload?.release_date, { noTime: true })}</div>
-                            </>
-                        }
+                                </span>
+                                <MoveRight className="size-4 text-app-accent"/>
+                                <span>
+                                    {formatDateTime(data.payload?.release_date, { noTime: true })}
+                                </span>
+                            </div>
+                        </div>
                     </div>
-                }
-            </div>
-            <Separator className="mt-0 mb-0"/>
-        </Link>
+                </div>
+                :
+                <div className="flex gap-3 py-3 px-2 border-b hover:bg-muted/30 rounded-lg">
+                    <div className="mt-0.5">
+                        <div className="flex items-center justify-center">
+                            <MediaAndUserIcon
+                                type="user"
+                                className="size-4 mt-0.5"
+                            />
+                        </div>
+                    </div>
+                    <div className="flex-1">
+                        <div className="flex justify-between items-start">
+                            <p className="text-sm">
+                                <Link
+                                    to="/profile/$username"
+                                    onClick={handlePopoverClose}
+                                    params={{ username: data.payload.username }}
+                                >
+                                    <span title={data.payload.username} className="font-medium text-foreground line-clamp-1 hover:text-app-accent">
+                                        {data.payload.username}
+                                    </span>
+                                </Link>
+                            </p>
+                            <span className="text-xs text-muted-foreground whitespace-nowrap ml-2">
+                                {formatRelativeTime(data.timestamp)}
+                            </span>
+                        </div>
+                        <div className="flex justify-between">
+                            <div className="mt-1 flex items-center gap-1.5 text-xs font-semibold text-primary/95">
+                                <span>
+                                    {data.payload.message}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
     );
 };

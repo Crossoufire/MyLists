@@ -46,9 +46,7 @@ function RootComponent() {
         <body>
 
         <Toaster/>
-        <SheetProvider>
-            <Navbar/>
-        </SheetProvider>
+        <Navbar/>
         <Outlet/>
         <Footer/>
 

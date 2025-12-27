@@ -1,12 +1,12 @@
-import {queryOptions} from "@tanstack/react-query";
 import {getCurrentUser} from "@/lib/server/functions/auth";
 import {getTrendsMedia} from "@/lib/server/functions/trends";
 import {getUserStats} from "@/lib/server/functions/user-stats";
 import {getSearchResults} from "@/lib/server/functions/search";
 import {getHallOfFame} from "@/lib/server/functions/hall-of-fame";
+import {queryOptions} from "@tanstack/react-query";
 import {getComingNextMedia} from "@/lib/server/functions/coming-next";
-import {getPlatformStats} from "@/lib/server/functions/platform-stats";
 import {ApiProviderType, JobType, MediaType} from "@/lib/utils/enums";
+import {getPlatformStats} from "@/lib/server/functions/platform-stats";
 import {getUserAchievements} from "@/lib/server/functions/user-achievements";
 import {MediaListArgs, SearchType, SearchTypeHoF} from "@/lib/types/zod.schema.types";
 import {getDailyMediadle, getMediadleSuggestions} from "@/lib/server/functions/moviedle";

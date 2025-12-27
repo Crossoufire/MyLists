@@ -24,8 +24,8 @@ export const Route = createFileRoute("/_main/_private/profile/$username/_header/
 function ProfileFollows() {
     const { currentUser } = useAuth();
     const { username: profileOwner } = Route.useParams();
-    const updateFollowMutation = useFollowMutation(profileOwner);
     const isViewingOwnProfile = currentUser?.name === profileOwner;
+    const updateFollowMutation = useFollowMutation(profileOwner, false);
     const apiData = useSuspenseQuery(followsOptions(profileOwner)).data;
 
     const handleFollow = (followId: number, followStatus: boolean) => {

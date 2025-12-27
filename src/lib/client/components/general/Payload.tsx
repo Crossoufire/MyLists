@@ -91,20 +91,18 @@ interface PayloadLayoutProps {
 const PayloadLayout = ({ oldVal, newVal, username }: PayloadLayoutProps) => {
     return (
         <>
-            <div>
-                <div className="mt-1 flex items-center gap-1.5 text-xs font-semibold">
-                    {oldVal &&
-                        <span className="text-muted-foreground">
-                            {oldVal}
-                        </span>
-                    }
-                    {oldVal &&
-                        <MoveRight className="size-4 text-app-accent"/>
-                    }
-                    <span className="text-neutral-300">
-                        {newVal}
+            <div className="mt-1 flex items-center gap-1.5 text-xs font-semibold">
+                {oldVal &&
+                    <span className="text-muted-foreground">
+                        {oldVal}
                     </span>
-                </div>
+                }
+                {oldVal &&
+                    <MoveRight className="size-4 text-app-accent"/>
+                }
+                <span className="text-primary/95">
+                    {newVal}
+                </span>
             </div>
             {username &&
                 <Link to="/profile/$username" params={{ username }}>

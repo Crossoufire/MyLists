@@ -13,15 +13,66 @@ import {
 } from "@/lib/server/functions/user-settings";
 
 
-export const useFollowMutation = (username: string) => {
+export const useFollowMutation = (ownerUsername: string, isOwnerProfilePage: boolean = true) => {
+    const { currentUser } = useAuth();
     const queryClient = useQueryClient();
 
     return useMutation({
         mutationFn: postUpdateFollowStatus,
         onSuccess: (_data, variables) => {
-            queryClient.invalidateQueries({ queryKey: followersOptions(username).queryKey });
-            queryClient.invalidateQueries({ queryKey: followsOptions(username).queryKey });
-            queryClient.invalidateQueries({ queryKey: profileOptions(username).queryKey });
+            if (isOwnerProfilePage) {
+                queryClient.setQueryData(profileOptions(ownerUsername).queryKey, (oldData) => {
+                    if (!oldData) return;
+
+                    return {
+                        ...oldData,
+                        isFollowing: variables.data.followStatus,
+                        followersCount: variables.data.followStatus ? oldData.followersCount + 1 : oldData.followersCount - 1
+                    };
+                });
+            }
+
+            //@ts-expect-error
+            queryClient.setQueryData(followersOptions(ownerUsername).queryKey, (oldData) => {
+                if (!oldData) return;
+
+                // TODO: Correct bad logic - todo after noel lets go lol
+                const followerExists = oldData.followers.some((f) => f.id === variables.data.followId);
+
+                if (!followerExists) {
+                    return {
+                        ...oldData,
+                        followers: [
+                            ...oldData.followers,
+                            {
+                                image: currentUser!.image,
+                                username: currentUser!.name,
+                                id: variables.data.followId,
+                                privacy: currentUser!.privacy,
+                                isFollowedByMe: variables.data.followStatus,
+                            },
+                        ],
+                    };
+                }
+
+                return {
+                    ...oldData,
+                    followers: oldData.followers.map((f) =>
+                        f.id === variables.data.followId ? { ...f, isFollowedByMe: variables.data.followStatus } : f,
+                    ),
+                };
+            });
+
+            queryClient.setQueryData(followsOptions(ownerUsername).queryKey, (oldData) => {
+                if (!oldData) return;
+
+                return {
+                    ...oldData,
+                    follows: oldData.follows.map((f) =>
+                        f.id === variables.data.followId ? { ...f, isFollowedByMe: variables.data.followStatus } : f
+                    )
+                };
+            });
         },
     });
 };

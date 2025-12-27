@@ -75,7 +75,7 @@ export const FollowsUpdates = ({ updates }: UserUpdatesProps) => {
                     Follows Recent Activity
                 </CardTitle>
             </CardHeader>
-            <CardContent className="overflow-y-auto">
+            <CardContent className="overflow-y-auto scrollbar-thin">
                 <div className="pr-2">
                     {updates.length === 0 ?
                         <EmptyState

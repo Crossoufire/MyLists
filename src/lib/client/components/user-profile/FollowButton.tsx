@@ -5,14 +5,14 @@ import {useFollowMutation} from "@/lib/client/react-query/query-mutations/user.m
 
 
 interface FollowButtonProps {
-    username: string;
     followId: number;
     followStatus: boolean;
+    ownerUsername: string;
 }
 
 
-export const FollowButton = ({ username, followStatus, followId }: FollowButtonProps) => {
-    const updateFollowMutation = useFollowMutation(username);
+export const FollowButton = ({ ownerUsername, followStatus, followId }: FollowButtonProps) => {
+    const updateFollowMutation = useFollowMutation(ownerUsername);
 
     const handleFollow = () => {
         updateFollowMutation.mutate({ data: { followId, followStatus: !followStatus } }, {

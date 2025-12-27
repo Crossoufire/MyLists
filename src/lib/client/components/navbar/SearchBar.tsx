@@ -6,30 +6,36 @@ import React, {useEffect, useRef, useState} from "react";
 import {Button} from "@/lib/client/components/ui/button";
 import {useDebounce} from "@/lib/client/hooks/use-debounce";
 import {ApiProviderType, MediaType} from "@/lib/utils/enums";
-import {useSheet} from "@/lib/client/contexts/sheet-context";
 import {Separator} from "@/lib/client/components/ui/separator";
 import {capitalize, formatDateTime} from "@/lib/utils/functions";
 import {ProfileIcon} from "@/lib/client/components/general/ProfileIcon";
 import {useOnClickOutside} from "@/lib/client/hooks/use-clicked-outside";
-import {ChevronLeft, ChevronRight, LoaderCircle, Search} from "lucide-react";
+import {EmptyState} from "@/lib/client/components/user-profile/EmptyState";
 import {Link, LinkProps, useRouter, useRouterState} from "@tanstack/react-router";
+import {ChevronLeft, ChevronRight, Loader2, Search, SearchX, X} from "lucide-react";
 import {navSearchOptions} from "@/lib/client/react-query/query-options/query-options";
 import {Command, CommandEmpty, CommandItem, CommandList} from "@/lib/client/components/ui/command";
 import {Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue} from "@/lib/client/components/ui/select";
 
 
-export const SearchBar = () => {
+interface SearchBarProps {
+    setMobileMenu?: React.Dispatch<React.SetStateAction<boolean>>;
+}
+
+
+export const SearchBar = ({ setMobileMenu }: SearchBarProps) => {
     const { currentUser } = useAuth();
     const commandRef = useRef(null);
     const [page, setPage] = useState(1);
     const [search, setSearch] = useState("");
     const [isOpen, setIsOpen] = useState(false);
     const debouncedSearch = useDebounce(search, 350);
+    const [selectOpen, setSelectOpen] = useState(false);
     const [selectDrop, setSelectDrop] = useState(currentUser?.searchSelector || ApiProviderType.TMDB);
-    const { data: searchResults, isLoading, error } = useQuery(navSearchOptions(debouncedSearch, page, selectDrop));
+    const { data: searchResults, isFetching, error } = useQuery(navSearchOptions(debouncedSearch, page, selectDrop));
 
     useEffect(() => {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
+        // eslint-disable-next-line react-hooks/set-state-in-effect - When user change `searchSelector` in settings
         setSelectDrop(currentUser?.searchSelector || ApiProviderType.TMDB);
     }, [currentUser?.searchSelector]);
 
@@ -40,6 +46,7 @@ export const SearchBar = () => {
     };
 
     const handleValueChange = (value: string) => {
+        setSearch("");
         setSelectDrop(value as ApiProviderType);
     };
 
@@ -53,78 +60,105 @@ export const SearchBar = () => {
 
     return (
         <div ref={commandRef}>
-            <div className="relative mr-2 ml-2">
-                <Search size={15} className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground"/>
+            <div className={cn("flex items-center bg-background border rounded-lg transition-all duration-200 overflow-hidden",
+                "focus-within:ring-2 focus-within:ring-app-accent/50 focus-within:border-app-accent",
+                selectOpen ? "ring-2 ring-app-accent/50 border-app-accent" : "border"
+            )}>
+                <Select value={selectDrop} onValueChange={handleValueChange} onOpenChange={setSelectOpen}>
+                    <SelectTrigger className="h-10 rounded-none w-30 border-y-0 border-l-0 border-r border-input bg-accent/50
+                    focus:ring-0 focus:ring-offset-0">
+                        <SelectValue/>
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectGroup>
+                            <SelectItem value={ApiProviderType.TMDB}>
+                                Media
+                            </SelectItem>
+                            {currentUser?.settings?.find((s) => s.mediaType === MediaType.BOOKS)?.active &&
+                                <SelectItem value={ApiProviderType.BOOKS}>
+                                    Books
+                                </SelectItem>
+                            }
+                            {currentUser?.settings?.find((s) => s.mediaType === MediaType.GAMES)?.active &&
+                                <SelectItem value={ApiProviderType.IGDB}>
+                                    Games
+                                </SelectItem>
+                            }
+                            {currentUser?.settings?.find((s) => s.mediaType === MediaType.MANGA)?.active &&
+                                <SelectItem value={ApiProviderType.MANGA}>
+                                    Manga
+                                </SelectItem>
+                            }
+                            <SelectItem value={ApiProviderType.USERS}>
+                                Users
+                            </SelectItem>
+                        </SelectGroup>
+                    </SelectContent>
+                </Select>
                 <Input
                     value={search}
                     onChange={handleInputChange}
                     placeholder="Search for media/users..."
-                    className="w-[310px] pl-8 pr-[110px] max-sm:text-sm"
+                    className="flex-1 text-sm border-none focus:outline-none focus:ring-0
+                    focus:border-none focus-visible:border-none focus-visible:ring-0"
                 />
-                <div className="absolute right-0 top-1/2 -translate-y-1/2">
-                    <Select value={selectDrop} onValueChange={handleValueChange}>
-                        <SelectTrigger className="w-[95px] border-hidden">
-                            <SelectValue/>
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectGroup>
-                                <SelectItem value={ApiProviderType.TMDB}>Media</SelectItem>
-                                {currentUser?.settings?.find(s => s.mediaType === MediaType.BOOKS)?.active &&
-                                    <SelectItem value={ApiProviderType.BOOKS}>Books</SelectItem>
-                                }
-                                {currentUser?.settings?.find(s => s.mediaType === MediaType.GAMES)?.active &&
-                                    <SelectItem value={ApiProviderType.IGDB}>Games</SelectItem>
-                                }
-                                {currentUser?.settings?.find(s => s.mediaType === MediaType.MANGA)?.active &&
-                                    <SelectItem value={ApiProviderType.MANGA}>Manga</SelectItem>
-                                }
-                                <SelectItem value={ApiProviderType.USERS}>Users</SelectItem>
-                            </SelectGroup>
-                        </SelectContent>
-                    </Select>
+                <div className="px-3 text-muted-foreground">
+                    {(isFetching && search.trim().length >= 2) ?
+                        <Loader2 className="size-4 animate-spin text-app-accent"/>
+                        :
+                        isOpen ?
+                            <X className="size-4 cursor-pointer" onClick={resetSearch}/>
+                            :
+                            <Search className="size-4"/>
+                    }
                 </div>
             </div>
-            {isOpen && (debouncedSearch.length >= 2 || isLoading) &&
-                <div className="z-50 absolute w-[310px] mr-2 ml-2 rounded-lg border shadow-md mt-1">
-                    <Command>
-                        <CommandList className="max-h-[350px] overflow-y-auto">
-                            {isLoading &&
-                                <div className="flex items-center justify-center p-3.5">
-                                    <LoaderCircle className="size-6 animate-spin"/>
-                                </div>
-                            }
+            {isOpen && (debouncedSearch.length >= 2 && !isFetching) &&
+                <div className="absolute top-full mt-1 bg-background border rounded-lg shadow-2xl overflow-hidden z-60
+                animate-in fade-in zoom-in-95 duration-200 w-full md:w-sm md:left-auto">
+                    <Command shouldFilter={false}>
+                        <CommandList className="max-h-88 overflow-y-auto scrollbar-thin">
                             {error &&
-                                <CommandEmpty className="px-3">{error.message}</CommandEmpty>
+                                <CommandEmpty className="px-3">
+                                    {error.message}
+                                </CommandEmpty>
                             }
                             {searchResults && searchResults.data.length === 0 &&
-                                <CommandEmpty>No results found.</CommandEmpty>
+                                <EmptyState
+                                    icon={SearchX}
+                                    className="py-6"
+                                    message={`No results found for '${debouncedSearch}'`}
+                                />
                             }
                             {searchResults && searchResults.data.length > 0 && searchResults.data.map((item) =>
                                 <SearchComponent
                                     item={item}
                                     key={item.id}
                                     resetSearch={resetSearch}
+                                    setMobileMenu={setMobileMenu}
                                 />
                             )}
                         </CommandList>
-                        <div className="flex justify-end gap-2 items-center p-4">
-                            <Button
-                                size="sm"
-                                variant="outline"
-                                disabled={page === 1}
-                                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                            >
-                                <ChevronLeft/>
-                            </Button>
-                            <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => setPage(page + 1)}
-                                disabled={searchResults?.hasNextPage ? !searchResults.hasNextPage : true}
-                            >
-                                <ChevronRight/>
-                            </Button>
-                        </div>
+                        {searchResults && searchResults.data.length !== 0 &&
+                            <div className="flex justify-end gap-2 items-center p-4">
+                                <Button
+                                    size="sm"
+                                    variant="outline"
+                                    disabled={page === 1}
+                                    onClick={() => setPage((p) => Math.max(1, p - 1))}
+                                >
+                                    <ChevronLeft/>
+                                </Button>
+                                <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => setPage(page + 1)}
+                                    disabled={searchResults?.hasNextPage ? !searchResults.hasNextPage : true}
+                                >
+                                    <ChevronRight/>
+                                </Button>
+                            </div>
+                        }
                     </Command>
                 </div>
             }
@@ -135,13 +169,13 @@ export const SearchBar = () => {
 
 interface SearchComponentProps {
     resetSearch: () => void;
+    setMobileMenu?: React.Dispatch<React.SetStateAction<boolean>>;
     item: NonNullable<Awaited<ReturnType<NonNullable<ReturnType<typeof navSearchOptions>["queryFn"]>>>>["data"][0];
 }
 
 
-const SearchComponent = ({ item, resetSearch }: SearchComponentProps) => {
+const SearchComponent = ({ item, resetSearch, setMobileMenu }: SearchComponentProps) => {
     const router = useRouter();
-    const { setSheetOpen } = useSheet();
     const destination = createDestParams();
     const imageHeight = (item.itemType === ApiProviderType.USERS) ? 64 : 96;
     const routerStatus = useRouterState({ select: (state) => state.status });
@@ -156,7 +190,7 @@ const SearchComponent = ({ item, resetSearch }: SearchComponentProps) => {
         setClickedApiId(item.id);
         router.subscribe("onResolved", () => {
             resetSearch();
-            setSheetOpen(false);
+            setMobileMenu?.(false);
         });
     };
 
@@ -174,8 +208,8 @@ const SearchComponent = ({ item, resetSearch }: SearchComponentProps) => {
     return (
         <Link {...destination} onClick={handleLinkClick} disabled={isLoading}>
             <CommandItem key={item.id} className={cn("cursor-pointer py-2", isLoadingItem && "cursor-auto")}>
-                <div className="flex gap-4 items-center">
-                    <div className="relative">
+                <div className="flex w-full gap-4 items-center">
+                    <div className="relative shrink-0">
                         {item.itemType === ApiProviderType.USERS ?
                             <ProfileIcon
                                 fallbackSize="text-2xl"
@@ -184,21 +218,25 @@ const SearchComponent = ({ item, resetSearch }: SearchComponentProps) => {
                             />
                             :
                             <img
+                                loading="lazy"
                                 alt={item.name}
                                 src={item.image}
-                                height={imageHeight}
-                                className={cn("w-16 rounded-sm transition-opacity duration-200", isLoadingItem && "opacity-40")}
+                                className={cn("w-16 aspect-2/3 rounded-sm transition-opacity duration-200", isLoadingItem && "opacity-20")}
                             />
                         }
                         {isLoadingItem &&
                             <div className="absolute inset-0 flex items-center justify-center">
-                                <LoaderCircle className="size-8 animate-spin text-white"/>
+                                <Loader2 className="size-8 animate-spin text-app-accent"/>
                             </div>
                         }
                     </div>
-                    <div className={cn("transition-opacity duration-200", isLoadingItem && "opacity-40")}>
-                        <div className="font-semibold mb-2 line-clamp-2">{item.name}</div>
-                        <div className="text-neutral-300">{capitalize(item.itemType)}</div>
+                    <div className={cn("transition-opacity duration-200 min-w-0 flex-1", isLoadingItem && "opacity-40")}>
+                        <div className="font-semibold mb-2 line-clamp-2">
+                            {item.name}
+                        </div>
+                        <div className="text-neutral-300">
+                            {capitalize(item.itemType)}
+                        </div>
                         <div className="text-muted-foreground text-sm">
                             {formatDateTime(item.date, { noTime: true })}
                         </div>

@@ -78,7 +78,7 @@ export const ProfileHeader = ({ user, followStatus, followId, followsCount, foll
                     {(!isCurrent && isConnected) &&
                         <FollowButton
                             followId={followId}
-                            username={user.name}
+                            ownerUsername={user.name}
                             followStatus={followStatus}
                         />
                     }
@@ -127,7 +127,7 @@ export const ProfileHeader = ({ user, followStatus, followId, followsCount, foll
                             {(!isCurrent && isConnected) &&
                                 <FollowButton
                                     followId={followId}
-                                    username={user.name}
+                                    ownerUsername={user.name}
                                     followStatus={followStatus}
                                 />
                             }
