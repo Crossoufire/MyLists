@@ -1,6 +1,6 @@
 import * as React from "react";
 import {cn} from "@/lib/utils/helpers";
-import {useBreakpoint} from "@/lib/client/hooks/use-mobile";
+import {useBreakpoint} from "@/lib/client/hooks/use-breakpoint";
 import {Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger} from "@/lib/client/components/ui/dialog"
 import {Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger} from "@/lib/client/components/ui/drawer"
 

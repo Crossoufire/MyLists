@@ -4,7 +4,7 @@ import {cn} from "@/lib/utils/helpers";
 import {Link} from "@tanstack/react-router";
 import {useAuth} from "@/lib/client/hooks/use-auth";
 import {HofUserData} from "@/lib/types/query.options.types";
-import {useBreakpoint} from "@/lib/client/hooks/use-mobile";
+import {useBreakpoint} from "@/lib/client/hooks/use-breakpoint";
 import {capitalize, computeLevel} from "@/lib/utils/functions";
 import {Card, CardContent} from "@/lib/client/components/ui/card";
 import {ProfileIcon} from "@/lib/client/components/general/ProfileIcon";

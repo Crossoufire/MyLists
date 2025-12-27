@@ -1,10 +1,12 @@
 import {MediaType} from "@/lib/utils/enums";
-import {useHashTab} from "@/lib/client/hooks/use-hash-tab";
-import {useSuspenseQuery} from "@tanstack/react-query";
 import {createFileRoute} from "@tanstack/react-router";
-import {TrendItem} from "@/lib/client/components/trends/TrendItem";
+import {useSuspenseQuery} from "@tanstack/react-query";
+import {useHashTab} from "@/lib/client/hooks/use-hash-tab";
+import {TrendGrid} from "@/lib/client/components/trends/TrendGrid";
+import {TrendHero} from "@/lib/client/components/trends/TrendHero";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
 import {trendsOptions} from "@/lib/client/react-query/query-options/query-options";
+import {MediaAndUserIcon} from "@/lib/client/components/media/base/MediaAndUserIcon";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/lib/client/components/ui/tabs";
 
 
@@ -15,37 +17,38 @@ export const Route = createFileRoute("/_main/_private/trends")({
 
 
 function TrendsPage() {
-    const apiData = useSuspenseQuery(trendsOptions).data;
-    const [selectedTab, handleTabChange] = useHashTab<typeof MediaType.SERIES | typeof MediaType.MOVIES>(MediaType.SERIES);
+    const { seriesTrends, moviesTrends } = useSuspenseQuery(trendsOptions).data;
+    const [selectedTab, handleTabChange] = useHashTab<"overview" | typeof MediaType.SERIES | typeof MediaType.MOVIES>("overview");
+
+    const allTrends = [...seriesTrends, ...moviesTrends].sort((a, b) => b.apiId - a.apiId);
+
+    const getFilteredData = () => {
+        if (selectedTab === MediaType.MOVIES) return moviesTrends;
+        if (selectedTab === MediaType.SERIES) return seriesTrends;
+        return allTrends;
+    };
+
+    const filteredTrends = getFilteredData();
+    const heroMedia = (selectedTab === MediaType.SERIES) ? seriesTrends[0] : moviesTrends[0];
 
     return (
-        <PageTitle title="Week Trends" subtitle="The Series and Movies trending this week according to TMDB">
-            <Tabs value={selectedTab} onValueChange={handleTabChange} className="mt-4">
+        <PageTitle title="Week Trends" subtitle="Top Series and Movies trending this week according to TMDB">
+            <Tabs value={selectedTab} onValueChange={handleTabChange} className="mt-6">
                 <TabsList className="mb-3 max-sm:flex max-sm:justify-around">
-                    <TabsTrigger value={MediaType.SERIES} className="px-6 md:px-8">
-                        Trending TV
+                    <TabsTrigger value="overview" className="px-6 md:px-8">
+                        <MediaAndUserIcon type="overview"/> All
                     </TabsTrigger>
-                    <TabsTrigger value={MediaType.MOVIES} className="px-6 md:px-8">
-                        Trending Movies
+                    <TabsTrigger value={MediaType.MOVIES} className="px-4 md:px-6">
+                        <MediaAndUserIcon type={MediaType.MOVIES}/> Movies
+                    </TabsTrigger>
+                    <TabsTrigger value={MediaType.SERIES} className="px-4 md:px-6">
+                        <MediaAndUserIcon type={MediaType.SERIES}/> TV Shows
                     </TabsTrigger>
                 </TabsList>
-                <TabsContent value={MediaType.SERIES}>
-                    <div className="grid grid-cols-12 gap-6 max-sm:gap-3">
-                        {apiData.seriesTrends.map((media) =>
-                            <div key={media.apiId} className="col-span-12 md:col-span-6 lg:col-span-4">
-                                <TrendItem item={media}/>
-                            </div>
-                        )}
-                    </div>
-                </TabsContent>
-                <TabsContent value={MediaType.MOVIES}>
-                    <div className="grid grid-cols-12 gap-6 max-sm:gap-3">
-                        {apiData.moviesTrends.map((media) =>
-                            <div key={media.apiId} className="col-span-12 md:col-span-6 lg:col-span-4">
-                                <TrendItem item={media}/>
-                            </div>
-                        )}
-                    </div>
+
+                <TabsContent value={selectedTab}>
+                    <TrendHero trend={heroMedia}/>
+                    <TrendGrid data={filteredTrends}/>
                 </TabsContent>
             </Tabs>
         </PageTitle>

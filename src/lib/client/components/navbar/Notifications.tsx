@@ -2,7 +2,7 @@ import {useRef, useState} from "react";
 import {Link} from "@tanstack/react-router";
 import {MediaType} from "@/lib/utils/enums";
 import {Button} from "@/lib/client/components/ui/button";
-import {useBreakpoint} from "@/lib/client/hooks/use-mobile";
+import {useBreakpoint} from "@/lib/client/hooks/use-breakpoint";
 import {useQuery, useQueryClient} from "@tanstack/react-query";
 import {EmptyState} from "@/lib/client/components/user-profile/EmptyState";
 import {Bell, LoaderCircle, MessageCircleOff, MoveRight} from "lucide-react";

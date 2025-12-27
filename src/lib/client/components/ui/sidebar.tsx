@@ -5,7 +5,7 @@ import {PanelLeftIcon} from "lucide-react";
 import {Input} from "@/lib/client/components/ui/input";
 import {Button} from "@/lib/client/components/ui/button";
 import {cva, VariantProps} from "class-variance-authority";
-import {useBreakpoint} from "@/lib/client/hooks/use-mobile";
+import {useBreakpoint} from "@/lib/client/hooks/use-breakpoint";
 import {Skeleton} from "@/lib/client/components/ui/skeleton";
 import {Separator} from "@/lib/client/components/ui/separator";
 import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from "@/lib/client/components/ui/tooltip";

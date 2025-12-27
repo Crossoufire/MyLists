@@ -1,7 +1,7 @@
 import {Link} from "@tanstack/react-router";
 import {CalendarDays, Users} from "lucide-react";
 import {useAuth} from "@/lib/client/hooks/use-auth";
-import {useBreakpoint} from "@/lib/client/hooks/use-mobile";
+import {useBreakpoint} from "@/lib/client/hooks/use-breakpoint";
 import {UserDataType} from "@/lib/types/query.options.types";
 import {computeLevel, formatDateTime} from "@/lib/utils/functions";
 import {ProfileIcon} from "@/lib/client/components/general/ProfileIcon";
