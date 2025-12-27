@@ -6,8 +6,7 @@ import {TrendGrid} from "@/lib/client/components/trends/TrendGrid";
 import {TrendHero} from "@/lib/client/components/trends/TrendHero";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
 import {trendsOptions} from "@/lib/client/react-query/query-options/query-options";
-import {MediaAndUserIcon} from "@/lib/client/components/media/base/MediaAndUserIcon";
-import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/lib/client/components/ui/tabs";
+import {ProfileTabHeader} from "@/lib/client/components/user-profile/ProfileTabHeader";
 
 
 export const Route = createFileRoute("/_main/_private/trends")({
@@ -18,39 +17,34 @@ export const Route = createFileRoute("/_main/_private/trends")({
 
 function TrendsPage() {
     const { seriesTrends, moviesTrends } = useSuspenseQuery(trendsOptions).data;
-    const [selectedTab, handleTabChange] = useHashTab<"overview" | typeof MediaType.SERIES | typeof MediaType.MOVIES>("overview");
+    const [activeTab, setActiveTab] = useHashTab<"overview" | typeof MediaType.SERIES | typeof MediaType.MOVIES>("overview");
 
-    const allTrends = [...seriesTrends, ...moviesTrends].sort((a, b) => b.apiId - a.apiId);
+    const allTrends = [...seriesTrends, ...moviesTrends]
+        .sort((a, b) => new Date(b.releaseDate).getTime() - new Date(a.releaseDate).getTime());
 
     const getFilteredData = () => {
-        if (selectedTab === MediaType.MOVIES) return moviesTrends;
-        if (selectedTab === MediaType.SERIES) return seriesTrends;
+        if (activeTab === MediaType.MOVIES) return moviesTrends;
+        if (activeTab === MediaType.SERIES) return seriesTrends;
         return allTrends;
     };
 
     const filteredTrends = getFilteredData();
-    const heroMedia = (selectedTab === MediaType.SERIES) ? seriesTrends[0] : moviesTrends[0];
+    const heroMedia = (activeTab === MediaType.SERIES) ? seriesTrends[0] : moviesTrends[0];
 
     return (
         <PageTitle title="Week Trends" subtitle="Top Series and Movies trending this week according to TMDB">
-            <Tabs value={selectedTab} onValueChange={handleTabChange} className="mt-6">
-                <TabsList className="mb-3 max-sm:flex max-sm:justify-around">
-                    <TabsTrigger value="overview" className="px-6 md:px-8">
-                        <MediaAndUserIcon type="overview"/> All
-                    </TabsTrigger>
-                    <TabsTrigger value={MediaType.MOVIES} className="px-4 md:px-6">
-                        <MediaAndUserIcon type={MediaType.MOVIES}/> Movies
-                    </TabsTrigger>
-                    <TabsTrigger value={MediaType.SERIES} className="px-4 md:px-6">
-                        <MediaAndUserIcon type={MediaType.SERIES}/> TV Shows
-                    </TabsTrigger>
-                </TabsList>
+            <div className="mt-6">
+                <ProfileTabHeader
+                    activeTab={activeTab}
+                    setActiveTab={setActiveTab}
+                    mediaTypes={["series", "movies"]}
+                />
+            </div>
 
-                <TabsContent value={selectedTab}>
-                    <TrendHero trend={heroMedia}/>
-                    <TrendGrid data={filteredTrends}/>
-                </TabsContent>
-            </Tabs>
+            <div className="mt-6">
+                <TrendHero trend={heroMedia}/>
+                <TrendGrid data={filteredTrends}/>
+            </div>
         </PageTitle>
     );
 }
