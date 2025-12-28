@@ -1,14 +1,15 @@
 import {toast} from "sonner";
 import React, {useState} from "react";
 import {useForm, useWatch} from "react-hook-form";
-import {CircleHelp, Download} from "lucide-react";
 import {useAuth} from "@/lib/client/hooks/use-auth";
 import {Switch} from "@/lib/client/components/ui/switch";
 import {Button} from "@/lib/client/components/ui/button";
 import {ListSettings} from "@/lib/types/zod.schema.types";
 import {Separator} from "@/lib/client/components/ui/separator";
+import {CircleHelp, Download, TriangleAlert} from "lucide-react";
 import {capitalize, downloadFile, jsonToCsv} from "@/lib/utils/functions";
 import {ApiProviderType, MediaType, RatingSystemType} from "@/lib/utils/enums";
+import {MediaAndUserIcon} from "@/lib/client/components/media/base/MediaAndUserIcon";
 import {Popover, PopoverContent, PopoverTrigger} from "@/lib/client/components/ui/popover";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/lib/client/components/ui/form";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/lib/client/components/ui/select";
@@ -101,10 +102,13 @@ export const MediaListForm = () => {
     return (
         <div className="space-y-6">
             <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="w-[320px] max-sm:w-full space-y-8">
+                <form onSubmit={form.handleSubmit(onSubmit)} className="w-90 max-sm:w-full space-y-8">
                     <div className="space-y-3">
                         <div className="text-sm font-medium mb-2">
-                            Activate List Types
+                            Active Content
+                            <div className="text-xs font-normal text-muted-foreground">
+                                Customize which media types you track. Disabling a list hides it from your profile navigation.
+                            </div>
                         </div>
                         {mediaTypeConfigs.map((config) => (
                             <FormField
@@ -114,6 +118,10 @@ export const MediaListForm = () => {
                                 render={({ field }) => (
                                     <FormItem className="flex flex-row items-center justify-between space-x-3 rounded-md border p-3">
                                         <FormLabel className="font-normal">
+                                            <MediaAndUserIcon
+                                                size={15}
+                                                type={config.name}
+                                            />
                                             {config.label} List
                                         </FormLabel>
                                         <FormControl>
@@ -144,11 +152,21 @@ export const MediaListForm = () => {
                                             </SelectTrigger>
                                         </FormControl>
                                         <SelectContent>
-                                            <SelectItem value={ApiProviderType.TMDB}>Media</SelectItem>
-                                            <SelectItem value={ApiProviderType.BOOKS} disabled={!isBooksActive}>Books</SelectItem>
-                                            <SelectItem value={ApiProviderType.IGDB} disabled={!isGamesActive}>Games</SelectItem>
-                                            <SelectItem value={ApiProviderType.MANGA} disabled={!isMangaActive}>Manga</SelectItem>
-                                            <SelectItem value={ApiProviderType.USERS}>Users</SelectItem>
+                                            <SelectItem value={ApiProviderType.TMDB}>
+                                                Media
+                                            </SelectItem>
+                                            <SelectItem value={ApiProviderType.BOOKS} disabled={!isBooksActive}>
+                                                {!isBooksActive && <TriangleAlert className="text-amber-600"/>} Books
+                                            </SelectItem>
+                                            <SelectItem value={ApiProviderType.IGDB} disabled={!isGamesActive}>
+                                                {!isGamesActive && <TriangleAlert className="text-amber-600"/>} Games
+                                            </SelectItem>
+                                            <SelectItem value={ApiProviderType.MANGA} disabled={!isMangaActive}>
+                                                {!isMangaActive && <TriangleAlert className="text-amber-600"/>} Manga
+                                            </SelectItem>
+                                            <SelectItem value={ApiProviderType.USERS}>
+                                                Users
+                                            </SelectItem>
                                         </SelectContent>
                                     </Select>
                                     <FormMessage/>
@@ -173,8 +191,12 @@ export const MediaListForm = () => {
                                             </SelectTrigger>
                                         </FormControl>
                                         <SelectContent>
-                                            <SelectItem value={RatingSystemType.SCORE}>Score</SelectItem>
-                                            <SelectItem value={RatingSystemType.FEELING}>Feeling</SelectItem>
+                                            <SelectItem value={RatingSystemType.SCORE}>
+                                                Score (numeric)
+                                            </SelectItem>
+                                            <SelectItem value={RatingSystemType.FEELING}>
+                                                Feeling (emoticons)
+                                            </SelectItem>
                                         </SelectContent>
                                     </Select>
                                     <FormMessage/>

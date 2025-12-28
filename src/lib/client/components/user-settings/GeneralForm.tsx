@@ -69,7 +69,7 @@ export const GeneralForm = () => {
 
     return (
         <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="w-[320px] max-sm:w-full">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="w-90 max-sm:w-full">
                 <div className="space-y-7">
                     <FormField
                         control={form.control}

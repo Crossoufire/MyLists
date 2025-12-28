@@ -1,8 +1,8 @@
-import {Button} from "@/lib/client/components/ui/button";
-import {SquareArrowOutUpRight} from "lucide-react";
 import {MediaType} from "@/lib/utils/enums";
+import {SquareArrowOutUpRight} from "lucide-react";
 import {getMediaColor} from "@/lib/utils/functions";
 import {Link, LinkProps} from "@tanstack/react-router";
+import {Button} from "@/lib/client/components/ui/button";
 import {Separator} from "@/lib/client/components/ui/separator";
 
 
@@ -45,9 +45,9 @@ export const Sidebar = <T extends { sidebarTitle: string }>({ items, selectedIte
                     return (
                         <Button
                             key={item.data.sidebarTitle}
-                            className="justify-start text-base"
+                            className="justify-start text-sm"
+                            variant={isSelected ? "emeraldy" : "ghost"}
                             onClick={() => onTabChange(item.data)}
-                            variant={isSelected ? "secondary" : "ghost"}
                         >
                             {item.data.sidebarTitle}
                         </Button>

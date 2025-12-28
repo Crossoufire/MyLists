@@ -15,10 +15,9 @@ export const Route = createFileRoute("/_main/_private/settings/")({
 
 const tabConfig = [
     { sidebarTitle: "General", component: <GeneralForm/> },
-    { sidebarTitle: "MediaList", component: <MediaListForm/> },
+    { sidebarTitle: "Content & Lists", component: <MediaListForm/> },
     { sidebarTitle: "Password", component: <PasswordForm/> },
-    // { sidebarTitle: "Upload CSV", component: <UploadCsv/> },
-    { sidebarTitle: "Advanced", component: <DangerForm/> },
+    { sidebarTitle: "Danger", component: <DangerForm/> },
 ] as const;
 type TabConfigTypes = typeof tabConfig[number]["sidebarTitle"];
 
@@ -34,7 +33,7 @@ function SettingsPage() {
 
     return (
         <PageTitle title="Settings" subtitle="Customize Your Profile: Manage Your Preferences and Account Settings">
-            <div className="grid md:grid-cols-[180px_1fr] lg:grid-cols-[250px_1fr] gap-10 mt-6">
+            <div className="grid md:grid-cols-[180px_1fr] lg:grid-cols-[250px_1fr] gap-10 mt-8">
                 <Sidebar
                     items={sidebarItems}
                     selectedItem={selectedItem}
