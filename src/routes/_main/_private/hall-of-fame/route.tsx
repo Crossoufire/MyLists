@@ -1,4 +1,4 @@
-import {Search} from "lucide-react";
+import {Search, UserX} from "lucide-react";
 import React, {useState} from "react";
 import {MediaType} from "@/lib/utils/enums";
 import {capitalize} from "@/lib/utils/functions";
@@ -14,6 +14,7 @@ import {HofSorting, SearchTypeHoF} from "@/lib/types/zod.schema.types";
 import {HofRanking} from "@/lib/client/components/hall-of-fame/HofRanking";
 import {hallOfFameOptions} from "@/lib/client/react-query/query-options/query-options";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/lib/client/components/ui/select";
+import {EmptyState} from "@/lib/client/components/user-profile/EmptyState";
 
 
 export const Route = createFileRoute("/_main/_private/hall-of-fame")({
@@ -60,7 +61,7 @@ function HallOfFamePage() {
 
     return (
         <PageTitle title="Hall of Fame" subtitle="Showcase of all the active profiles ranked">
-            <div className="grid grid-cols-12 mx-auto w-[1000px] gap-x-10 max-sm:w-full max-sm:grid-cols-1">
+            <div className="grid grid-cols-12 mx-auto w-250 gap-x-10 max-sm:w-full max-sm:grid-cols-1">
                 <div className="col-span-7 max-sm:col-span-1 w-full max-sm:mt-4 max-sm:order-2">
                     <div className="flex items-center justify-between mt-3 mb-3">
                         <div className="flex items-center justify-start gap-3">
@@ -70,7 +71,7 @@ function HallOfFamePage() {
                                     value={currentSearch}
                                     onChange={onSearchChange}
                                     placeholder="Search by name..."
-                                    className="pl-10 rounded-md w-[220px] max-sm:text-sm"
+                                    className="pl-10 rounded-md w-55 max-sm:text-sm"
                                 />
                                 <Search
                                     size={18}
@@ -80,7 +81,7 @@ function HallOfFamePage() {
                         </div>
                         <div>
                             <Select value={sorting} onValueChange={onSortChanged} disabled={apiData.items.length === 0}>
-                                <SelectTrigger className="w-[130px] font-medium bg-outline border">
+                                <SelectTrigger className="w-32.5 font-medium bg-outline border">
                                     <SelectValue/>
                                 </SelectTrigger>
                                 <SelectContent>
@@ -96,7 +97,10 @@ function HallOfFamePage() {
                         </div>
                     </div>
                     {apiData.items.length === 0 ?
-                        <MutedText>No users found.</MutedText>
+                        <EmptyState
+                            icon={UserX}
+                            message={`No users found for '${currentSearch}'`}
+                        />
                         :
                         apiData.items.map((userData) =>
                             <HofCard
@@ -111,7 +115,7 @@ function HallOfFamePage() {
                         onChangePage={onPageChange}
                     />
                 </div>
-                <div className="col-span-5 max-sm:col-span-1 mt-[21px] max-sm:mt-4 max-sm:order-1">
+                <div className="col-span-5 max-sm:col-span-1 mt-5.25 max-sm:mt-4 max-sm:order-1">
                     <HofRanking
                         userRanks={apiData.userRanks}
                     />

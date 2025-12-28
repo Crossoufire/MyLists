@@ -31,13 +31,13 @@ export const HofCard = ({ userData }: HofCardProps) => {
         <Card
             key={userData.name}
             onClick={handleMobileToggle}
-            className={cn("p-2 py-0 mb-3 bg-card", currentUser?.id === userData.id && "bg-teal-950")}
+            className={cn("p-2 py-0 mb-3 bg-card", currentUser?.id === userData.id && "bg-app-accent/20")}
         >
             <CardContent className="p-0">
                 <div className="grid grid-cols-12 py-4">
                     <div className="col-span-1 max-sm:col-span-2">
                         <div className="flex items-center ml-2 text-xl h-full font-medium">
-                            {userData.rank === 1 ? <Trophy className="text-amber-500 w-6 h-6"/> : <>#{userData.rank}</>}
+                            {userData.rank === 1 ? <Trophy className="text-app-rating size-6"/> : <>#{userData.rank}</>}
                         </div>
                     </div>
                     <div className="col-span-6 max-sm:col-span-10 ml-3">
@@ -48,12 +48,12 @@ export const HofCard = ({ userData }: HofCardProps) => {
                                 user={{ image: userData.image, name: userData.name }}
                             />
                             <div className="space-y-2">
-                                <h3 className="text-lg font-medium sm:truncate sm:w-[150px]">
+                                <h3 className="text-lg font-medium sm:truncate sm:w-38">
                                     <Link to="/profile/$username" params={{ username: userData.name }} className="hover:underline hover:underline-offset-2">
                                         {userData.name}
                                     </Link>
                                 </h3>
-                                <div className="inline-block text-xs font-bold px-2 py-1 rounded-full bg-gradient-to-r
+                                <div className="inline-block text-xs font-bold px-2 py-1 rounded-full bg-linear-to-r
                                 from-blue-600 to-violet-600">
                                     Lvl {Math.floor(computeLevel(userData.totalTime))}
                                 </div>
