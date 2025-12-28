@@ -62,16 +62,16 @@ function HomePage() {
                         </div>
                     </div>
                 </div>
-                <div className="relative z-10 text-center space-y-8 px-4">
+                <div className="flex flex-col items-center gap-2 relative z-10 text-center space-y-8 px-4">
                     <h1 className="text-4xl md:text-6xl font-bold text-balance">Welcome to MyLists</h1>
                     <p className="text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto text-balance">
                         Manage lists, track time spent, and follow other enthusiasts in one beautiful platform
                     </p>
-                    <Button size="lg" className="gap-2">
-                        <Link to="/profile/$username" params={{ username: "DemoProfile" }} className="flex items-center gap-2">
+                    <Link to="/profile/$username" params={{ username: "DemoProfile" }}>
+                        <Button size="lg" className="gap-2" variant="emeraldy">
                             Demo Profile <ArrowRight/>
-                        </Link>
-                    </Button>
+                        </Button>
+                    </Link>
                 </div>
             </section>
 
