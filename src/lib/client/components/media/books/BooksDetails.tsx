@@ -1,12 +1,12 @@
 import {JobType, MediaType} from "@/lib/utils/enums";
 import {Synopsis} from "@/lib/client/components/media/base/Synopsis";
-import {MediaConfiguration} from "@/lib/client/components/media/media-config";
+import {MediaConfig} from "@/lib/client/components/media/media-config";
 import {MapDetails} from "@/lib/client/components/media/base/MapDetails";
 import {GenericDetails} from "@/lib/client/components/media/base/GenericDetails";
 import {capitalize, formatDateTime, formatMinutes} from "@/lib/utils/functions";
 
 
-type BooksDetailsProps<T extends MediaType> = Parameters<MediaConfiguration[T]["mediaDetails"]>[number];
+type BooksDetailsProps<T extends MediaType> = Parameters<MediaConfig[T]["mediaDetails"]>[number];
 
 
 export const BooksDetails = ({ mediaType, mediaData }: BooksDetailsProps<typeof MediaType.BOOKS>) => {

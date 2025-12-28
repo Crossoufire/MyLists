@@ -3,12 +3,12 @@ import {useQueryClient} from "@tanstack/react-query";
 import {UpdateTvRedo} from "@/lib/client/components/media/tv/UpdateTvRedo";
 import {UpdateRating} from "@/lib/client/components/media/base/UpdateRating";
 import {UpdateStatus} from "@/lib/client/components/media/base/UpdateStatus";
-import {MediaConfiguration} from "@/lib/client/components/media/media-config";
+import {MediaConfig} from "@/lib/client/components/media/media-config";
 import {UpdateSeasonsEps} from "@/lib/client/components/media/tv/UpdateSeasonsEps";
 import {useUpdateUserMediaMutation} from "@/lib/client/react-query/query-mutations/user-media.mutations";
 
 
-type TvUserDetailsProps<T extends MediaType> = Parameters<MediaConfiguration[T]["mediaUserDetails"]>[number];
+type TvUserDetailsProps<T extends MediaType> = Parameters<MediaConfig[T]["mediaUserDetails"]>[number];
 
 
 export const TvUserDetails = ({ userMedia, mediaType, queryOption }: TvUserDetailsProps<typeof MediaType.SERIES | typeof MediaType.ANIME>) => {

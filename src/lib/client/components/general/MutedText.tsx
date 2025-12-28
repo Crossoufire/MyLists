@@ -9,7 +9,7 @@ interface MutedTextProps {
 }
 
 
-export const MutedText = ({ children, className, italic = true }: MutedTextProps) => {
+export const MutedText = ({ children, className, italic = false }: MutedTextProps) => {
     return (
         <div className={cn("text-muted-foreground", className, italic && "italic")}>
             {children}

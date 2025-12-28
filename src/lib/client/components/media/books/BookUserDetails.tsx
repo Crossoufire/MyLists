@@ -5,11 +5,11 @@ import {UpdateRedo} from "@/lib/client/components/media/base/UpdateRedo";
 import {UpdateInput} from "@/lib/client/components/media/base/UpdateInput";
 import {UpdateRating} from "@/lib/client/components/media/base/UpdateRating";
 import {UpdateStatus} from "@/lib/client/components/media/base/UpdateStatus";
-import {MediaConfiguration} from "@/lib/client/components/media/media-config";
+import {MediaConfig} from "@/lib/client/components/media/media-config";
 import {useUpdateUserMediaMutation} from "@/lib/client/react-query/query-mutations/user-media.mutations";
 
 
-type BooksUserDetailsProps<T extends MediaType> = Parameters<MediaConfiguration[T]["mediaUserDetails"]>[0];
+type BooksUserDetailsProps<T extends MediaType> = Parameters<MediaConfig[T]["mediaUserDetails"]>[0];
 
 
 export const BooksUserDetails = ({ userMedia, mediaType, queryOption }: BooksUserDetailsProps<typeof MediaType.BOOKS>) => {

@@ -8,6 +8,8 @@ interface DisplayRedoValueProps {
 
 
 export const DisplayRedoValue = ({ redoValue, size = 15 }: DisplayRedoValueProps) => {
+    if (redoValue === 0) return null;
+
     return (
         <div className="flex items-center gap-x-1">
             <RotateCw className="text-green-500" size={size}/>

@@ -208,32 +208,26 @@ function MediadlePage() {
                     <div className="grid gap-2 grid-cols-3 max-sm:grid-cols-2">
                         <ProfileStatCard
                             title="Total Played"
-                            className="border-app-accent/50"
                             value={mediadleData?.stats?.totalPlayed ?? 0}
                         />
                         <ProfileStatCard
                             title="Total Won"
-                            className="border-app-accent/50"
                             value={mediadleData?.stats?.totalWon ?? 0}
                         />
                         <ProfileStatCard
                             title="Win Rate"
-                            className="border-app-accent/50"
                             value={`${mediadleData?.stats?.winRate?.toFixed(1) ?? 0.0}%`}
                         />
                         <ProfileStatCard
                             title="Current Streak"
-                            className="border-app-accent/50"
                             value={mediadleData?.stats?.currentStreak ?? 0}
                         />
                         <ProfileStatCard
                             title="Best Streak"
-                            className="border-app-accent/50"
                             value={mediadleData?.stats?.bestStreak ?? 0}
                         />
                         <ProfileStatCard
                             title="Avg. Attempts"
-                            className="border-app-accent/50"
                             value={mediadleData?.stats?.averageAttempts?.toFixed(2) ?? 0.0}
                         />
                     </div>

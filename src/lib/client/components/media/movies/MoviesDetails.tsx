@@ -1,13 +1,13 @@
 import {Star} from "lucide-react";
 import {JobType, MediaType} from "@/lib/utils/enums";
 import {Synopsis} from "@/lib/client/components/media/base/Synopsis";
-import {MediaConfiguration} from "@/lib/client/components/media/media-config";
+import {MediaConfig} from "@/lib/client/components/media/media-config";
 import {MapDetails} from "@/lib/client/components/media/base/MapDetails";
 import {formatDateTime, formatMinutes, getLangCountryName} from "@/lib/utils/functions";
 import {GenericDetails} from "@/lib/client/components/media/base/GenericDetails";
 
 
-type MoviesDetailsProps<T extends MediaType> = Parameters<MediaConfiguration[T]["mediaDetails"]>[number];
+type MoviesDetailsProps<T extends MediaType> = Parameters<MediaConfig[T]["mediaDetails"]>[number];
 
 
 export const MoviesDetails = ({ mediaType, mediaData }: MoviesDetailsProps<typeof MediaType.MOVIES>) => {

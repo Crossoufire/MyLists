@@ -222,6 +222,7 @@
 }
 
 @layer utilities {
+    /* --- Use for thin scrollbar on overflow --- */
     .scrollbar-thin::-webkit-scrollbar {
         height: 4px;
         width: 4px;
@@ -243,5 +244,21 @@
     .scrollbar-thin {
         scrollbar-width: thin;
         scrollbar-color: #3f3f46 transparent;
+    }
+
+
+    /* --- Use for follow cards --- */
+    .item {
+        display: inline-flex;
+        align-items: center;
+    }
+
+    .item:empty {
+        display: none;
+    }
+
+    .item:not(:empty) ~ .item:not(:empty)::before {
+        content: "•";
+        margin: 0 0.5rem;
     }
 }

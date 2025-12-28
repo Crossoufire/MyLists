@@ -1,10 +1,7 @@
-import React from "react";
-import {MessageCircle} from "lucide-react";
+import React, {Fragment} from "react";
 import {Link} from "@tanstack/react-router";
 import {Badge} from "@/lib/client/components/ui/badge";
 import {FollowData} from "@/lib/types/query.options.types";
-import {Separator} from "@/lib/client/components/ui/separator";
-import {Card, CardContent} from "@/lib/client/components/ui/card";
 import {getStatusColor, getTextColor} from "@/lib/utils/functions";
 import {ProfileIcon} from "@/lib/client/components/general/ProfileIcon";
 import {DisplayRating} from "@/lib/client/components/media/base/DisplayRating";
@@ -21,45 +18,34 @@ interface BaseMediaFollowCardrops {
 
 
 export const BaseMediaFollowCard = ({ followData, rating, redoDisplay, mediaDetailsDisplay }: BaseMediaFollowCardrops) => {
+    const items = [
+        mediaDetailsDisplay,
+        <DisplayRating key="rating" rating={rating}/>,
+        redoDisplay,
+        followData.userMedia.comment && <DisplayComment key="comment" content={followData.userMedia.comment}/>,
+        !!followData.userMedia.favorite && <DisplayFavorite key="favorite" isFavorite={!!followData.userMedia.favorite}/>,
+    ].filter(Boolean);
+
     return (
-        <Card className="h-full">
-            <CardContent className="px-3">
-                <div className="grid grid-cols-12 gap-2">
-                    <div className="col-span-3">
-                        <Link to="/profile/$username" params={{ username: followData.name }}>
-                            <ProfileIcon
-                                fallbackSize="text-lg"
-                                className="size-13 border-2"
-                                user={{ image: followData.image, name: followData.name }}
-                            />
-                        </Link>
-                    </div>
-                    <div className="col-span-9 space-y-1">
-                        <Link to="/profile/$username" params={{ username: followData.name }}>
-                            <div className="text-lg font-medium">
-                                {followData.name}
-                            </div>
-                        </Link>
-                        <div className="flex items-center justify-between pr-3">
-                            <DisplayRating
-                                rating={rating}
-                            />
-                            {redoDisplay}
-                            <div className="flex items-center gap-x-2">
-                                {followData.userMedia.comment ?
-                                    <DisplayComment content={followData.userMedia.comment}/>
-                                    :
-                                    <MessageCircle size={15}/>
-                                }
-                            </div>
-                            <DisplayFavorite
-                                isFavorite={!!followData.userMedia.favorite}
-                            />
-                        </div>
-                    </div>
+        <div className="flex items-center space-x-3 p-3 rounded-lg hover:bg-accent/50 transition-colors">
+            <div className="shrink-0">
+                <div className="flex items-center justify-center">
+                    <Link to="/profile/$username" params={{ username: followData.name }}>
+                        <ProfileIcon
+                            fallbackSize="text-lg"
+                            className="size-10  border-2"
+                            user={{ image: followData.image, name: followData.name }}
+                        />
+                    </Link>
                 </div>
-                <Separator className="mb-3 mt-3"/>
-                <div className="flex items-center justify-between">
+            </div>
+            <div className="grow min-w-0">
+                <div className="flex justify-between items-start">
+                    <p className="text-sm font-medium text-primary truncate">
+                        <Link to="/profile/$username" params={{ username: followData.name }}>
+                            {followData.name}
+                        </Link>
+                    </p>
                     <Badge
                         style={{
                             background: getStatusColor(followData.userMedia.status),
@@ -68,9 +54,37 @@ export const BaseMediaFollowCard = ({ followData, rating, redoDisplay, mediaDeta
                     >
                         {followData.userMedia.status}
                     </Badge>
-                    {mediaDetailsDisplay}
                 </div>
-            </CardContent>
-        </Card>
+                <div className="text-xs text-muted-foreground mt-1">
+                    <span className="item">
+                        {mediaDetailsDisplay}
+                    </span>
+
+                    <span className="item">
+                        <DisplayRating rating={rating}/>
+                    </span>
+
+                    <span className="item">
+                        {redoDisplay}
+                    </span>
+
+                    <span className="item">
+                        {followData.userMedia.comment &&
+                            <DisplayComment
+                                content={followData.userMedia.comment}
+                            />
+                        }
+                    </span>
+
+                    <span className="item">
+                        {!!followData.userMedia.favorite &&
+                            <DisplayFavorite
+                                isFavorite={!!followData.userMedia.favorite}
+                            />
+                        }
+                    </span>
+                </div>
+            </div>
+        </div>
     );
 };

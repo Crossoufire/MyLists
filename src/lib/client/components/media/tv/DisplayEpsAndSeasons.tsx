@@ -1,6 +1,5 @@
-import {Play} from "lucide-react";
-import {zeroPad} from "@/lib/utils/functions";
 import {Status} from "@/lib/utils/enums";
+import {zeroPad} from "@/lib/utils/functions";
 
 
 interface DisplayEpsAndSeasonsProps {
@@ -16,9 +15,8 @@ export const DisplayEpsAndSeasons = ({ status, currentSeason, currentEpisode }: 
     }
 
     return (
-        <div className="flex gap-x-2 items-center">
-            <Play size={16} className="mt-0.5"/>
-            S{zeroPad(currentSeason)} - E{zeroPad(currentEpisode)}
+        <div className="flex gap-x-2 items-center tracking-wide">
+            S{zeroPad(currentSeason)}.E{zeroPad(currentEpisode)}
         </div>
     );
 };

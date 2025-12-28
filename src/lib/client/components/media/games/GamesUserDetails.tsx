@@ -1,6 +1,6 @@
 import React from "react";
 import {MediaType, Status} from "@/lib/utils/enums";
-import {MediaConfiguration} from "@/lib/client/components/media/media-config";
+import {MediaConfig} from "@/lib/client/components/media/media-config";
 import {UpdateRating} from "@/lib/client/components/media/base/UpdateRating";
 import {UpdateStatus} from "@/lib/client/components/media/base/UpdateStatus";
 import {UpdatePlatform} from "@/lib/client/components/media/games/UpdatePlatform";
@@ -8,7 +8,7 @@ import {UpdatePlaytime} from "@/lib/client/components/media/games/UpdatePlaytime
 import {useUpdateUserMediaMutation} from "@/lib/client/react-query/query-mutations/user-media.mutations";
 
 
-type GamesUserDetailsProps<T extends MediaType> = Parameters<MediaConfiguration[T]["mediaUserDetails"]>[0];
+type GamesUserDetailsProps<T extends MediaType> = Parameters<MediaConfig[T]["mediaUserDetails"]>[0];
 
 
 export const GamesUserDetails = ({ userMedia, mediaType, queryOption }: GamesUserDetailsProps<typeof MediaType.GAMES>) => {

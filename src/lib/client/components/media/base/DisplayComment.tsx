@@ -12,9 +12,12 @@ export const DisplayComment = ({ content, size = 15 }: DisplayCommentProps) => {
     return (
         <Popover>
             <PopoverTrigger>
-                <MessageCircle className="text-blue-500" size={size}/>
+                <MessageCircle
+                    size={size}
+                    className="text-blue-500"
+                />
             </PopoverTrigger>
-            <PopoverContent align="center" side="top" className="max-h-[200px] overflow-y-auto">
+            <PopoverContent align="center" side="top" className="max-h-50 overflow-y-auto">
                 {content}
             </PopoverContent>
         </Popover>

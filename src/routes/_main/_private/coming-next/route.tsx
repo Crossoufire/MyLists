@@ -23,7 +23,7 @@ export const Route = createFileRoute("/_main/_private/coming-next")({
 function ComingNextPage() {
     const apiData = useSuspenseQuery(upcomingOptions).data;
     const mediaTypes = apiData.map((next) => next.mediaType);
-    const [activeTab, setActiveTab] = useHashTab<MediaType | "overview">(MediaType.SERIES);
+    const [activeTab, setActiveTab] = useHashTab<MediaType | "overview">("overview");
 
     const allItems = useMemo(() => {
         return apiData.flatMap((group) =>
@@ -115,7 +115,7 @@ function ComingNextPage() {
 
                 {groupedSections.thisWeek.length > 0 &&
                     <section>
-                        <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                        <h2 className="text-lg font-bold text-primary mb-4 flex items-center gap-2">
                             <span className="w-2 h-8 rounded bg-app-accent block mr-1"/>
                             This Week
                         </h2>
@@ -131,9 +131,9 @@ function ComingNextPage() {
                     </section>
                 }
 
-                {groupedSections.next30Days.length > 0 && (
+                {groupedSections.next30Days.length > 0 &&
                     <section>
-                        <h2 className="text-lg font-bold text-white mb-4 pl-1">
+                        <h2 className="text-lg font-bold text-primary mb-4 pl-1">
                             Coming this Month
                         </h2>
                         <div className="grid grid-cols-2 gap-3 max-sm:grid-cols-1">
@@ -146,11 +146,11 @@ function ComingNextPage() {
                             )}
                         </div>
                     </section>
-                )}
+                }
 
                 {groupedSections.later.length > 0 &&
                     <section>
-                        <h2 className="text-lg font-bold text-slate-300 mb-4 pl-1">
+                        <h2 className="text-lg font-bold text-primary mb-4 pl-1">
                             Later this Year
                         </h2>
                         <div className="grid grid-cols-2 gap-3 opacity-90 max-sm:grid-cols-1">

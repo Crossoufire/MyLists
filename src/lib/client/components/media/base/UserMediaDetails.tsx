@@ -38,14 +38,14 @@ export const UserMediaDetails = ({ userMedia, mediaType, queryOption }: UserMedi
     };
 
     return (
-        <div className="space-y-2 w-[300px]">
-            <Tabs defaultValue="yourInfo">
+        <div className="bg-popover border rounded-lg p-6">
+            <Tabs defaultValue="yourProgress">
                 <TabsList className="w-full items-center justify-between pr-2">
                     <div>
-                        <TabsTrigger value="yourInfo">
-                            Your Info
+                        <TabsTrigger value="yourProgress" className="px-4">
+                            My Progress
                         </TabsTrigger>
-                        <TabsTrigger value="history" disabled={history?.length === 0}>
+                        <TabsTrigger value="history" disabled={history?.length === 0} className="px-4">
                             History ({history?.length})
                         </TabsTrigger>
                     </div>
@@ -54,8 +54,8 @@ export const UserMediaDetails = ({ userMedia, mediaType, queryOption }: UserMedi
                         updateFavorite={updateUserMediaMutation}
                     />
                 </TabsList>
-                <TabsContent value="yourInfo">
-                    <div className="p-5 pt-3 bg-card rounded-md">
+                <TabsContent value="yourProgress">
+                    <div className="px-2 pt-0">
                         <UserMediaSpecificDetails
                             mediaType={mediaType}
                             userMedia={userMedia}
@@ -73,7 +73,7 @@ export const UserMediaDetails = ({ userMedia, mediaType, queryOption }: UserMedi
                         />
                     </div>
                 </TabsContent>
-                <TabsContent value="history" className="bg-card rounded-md overflow-y-auto max-h-[353px] p-3 px-5">
+                <TabsContent value="history" className="overflow-y-auto scrollbar-thin max-h-83 px-1">
                     <HistoryDetails
                         mediaType={mediaType}
                         history={history ?? []}
@@ -81,7 +81,7 @@ export const UserMediaDetails = ({ userMedia, mediaType, queryOption }: UserMedi
                     />
                 </TabsContent>
             </Tabs>
-            <Button variant="destructive" className="w-full" onClick={handleRemoveMediaFromList}>
+            <Button variant="destructive" className="w-full mt-8" onClick={handleRemoveMediaFromList}>
                 Remove from your list
             </Button>
         </div>

@@ -1,10 +1,10 @@
 import {MediaType} from "@/lib/utils/enums";
-import {MediaConfiguration} from "@/lib/client/components/media/media-config";
+import {MediaConfig} from "@/lib/client/components/media/media-config";
 import {DisplayPlaytime} from "@/lib/client/components/media/games/DisplayPlaytime";
 import {BaseMediaFollowCard} from "@/lib/client/components/media/base/BaseMediaFollowCard";
 
 
-type GameFollowCardProps<T extends MediaType> = Parameters<MediaConfiguration[T]["mediaFollowCard"]>[number];
+type GameFollowCardProps<T extends MediaType> = Parameters<MediaConfig[T]["mediaFollowCard"]>[number];
 
 
 export const GameFollowCard = ({ followData, rating }: GameFollowCardProps<typeof MediaType.GAMES>) => {

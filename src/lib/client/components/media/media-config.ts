@@ -2,19 +2,19 @@ import React from "react";
 import {ColumnDef} from "@tanstack/react-table";
 import {MediaType, Status} from "@/lib/utils/enums";
 import {SheetFilterObject} from "@/lib/types/base.types";
-import {TvDetails} from "@/lib/client/components/media/tv/TvDetails";
+import {TvInfoGrid} from "@/lib/client/components/media/tv/TvInfoGrid";
 import {TvListItem} from "@/lib/client/components/media/tv/TvListItem";
+import {TvOverTitle} from "@/lib/client/components/media/tv/TvOverTitle";
+import {TvUnderTitle} from "@/lib/client/components/media/tv/TvUnderTitle";
 import {TvFollowCard} from "@/lib/client/components/media/tv/TvFollowCard";
 import {getTvColumns} from "@/lib/client/components/media/tv/TvListColumns";
 import {TvUserDetails} from "@/lib/client/components/media/tv/TvUserDetails";
-import {BooksDetails} from "@/lib/client/components/media/books/BooksDetails";
-import {GamesDetails} from "@/lib/client/components/media/games/GamesDetails";
 import {GameListItem} from "@/lib/client/components/media/games/GameListItem";
-import {MangaDetails} from "@/lib/client/components/media/manga/MangaDetails";
 import {BookListItem} from "@/lib/client/components/media/books/BookListItem";
 import {MangaListItem} from "@/lib/client/components/media/manga/MangaListItem";
-import {MoviesDetails} from "@/lib/client/components/media/movies/MoviesDetails";
+import {TvUpComingAlert} from "@/lib/client/components/media/tv/TvUpComingAlert";
 import {MovieListItem} from "@/lib/client/components/media/movies/MovieListItem";
+import {TvExtraSections} from "@/lib/client/components/media/tv/TvExtraSections";
 import {GameFollowCard} from "@/lib/client/components/media/games/GameFollowCard";
 import {BookFollowCard} from "@/lib/client/components/media/books/BookFollowCard";
 import {ColumnConfigProps} from "@/lib/client/components/media/base/BaseListTable";
@@ -38,8 +38,29 @@ import {UserMediaQueryOption} from "@/lib/client/react-query/query-mutations/use
 import {ExtractFollowByType, ExtractListByType, ExtractMediaDetailsByType, ExtractUserMediaByType} from "@/lib/types/query.options.types";
 
 
-export type MediaConfiguration = {
+export type MediaConfig = {
     [T in MediaType]: {
+        overTitle: React.FC<{
+            mediaType: T;
+            media: ExtractMediaDetailsByType<T>;
+        }>;
+        underTitle: React.FC<{
+            mediaType: T;
+            media: ExtractMediaDetailsByType<T>;
+        }>;
+        infoGrid: React.FC<{
+            mediaType: T;
+            media: ExtractMediaDetailsByType<T>;
+        }>;
+        upComingAlert: React.FC<{
+            mediaType: T;
+            media: ExtractMediaDetailsByType<T>;
+        }>;
+        extraSections: React.FC<{
+            mediaType: T;
+            media: ExtractMediaDetailsByType<T>;
+        }>;
+
         mediaUserDetails: React.FC<{
             mediaType: T;
             queryOption: UserMediaQueryOption;
@@ -48,10 +69,6 @@ export type MediaConfiguration = {
         mediaFollowCard: React.FC<{
             rating: React.ReactNode,
             followData: ExtractFollowByType<T>,
-        }>;
-        mediaDetails: React.FC<{
-            mediaType: T,
-            mediaData: ExtractMediaDetailsByType<T>,
         }>;
         mediaListCard: React.FC<{
             mediaType: T,
@@ -68,51 +85,82 @@ export type MediaConfiguration = {
 };
 
 
-export const mediaConfig: MediaConfiguration = {
+export const mediaConfig: MediaConfig = {
     [MediaType.SERIES]: {
+        overTitle: TvOverTitle,
+        underTitle: TvUnderTitle,
+        infoGrid: TvInfoGrid,
+        upComingAlert: TvUpComingAlert,
+        extraSections: TvExtraSections,
+        
         mediaUserDetails: TvUserDetails,
         mediaFollowCard: TvFollowCard,
-        mediaDetails: TvDetails,
+
         mediaListCard: TvListItem,
         mediaListColumns: getTvColumns,
         sheetFilters: getTvActiveFilters,
     },
     [MediaType.ANIME]: {
+        overTitle: TvOverTitle,
+        underTitle: TvUnderTitle,
+        infoGrid: TvInfoGrid,
+        upComingAlert: TvUpComingAlert,
+        extraSections: TvExtraSections,
+
         mediaUserDetails: TvUserDetails,
         mediaFollowCard: TvFollowCard,
-        mediaDetails: TvDetails,
         mediaListCard: TvListItem,
         mediaListColumns: getTvColumns,
         sheetFilters: getTvActiveFilters,
     },
     [MediaType.MOVIES]: {
+        overTitle: TvOverTitle,
+        underTitle: TvUnderTitle,
+        infoGrid: TvInfoGrid,
+        upComingAlert: TvUpComingAlert,
+        extraSections: TvExtraSections,
+
         mediaUserDetails: MoviesUserDetails,
         mediaFollowCard: MovieFollowCard,
-        mediaDetails: MoviesDetails,
         mediaListCard: MovieListItem,
         mediaListColumns: getMoviesColumns,
         sheetFilters: getMoviesActiveFilters,
     },
     [MediaType.GAMES]: {
+        overTitle: TvOverTitle,
+        underTitle: TvUnderTitle,
+        infoGrid: TvInfoGrid,
+        upComingAlert: TvUpComingAlert,
+        extraSections: TvExtraSections,
+
         mediaUserDetails: GamesUserDetails,
         mediaFollowCard: GameFollowCard,
-        mediaDetails: GamesDetails,
         mediaListCard: GameListItem,
         mediaListColumns: getGamesColumns,
         sheetFilters: getGamesActiveFilters,
     },
     [MediaType.BOOKS]: {
+        overTitle: TvOverTitle,
+        underTitle: TvUnderTitle,
+        infoGrid: TvInfoGrid,
+        upComingAlert: TvUpComingAlert,
+        extraSections: TvExtraSections,
+
         mediaUserDetails: BooksUserDetails,
         mediaFollowCard: BookFollowCard,
-        mediaDetails: BooksDetails,
         mediaListCard: BookListItem,
         mediaListColumns: getBooksColumns,
         sheetFilters: getBooksActiveFilters,
     },
     [MediaType.MANGA]: {
+        overTitle: TvOverTitle,
+        underTitle: TvUnderTitle,
+        infoGrid: TvInfoGrid,
+        upComingAlert: TvUpComingAlert,
+        extraSections: TvExtraSections,
+
         mediaUserDetails: MangaUserDetails,
         mediaFollowCard: MangaFollowCard,
-        mediaDetails: MangaDetails,
         mediaListCard: MangaListItem,
         mediaListColumns: getMangaColumns,
         sheetFilters: getMangaActiveFilters,

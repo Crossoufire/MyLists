@@ -15,7 +15,9 @@ export const MediaDataDetails = <T extends MediaType>({ mediaType, mediaData }: 
 
     return (
         <>
-            <MediaTitle className="mt-4">Details</MediaTitle>
+            <MediaTitle className="mt-4">
+                Details
+            </MediaTitle>
             <div className="flex flex-col gap-7 max-sm:mt-3">
                 <MediaDetails
                     mediaType={mediaType}

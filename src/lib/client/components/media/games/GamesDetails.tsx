@@ -2,13 +2,13 @@ import {Star} from "lucide-react";
 import {JobType, MediaType} from "@/lib/utils/enums";
 import {Separator} from "@/lib/client/components/ui/separator";
 import {Synopsis} from "@/lib/client/components/media/base/Synopsis";
-import {MediaConfiguration} from "@/lib/client/components/media/media-config";
+import {MediaConfig} from "@/lib/client/components/media/media-config";
 import {MapDetails} from "@/lib/client/components/media/base/MapDetails";
 import {formatDateTime, formatMinutes} from "@/lib/utils/functions";
 import {GenericDetails} from "@/lib/client/components/media/base/GenericDetails";
 
 
-type GamesDetailsProps<T extends MediaType> = Parameters<MediaConfiguration[T]["mediaDetails"]>[0];
+type GamesDetailsProps<T extends MediaType> = Parameters<MediaConfig[T]["mediaDetails"]>[0];
 
 
 export const GamesDetails = ({ mediaType, mediaData }: GamesDetailsProps<typeof MediaType.GAMES>) => {

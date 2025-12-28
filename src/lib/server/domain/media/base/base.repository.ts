@@ -350,7 +350,8 @@ export abstract class BaseRepository<TConfig extends MediaSchemaConfig<MediaTabl
             .from(followers)
             .innerJoin(user, eq(user.id, followers.followedId))
             .innerJoin(listTable, eq(listTable.userId, followers.followedId))
-            .where(and(eq(followers.followerId, userId), eq(listTable.mediaId, mediaId)));
+            .where(and(eq(followers.followerId, userId), eq(listTable.mediaId, mediaId)))
+            .orderBy(asc(user.name));
 
         return inFollowsLists;
     }

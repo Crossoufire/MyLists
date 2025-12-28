@@ -12,14 +12,7 @@ export const DisplayTvRedo = ({ redoValues }: DisplayTvRedoProps) => {
     const maxCount = Math.max(...redoValues);
     const totalRedo = redoValues.reduce((a, b) => a + b, 0);
 
-    if (maxCount === 0) {
-        return (
-            <div className="flex items-center gap-x-1">
-                <RotateCw size={15} className="text-green-500"/>
-                <div>{totalRedo} {totalRedo > 1 ? "S." : ""}</div>
-            </div>
-        );
-    }
+    if (maxCount === 0) return null;
 
     return (
         <Popover>
@@ -29,7 +22,7 @@ export const DisplayTvRedo = ({ redoValues }: DisplayTvRedoProps) => {
                     <div>{totalRedo} S.</div>
                 </div>
             </PopoverTrigger>
-            <PopoverContent className="w-40 px-5 pt-3 pb-3 max-h-[210px] overflow-auto" align="center">
+            <PopoverContent className="w-40 px-5 pt-3 pb-3 max-h-52.5 overflow-auto" align="center">
                 <div className=" grid gap-3">
                     <div className="space-y-2">
                         {redoValues.map((season, idx) => (

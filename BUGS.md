@@ -12,4 +12,6 @@
 
 ## TO FINISH
 
-- followers/follows mutation logic
+- Followers/follows mutation logic in profile page
+- Add difference between score and feeling in profile page
+- 

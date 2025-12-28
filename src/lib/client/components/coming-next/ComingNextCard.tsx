@@ -90,35 +90,35 @@ export const ComingNextCard = ({ item, mediaType }: { item: ComingNextItem, medi
 
 const MediaCountdownBadge = ({ days }: { days: number | null }) => {
     if (days === null) return (
-        <div className="flex items-center gap-1 text-primary/80 bg-popover px-2 py-1 rounded text-xs">
+        <div className="flex items-center gap-1 text-primary/90 bg-popover px-2 py-1 rounded text-xs">
             <Hourglass className="size-3"/>
             <span>TBA</span>
         </div>
     );
 
     if (days < 0) return (
-        <div className="flex items-center gap-1 text-primary/80 bg-popover px-2 py-1 rounded text-xs">
+        <div className="flex items-center gap-1 text-primary/90 bg-popover px-2 py-1 rounded text-xs">
             <CheckCircle2 className="size-3"/>
             <span>Released</span>
         </div>
     );
 
     if (days === 0) return (
-        <div className="flex items-center gap-1 text-primary/80 bg-popover px-2 py-1 rounded text-xs font-bold animate-pulse">
+        <div className="flex items-center gap-1 text-primary/90 bg-popover px-2 py-1 rounded text-xs font-bold animate-pulse">
             <AlertCircle className="size-3"/>
             <span>TODAY</span>
         </div>
     );
 
     if (days === 1) return (
-        <div className="flex items-center gap-1 text-primary/80 bg-popover px-2 py-1 rounded text-xs font-bold">
+        <div className="flex items-center gap-1 text-primary/90 bg-popover px-2 py-1 rounded text-xs font-bold">
             <Clock className="size-3"/>
             <span>TOMORROW</span>
         </div>
     );
 
     return (
-        <div className="flex items-center gap-1 text-primary/80 bg-popover px-2 py-1 rounded text-xs font-medium ">
+        <div className="flex items-center gap-1 text-primary/90 bg-popover px-2 py-1 rounded text-xs font-medium ">
             <Calendar className="size-3"/>
             <span>In {days} Days</span>
         </div>
