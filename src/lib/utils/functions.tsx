@@ -3,6 +3,9 @@ import {FaAngry, FaFrown, FaGrinAlt, FaGrinStars, FaPoop, FaSmile} from "react-i
 import {AchievementDifficulty, MediaType, PrivacyType, RatingSystemType, Status} from "@/lib/utils/enums";
 
 
+const CURRENT_DATE = new Date();
+
+
 // --- Ratings / Redo / Playtime ----------------------------------------------------------------------------
 
 
@@ -176,7 +179,7 @@ export const getStatusColor = (status: Status) => {
 
 export const diffColors = (difficulty: AchievementDifficulty | "total" | undefined, variant: "text" | "border" | "bg" = "text") => {
     if (!difficulty) return "";
-    
+
     const colors: { [key: string]: string } = {
         "border-bronze": "border-amber-700",
         "border-silver": "border-slate-400",
@@ -209,6 +212,17 @@ export const PrivacyIcon = ({ type }: { type: PrivacyType }) => {
 
 
 // --- Time Format ------------------------------------------------------------------------------------------
+
+
+export const getDaysRemaining = (dateString: string | null) => {
+    if (!dateString) return null;
+
+    const targetDate = new Date(dateString);
+    const diffTime = targetDate.getTime() - CURRENT_DATE.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    return diffDays;
+};
 
 
 export const formatMinutes = (minutes: number | string | null | undefined, onlyHours = false) => {

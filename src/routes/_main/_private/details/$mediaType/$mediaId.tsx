@@ -48,7 +48,7 @@ function MediaDetailsPage() {
 
     return (
         <PageTitle title={apiData.media.name} onlyHelmet>
-            <div className="max-w-[1000px] mx-auto">
+            <div className="max-w-250 mx-auto">
                 <section>
                     <h3 className="flex justify-between items-center mt-8 text-2xl font-semibold">
                         <div>{apiData.media.name}</div>
@@ -70,7 +70,7 @@ function MediaDetailsPage() {
                             <img
                                 alt="media-cover"
                                 src={apiData.media.imageCover}
-                                className="w-[300px] h-[450px] rounded-md"
+                                className="w-75 h-112.5 rounded-md"
                                 style={{ viewTransitionName: `media-cover-${apiData.media.id}` }}
                             />
                             {apiData.userMedia ?
@@ -80,7 +80,7 @@ function MediaDetailsPage() {
                                     queryOption={mediaDetailsOptions(mediaType, mediaId, external)}
                                 />
                                 :
-                                <Button className="w-[300px]" onClick={handleAddMediaToUser}>
+                                <Button className="w-75" onClick={handleAddMediaToUser}>
                                     Add to your list
                                 </Button>
                             }

@@ -177,7 +177,6 @@ interface SearchComponentProps {
 const SearchComponent = ({ item, resetSearch, setMobileMenu }: SearchComponentProps) => {
     const router = useRouter();
     const destination = createDestParams();
-    const imageHeight = (item.itemType === ApiProviderType.USERS) ? 64 : 96;
     const routerStatus = useRouterState({ select: (state) => state.status });
     const [clickedApiId, setClickedApiId] = useState<number | string | null>(null);
 
