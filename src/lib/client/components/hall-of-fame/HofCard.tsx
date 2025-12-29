@@ -31,7 +31,7 @@ export const HofCard = ({ userData }: HofCardProps) => {
         <Card
             key={userData.name}
             onClick={handleMobileToggle}
-            className={cn("p-2 py-0 mb-3 bg-card", currentUser?.id === userData.id && "bg-app-accent/20")}
+            className={cn("p-2 py-0 mb-3 bg-card", currentUser?.id === userData.id && "bg-app-accent/5 border-app-accent/50")}
         >
             <CardContent className="p-0">
                 <div className="grid grid-cols-12 py-4">
@@ -49,7 +49,7 @@ export const HofCard = ({ userData }: HofCardProps) => {
                             />
                             <div className="space-y-2">
                                 <h3 className="text-lg font-medium sm:truncate sm:w-38">
-                                    <Link to="/profile/$username" params={{ username: userData.name }} className="hover:underline hover:underline-offset-2">
+                                    <Link to="/profile/$username" params={{ username: userData.name }}>
                                         {userData.name}
                                     </Link>
                                 </h3>
@@ -77,7 +77,7 @@ export const HofCard = ({ userData }: HofCardProps) => {
                                         mediaType={setting.mediaType}
                                         intLevel={Math.floor(computeLevel(setting.timeSpent))}
                                     />
-                                    <div className="text-xs font-semibold text-gray-400">
+                                    <div className="text-xs font-semibold text-muted-foreground">
                                         {capitalize(setting.mediaType)}
                                     </div>
                                 </Link>

@@ -518,12 +518,13 @@ export abstract class BaseRepository<TConfig extends MediaSchemaConfig<MediaTabl
         dataQuery = dataQuery.where(filterCondition);
         countQuery = countQuery.where(filterCondition);
 
-        const [totalResult, results] = await Promise.all([
-            countQuery.execute(),
-            dataQuery.orderBy(asc(mediaTable.releaseDate)).limit(limit).offset(offset).execute(),
+        const [totalCount, results] = await Promise.all([
+            countQuery.get().then((res) => res?.value ?? 0),
+            dataQuery.orderBy(asc(mediaTable.releaseDate))
+                .limit(limit)
+                .offset(offset)
+                .execute(),
         ]);
-
-        const totalCount = totalResult[0]?.value ?? 0;
 
         return {
             items: results,

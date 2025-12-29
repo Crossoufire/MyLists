@@ -91,7 +91,7 @@ function MediaEditPage() {
                         <FormLabel>{capitalize(key.replaceAll("_", " "))}</FormLabel>
                         <FormControl>
                             {key === "synopsis" ?
-                                <Textarea {...field} className="h-[130px]"/>
+                                <Textarea {...field} className="h-60"/>
                                 :
                                 <Input {...field}/>
                             }

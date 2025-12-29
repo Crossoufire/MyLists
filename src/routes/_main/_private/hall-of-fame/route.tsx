@@ -61,7 +61,7 @@ function HallOfFamePage() {
 
     return (
         <PageTitle title="Hall of Fame" subtitle="Showcase of all the active profiles ranked">
-            <div className="grid grid-cols-12 mx-auto w-250 gap-x-10 max-sm:w-full max-sm:grid-cols-1">
+            <div className="grid grid-cols-12 mx-auto w-250 gap-x-10 max-sm:w-full max-sm:grid-cols-1 mt-6">
                 <div className="col-span-7 max-sm:col-span-1 w-full max-sm:mt-4 max-sm:order-2">
                     <div className="flex items-center justify-between mt-3 mb-3">
                         <div className="flex items-center justify-start gap-3">
