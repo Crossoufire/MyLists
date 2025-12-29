@@ -1,61 +1,64 @@
 import React from "react";
 import {Link} from "@tanstack/react-router";
 import {MediaType} from "@/lib/utils/enums";
-import {formatDateTime, formatMinutes} from "@/lib/utils/functions";
+import {formatCurrency} from "@/lib/client/media-stats/stats-utils";
 import {MediaConfig} from "@/lib/client/components/media/media-config";
+import {formatDateTime, getLangCountryName} from "@/lib/utils/functions";
 
 
-type TvDetailsProps<T extends MediaType> = Parameters<MediaConfig[T]["infoGrid"]>[number];
+type MoviesDetailsProps<T extends MediaType> = Parameters<MediaConfig[T]["infoGrid"]>[number];
 
 
-export const TvInfoGrid = ({ mediaType, media }: TvDetailsProps<typeof MediaType.SERIES | typeof MediaType.ANIME>) => {
-    const creators = media.createdBy?.split(", ").map((c) => ({ name: c })) || [];
-
+export const MoviesInfoGrid = ({ mediaType, media }: MoviesDetailsProps<typeof MediaType.MOVIES>) => {
     return (
         <>
             <div className="space-y-1">
                 <span className="text-xs text-muted-foreground uppercase tracking-wider">
-                    Prod. Status
-                </span>
-                <p className="font-medium text-sm">
-                    {media.prodStatus}
-                </p>
-            </div>
-            <div className="space-y-1">
-                <span className="text-xs text-muted-foreground uppercase tracking-wider">
-                    Created By
+                    Directed By
                 </span>
                 <p className="font-medium text-sm wrap-break-word">
-                    {creators.map((c) =>
-                        <Link to="/details/$mediaType/$job/$name" params={{ mediaType, job: "creator", name: c.name }}>
-                            <div key={c.name}>
-                                {c.name}
-                            </div>
+                    {media.directorName ?
+                        <Link to="/details/$mediaType/$job/$name" params={{ mediaType, job: "creator", name: media.directorName }}>
+                            {media.directorName}
                         </Link>
-                    ) ?? "-"}
+                        :
+                        "-"
+                    }
                 </p>
             </div>
             <div className="space-y-1">
                 <span className="text-xs text-muted-foreground uppercase tracking-wider">
-                    Airing Dates
+                    Composed By
+                </span>
+                <p className="font-medium text-sm wrap-break-word">
+                    {media.compositorName ?
+                        <Link to="/details/$mediaType/$job/$name" params={{ mediaType, job: "compositor", name: media.compositorName }}>
+                            {media.compositorName}
+                        </Link>
+                        :
+                        "-"
+                    }
+                </p>
+            </div>
+            <div className="space-y-1">
+                <span className="text-xs text-muted-foreground uppercase tracking-wider">
+                    Release Date
                 </span>
                 <p className="font-medium text-sm">
                     {formatDateTime(media.releaseDate, { noTime: true })}
-                    <br/>
-                    {formatDateTime(media.lastAirDate, { noTime: true })}
                 </p>
             </div>
             <div className="space-y-1">
                 <span className="text-xs text-muted-foreground uppercase tracking-wider">
-                    Origin
+                    Original Lang.
                 </span>
                 <p className="font-medium text-sm">
-                    {media.originCountry}
+                    {getLangCountryName(media.originalLanguage, "language")}
                 </p>
             </div>
             <div className="space-y-1">
                 <span className="text-xs text-muted-foreground uppercase tracking-wider">
-                    Eps. Duration
+                    Duration
                 </span>
                 <p className="font-medium text-sm">
                     {media.duration ?? "-"} min
@@ -63,26 +66,18 @@ export const TvInfoGrid = ({ mediaType, media }: TvDetailsProps<typeof MediaType
             </div>
             <div className="space-y-1">
                 <span className="text-xs text-muted-foreground uppercase tracking-wider">
-                    Total Seasons
+                    Total Budget
                 </span>
                 <p className="font-medium text-sm">
-                    {media.totalSeasons ?? "-"}
+                    {formatCurrency(media.budget)}
                 </p>
             </div>
             <div className="space-y-1">
                 <span className="text-xs text-muted-foreground uppercase tracking-wider">
-                    Total Episodes
+                    Total Revenue
                 </span>
                 <p className="font-medium text-sm">
-                    {media.totalEpisodes ?? "-"}
-                </p>
-            </div>
-            <div className="space-y-1">
-                <span className="text-xs text-muted-foreground uppercase tracking-wider">
-                    Completion
-                </span>
-                <p className="font-medium text-sm">
-                    {formatMinutes(media.totalEpisodes * media.duration)}
+                    {formatCurrency(media.revenue)}
                 </p>
             </div>
         </>

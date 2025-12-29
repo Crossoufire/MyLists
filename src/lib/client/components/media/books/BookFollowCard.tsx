@@ -1,7 +1,7 @@
 import React from "react";
 import {MediaType} from "@/lib/utils/enums";
-import {DisplayPages} from "@/lib/client/components/media/base/DisplayPages";
 import {MediaConfig} from "@/lib/client/components/media/media-config";
+import {DisplayPages} from "@/lib/client/components/media/base/DisplayPages";
 import {DisplayRedoValue} from "@/lib/client/components/media/base/DisplayRedoValue";
 import {BaseMediaFollowCard} from "@/lib/client/components/media/base/BaseMediaFollowCard";
 

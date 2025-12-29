@@ -1,7 +1,7 @@
 import React from "react";
 import {MediaType} from "@/lib/utils/enums";
-import {DisplayPages} from "@/lib/client/components/media/base/DisplayPages";
 import {MediaConfig} from "@/lib/client/components/media/media-config";
+import {DisplayChapters} from "@/lib/client/components/media/base/DisplayChapters";
 import {DisplayRedoValue} from "@/lib/client/components/media/base/DisplayRedoValue";
 import {BaseMediaFollowCard} from "@/lib/client/components/media/base/BaseMediaFollowCard";
 
@@ -20,9 +20,9 @@ export const MangaFollowCard = ({ followData, rating }: MangaFollowCardProps<typ
                 />
             }
             mediaDetailsDisplay={
-                <DisplayPages
+                <DisplayChapters
                     status={followData.userMedia.status}
-                    currentPage={followData.userMedia.currentChapter}
+                    currentChapter={followData.userMedia.currentChapter}
                 />
             }
         />

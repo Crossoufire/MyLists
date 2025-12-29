@@ -10,8 +10,10 @@
 - check theme usage (no random colors)
 - check responsive (tablet and mobile)
 
-## TO FINISH
+## DESIGN TO FINISH
 
-- Followers/follows mutation logic in profile page
-- Add difference between score and feeling in profile page
-- 
+- Too many "utils" functions, need some clean up.
+- PROFILE: Followers/follows mutation logic.
+- PROFILE: Add difference between score and feeling.
+- DETAILS: RefreshAndEdit bad display in mobile.
+- DETAILS: Make SimilarMedia similar to favorites imgs in profile page.

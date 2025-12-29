@@ -5,11 +5,11 @@ import {Card} from "@/lib/client/components/ui/card";
 import {MediaType, RoleType} from "@/lib/utils/enums";
 import {Badge} from "@/lib/client/components/ui/badge";
 import {useSuspenseQuery} from "@tanstack/react-query";
-import {createFileRoute, Link} from "@tanstack/react-router";
+import {createFileRoute} from "@tanstack/react-router";
 import {Button} from "@/lib/client/components/ui/button";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
-import {mediaConfig} from "@/lib/client/components/media/media-config";
-import {ExtractMediaDetailsByType} from "@/lib/types/query.options.types";
+import {MediaComponent} from "@/lib/client/components/media/base/MediaComponent";
+import {SimilarMediaCard} from "@/lib/client/components/media/base/SimilarMedia";
 import {MediaFollowCard} from "@/lib/client/components/media/base/MediaFollowCard";
 import {UserMediaDetails} from "@/lib/client/components/media/base/UserMediaDetails";
 import {mediaDetailsOptions} from "@/lib/client/react-query/query-options/query-options";
@@ -73,7 +73,7 @@ function MediaDetailsPage() {
                         {/* Title & other information */}
                         <div className="flex-1 space-y-4 z-10 w-full">
                             <div className="flex flex-wrap gap-2 mb-2">
-                                <MediaInfo
+                                <MediaComponent
                                     media={media}
                                     name="overTitle"
                                     mediaType={mediaType}
@@ -83,7 +83,7 @@ function MediaDetailsPage() {
                                 {media.name}
                             </h1>
                             <div className="flex items-center flex-wrap gap-y-2 gap-x-6 text-sm text-primary font-medium">
-                                <MediaInfo
+                                <MediaComponent
                                     media={media}
                                     name="underTitle"
                                     mediaType={mediaType}
@@ -91,7 +91,6 @@ function MediaDetailsPage() {
                             </div>
                         </div>
 
-                        {/* TODO: Check in mobile, does not work for now */}
                         {(currentUser?.role === RoleType.MANAGER) &&
                             <RefreshAndEditMedia
                                 external={external}
@@ -123,7 +122,7 @@ function MediaDetailsPage() {
 
                     {/* Info Grid */}
                     <section className="grid grid-cols-2 sm:grid-cols-4 gap-4 py-6 border-y border-app-accent/30">
-                        <MediaInfo
+                        <MediaComponent
                             media={media}
                             name="infoGrid"
                             mediaType={mediaType}
@@ -138,6 +137,9 @@ function MediaDetailsPage() {
                         <p className="text-primary leading-relaxed text-base">
                             {media.synopsis}
                         </p>
+                        <blockquote className="text-muted-foreground leading-relaxed text-base mt-2 italic">
+                            {"tagline" in media && `— ${media.tagline}`}
+                        </blockquote>
                     </section>
 
                     {/* Genres */}
@@ -149,8 +151,8 @@ function MediaDetailsPage() {
                         )}
                     </section>
 
-                    {/* Extra Sections (Cast, Collection, EpsPerSeasons, etc...) */}
-                    <MediaInfo
+                    {/* Extra Sections */}
+                    <MediaComponent
                         media={media}
                         name="extraSections"
                         mediaType={mediaType}
@@ -176,7 +178,7 @@ function MediaDetailsPage() {
                 {/* RIGHT COLUMN DETAILS */}
                 <div className="lg:col-span-4 space-y-6">
                     {/* Upcoming Alert */}
-                    <MediaInfo
+                    <MediaComponent
                         media={media}
                         name="upComingAlert"
                         mediaType={mediaType}
@@ -233,48 +235,3 @@ function MediaDetailsPage() {
         </PageTitle>
     );
 }
-
-
-// TODO: Make it similar to favorites in profile page. (with name on hover at the bottom with black gradient)
-const SimilarMediaCard = ({ mediaType, item }: any) => {
-    return (
-        <Link
-            search={{ external: false }}
-            to="/details/$mediaType/$mediaId"
-            params={{ mediaType, mediaId: item.mediaId }}
-        >
-            <div className="space-y-2 w-37 shrink-0 group max-sm:w-32">
-                <div className="aspect-2/3 overflow-hidden rounded-md border relative">
-                    <img
-                        alt={item.mediaName}
-                        src={item.mediaCover}
-                        className="w-full h-full object-cover transition-transform group-hover:scale-105"
-                    />
-                    <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors"/>
-                </div>
-                <p className="text-xs font-medium text-muted-foreground truncate group-hover:text-white">
-                    {item.mediaName}
-                </p>
-            </div>
-        </Link>
-    );
-}
-
-
-interface MediaInfoProps<T extends MediaType> {
-    mediaType: T;
-    media: ExtractMediaDetailsByType<T>;
-    name: "overTitle" | "underTitle" | "infoGrid" | "upComingAlert" | "extraSections";
-}
-
-
-export const MediaInfo = <T extends MediaType>({ mediaType, media, name }: MediaInfoProps<T>) => {
-    const MediaComponent = mediaConfig[mediaType][name];
-
-    return (
-        <MediaComponent
-            media={media}
-            mediaType={mediaType}
-        />
-    );
-};

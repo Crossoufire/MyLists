@@ -1,14 +1,14 @@
 import React from "react";
 import {MediaType} from "@/lib/utils/enums";
+import {Calendar, Star, Clock} from "lucide-react";
 import {formatRuntime} from "@/lib/utils/functions";
-import {Calendar, Star, Tv, Clock} from "lucide-react";
 import {MediaConfig} from "@/lib/client/components/media/media-config";
 
 
-type TvDetailsProps<T extends MediaType> = Parameters<MediaConfig[T]["underTitle"]>[number];
+type MoviesDetailsProps<T extends MediaType> = Parameters<MediaConfig[T]["underTitle"]>[number];
 
 
-export const TvUnderTitle = ({ media }: TvDetailsProps<typeof MediaType.SERIES | typeof MediaType.ANIME>) => {
+export const MoviesUnderTitle = ({ media }: MoviesDetailsProps<typeof MediaType.MOVIES>) => {
     return (
         <>
             <div className="flex items-center gap-1.5">
@@ -23,10 +23,6 @@ export const TvUnderTitle = ({ media }: TvDetailsProps<typeof MediaType.SERIES |
             <div className="flex items-center gap-1.5">
                 <Calendar className="size-4 text-muted-foreground"/>
                 <span>{media.releaseDate?.split("-")[0]}</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-                <Tv className="size-4 text-muted-foreground"/>
-                <span>{media.totalSeasons} Seasons</span>
             </div>
             <div className="flex items-center gap-1.5">
                 <Clock className="size-4 text-muted-foreground"/>

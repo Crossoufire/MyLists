@@ -5,12 +5,10 @@ import {formatDateTime, formatMinutes} from "@/lib/utils/functions";
 import {MediaConfig} from "@/lib/client/components/media/media-config";
 
 
-type TvDetailsProps<T extends MediaType> = Parameters<MediaConfig[T]["infoGrid"]>[number];
+type MangaDetailsProps<T extends MediaType> = Parameters<MediaConfig[T]["infoGrid"]>[number];
 
 
-export const TvInfoGrid = ({ mediaType, media }: TvDetailsProps<typeof MediaType.SERIES | typeof MediaType.ANIME>) => {
-    const creators = media.createdBy?.split(", ").map((c) => ({ name: c })) || [];
-
+export const MangaInfoGrid = ({ mediaType, media }: MangaDetailsProps<typeof MediaType.MANGA>) => {
     return (
         <>
             <div className="space-y-1">
@@ -23,13 +21,13 @@ export const TvInfoGrid = ({ mediaType, media }: TvDetailsProps<typeof MediaType
             </div>
             <div className="space-y-1">
                 <span className="text-xs text-muted-foreground uppercase tracking-wider">
-                    Created By
+                    Authored By
                 </span>
                 <p className="font-medium text-sm wrap-break-word">
-                    {creators.map((c) =>
-                        <Link to="/details/$mediaType/$job/$name" params={{ mediaType, job: "creator", name: c.name }}>
-                            <div key={c.name}>
-                                {c.name}
+                    {media.authors?.slice(0, 3).map((author) =>
+                        <Link to="/details/$mediaType/$job/$name" params={{ mediaType, job: "creator", name: author.name }}>
+                            <div key={author.name}>
+                                {author.name}
                             </div>
                         </Link>
                     ) ?? "-"}
@@ -37,44 +35,36 @@ export const TvInfoGrid = ({ mediaType, media }: TvDetailsProps<typeof MediaType
             </div>
             <div className="space-y-1">
                 <span className="text-xs text-muted-foreground uppercase tracking-wider">
-                    Airing Dates
+                    Published By
+                </span>
+                <p className="font-medium text-sm wrap-break-word">
+                    {media.publishers}
+                </p>
+            </div>
+            <div className="space-y-1">
+                <span className="text-xs text-muted-foreground uppercase tracking-wider">
+                    Releasing Dates
                 </span>
                 <p className="font-medium text-sm">
                     {formatDateTime(media.releaseDate, { noTime: true })}
                     <br/>
-                    {formatDateTime(media.lastAirDate, { noTime: true })}
+                    {formatDateTime(media.endDate, { noTime: true })}
                 </p>
             </div>
             <div className="space-y-1">
                 <span className="text-xs text-muted-foreground uppercase tracking-wider">
-                    Origin
+                    Total Chapters
                 </span>
                 <p className="font-medium text-sm">
-                    {media.originCountry}
+                    {media.chapters ?? "?"} chapters
                 </p>
             </div>
             <div className="space-y-1">
                 <span className="text-xs text-muted-foreground uppercase tracking-wider">
-                    Eps. Duration
+                    Total Volumes
                 </span>
                 <p className="font-medium text-sm">
-                    {media.duration ?? "-"} min
-                </p>
-            </div>
-            <div className="space-y-1">
-                <span className="text-xs text-muted-foreground uppercase tracking-wider">
-                    Total Seasons
-                </span>
-                <p className="font-medium text-sm">
-                    {media.totalSeasons ?? "-"}
-                </p>
-            </div>
-            <div className="space-y-1">
-                <span className="text-xs text-muted-foreground uppercase tracking-wider">
-                    Total Episodes
-                </span>
-                <p className="font-medium text-sm">
-                    {media.totalEpisodes ?? "-"}
+                    {media.volumes ?? "?"} volumes
                 </p>
             </div>
             <div className="space-y-1">
@@ -82,7 +72,7 @@ export const TvInfoGrid = ({ mediaType, media }: TvDetailsProps<typeof MediaType
                     Completion
                 </span>
                 <p className="font-medium text-sm">
-                    {formatMinutes(media.totalEpisodes * media.duration)}
+                    {formatMinutes(media.chapters ? media.chapters * 7 : null)}
                 </p>
             </div>
         </>

@@ -1,9 +1,9 @@
 import {MediaType, Status} from "@/lib/utils/enums";
 import {useQueryClient} from "@tanstack/react-query";
+import {MediaConfig} from "@/lib/client/components/media/media-config";
 import {UpdateTvRedo} from "@/lib/client/components/media/tv/UpdateTvRedo";
 import {UpdateRating} from "@/lib/client/components/media/base/UpdateRating";
 import {UpdateStatus} from "@/lib/client/components/media/base/UpdateStatus";
-import {MediaConfig} from "@/lib/client/components/media/media-config";
 import {UpdateSeasonsEps} from "@/lib/client/components/media/tv/UpdateSeasonsEps";
 import {useUpdateUserMediaMutation} from "@/lib/client/react-query/query-mutations/user-media.mutations";
 

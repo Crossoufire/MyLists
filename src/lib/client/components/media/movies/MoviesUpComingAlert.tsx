@@ -1,18 +1,18 @@
 import React from "react";
 import {MediaType} from "@/lib/utils/enums";
 import {Calendar, Clock} from "lucide-react";
-import {getDaysRemaining, zeroPad} from "@/lib/utils/functions";
+import {CURRENT_DATE, getDaysRemaining} from "@/lib/utils/functions";
 import {MediaConfig} from "@/lib/client/components/media/media-config";
 
 
-type TvDetailsProps<T extends MediaType> = Parameters<NonNullable<MediaConfig[T]["upComingAlert"]>>[number];
+type MoviesDetailsProps<T extends MediaType> = Parameters<NonNullable<MediaConfig[T]["upComingAlert"]>>[number];
 
 
-export const TvUpComingAlert = ({ media }: TvDetailsProps<typeof MediaType.SERIES | typeof MediaType.ANIME>) => {
-    if (!media.nextEpisodeToAir) return null;
+export const MoviesUpComingAlert = ({ media }: MoviesDetailsProps<typeof MediaType.MOVIES>) => {
+    if (!media.releaseDate || CURRENT_DATE.getTime() > new Date(media.releaseDate).getTime()) return null;
 
-    const airDate = new Date(media.nextEpisodeToAir);
-    const daysRemaining = getDaysRemaining(media.nextEpisodeToAir);
+    const airDate = new Date(media.releaseDate);
+    const daysRemaining = getDaysRemaining(media.releaseDate);
 
     return (
         <div className="relative overflow-hidden rounded-xl border bg-card p-4 text-card-foreground shadow-sm">
@@ -23,11 +23,9 @@ export const TvUpComingAlert = ({ media }: TvDetailsProps<typeof MediaType.SERIE
 
                 <div className="flex-1 space-y-1">
                     <h3 className="font-semibold leading-none tracking-tight">
-                        Next Episode
+                        Movie Premiere
                     </h3>
                     <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                        S{zeroPad(media.seasonToAir)}.E{zeroPad(media.episodeToAir)}
-                        <span>•</span>
                         <Calendar className="size-3.5"/>
                         <span>
                             {daysRemaining === 0 ?

@@ -1,6 +1,6 @@
 import {MediaType} from "@/lib/utils/enums";
-import {DisplayTvRedo} from "@/lib/client/components/media/tv/DisplayTvRedo";
 import {MediaConfig} from "@/lib/client/components/media/media-config";
+import {DisplayTvRedo} from "@/lib/client/components/media/tv/DisplayTvRedo";
 import {BaseMediaListItem} from "@/lib/client/components/media/base/BaseMediaListItem";
 import {DisplayEpsAndSeasons} from "@/lib/client/components/media/tv/DisplayEpsAndSeasons";
 

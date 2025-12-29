@@ -95,7 +95,7 @@ export const Navbar = () => {
                         </span>
                     </div>
 
-                    <div className="flex-1 max-w-sm z-50 block max-lg:hidden">
+                    <div className="flex-1 max-w-md z-50 block max-lg:hidden">
                         <SearchBar/>
                     </div>
 

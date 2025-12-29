@@ -1,5 +1,4 @@
 import {JobType} from "@/lib/utils/enums";
-
 import {SheetFilterObject} from "@/lib/types/base.types";
 
 

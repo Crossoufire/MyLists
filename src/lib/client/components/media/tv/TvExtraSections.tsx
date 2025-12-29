@@ -1,11 +1,10 @@
 import React from "react";
 import {Link} from "@tanstack/react-router";
 import {MediaType} from "@/lib/utils/enums";
-import {capitalize} from "@/lib/utils/functions";
 import {MediaConfig} from "@/lib/client/components/media/media-config";
 
 
-type TvDetailsProps<T extends MediaType> = Parameters<MediaConfig[T]["extraSections"]>[number];
+type TvDetailsProps<T extends MediaType> = Parameters<NonNullable<MediaConfig[T]["extraSections"]>>[number];
 
 
 export const TvExtraSections = ({ mediaType, media }: TvDetailsProps<typeof MediaType.SERIES | typeof MediaType.ANIME>) => {
@@ -13,7 +12,7 @@ export const TvExtraSections = ({ mediaType, media }: TvDetailsProps<typeof Medi
         <>
             <section>
                 <h2 className="text-xl font-semibold text-primary mb-4">
-                    {capitalize(mediaType)} Actors
+                    Main Actors
                 </h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
                     {media.actors?.map((actor) =>

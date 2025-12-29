@@ -3,7 +3,7 @@ import {FaAngry, FaFrown, FaGrinAlt, FaGrinStars, FaPoop, FaSmile} from "react-i
 import {AchievementDifficulty, MediaType, PrivacyType, RatingSystemType, Status} from "@/lib/utils/enums";
 
 
-const CURRENT_DATE = new Date();
+export const CURRENT_DATE = new Date();
 
 
 // --- Ratings / Redo / Playtime ----------------------------------------------------------------------------
@@ -212,6 +212,13 @@ export const PrivacyIcon = ({ type }: { type: PrivacyType }) => {
 
 
 // --- Time Format ------------------------------------------------------------------------------------------
+
+
+export const formatRuntime = (minutes: number) => {
+    const h = Math.floor(minutes / 60);
+    const m = minutes % 60;
+    return h > 0 ? `${h}h ${m}m` : `${m}m`;
+};
 
 
 export const getDaysRemaining = (dateString: string | null) => {

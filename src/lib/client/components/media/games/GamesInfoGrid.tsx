@@ -5,31 +5,24 @@ import {formatDateTime, formatMinutes} from "@/lib/utils/functions";
 import {MediaConfig} from "@/lib/client/components/media/media-config";
 
 
-type TvDetailsProps<T extends MediaType> = Parameters<MediaConfig[T]["infoGrid"]>[number];
+type GamesDetailsProps<T extends MediaType> = Parameters<MediaConfig[T]["infoGrid"]>[number];
 
 
-export const TvInfoGrid = ({ mediaType, media }: TvDetailsProps<typeof MediaType.SERIES | typeof MediaType.ANIME>) => {
-    const creators = media.createdBy?.split(", ").map((c) => ({ name: c })) || [];
+export const GamesInfoGrid = ({ mediaType, media }: GamesDetailsProps<typeof MediaType.GAMES>) => {
+    const publishers = media.companies ? media.companies.filter((c) => c.publisher) : [];
+    const developers = media.companies ? media.companies.filter((c) => c.developer) : [];
 
     return (
         <>
             <div className="space-y-1">
                 <span className="text-xs text-muted-foreground uppercase tracking-wider">
-                    Prod. Status
-                </span>
-                <p className="font-medium text-sm">
-                    {media.prodStatus}
-                </p>
-            </div>
-            <div className="space-y-1">
-                <span className="text-xs text-muted-foreground uppercase tracking-wider">
-                    Created By
+                    Developed By
                 </span>
                 <p className="font-medium text-sm wrap-break-word">
-                    {creators.map((c) =>
-                        <Link to="/details/$mediaType/$job/$name" params={{ mediaType, job: "creator", name: c.name }}>
-                            <div key={c.name}>
-                                {c.name}
+                    {developers.slice(0, 3).map((dev) =>
+                        <Link to="/details/$mediaType/$job/$name" params={{ mediaType, job: "creator", name: dev.name }}>
+                            <div key={dev.name}>
+                                {dev.name}
                             </div>
                         </Link>
                     ) ?? "-"}
@@ -37,52 +30,64 @@ export const TvInfoGrid = ({ mediaType, media }: TvDetailsProps<typeof MediaType
             </div>
             <div className="space-y-1">
                 <span className="text-xs text-muted-foreground uppercase tracking-wider">
-                    Airing Dates
+                    Published By
+                </span>
+                <p className="font-medium text-sm wrap-break-word">
+                    {publishers.slice(0, 3).map((pub) =>
+                        <Link to="/details/$mediaType/$job/$name" params={{ mediaType, job: "publisher", name: pub.name }}>
+                            <div key={pub.name}>
+                                {pub.name}
+                            </div>
+                        </Link>
+                    ) ?? "-"}
+                </p>
+            </div>
+            <div className="space-y-1">
+                <span className="text-xs text-muted-foreground uppercase tracking-wider">
+                    Release Date
                 </span>
                 <p className="font-medium text-sm">
                     {formatDateTime(media.releaseDate, { noTime: true })}
-                    <br/>
-                    {formatDateTime(media.lastAirDate, { noTime: true })}
                 </p>
             </div>
             <div className="space-y-1">
                 <span className="text-xs text-muted-foreground uppercase tracking-wider">
-                    Origin
+                    Perspective
                 </span>
                 <p className="font-medium text-sm">
-                    {media.originCountry}
+                    {media.playerPerspective ?? "-"}
                 </p>
             </div>
             <div className="space-y-1">
                 <span className="text-xs text-muted-foreground uppercase tracking-wider">
-                    Eps. Duration
+                    Engine
                 </span>
                 <p className="font-medium text-sm">
-                    {media.duration ?? "-"} min
+                    {media.gameEngine ?? "-"}
                 </p>
             </div>
             <div className="space-y-1">
                 <span className="text-xs text-muted-foreground uppercase tracking-wider">
-                    Total Seasons
+                    HLTB Main
                 </span>
                 <p className="font-medium text-sm">
-                    {media.totalSeasons ?? "-"}
+                    {media.hltbMainTime ? formatMinutes(media.hltbMainTime * 60, true) : "- h"}
                 </p>
             </div>
             <div className="space-y-1">
                 <span className="text-xs text-muted-foreground uppercase tracking-wider">
-                    Total Episodes
+                    HLTB Main & Extra
                 </span>
                 <p className="font-medium text-sm">
-                    {media.totalEpisodes ?? "-"}
+                    {media.hltbMainAndExtraTime ? formatMinutes(media.hltbMainAndExtraTime * 60, true) : "- h"}
                 </p>
             </div>
             <div className="space-y-1">
                 <span className="text-xs text-muted-foreground uppercase tracking-wider">
-                    Completion
+                    HLTB Total
                 </span>
                 <p className="font-medium text-sm">
-                    {formatMinutes(media.totalEpisodes * media.duration)}
+                    {media.hltbTotalCompleteTime ? formatMinutes(media.hltbTotalCompleteTime * 60, true) : "- h"}
                 </p>
             </div>
         </>

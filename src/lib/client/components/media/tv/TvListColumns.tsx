@@ -1,5 +1,5 @@
-import {ColumnDef} from "@tanstack/react-table";
 import {MediaType} from "@/lib/utils/enums";
+import {ColumnDef} from "@tanstack/react-table";
 import {ExtractListByType} from "@/lib/types/query.options.types";
 import {DisplayTvRedo} from "@/lib/client/components/media/tv/DisplayTvRedo";
 import {CommonInfoTableCell} from "@/lib/client/components/media/base/CommonInfoTableCell";

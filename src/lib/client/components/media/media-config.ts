@@ -1,7 +1,22 @@
 import React from "react";
 import {ColumnDef} from "@tanstack/react-table";
 import {MediaType, Status} from "@/lib/utils/enums";
+import {BooksInfoGrid} from "./books/BooksInfoGrid";
+import {MangaInfoGrid} from "./manga/MangaInfoGrid";
+import {GamesInfoGrid} from "./games/GamesInfoGrid";
+import {BooksOverTitle} from "./books/BooksOverTitle";
+import {MangaOverTitle} from "./manga/MangaOverTitle";
+import {GamesOverTitle} from "./games/GamesOverTitle";
+import {MoviesInfoGrid} from "./movies/MoviesInfoGrid";
+import {BooksUnderTitle} from "./books/BooksUnderTitle";
+import {MangaUnderTitle} from "./manga/MangaUnderTitle";
+import {GamesUnderTitle} from "./games/GamesUnderTitle";
 import {SheetFilterObject} from "@/lib/types/base.types";
+import {MoviesUnderTitle} from "./movies/MoviesUnderTitle";
+import {GamesExtraSections} from "./games/GamesExtraSections";
+import {GamesUpComingAlert} from "./games/GamesUpComingAlert";
+import {MoviesUpComingAlert} from "./movies/MoviesUpComingAlert";
+import {MoviesExtraSections} from "./movies/MoviesExtraSections";
 import {TvInfoGrid} from "@/lib/client/components/media/tv/TvInfoGrid";
 import {TvListItem} from "@/lib/client/components/media/tv/TvListItem";
 import {TvOverTitle} from "@/lib/client/components/media/tv/TvOverTitle";
@@ -25,6 +40,7 @@ import {getBooksColumns} from "@/lib/client/components/media/books/BooksListColu
 import {getMangaColumns} from "@/lib/client/components/media/manga/MangaListColumns";
 import {MovieFollowCard} from "@/lib/client/components/media/movies/MovieFollowCard";
 import {BooksUserDetails} from "@/lib/client/components/media/books/BookUserDetails";
+import {MoviesOverTitle} from "@/lib/client/components/media/movies/MoviesOverTitle";
 import {mediaListOptions} from "@/lib/client/react-query/query-options/query-options";
 import {MangaUserDetails} from "@/lib/client/components/media/manga/MangaUserDetails";
 import {GamesUserDetails} from "@/lib/client/components/media/games/GamesUserDetails";
@@ -52,11 +68,11 @@ export type MediaConfig = {
             mediaType: T;
             media: ExtractMediaDetailsByType<T>;
         }>;
-        upComingAlert: React.FC<{
+        upComingAlert?: React.FC<{
             mediaType: T;
             media: ExtractMediaDetailsByType<T>;
         }>;
-        extraSections: React.FC<{
+        extraSections?: React.FC<{
             mediaType: T;
             media: ExtractMediaDetailsByType<T>;
         }>;
@@ -92,7 +108,7 @@ export const mediaConfig: MediaConfig = {
         infoGrid: TvInfoGrid,
         upComingAlert: TvUpComingAlert,
         extraSections: TvExtraSections,
-        
+
         mediaUserDetails: TvUserDetails,
         mediaFollowCard: TvFollowCard,
 
@@ -114,11 +130,11 @@ export const mediaConfig: MediaConfig = {
         sheetFilters: getTvActiveFilters,
     },
     [MediaType.MOVIES]: {
-        overTitle: TvOverTitle,
-        underTitle: TvUnderTitle,
-        infoGrid: TvInfoGrid,
-        upComingAlert: TvUpComingAlert,
-        extraSections: TvExtraSections,
+        overTitle: MoviesOverTitle,
+        underTitle: MoviesUnderTitle,
+        infoGrid: MoviesInfoGrid,
+        upComingAlert: MoviesUpComingAlert,
+        extraSections: MoviesExtraSections,
 
         mediaUserDetails: MoviesUserDetails,
         mediaFollowCard: MovieFollowCard,
@@ -127,11 +143,11 @@ export const mediaConfig: MediaConfig = {
         sheetFilters: getMoviesActiveFilters,
     },
     [MediaType.GAMES]: {
-        overTitle: TvOverTitle,
-        underTitle: TvUnderTitle,
-        infoGrid: TvInfoGrid,
-        upComingAlert: TvUpComingAlert,
-        extraSections: TvExtraSections,
+        overTitle: GamesOverTitle,
+        underTitle: GamesUnderTitle,
+        infoGrid: GamesInfoGrid,
+        upComingAlert: GamesUpComingAlert,
+        extraSections: GamesExtraSections,
 
         mediaUserDetails: GamesUserDetails,
         mediaFollowCard: GameFollowCard,
@@ -140,11 +156,9 @@ export const mediaConfig: MediaConfig = {
         sheetFilters: getGamesActiveFilters,
     },
     [MediaType.BOOKS]: {
-        overTitle: TvOverTitle,
-        underTitle: TvUnderTitle,
-        infoGrid: TvInfoGrid,
-        upComingAlert: TvUpComingAlert,
-        extraSections: TvExtraSections,
+        overTitle: BooksOverTitle,
+        underTitle: BooksUnderTitle,
+        infoGrid: BooksInfoGrid,
 
         mediaUserDetails: BooksUserDetails,
         mediaFollowCard: BookFollowCard,
@@ -153,11 +167,9 @@ export const mediaConfig: MediaConfig = {
         sheetFilters: getBooksActiveFilters,
     },
     [MediaType.MANGA]: {
-        overTitle: TvOverTitle,
-        underTitle: TvUnderTitle,
-        infoGrid: TvInfoGrid,
-        upComingAlert: TvUpComingAlert,
-        extraSections: TvExtraSections,
+        overTitle: MangaOverTitle,
+        underTitle: MangaUnderTitle,
+        infoGrid: MangaInfoGrid,
 
         mediaUserDetails: MangaUserDetails,
         mediaFollowCard: MangaFollowCard,

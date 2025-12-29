@@ -1,51 +1,34 @@
 import {Link} from "@tanstack/react-router";
-import {SimpleMedia} from "@/lib/types/base.types";
 import {MediaType} from "@/lib/utils/enums";
-import {MutedText} from "@/lib/client/components/general/MutedText";
-import {MediaTitle} from "@/lib/client/components/media/base/MediaTitle";
-import {Tooltip, TooltipContent, TooltipTrigger} from "@/lib/client/components/ui/tooltip";
+import {SimpleMedia} from "@/lib/types/base.types";
 
 
 interface SimilarMediaProps {
-    title: string;
+    item: SimpleMedia;
     mediaType: MediaType;
-    similarMedia: SimpleMedia[];
 }
 
 
-export const SimilarMedia = ({ title, mediaType, similarMedia }: SimilarMediaProps) => {
+export const SimilarMediaCard = ({ mediaType, item }: SimilarMediaProps) => {
     return (
-        <div className="mt-7">
-            <MediaTitle>{title}</MediaTitle>
-            <div className="grid grid-cols-12 gap-2">
-                {similarMedia.length === 0 ?
-                    <div className="col-span-12">
-                        <MutedText>No similar media to display</MutedText>
-                    </div>
-                    :
-                    similarMedia.map((media) =>
-                        <div key={media.mediaId} className="col-span-3 md:col-span-2">
-                            <Tooltip>
-                                <TooltipTrigger asChild>
-                                    <Link
-                                        search={{ external: false }}
-                                        to="/details/$mediaType/$mediaId"
-                                        params={{ mediaType, mediaId: media.mediaId }}
-                                    >
-                                        <img
-                                            alt={media.mediaName}
-                                            src={media.mediaCover}
-                                            className="rounded-sm"
-                                        />
-                                    </Link>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                    {media.mediaName}
-                                </TooltipContent>
-                            </Tooltip>
-                        </div>
-                    )}
+        <Link
+            search={{ external: false }}
+            to="/details/$mediaType/$mediaId"
+            params={{ mediaType, mediaId: item.mediaId }}
+        >
+            <div className="space-y-2 w-37 shrink-0 group max-sm:w-32">
+                <div className="aspect-2/3 overflow-hidden rounded-md border relative">
+                    <img
+                        alt={item.mediaName}
+                        src={item.mediaCover}
+                        className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                    />
+                    <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors"/>
+                </div>
+                <p className="text-xs font-medium text-muted-foreground truncate group-hover:text-white">
+                    {item.mediaName}
+                </p>
             </div>
-        </div>
+        </Link>
     );
-};
+}

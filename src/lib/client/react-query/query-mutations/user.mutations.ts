@@ -36,7 +36,6 @@ export const useFollowMutation = (ownerUsername: string, isOwnerProfilePage: boo
             queryClient.setQueryData(followersOptions(ownerUsername).queryKey, (oldData) => {
                 if (!oldData) return;
 
-                // TODO: Correct bad logic - todo after noel lets go lol
                 const followerExists = oldData.followers.some((f) => f.id === variables.data.followId);
 
                 if (!followerExists) {
