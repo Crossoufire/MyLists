@@ -1,19 +1,19 @@
 import {useState} from "react";
-import {MediaType} from "@/lib/utils/enums";
-import {capitalize, statusUtils} from "@/lib/utils/functions";
+import {MediaType, Status} from "@/lib/utils/enums";
 import {useAuth} from "@/lib/client/hooks/use-auth";
 import {createFileRoute} from "@tanstack/react-router";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {MediaListArgs} from "@/lib/types/zod.schema.types";
+import {capitalize, statusUtils} from "@/lib/utils/functions";
 import {Header} from "@/lib/client/components/media/base/Header";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
 import {Pagination} from "@/lib/client/components/general/Pagination";
 import {MediaGrid} from "@/lib/client/components/media/base/MediaGrid";
 import {MediaTable} from "@/lib/client/components/media/base/MediaTable";
 import {AppliedFilters} from "@/lib/client/components/media/base/AppliedFilters";
+import {TabHeader, TabItem} from "@/lib/client/components/user-profile/TabHeader";
 import {FiltersSideSheet} from "@/lib/client/components/media/base/FiltersSideSheet";
 import {mediaListOptions} from "@/lib/client/react-query/query-options/query-options";
-import {TabHeader} from "@/lib/client/components/user-profile/TabHeader";
 
 
 export const Route = createFileRoute("/_main/_private/list/$mediaType/$username")({
@@ -33,15 +33,15 @@ export const Route = createFileRoute("/_main/_private/list/$mediaType/$username"
 
 
 function MediaList() {
-    const search = Route.useSearch();
+    const filters = Route.useSearch();
     const { currentUser } = useAuth();
     const navigate = Route.useNavigate();
     const { username, mediaType } = Route.useParams();
     const allStatuses = statusUtils.byMediaType(mediaType);
     const [isGrid, setIsGrid] = useState(currentUser?.gridListView ?? true);
     const [filtersPanelOpen, setFiltersPanelOpen] = useState(false);
-    const apiData = useSuspenseQuery(mediaListOptions(mediaType, username, search)).data;
-    const [activeTab, setActiveTab] = useState<typeof allStatuses | "overview">("overview");
+    const apiData = useSuspenseQuery(mediaListOptions(mediaType, username, filters)).data;
+    const [activeTab, setActiveTab] = useState<Status | "all">("all");
 
     const isCurrent = (currentUser?.id === apiData.userData.id);
 
@@ -81,10 +81,24 @@ function MediaList() {
         });
     };
 
+    const statusTabs: TabItem<Status | "all">[] = [
+        {
+            id: "all",
+            label: "All",
+            isAccent: true,
+        },
+        ...allStatuses.map((status) => ({
+            id: status,
+            label: status,
+        }))
+    ];
+
     return (
         <PageTitle title={`${username} ${capitalize(mediaType)} Collection`} onlyHelmet>
             <Header
                 isGrid={isGrid}
+                username={username}
+                mediaType={mediaType}
                 userData={apiData.userData}
                 pagination={apiData.results.pagination}
                 onGridClick={() => setIsGrid(!isGrid)}
@@ -93,17 +107,19 @@ function MediaList() {
                 onSearchEnter={({ search }) => handleFilterChange({ search })}
             />
             <AppliedFilters
+                filters={filters}
+                mediaType={mediaType}
                 totalItems={apiData.results.pagination.totalItems}
                 onFilterRemove={(filters) => handleFilterChange(filters)}
             />
-
-            <div className="mb-8 -mt-4">
+            <div className="mt-2 mb-6">
                 <TabHeader
+                    tabs={statusTabs}
                     activeTab={activeTab}
-                    mediaTypes={allStatuses}
                     setActiveTab={(status) => {
                         setActiveTab(status);
-                        handleFilterChange({ status: [...(search.status || []), status] });
+                        // @ts-expect-error - Can be "all"
+                        handleFilterChange({ status: [...(filters.status || []), status] });
                     }}
                 />
             </div>
@@ -113,14 +129,14 @@ function MediaList() {
                     isCurrent={isCurrent}
                     mediaType={mediaType}
                     mediaItems={apiData.results.items}
-                    queryOption={mediaListOptions(mediaType, username, search)}
+                    queryOption={mediaListOptions(mediaType, username, filters)}
                 />
                 :
                 <MediaTable
                     mediaType={mediaType}
                     isCurrent={isCurrent}
                     results={apiData.results}
-                    queryOption={mediaListOptions(mediaType, username, search)}
+                    queryOption={mediaListOptions(mediaType, username, filters)}
                     onChangePage={(filters) => handleFilterChange(filters)}
                 />
             }

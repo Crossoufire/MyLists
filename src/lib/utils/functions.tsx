@@ -213,10 +213,16 @@ export const PrivacyIcon = ({ type }: { type: PrivacyType }) => {
 
 // --- Time Format ------------------------------------------------------------------------------------------
 
+export const getYear = (date?: string | null) => {
+    return date?.split("-")[0] ?? "-";
+}
 
-export const formatRuntime = (minutes: number) => {
+export const formatDuration = (minutes: number | null | undefined) => {
+    if (!minutes) return "-";
+
     const h = Math.floor(minutes / 60);
     const m = minutes % 60;
+
     return h > 0 ? `${h}h ${m}m` : `${m}m`;
 };
 
@@ -233,9 +239,7 @@ export const getDaysRemaining = (dateString: string | null) => {
 
 
 export const formatMinutes = (minutes: number | string | null | undefined, onlyHours = false) => {
-    if (minutes === null || minutes === undefined) {
-        return "-";
-    }
+    if (!minutes) return "-";
 
     const minutesAsNumber = Number(minutes);
 

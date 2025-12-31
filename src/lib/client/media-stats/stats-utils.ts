@@ -46,7 +46,7 @@ export const getMediaNaming = (mediaType: MediaType) => {
 
 
 export const formatCurrency = (num: number | null, options: Intl.NumberFormatOptions = {}) => {
-    if (num === null) return "-";
+    if (!num) return "-";
 
     return new Intl.NumberFormat("en", {
         currency: "USD",

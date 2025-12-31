@@ -24,7 +24,7 @@ import {TopAffinityConfig} from "@/lib/types/stats.types";
 
 
 const DEFAULT_PER_PAGE = 25;
-const SIMILAR_MAX_GENRES = 12;
+const SIMILAR_MAX_GENRES = 10;
 
 
 export abstract class BaseRepository<TConfig extends MediaSchemaConfig<MediaTable, ListTable, GenreTable, LabelTable>> {
@@ -499,6 +499,7 @@ export abstract class BaseRepository<TConfig extends MediaSchemaConfig<MediaTabl
                 mediaId: mediaTable.id,
                 mediaName: mediaTable.name,
                 imageCover: mediaTable.imageCover,
+                releaseDate: mediaTable.releaseDate,
                 inUserList: isNotNull(listTable.userId).mapWith(Boolean).as("inUserList"),
             })
             .from(mediaTable)

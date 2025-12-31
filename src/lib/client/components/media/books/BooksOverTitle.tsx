@@ -12,11 +12,11 @@ export const BooksOverTitle = ({ mediaType, media }: BooksDetailsProps<typeof Me
     return (
         <>
             {media.authors?.slice(0, 3).map((author) =>
-                <Link to="/details/$mediaType/$job/$name" params={{ mediaType, job: "creator", name: author.name }}>
-                    <Badge variant="outline" className="text-primary bg-popover hover:text-app-accent">
+                <Badge key={author.id} variant="black">
+                    <Link to="/details/$mediaType/$job/$name" params={{ mediaType, job: "creator", name: author.name }}>
                         {author.name}
-                    </Badge>
-                </Link>
+                    </Link>
+                </Badge>
             )}
         </>
     );

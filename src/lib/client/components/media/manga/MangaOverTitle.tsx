@@ -13,18 +13,18 @@ export const MangaOverTitle = ({ mediaType, media }: MangaDetailsProps<typeof Me
 
     return (
         <>
-            <Badge variant="outline" className="text-primary bg-popover">
+            <Badge variant="black">
                 {media.prodStatus}
             </Badge>
             {hasAuthors &&
                 <>
                     <span className="text-muted-foreground">•</span>
                     {media.authors?.slice(0, 2).map((author) =>
-                        <Link to="/details/$mediaType/$job/$name" params={{ mediaType, job: "platform", name: author.name }}>
-                            <Badge key={author.id} variant="outline" className="text-primary bg-popover hover:text-app-accent">
+                        <Badge key={author.id} variant="black">
+                            <Link to="/details/$mediaType/$job/$name" params={{ mediaType, job: "platform", name: author.name }}>
                                 {author.name}
-                            </Badge>
-                        </Link>
+                            </Link>
+                        </Badge>
                     )}
                 </>
             }

@@ -13,18 +13,18 @@ export const TvOverTitle = ({ mediaType, media }: TvDetailsProps<typeof MediaTyp
 
     return (
         <>
-            <Badge variant="outline" className="text-primary bg-popover">
+            <Badge variant="black">
                 {media.prodStatus}
             </Badge>
             {hasNextwork &&
                 <>
                     <span className="text-muted-foreground">•</span>
-                    {media.networks?.slice(0, 2).map((network) =>
-                        <Link to="/details/$mediaType/$job/$name" params={{ mediaType, job: "platform", name: network.name }}>
-                            <Badge key={network.id} variant="outline" className="text-primary bg-popover hover:text-app-accent">
-                                {network.name}
-                            </Badge>
-                        </Link>
+                    {media.networks?.slice(0, 2).map((net) =>
+                        <Badge key={net.id} variant="black">
+                            <Link to="/details/$mediaType/$job/$name" params={{ mediaType, job: "platform", name: net.name }}>
+                                {net.name}
+                            </Link>
+                        </Badge>
                     )}
                 </>
             }

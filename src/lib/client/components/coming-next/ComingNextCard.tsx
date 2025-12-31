@@ -5,6 +5,7 @@ import {ComingNextItem} from "@/lib/types/query.options.types";
 import {Hourglass, AlertCircle, Clock, Calendar} from "lucide-react";
 import {MediaAndUserIcon} from "@/lib/client/components/media/base/MediaAndUserIcon";
 import {formatDateTime, getDaysRemaining, getStatusColor, getTextColor, zeroPad} from "@/lib/utils/functions";
+import {StatusBadge} from "@/lib/client/components/general/StatusBadge";
 
 
 export const ComingNextCard = ({ item, mediaType }: { item: ComingNextItem, mediaType: MediaType }) => {
@@ -68,9 +69,9 @@ export const ComingNextCard = ({ item, mediaType }: { item: ComingNextItem, medi
                         </div>
                     </div>
                     <div className="flex items-end justify-between mt-3 pt-3 border-t">
-                        <Badge style={{ background: getStatusColor(item.status), color: getTextColor(getStatusColor(item.status)) }}>
-                            {item.status}
-                        </Badge>
+                        <StatusBadge
+                            status={item.status}
+                        />
                         <MediaCountdownBadge
                             days={daysRemaining}
                         />

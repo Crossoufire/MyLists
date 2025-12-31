@@ -4,6 +4,8 @@ import {MediaType} from "@/lib/utils/enums";
 import {formatDateTime, formatMinutes} from "@/lib/utils/functions";
 import {MediaConfig} from "@/lib/client/components/media/media-config";
 
+import {MediaInfoGridItem} from "@/lib/client/components/media/base/MediaDetailsComps";
+
 
 type TvDetailsProps<T extends MediaType> = Parameters<MediaConfig[T]["infoGrid"]>[number];
 
@@ -13,78 +15,38 @@ export const TvInfoGrid = ({ mediaType, media }: TvDetailsProps<typeof MediaType
 
     return (
         <>
-            <div className="space-y-1">
-                <span className="text-xs text-muted-foreground uppercase tracking-wider">
-                    Prod. Status
-                </span>
-                <p className="font-medium text-sm">
-                    {media.prodStatus}
-                </p>
-            </div>
-            <div className="space-y-1">
-                <span className="text-xs text-muted-foreground uppercase tracking-wider">
-                    Created By
-                </span>
-                <p className="font-medium text-sm wrap-break-word">
-                    {creators.map((c) =>
-                        <Link to="/details/$mediaType/$job/$name" params={{ mediaType, job: "creator", name: c.name }}>
-                            <div key={c.name}>
-                                {c.name}
-                            </div>
-                        </Link>
-                    ) ?? "-"}
-                </p>
-            </div>
-            <div className="space-y-1">
-                <span className="text-xs text-muted-foreground uppercase tracking-wider">
-                    Airing Dates
-                </span>
-                <p className="font-medium text-sm">
-                    {formatDateTime(media.releaseDate, { noTime: true })}
-                    <br/>
-                    {formatDateTime(media.lastAirDate, { noTime: true })}
-                </p>
-            </div>
-            <div className="space-y-1">
-                <span className="text-xs text-muted-foreground uppercase tracking-wider">
-                    Origin
-                </span>
-                <p className="font-medium text-sm">
-                    {media.originCountry}
-                </p>
-            </div>
-            <div className="space-y-1">
-                <span className="text-xs text-muted-foreground uppercase tracking-wider">
-                    Eps. Duration
-                </span>
-                <p className="font-medium text-sm">
-                    {media.duration ?? "-"} min
-                </p>
-            </div>
-            <div className="space-y-1">
-                <span className="text-xs text-muted-foreground uppercase tracking-wider">
-                    Total Seasons
-                </span>
-                <p className="font-medium text-sm">
-                    {media.totalSeasons ?? "-"}
-                </p>
-            </div>
-            <div className="space-y-1">
-                <span className="text-xs text-muted-foreground uppercase tracking-wider">
-                    Total Episodes
-                </span>
-                <p className="font-medium text-sm">
-                    {media.totalEpisodes ?? "-"}
-                </p>
-            </div>
-            <div className="space-y-1">
-                <span className="text-xs text-muted-foreground uppercase tracking-wider">
-                    Completion
-                </span>
-                <p className="font-medium text-sm">
-                    {formatMinutes(media.totalEpisodes * media.duration)}
-                </p>
-            </div>
+            <MediaInfoGridItem label="Prod. Status">
+                {media.prodStatus}
+            </MediaInfoGridItem>
+            <MediaInfoGridItem label="Created By">
+                {creators.map((c) =>
+                    <Link to="/details/$mediaType/$job/$name" params={{ mediaType, job: "creator", name: c.name }}>
+                        <div key={c.name}>
+                            {c.name}
+                        </div>
+                    </Link>
+                ) ?? "-"}
+            </MediaInfoGridItem>
+            <MediaInfoGridItem label="Airing Dates">
+                {formatDateTime(media.releaseDate, { noTime: true })}
+                <br/>
+                {formatDateTime(media.lastAirDate, { noTime: true })}
+            </MediaInfoGridItem>
+            <MediaInfoGridItem label="Origin">
+                {media.originCountry}
+            </MediaInfoGridItem>
+            <MediaInfoGridItem label="Eps. Duration">
+                {media.duration ?? "-"} min
+            </MediaInfoGridItem>
+            <MediaInfoGridItem label="Total Seasons">
+                {media.totalSeasons ?? "-"}
+            </MediaInfoGridItem>
+            <MediaInfoGridItem label="Total Episodes">
+                {media.totalEpisodes ?? "-"}
+            </MediaInfoGridItem>
+            <MediaInfoGridItem label="Completion">
+                {formatMinutes(media.totalEpisodes * media.duration)}
+            </MediaInfoGridItem>
         </>
     );
 };

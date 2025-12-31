@@ -1,17 +1,16 @@
 import React from "react";
-import {Status} from "@/lib/utils/enums";
+import {MediaType} from "@/lib/utils/enums";
+import {Link} from "@tanstack/react-router";
 import {Button} from "@/lib/client/components/ui/button";
 import {capitalize, computeLevel} from "@/lib/utils/functions";
-import {Link, useParams, useSearch} from "@tanstack/react-router";
+import {MediaLevel} from "@/lib/client/components/general/MediaLevel";
 import {ListPagination, ListUserData} from "@/lib/types/query.options.types";
-import {MediaLevelCircle} from "@/lib/client/components/general/MediaLevelCircle";
 import {SearchComponent} from "@/lib/client/components/media/base/SearchComponent";
-import {Popover, PopoverContent, PopoverTrigger} from "@/lib/client/components/ui/popover";
 import {ArrowUpDown, Award, ChartLine, EllipsisVertical, Filter, Grid2X2, List, User} from "lucide-react";
 import {
     DropdownMenu,
-    DropdownMenuCheckboxItem,
     DropdownMenuContent,
+    DropdownMenuItem,
     DropdownMenuRadioGroup,
     DropdownMenuRadioItem,
     DropdownMenuTrigger
@@ -20,6 +19,8 @@ import {
 
 interface HeaderProps {
     isGrid: boolean;
+    username: string;
+    mediaType: MediaType;
     userData: ListUserData;
     onGridClick: () => void;
     onFilterClick: () => void;
@@ -30,14 +31,13 @@ interface HeaderProps {
 
 
 export const Header = (props: HeaderProps) => {
-    const { isGrid, userData, pagination, onGridClick, onFilterClick, onSortChange, onSearchEnter } = props;
-    const { username, mediaType } = useParams({ from: "/_main/_private/list/$mediaType/$username" });
+    const { username, mediaType, isGrid, userData, pagination, onGridClick, onFilterClick, onSortChange, onSearchEnter } = props;
     const userLevel = computeLevel(userData?.userMediaSettings.find((s) => s.mediaType === mediaType)?.timeSpent ?? 0);
 
     return (
         <div className="flex flex-wrap items-center justify-between mt-8 mb-6 gap-6">
             <h3 className="flex items-center text-3xl font-medium truncate max-sm:text-xl">
-                <MediaLevelCircle
+                <MediaLevel
                     mediaType={mediaType}
                     containerClassName="pt-1"
                     intLevel={Math.floor(userLevel)}
@@ -62,45 +62,12 @@ export const Header = (props: HeaderProps) => {
                         {isGrid ? <><List className="size-4"/> List</> : <><Grid2X2 className="size-4"/> Grid</>}
                     </Button>
                 </div>
-                <DotsOthers/>
+                <DotsOthers
+                    username={username}
+                    mediaType={mediaType}
+                />
             </div>
         </div>
-    );
-};
-
-
-interface StatusComponentProps {
-    allStatuses: Status[];
-    onStatusChange: ({ status }: { status: Status[] }) => void;
-}
-
-
-const StatusComponent = ({ allStatuses, onStatusChange }: StatusComponentProps) => {
-    const search = useSearch({ from: "/_main/_private/list/$mediaType/$username" });
-
-    const handleStatusChange = (status: Status) => {
-        onStatusChange({ status: [...(search.status || []), status] });
-    };
-
-    return (
-        <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-                <Button variant="outline">
-                    <List className="size-4"/> Status
-                </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-                {allStatuses.map(s =>
-                    <DropdownMenuCheckboxItem
-                        key={s}
-                        onSelect={() => handleStatusChange(s)}
-                        checked={search.status ? search.status.includes(s) : false}
-                    >
-                        {s}
-                    </DropdownMenuCheckboxItem>
-                )}
-            </DropdownMenuContent>
-        </DropdownMenu>
     );
 };
 
@@ -113,7 +80,6 @@ interface SortComponentProps {
 
 
 const SortComponent = ({ sorting, allSorting, applySorting }: SortComponentProps) => {
-
     const handleSortChange = (sort: string) => {
         applySorting({ sort });
     };
@@ -139,33 +105,34 @@ const SortComponent = ({ sorting, allSorting, applySorting }: SortComponentProps
 };
 
 
-const DotsOthers = () => {
-    const { mediaType, username } = useParams({ from: "/_main/_private/list/$mediaType/$username" });
-
+const DotsOthers = ({ mediaType, username, }: { mediaType: MediaType; username: string }) => {
     return (
-        <Popover>
-            <PopoverTrigger asChild>
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="icon">
                     <EllipsisVertical className="size-4"/>
                 </Button>
-            </PopoverTrigger>
-            <PopoverContent align="end" className="w-42 p-2">
-                <Link to="/profile/$username" params={{ username }}>
-                    <Button variant="ghost" className="w-full inline-flex items-center justify-start">
-                        <User className="size-4 text-muted-foreground"/> User's Profile
-                    </Button>
-                </Link>
-                <Link to="/stats/$username" params={{ username }} search={{ mediaType }}>
-                    <Button variant="ghost" className="w-full inline-flex items-center justify-start">
-                        <ChartLine className="size-4 text-muted-foreground"/> Collection Stats
-                    </Button>
-                </Link>
-                <Link to="/achievements/$username" params={{ username }}>
-                    <Button variant="ghost" className="w-full inline-flex items-center justify-start">
-                        <Award className="size-4 text-muted-foreground"/> Achievements
-                    </Button>
-                </Link>
-            </PopoverContent>
-        </Popover>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-44">
+                <DropdownMenuItem asChild>
+                    <Link to="/profile/$username" params={{ username }}>
+                        <User className="size-4 text-muted-foreground"/>
+                        <span>User's Profile</span>
+                    </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                    <Link to="/stats/$username" params={{ username }} search={{ mediaType }}>
+                        <ChartLine className="size-4 text-muted-foreground"/>
+                        <span>Collection Stats</span>
+                    </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                    <Link to="/achievements/$username" params={{ username }}>
+                        <Award className="size-4 text-muted-foreground"/>
+                        <span>Achievements</span>
+                    </Link>
+                </DropdownMenuItem>
+            </DropdownMenuContent>
+        </DropdownMenu>
     );
 };

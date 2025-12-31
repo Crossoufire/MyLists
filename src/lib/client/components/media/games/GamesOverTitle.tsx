@@ -14,11 +14,11 @@ export const GamesOverTitle = ({ mediaType, media }: GamesDetailsProps<typeof Me
     return (
         <>
             {developers.slice(0, 3).map((dev) =>
-                <Link to="/details/$mediaType/$job/$name" params={{ mediaType, job: "creator", name: dev.name }}>
-                    <Badge variant="outline" className="text-primary bg-popover hover:text-app-accent">
+                <Badge key={dev.id} variant="black">
+                    <Link to="/details/$mediaType/$job/$name" params={{ mediaType, job: "creator", name: dev.name }}>
                         {dev.name}
-                    </Badge>
-                </Link>
+                    </Link>
+                </Badge>
             )}
         </>
     );

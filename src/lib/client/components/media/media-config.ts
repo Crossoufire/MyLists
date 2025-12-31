@@ -108,9 +108,8 @@ export const mediaConfig: MediaConfig = {
         infoGrid: TvInfoGrid,
         upComingAlert: TvUpComingAlert,
         extraSections: TvExtraSections,
-
-        mediaUserDetails: TvUserDetails,
         mediaFollowCard: TvFollowCard,
+        mediaUserDetails: TvUserDetails,
 
         mediaListCard: TvListItem,
         mediaListColumns: getTvColumns,

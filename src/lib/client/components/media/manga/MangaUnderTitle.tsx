@@ -1,7 +1,10 @@
 import React from "react";
 import {MediaType} from "@/lib/utils/enums";
+import {getYear} from "@/lib/utils/functions";
 import {Bookmark, Calendar, SquareLibrary} from "lucide-react";
 import {MediaConfig} from "@/lib/client/components/media/media-config";
+
+import {MediaUnderItem} from "@/lib/client/components/media/base/MediaDetailsComps";
 
 
 type MangaDetailsProps<T extends MediaType> = Parameters<MediaConfig[T]["underTitle"]>[number];
@@ -10,18 +13,15 @@ type MangaDetailsProps<T extends MediaType> = Parameters<MediaConfig[T]["underTi
 export const MangaUnderTitle = ({ media }: MangaDetailsProps<typeof MediaType.MANGA>) => {
     return (
         <>
-            <div className="flex items-center gap-1.5">
-                <Calendar className="size-4 text-muted-foreground"/>
-                <span>{media.releaseDate?.split("-")[0]}</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-                <Bookmark className="size-4 text-muted-foreground"/>
-                <span>{media.chapters ?? "?"} chapters</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-                <SquareLibrary className="size-4 text-muted-foreground"/>
-                <span>{media.volumes ?? "?"} volumes</span>
-            </div>
+            <MediaUnderItem icon={Calendar}>
+                {getYear(media.releaseDate)}
+            </MediaUnderItem>
+            <MediaUnderItem icon={Bookmark}>
+                {media.chapters ?? "?"} chapters
+            </MediaUnderItem>
+            <MediaUnderItem icon={SquareLibrary}>
+                {media.volumes ?? "?"} volumes
+            </MediaUnderItem>
         </>
     );
 };

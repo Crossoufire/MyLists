@@ -8,7 +8,7 @@ import {useBreakpoint} from "@/lib/client/hooks/use-breakpoint";
 import {capitalize, computeLevel} from "@/lib/utils/functions";
 import {Card, CardContent} from "@/lib/client/components/ui/card";
 import {ProfileIcon} from "@/lib/client/components/general/ProfileIcon";
-import {MediaLevelCircle} from "@/lib/client/components/general/MediaLevelCircle";
+import {MediaLevel} from "@/lib/client/components/general/MediaLevel";
 
 
 interface HofCardProps {
@@ -72,7 +72,7 @@ export const HofCard = ({ userData }: HofCardProps) => {
                                     to="/list/$mediaType/$username"
                                     params={{ mediaType: setting.mediaType, username: userData.name }}
                                 >
-                                    <MediaLevelCircle
+                                    <MediaLevel
                                         isActive={setting.active}
                                         mediaType={setting.mediaType}
                                         intLevel={Math.floor(computeLevel(setting.timeSpent))}

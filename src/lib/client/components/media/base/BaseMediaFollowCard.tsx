@@ -1,9 +1,10 @@
-import React, {Fragment} from "react";
+import React from "react";
 import {Link} from "@tanstack/react-router";
 import {Badge} from "@/lib/client/components/ui/badge";
 import {FollowData} from "@/lib/types/query.options.types";
 import {getStatusColor, getTextColor} from "@/lib/utils/functions";
 import {ProfileIcon} from "@/lib/client/components/general/ProfileIcon";
+import {StatusBadge} from "@/lib/client/components/general/StatusBadge";
 import {DisplayRating} from "@/lib/client/components/media/base/DisplayRating";
 import {DisplayComment} from "@/lib/client/components/media/base/DisplayComment";
 import {DisplayFavorite} from "@/lib/client/components/media/base/DisplayFavorite";
@@ -18,14 +19,6 @@ interface BaseMediaFollowCardrops {
 
 
 export const BaseMediaFollowCard = ({ followData, rating, redoDisplay, mediaDetailsDisplay }: BaseMediaFollowCardrops) => {
-    const items = [
-        mediaDetailsDisplay,
-        <DisplayRating key="rating" rating={rating}/>,
-        redoDisplay,
-        followData.userMedia.comment && <DisplayComment key="comment" content={followData.userMedia.comment}/>,
-        !!followData.userMedia.favorite && <DisplayFavorite key="favorite" isFavorite={!!followData.userMedia.favorite}/>,
-    ].filter(Boolean);
-
     return (
         <div className="flex items-center space-x-3 p-3 rounded-lg hover:bg-accent/50 transition-colors">
             <div className="shrink-0">
@@ -46,14 +39,9 @@ export const BaseMediaFollowCard = ({ followData, rating, redoDisplay, mediaDeta
                             {followData.name}
                         </Link>
                     </p>
-                    <Badge
-                        style={{
-                            background: getStatusColor(followData.userMedia.status),
-                            color: getTextColor(getStatusColor(followData.userMedia.status)),
-                        }}
-                    >
-                        {followData.userMedia.status}
-                    </Badge>
+                    <StatusBadge
+                        status={followData.userMedia.status}
+                    />
                 </div>
                 <div className="text-xs text-muted-foreground mt-1">
                     <span className="item">
@@ -61,7 +49,9 @@ export const BaseMediaFollowCard = ({ followData, rating, redoDisplay, mediaDeta
                     </span>
 
                     <span className="item">
-                        <DisplayRating rating={rating}/>
+                        <DisplayRating
+                            rating={rating}
+                        />
                     </span>
 
                     <span className="item">

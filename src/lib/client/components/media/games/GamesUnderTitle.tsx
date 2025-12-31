@@ -1,8 +1,9 @@
 import React from "react";
 import {MediaType} from "@/lib/utils/enums";
-import {Calendar, Star, Clock} from "lucide-react";
-import {formatMinutes} from "@/lib/utils/functions";
+import {Calendar, Clock} from "lucide-react";
+import {formatMinutes, getYear} from "@/lib/utils/functions";
 import {MediaConfig} from "@/lib/client/components/media/media-config";
+import {MediaUnderItem, MediaUnderRating} from "@/lib/client/components/media/base/MediaDetailsComps";
 
 
 type GamesDetailsProps<T extends MediaType> = Parameters<MediaConfig[T]["underTitle"]>[number];
@@ -11,23 +12,17 @@ type GamesDetailsProps<T extends MediaType> = Parameters<MediaConfig[T]["underTi
 export const GamesUnderTitle = ({ media }: GamesDetailsProps<typeof MediaType.GAMES>) => {
     return (
         <>
-            <div className="flex items-center gap-1.5">
-                <Star className="size-4 text-app-rating fill-app-rating"/>
-                <span className="text-lg text-primary">
-                    {media.voteAverage ? (media.voteAverage / 10).toFixed(1) : "-"}
-                </span>
-                <span className="text-muted-foreground text-xs">
-                    ({media.voteCount?.toLocaleString()})
-                </span>
-            </div>
-            <div className="flex items-center gap-1.5">
-                <Calendar className="size-4 text-muted-foreground"/>
-                <span>{media.releaseDate?.split("-")[0]}</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-                <Clock className="size-4 text-muted-foreground"/>
-                <span>{media.hltbMainTime && formatMinutes(media.hltbMainTime * 60, true)}</span>
-            </div>
+            <MediaUnderRating
+                divisor={10}
+                voteCount={media.voteCount}
+                voteAverage={media.voteAverage}
+            />
+            <MediaUnderItem icon={Calendar}>
+                {getYear(media.releaseDate)}
+            </MediaUnderItem>
+            <MediaUnderItem icon={Clock}>
+                {media.hltbMainTime ? formatMinutes(media.hltbMainTime * 60, true) : "-"}
+            </MediaUnderItem>
         </>
     );
 };

@@ -4,7 +4,7 @@ import {MediaType} from "@/lib/utils/enums";
 import {getMediaColor} from "@/lib/utils/functions";
 
 
-interface MediaLevelCircleProps {
+interface MediaLevelProps {
     intLevel?: number;
     className?: string;
     isActive?: boolean;
@@ -13,7 +13,7 @@ interface MediaLevelCircleProps {
 }
 
 
-export const MediaLevelCircle = ({ intLevel = 0, mediaType, containerClassName, className, isActive = true }: MediaLevelCircleProps) => {
+export const MediaLevel = ({ intLevel = 0, mediaType, containerClassName, className, isActive = true }: MediaLevelProps) => {
     const color = isActive ? getMediaColor(mediaType) : "grey";
 
     return (

@@ -3,20 +3,20 @@ import {Fragment} from "react";
 import {MediaType} from "@/lib/utils/enums";
 import {Badge} from "@/lib/client/components/ui/badge";
 import {MediaListArgs} from "@/lib/types/zod.schema.types";
-import {useParams, useSearch} from "@tanstack/react-router";
 import {MutedText} from "@/lib/client/components/general/MutedText";
 import {capitalize, getLangCountryName} from "@/lib/utils/functions";
 
 
 interface AppliedFiltersProps {
     totalItems: number;
+    mediaType: MediaType;
+    filters: MediaListArgs;
     onFilterRemove: (filters: Partial<MediaListArgs>) => void;
 }
 
 
-export const AppliedFilters = ({ totalItems, onFilterRemove }: AppliedFiltersProps) => {
-    const { mediaType } = useParams({ from: "/_main/_private/list/$mediaType/$username" });
-    const { page: _page, sort: _sort, status: _status, ...rawFilters } = useSearch({ from: "/_main/_private/list/$mediaType/$username" });
+export const AppliedFilters = ({ mediaType, filters, totalItems, onFilterRemove }: AppliedFiltersProps) => {
+    const { page: _page, sort: _sort, status: _status, ...rawFilters } = filters;
 
     const booleanKeys = ["favorite", "comment", "hideCommon"];
     const localFilters = rawFilters as Partial<MediaListArgs>;
@@ -44,7 +44,7 @@ export const AppliedFilters = ({ totalItems, onFilterRemove }: AppliedFiltersPro
     };
 
     return (
-        <div className="flex flex-wrap items-center gap-2 mb-8 h-10.5">
+        <div className="flex flex-wrap items-center gap-2 h-10.5">
             <MutedText italic={false}>
                 {totalItems} {capitalize(mediaType)}
             </MutedText>

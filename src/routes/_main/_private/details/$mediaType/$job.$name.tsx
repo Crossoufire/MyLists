@@ -1,12 +1,11 @@
-import {Check} from "lucide-react";
-import {cn} from "@/lib/utils/helpers";
-import {capitalize} from "@/lib/utils/functions";
 import {JobType, MediaType} from "@/lib/utils/enums";
+import {createFileRoute} from "@tanstack/react-router";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {SearchType} from "@/lib/types/zod.schema.types";
-import {createFileRoute, Link} from "@tanstack/react-router";
+import {capitalize, formatDateTime} from "@/lib/utils/functions";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
 import {Pagination} from "@/lib/client/components/general/Pagination";
+import {MediaCard} from "@/lib/client/components/media/base/MediaCard";
 import {jobDetailsOptions} from "@/lib/client/react-query/query-options/query-options";
 import {MediaCornerCommon} from "@/lib/client/components/media/base/MediaCornerCommon";
 
@@ -49,36 +48,27 @@ function JobInfoPage() {
             title={`${name}'s ${capitalize(mediaType)}`}
             subtitle={`Found ${apiData.total} titles across ${apiData.pages} pages`}
         >
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-4 mt-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-4">
                 {apiData.items.map((item) =>
-                    <Link to="/details/$mediaType/$mediaId" params={{ mediaType, mediaId: item.mediaId }} search={{ external: false }}>
-                        <div key={item.mediaId} className="group relative flex flex-col gap-2 transition-all duration-300">
-                            <div className="relative aspect-2/3 overflow-hidden rounded-lg border hover:border-zinc-600
-                            transition-all duration-300">
-                                <img
-                                    loading="lazy"
-                                    alt={item.mediaName}
-                                    src={item.imageCover}
-                                    className="absolute inset-0 h-full w-full object-cover transition-transform duration-500"
-                                />
-
-                                <div className="absolute inset-0 bg-linear-to-t from-neutral-950 via-transparent to-transparent
-                                    opacity-0 group-hover:opacity-100 transition-opacity duration-300"/>
-
-                                <div className="absolute bottom-3 px-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                    <h3 className="font-medium text-xs leading-tight truncate">
-                                        {item.mediaName}
-                                    </h3>
+                    <MediaCard mediaType={mediaType} item={item}>
+                        <div className="absolute bottom-0 w-full space-y-1 rounded-b-sm p-3">
+                            <div className="flex w-full items-center justify-between space-x-2 max-sm:text-sm">
+                                <h3 className="grow truncate font-semibold text-primary" title={item.mediaName}>
+                                    {item.mediaName}
+                                </h3>
+                            </div>
+                            <div className="flex w-full flex-wrap items-center justify-between">
+                                <div className="shrink-0 text-xs font-medium text-muted-foreground">
+                                    {formatDateTime(item.releaseDate, { noTime: true })}
                                 </div>
-
-                                {item.inUserList &&
-                                    <MediaCornerCommon
-                                        isCommon={item.inUserList}
-                                    />
-                                }
                             </div>
                         </div>
-                    </Link>
+                        {item.inUserList &&
+                            <MediaCornerCommon
+                                isCommon={item.inUserList}
+                            />
+                        }
+                    </MediaCard>
                 )}
             </div>
             <Pagination
