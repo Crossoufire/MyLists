@@ -92,12 +92,12 @@ export const FiltersSideSheet = ({ isCurrent, onClose, onFilterApply }: FiltersS
                             </div>
                             :
                             <div className="pl-4 space-y-6">
-                                <CheckboxGroup
-                                    title="Status"
-                                    items={allStatuses.map(s => ({ name: s }))}
-                                    onChange={(status) => handleRegisterChange("status", [status])}
-                                    defaultChecked={(status) => search?.status?.includes(status as Status) ?? false}
-                                />
+                                {/*<CheckboxGroup*/}
+                                {/*    title="Status"*/}
+                                {/*    items={allStatuses.map(s => ({ name: s }))}*/}
+                                {/*    onChange={(status) => handleRegisterChange("status", [status])}*/}
+                                {/*    defaultChecked={(status) => search?.status?.includes(status as Status) ?? false}*/}
+                                {/*/>*/}
                                 <CheckboxGroup
                                     title="Genres"
                                     items={listFilters?.genres ?? []}
@@ -260,7 +260,7 @@ const FilterInfoPopover = () => (
             <div className="space-y-3">
                 <div className="space-y-3 text-sm">
                     <div className="flex gap-3">
-                        <div className="size-2 rounded-full bg-gray-400 mt-1.5 flex-shrink-0"></div>
+                        <div className="size-2 rounded-full bg-gray-400 mt-1.5 shrink-0"/>
                         <div>
                             <span className="font-medium text-cyan-500">
                                 Same category filters:{" "}
@@ -270,7 +270,7 @@ const FilterInfoPopover = () => (
                         </div>
                     </div>
                     <div className="flex gap-3">
-                        <div className="size-2 rounded-full bg-gray-400 mt-1.5 flex-shrink-0"></div>
+                        <div className="size-2 rounded-full bg-gray-400 mt-1.5 shrink-0"/>
                         <div>
                             <span className="font-medium text-amber-500">
                                 Different category filters:{" "}
@@ -337,15 +337,15 @@ const SearchFilter = ({ filterKey, job, title, dataList, registerChange }: Searc
                     <Search size={18} className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground"/>
                     <Input
                         value={search}
-                        className={"w-[280px] pl-8"}
+                        className="w-70 pl-8"
                         onChange={handleInputChange}
-                        placeholder={`Search ${title.toLowerCase()} here...`}
+                        placeholder={`Search ${title.toLowerCase()}...`}
                     />
                 </div>
                 {isOpen && (debouncedSearch.length >= 2 || isLoading) &&
-                    <div className="z-50 absolute w-[280px] rounded-lg border shadow-md mt-1">
+                    <div className="z-50 absolute w-70 rounded-lg border shadow-md mt-1">
                         <Command>
-                            <CommandList className="max-h-[300px] overflow-y-auto">
+                            <CommandList className="max-h-75 overflow-y-auto">
                                 {isLoading &&
                                     <div className="flex items-center justify-center p-4">
                                         <LoaderCircle className="h-6 w-6 animate-spin"/>

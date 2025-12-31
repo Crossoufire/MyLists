@@ -17,3 +17,4 @@
 - PROFILE: Add difference between score and feeling.
 - DETAILS: RefreshAndEdit bad display in mobile.
 - DETAILS: Make SimilarMedia similar to favorites imgs in profile page.
+- STATS: Check where to put Quick User Action Component.

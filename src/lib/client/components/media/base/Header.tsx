@@ -1,10 +1,11 @@
+import React from "react";
 import {Status} from "@/lib/utils/enums";
 import {Button} from "@/lib/client/components/ui/button";
+import {capitalize, computeLevel} from "@/lib/utils/functions";
 import {Link, useParams, useSearch} from "@tanstack/react-router";
-import {MediaLevelCircle} from "@/lib/client/components/general/MediaLevelCircle";
-import {capitalize, computeLevel, statusUtils} from "@/lib/utils/functions";
-import {SearchComponent} from "@/lib/client/components/media/base/SearchComponent";
 import {ListPagination, ListUserData} from "@/lib/types/query.options.types";
+import {MediaLevelCircle} from "@/lib/client/components/general/MediaLevelCircle";
+import {SearchComponent} from "@/lib/client/components/media/base/SearchComponent";
 import {Popover, PopoverContent, PopoverTrigger} from "@/lib/client/components/ui/popover";
 import {ArrowUpDown, Award, ChartLine, EllipsisVertical, Filter, Grid2X2, List, User} from "lucide-react";
 import {
@@ -15,7 +16,6 @@ import {
     DropdownMenuRadioItem,
     DropdownMenuTrigger
 } from "@/lib/client/components/ui/dropdown-menu";
-import React from "react";
 
 
 interface HeaderProps {
@@ -26,16 +26,13 @@ interface HeaderProps {
     pagination: ListPagination;
     onSortChange: ({ sort }: { sort: string }) => void;
     onSearchEnter: ({ search }: { search: string }) => void;
-    onStatusChange: ({ status }: { status: Status[] }) => void;
 }
 
 
 export const Header = (props: HeaderProps) => {
-    const { isGrid, userData, pagination, onGridClick, onFilterClick, onStatusChange, onSortChange, onSearchEnter } = props;
+    const { isGrid, userData, pagination, onGridClick, onFilterClick, onSortChange, onSearchEnter } = props;
     const { username, mediaType } = useParams({ from: "/_main/_private/list/$mediaType/$username" });
-
-    const allStatuses = statusUtils.byMediaType(mediaType);
-    const userLevel = computeLevel(userData?.userMediaSettings.find(s => s.mediaType === mediaType)?.timeSpent ?? 0);
+    const userLevel = computeLevel(userData?.userMediaSettings.find((s) => s.mediaType === mediaType)?.timeSpent ?? 0);
 
     return (
         <div className="flex flex-wrap items-center justify-between mt-8 mb-6 gap-6">
@@ -51,10 +48,6 @@ export const Header = (props: HeaderProps) => {
             <div className="flex flex-wrap gap-3">
                 <SearchComponent
                     onSearchEnter={onSearchEnter}
-                />
-                <StatusComponent
-                    allStatuses={allStatuses}
-                    onStatusChange={onStatusChange}
                 />
                 <Button variant="outline" onClick={onFilterClick}>
                     <Filter className="size-4"/> Filters

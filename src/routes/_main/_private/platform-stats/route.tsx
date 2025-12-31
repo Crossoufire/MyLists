@@ -6,6 +6,7 @@ import {PageTitle} from "@/lib/client/components/general/PageTitle";
 import {MediaTypeTabs} from "@/lib/client/media-stats/MediaTypeTabs";
 import {DashboardContent} from "@/lib/client/media-stats/DashboardContent";
 import {platformStatsOptions} from "@/lib/client/react-query/query-options/query-options";
+import {TabHeader} from "@/lib/client/components/user-profile/TabHeader";
 
 
 export const Route = createFileRoute("/_main/_private/platform-stats")({
@@ -30,20 +31,18 @@ function PlatformStatsPage() {
 
     return (
         <PageTitle title="MyLists Statistics" subtitle="Comprehensive media tracking insights">
-            <div className="mt-2">
-                <div className="mb-4">
-                    <MediaTypeTabs
-                        selectedTab={selectedTab}
-                        onTabChange={handleTabChange}
-                        activatedMediaTypes={apiData.activatedMediaTypes}
-                    />
-                </div>
-
-                <DashboardContent
-                    data={apiData}
-                    selectedTab={selectedTab}
+            <div className="mt-4 mb-8">
+                <TabHeader
+                    activeTab={selectedTab}
+                    setActiveTab={handleTabChange}
+                    mediaTypes={apiData.activatedMediaTypes}
                 />
             </div>
+
+            <DashboardContent
+                data={apiData}
+                selectedTab={selectedTab}
+            />
         </PageTitle>
     );
 }

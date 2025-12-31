@@ -88,7 +88,7 @@ function HomePage() {
                 <div className="grid md:grid-cols-3 gap-8">
                     <Card className="group hover:shadow-2xl hover:shadow-primary/10 transition-all duration-300 border-border/50 hover:border-primary/30">
                         <CardHeader className="text-center pb-4">
-                            <div className="size-15 bg-accent rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                            <div className="size-15 bg-accent rounded-xl flex items-center justify-center mx-auto mb-4 transition-transform">
                                 <Play className="size-8 text-primary"/>
                             </div>
                             <CardTitle className="text-xl">Manage Your Lists</CardTitle>
@@ -100,7 +100,7 @@ function HomePage() {
                     </Card>
                     <Card className="group hover:shadow-2xl hover:shadow-primary/10 transition-all duration-300 border-border/50 hover:border-primary/30">
                         <CardHeader className="text-center pb-4">
-                            <div className="size-15 bg-accent rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                            <div className="size-15 bg-accent rounded-xl flex items-center justify-center mx-auto mb-4 transition-transform">
                                 <Clock className="size-8 text-primary"/>
                             </div>
                             <CardTitle className="text-xl">Track Your Time</CardTitle>
@@ -112,7 +112,7 @@ function HomePage() {
                     </Card>
                     <Card className="group hover:shadow-2xl hover:shadow-primary/10 transition-all duration-300 border-border/50 hover:border-primary/30">
                         <CardHeader className="text-center pb-4">
-                            <div className="size-15 bg-accent rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                            <div className="size-15 bg-accent rounded-xl flex items-center justify-center mx-auto mb-4 transition-transform">
                                 <Users className="size-8 text-primary"/>
                             </div>
                             <CardTitle className="text-xl">Connect & Follow</CardTitle>

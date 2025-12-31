@@ -28,7 +28,7 @@ export const MediaFavoritesGrid = ({ favorites, title, linkProps }: FavoritesGri
         <Card>
             <CardHeader>
                 <CardTitle>
-                    <TitleWrapper {...linkProps} className="text-sm font-semibold flex items-center gap-2">
+                    <TitleWrapper {...linkProps} className="text-sm text-primary font-semibold flex items-center gap-2">
                         <TrendingUp className="size-4 text-app-accent"/>
                         {title}
                     </TitleWrapper>
@@ -49,13 +49,13 @@ export const MediaFavoritesGrid = ({ favorites, title, linkProps }: FavoritesGri
                             to={"/details/$mediaType/$mediaId"}
                             params={{ mediaType: fav.mediaType, mediaId: fav.mediaId }}
                         >
-                            <div className="relative group aspect-2/3 rounded-lg overflow-hidden shadow-md">
+                            <div className="relative group aspect-2/3 rounded-lg overflow-hidden border">
                                 <img
                                     alt={fav.mediaName}
                                     src={fav.mediaCover}
-                                    className="w-full h-full object-cover group-hover:scale-105 group-hover:opacity-75 duration-300"
+                                    className="w-full h-full object-cover"
                                 />
-                                <div className="absolute inset-0 bg-linear-to-t from-neutral-950/80 via-transparent to-transparent
+                                <div className="absolute inset-0 bg-linear-to-t from-black via-transparent to-transparent
                                 opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2">
                                     <span className="text-[10px] font-bold text-primary line-clamp-2">
                                         {fav.mediaName}

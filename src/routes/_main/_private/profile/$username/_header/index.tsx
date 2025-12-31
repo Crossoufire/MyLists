@@ -8,7 +8,7 @@ import {MediaStatsTab} from "@/lib/client/components/user-profile/MediaStatsTab"
 import {ProfileFollows} from "@/lib/client/components/user-profile/ProfileFollows";
 import {profileOptions} from "@/lib/client/react-query/query-options/query-options";
 import {AchievementsCard} from "@/lib/client/components/user-profile/AchievementCard";
-import {ProfileTabHeader} from "@/lib/client/components/user-profile/ProfileTabHeader";
+import {TabHeader} from "@/lib/client/components/user-profile/TabHeader";
 import {FollowsUpdates, UserUpdates} from "@/lib/client/components/user-profile/UserUpdates";
 
 
@@ -41,7 +41,7 @@ function ProfileMain() {
             </div>
 
             <div className="space-y-6 max-lg:col-span-3 max-sm:col-span-2 max-sm:space-y-4 max-sm:mt-4">
-                <ProfileTabHeader
+                <TabHeader
                     activeTab={activeTab}
                     setActiveTab={setActiveTab}
                     mediaTypes={activeMediaTypes}

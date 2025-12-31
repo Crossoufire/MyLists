@@ -22,7 +22,7 @@ export const TrendHero = ({ trend }: { trend: TrendsMedia }) => {
 
             <div className="absolute bottom-0 left-0 p-6 md:p-10 max-w-2xl z-10">
                 <div className="flex items-center gap-2 mb-2 text-app-accent font-bold text-xs uppercase tracking-widest">
-                    <Flame className="size-4 fill-app-accent"/> #1 Trending
+                    <Flame className="size-4 fill-app-rating text-app-rating"/> #1 Trending
                 </div>
                 <h1 className="text-3xl md:text-5xl font-bold text-primary mb-3 drop-shadow-lg">
                     {trend.displayName}

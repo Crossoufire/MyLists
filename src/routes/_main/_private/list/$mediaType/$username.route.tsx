@@ -1,6 +1,6 @@
 import {useState} from "react";
 import {MediaType} from "@/lib/utils/enums";
-import {capitalize} from "@/lib/utils/functions";
+import {capitalize, statusUtils} from "@/lib/utils/functions";
 import {useAuth} from "@/lib/client/hooks/use-auth";
 import {createFileRoute} from "@tanstack/react-router";
 import {useSuspenseQuery} from "@tanstack/react-query";
@@ -13,6 +13,7 @@ import {MediaTable} from "@/lib/client/components/media/base/MediaTable";
 import {AppliedFilters} from "@/lib/client/components/media/base/AppliedFilters";
 import {FiltersSideSheet} from "@/lib/client/components/media/base/FiltersSideSheet";
 import {mediaListOptions} from "@/lib/client/react-query/query-options/query-options";
+import {TabHeader} from "@/lib/client/components/user-profile/TabHeader";
 
 
 export const Route = createFileRoute("/_main/_private/list/$mediaType/$username")({
@@ -36,9 +37,11 @@ function MediaList() {
     const { currentUser } = useAuth();
     const navigate = Route.useNavigate();
     const { username, mediaType } = Route.useParams();
+    const allStatuses = statusUtils.byMediaType(mediaType);
     const [isGrid, setIsGrid] = useState(currentUser?.gridListView ?? true);
     const [filtersPanelOpen, setFiltersPanelOpen] = useState(false);
     const apiData = useSuspenseQuery(mediaListOptions(mediaType, username, search)).data;
+    const [activeTab, setActiveTab] = useState<typeof allStatuses | "overview">("overview");
 
     const isCurrent = (currentUser?.id === apiData.userData.id);
 
@@ -88,12 +91,23 @@ function MediaList() {
                 onFilterClick={() => setFiltersPanelOpen(true)}
                 onSortChange={({ sort }) => handleFilterChange({ sort })}
                 onSearchEnter={({ search }) => handleFilterChange({ search })}
-                onStatusChange={({ status }) => handleFilterChange({ status })}
             />
             <AppliedFilters
                 totalItems={apiData.results.pagination.totalItems}
                 onFilterRemove={(filters) => handleFilterChange(filters)}
             />
+
+            <div className="mb-8 -mt-4">
+                <TabHeader
+                    activeTab={activeTab}
+                    mediaTypes={allStatuses}
+                    setActiveTab={(status) => {
+                        setActiveTab(status);
+                        handleFilterChange({ status: [...(search.status || []), status] });
+                    }}
+                />
+            </div>
+
             {isGrid ?
                 <MediaGrid
                     isCurrent={isCurrent}

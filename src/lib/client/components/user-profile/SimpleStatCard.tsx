@@ -10,7 +10,7 @@ interface StatCardProps {
 }
 
 
-export const ProfileStatCard = ({ title, value, icon, className, children }: StatCardProps) => {
+export const SimpleStatCard = ({ title, value, icon, className, children }: StatCardProps) => {
     return (
         <div className={cn(
             "flex flex-col items-center justify-center p-4 px-5 bg-card border",

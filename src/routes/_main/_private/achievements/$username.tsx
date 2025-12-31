@@ -1,10 +1,12 @@
 import {useState} from "react";
+import {LayoutGrid} from "lucide-react";
 import {MediaType} from "@/lib/utils/enums";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {createFileRoute} from "@tanstack/react-router";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
+import {TabHeader, TabItem} from "@/lib/client/components/user-profile/TabHeader";
+import {MediaAndUserIcon} from "@/lib/client/components/media/base/MediaAndUserIcon";
 import {AchievementCard} from "@/lib/client/components/achievements/AchievementCard";
-import {ProfileTabHeader} from "@/lib/client/components/user-profile/ProfileTabHeader";
 import {achievementOptions} from "@/lib/client/react-query/query-options/query-options";
 import {AchievementSummary} from "@/lib/client/components/achievements/AchievementSummary";
 
@@ -19,24 +21,36 @@ export const Route = createFileRoute("/_main/_private/achievements/$username")({
 
 function AchievementPage() {
     const { username } = Route.useParams();
-    const mediaTypes = Object.values(MediaType);
     const apiData = useSuspenseQuery(achievementOptions(username)).data;
-    const [activeTab, setActiveTab] = useState<MediaType | "overview">("overview");
+    const [activeTab, setActiveTab] = useState<MediaType | "all">("all");
+    const mediaAchievements = apiData.result.filter((r) => activeTab === "all" || r.mediaType === activeTab);
 
-    const activeSummary = apiData.summary[activeTab];
-    const mediaAchievements = apiData.result.filter((r) => activeTab === "overview" || r.mediaType === activeTab);
-    
+    const mediaTypes = Object.values(MediaType);
+    const mediaTabs: TabItem<"all" | MediaType>[] = [
+        {
+            id: "all",
+            label: "All",
+            isAccent: true,
+            icon: <LayoutGrid size={16}/>,
+        },
+        ...mediaTypes.map((mediaType) => ({
+            id: mediaType,
+            label: mediaType,
+            icon: <MediaAndUserIcon size={16} type={mediaType}/>,
+        })),
+    ];
+
     return (
         <PageTitle title={`${username} Achievements`} subtitle="View all the achievements the user gained.">
-            <div className="space-y-6 mt-6">
-                <ProfileTabHeader
+            <div className="space-y-6">
+                <TabHeader
+                    tabs={mediaTabs}
                     activeTab={activeTab}
-                    mediaTypes={mediaTypes}
                     setActiveTab={setActiveTab}
                 />
 
                 <AchievementSummary
-                    summary={activeSummary}
+                    summary={apiData.summary[activeTab]}
                 />
 
                 <div className="grid grid-cols-3 gap-6 max-lg:grid-cols-2 max-sm:grid-cols-1">

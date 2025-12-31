@@ -23,7 +23,7 @@ export const SearchComponent = ({ onSearchEnter }: SearchComponentProps) => {
             <Search className="absolute size-4 left-3 text-muted-foreground"/>
             <Input
                 value={search}
-                className="pl-9 w-56"
+                className="pl-9 w-62"
                 onKeyUp={handleOnKeyUp}
                 placeholder="Search Name"
                 onChange={(ev) => setSearch(ev.target.value)}

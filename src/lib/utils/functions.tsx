@@ -41,7 +41,7 @@ export const getTextColor = (backColor: string) => {
     const g = parseInt(hex.substring(2, 2 + 2), 16);
     const b = parseInt(hex.substring(4, 4 + 2), 16);
 
-    return (0.299 * r + 0.587 * g + 0.114 * b) > 128 ? "#000000" : "#e2e2e2";
+    return (0.299 * r + 0.587 * g + 0.114 * b) > 128 ? "#000000" : "#ffffff";
 };
 
 

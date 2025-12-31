@@ -5,9 +5,9 @@ import {Button} from "@/lib/client/components/ui/button";
 import {Award, EllipsisVertical, User} from "lucide-react";
 import {createFileRoute, Link} from "@tanstack/react-router";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
-import {MediaTypeTabs} from "@/lib/client/media-stats/MediaTypeTabs";
 import {DashboardContent} from "@/lib/client/media-stats/DashboardContent";
 import {userStatsOptions} from "@/lib/client/react-query/query-options/query-options";
+import {TabHeader} from "@/lib/client/components/user-profile/TabHeader";
 import {Popover, PopoverContent, PopoverTrigger} from "@/lib/client/components/ui/popover";
 
 
@@ -34,22 +34,20 @@ function UserStatsPage() {
 
     return (
         <PageTitle title={`${username} Statistics`} subtitle="Comprehensive media tracking insights">
-            <div className="mt-2">
-                <div className="flex flex-row gap-y-3 justify-between items-center max-sm:flex-col-reverse max-sm:items-start mb-4">
-                    <MediaTypeTabs
-                        selectedTab={selectedTab}
-                        onTabChange={handleTabChange}
-                        activatedMediaTypes={apiData.activatedMediaTypes}
-                    />
-
-                    <QuickActions username={username}/>
-                </div>
-
-                <DashboardContent
-                    data={apiData}
-                    selectedTab={selectedTab}
+            <div className="mt-4 mb-8">
+                <TabHeader
+                    activeTab={selectedTab}
+                    setActiveTab={handleTabChange}
+                    mediaTypes={apiData.activatedMediaTypes}
                 />
             </div>
+
+            <QuickActions username={username}/>
+
+            <DashboardContent
+                data={apiData}
+                selectedTab={selectedTab}
+            />
         </PageTitle>
     );
 }

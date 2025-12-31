@@ -6,7 +6,7 @@ import {getDbClient} from "@/lib/server/database/async-storage";
 import {JobType, LabelAction, MediaType, Status} from "@/lib/utils/enums";
 import {GenreTable, LabelTable, ListTable, MediaSchemaConfig, MediaTable} from "@/lib/types/media.config.types";
 import {animeList, booksList, followers, gamesList, mangaList, moviesList, seriesList, user} from "@/lib/server/database/schema";
-import {and, asc, count, countDistinct, desc, eq, getTableColumns, gte, inArray, isNotNull, isNull, like, lt, lte, ne, notInArray, SQL, sql} from "drizzle-orm";
+import {and, asc, count, countDistinct, desc, eq, getTableColumns, gte, inArray, isNotNull, isNull, like, lt, lte, ne, notInArray, or, SQL, sql} from "drizzle-orm";
 import {
     AddedMediaDetails,
     ExpandedListFilters,
@@ -478,8 +478,10 @@ export abstract class BaseRepository<TConfig extends MediaSchemaConfig<MediaTabl
             .where(and(
                 notInArray(listTable.status, [Status.DROPPED]),
                 userId ? eq(listTable.userId, userId) : undefined,
-                gte(mediaTable.releaseDate, sql`datetime('now')`),
-                maxAWeek ? lte(mediaTable.releaseDate, sql`datetime('now', '+7 days')`) : undefined,
+                or(isNull(mediaTable.releaseDate), and(
+                    gte(mediaTable.releaseDate, sql`datetime('now')`),
+                    maxAWeek ? lte(mediaTable.releaseDate, sql`datetime('now', '+7 days')`) : undefined,
+                )),
             ))
             .orderBy(asc(mediaTable.releaseDate));
     }

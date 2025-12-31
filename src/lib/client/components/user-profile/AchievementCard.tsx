@@ -35,7 +35,7 @@ export const AchievementsCard = ({ username, achievements }: AchievementsProps) 
                                 <div className="flex justify-between">
                                     <div className="flex gap-2 items-center mb-1">
                                         <Award className={cn("size-4", diffColors(ach.difficulty, "text"))}/>
-                                        <div className="font-bold text-sm">
+                                        <div className="font-bold text-sm text-primary">
                                             {ach.name}
                                         </div>
                                     </div>

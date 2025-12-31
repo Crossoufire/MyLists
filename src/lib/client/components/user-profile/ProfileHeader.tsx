@@ -93,7 +93,7 @@ export const ProfileHeader = ({ user, followStatus, followId, followsCount, foll
                                 user={{ name: user.name, image: user.image }}
                             />
                             <div className="absolute -bottom-2 -right-2 w-18 h-7 z-20 flex items-center justify-center
-                            rounded-full font-bold text-xs bg-app-accent/70 border-4 border-background shadow-lg">
+                            rounded-full font-bold text-xs bg-app-accent text-black border-4 border-background shadow-lg">
                                 Lvl. {userLevel.toFixed(0)}
                             </div>
                         </div>

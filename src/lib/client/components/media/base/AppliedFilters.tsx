@@ -16,7 +16,7 @@ interface AppliedFiltersProps {
 
 export const AppliedFilters = ({ totalItems, onFilterRemove }: AppliedFiltersProps) => {
     const { mediaType } = useParams({ from: "/_main/_private/list/$mediaType/$username" });
-    const { page: _page, sort: _sort, ...rawFilters } = useSearch({ from: "/_main/_private/list/$mediaType/$username" });
+    const { page: _page, sort: _sort, status: _status, ...rawFilters } = useSearch({ from: "/_main/_private/list/$mediaType/$username" });
 
     const booleanKeys = ["favorite", "comment", "hideCommon"];
     const localFilters = rawFilters as Partial<MediaListArgs>;
@@ -44,7 +44,7 @@ export const AppliedFilters = ({ totalItems, onFilterRemove }: AppliedFiltersPro
     };
 
     return (
-        <div className="flex flex-wrap items-center gap-2 mb-8 h-[42px]">
+        <div className="flex flex-wrap items-center gap-2 mb-8 h-10.5">
             <MutedText italic={false}>
                 {totalItems} {capitalize(mediaType)}
             </MutedText>

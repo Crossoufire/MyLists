@@ -21,7 +21,7 @@ export const SimilarMediaCard = ({ mediaType, item }: SimilarMediaProps) => {
                     <img
                         alt={item.mediaName}
                         src={item.mediaCover}
-                        className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                        className="w-full h-full object-cover transition-transform"
                     />
                     <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors"/>
                 </div>

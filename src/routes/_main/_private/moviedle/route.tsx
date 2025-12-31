@@ -9,7 +9,7 @@ import {PageTitle} from "@/lib/client/components/general/PageTitle";
 import {EmptyState} from "@/lib/client/components/user-profile/EmptyState";
 import {Loader2, PartyPopper, Search, SearchX, ThumbsDown} from "lucide-react";
 import {CountdownTimer} from "@/lib/client/components/moviedle/CountdownTimer";
-import {ProfileStatCard} from "@/lib/client/components/user-profile/ProfileStatCard";
+import {SimpleStatCard} from "@/lib/client/components/user-profile/SimpleStatCard";
 import {Card, CardContent, CardHeader, CardTitle} from "@/lib/client/components/ui/card";
 import {useMoviedleGuessMutation} from "@/lib/client/react-query/query-mutations/mediadle.mutations";
 import {dailyMediadleOptions, mediadleSuggestionsOptions} from "@/lib/client/react-query/query-options/query-options";
@@ -206,27 +206,27 @@ function MediadlePage() {
                 </Card>
                 <div className="space-y-6">
                     <div className="grid gap-2 grid-cols-3 max-sm:grid-cols-2">
-                        <ProfileStatCard
+                        <SimpleStatCard
                             title="Total Played"
                             value={mediadleData?.stats?.totalPlayed ?? 0}
                         />
-                        <ProfileStatCard
+                        <SimpleStatCard
                             title="Total Won"
                             value={mediadleData?.stats?.totalWon ?? 0}
                         />
-                        <ProfileStatCard
+                        <SimpleStatCard
                             title="Win Rate"
                             value={`${mediadleData?.stats?.winRate?.toFixed(1) ?? 0.0}%`}
                         />
-                        <ProfileStatCard
+                        <SimpleStatCard
                             title="Current Streak"
                             value={mediadleData?.stats?.currentStreak ?? 0}
                         />
-                        <ProfileStatCard
+                        <SimpleStatCard
                             title="Best Streak"
                             value={mediadleData?.stats?.bestStreak ?? 0}
                         />
-                        <ProfileStatCard
+                        <SimpleStatCard
                             title="Avg. Attempts"
                             value={mediadleData?.stats?.averageAttempts?.toFixed(2) ?? 0.0}
                         />

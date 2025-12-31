@@ -1,8 +1,9 @@
-import {JSX, useState} from "react";
-import {cn, mail} from "@/lib/utils/helpers";
+import {JSX} from "react";
+import {mail} from "@/lib/utils/helpers";
 import {ApiProviderType} from "@/lib/utils/enums";
 import {createFileRoute} from "@tanstack/react-router";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
+import {Popover, PopoverTrigger, PopoverContent} from "@/lib/client/components/ui/popover";
 import {
     Activity,
     BarChart3,
@@ -10,7 +11,6 @@ import {
     BookOpen,
     Calendar,
     ChevronDown,
-    ChevronUp,
     Code2,
     Crop,
     Edit3,
@@ -281,13 +281,12 @@ const FEATURES_DATA: FeatureData[] = [
 
 const FeatureCard = ({ feature }: { feature: FeatureData }) => {
     const Icon = feature.icon;
-    const [expanded, setExpanded] = useState(false);
 
     return (
-        <div className="relative overflow-hidden rounded-xl border transition-all duration-300 flex flex-col bg-background hover:border-app-accent">
+        <div className="relative overflow-hidden rounded-xl border transition-all duration-300 flex flex-col bg-background">
             {feature.category === "New" &&
                 <div className="absolute top-0 right-0">
-                    <div className="bg-app-accent text-secondary text-[10px] font-bold px-3 py-1 rounded-bl-lg">
+                    <div className="bg-app-accent text-black text-[10px] font-bold px-3 py-1 rounded-bl-lg">
                         NEW
                     </div>
                 </div>
@@ -295,7 +294,7 @@ const FeatureCard = ({ feature }: { feature: FeatureData }) => {
 
             <div className="p-5 flex-1">
                 <div className="flex items-start gap-4">
-                    <div className="p-3 rounded-lg shrink-0 bg-app-accent/10 text-muted-foreground">
+                    <div className="p-3 rounded-lg shrink-0 bg-app-accent/20 text-primary">
                         <Icon className="size-6"/>
                     </div>
                     <div>
@@ -307,25 +306,29 @@ const FeatureCard = ({ feature }: { feature: FeatureData }) => {
                         </div>
                     </div>
                 </div>
-
-                {feature.details &&
-                    <div className={cn("mt-4 overflow-hidden transition-all duration-300", expanded ? "max-h-125 opacity-100" : "max-h-0 opacity-0")}>
-                        <div className="pt-4 border-t">
-                            {feature.details}
-                        </div>
-                    </div>
-                }
             </div>
 
             {feature.details &&
-                <button
-                    onClick={() => setExpanded(!expanded)}
-                    className="w-full py-2 bg-popover hover:bg-popover/50 border-t text-xs font-medium text-app-accent
-                    transition-colors flex items-center justify-center gap-1"
-                >
-                    {expanded ? "Show Less" : "Learn More"}
-                    {expanded ? <ChevronUp className="size-3"/> : <ChevronDown className="size-3"/>}
-                </button>
+                <Popover>
+                    <PopoverTrigger asChild>
+                        <button className="w-full py-2 bg-popover border-t text-xs font-medium text-app-accent
+                        transition-colors flex items-center justify-center gap-1 hover:bg-popover/50">
+                            Learn More
+                            <ChevronDown className="size-3"/>
+                        </button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-(--radix-popover-trigger-width) p-4 text-sm shadow-xl">
+                        <div className="space-y-2">
+                            <h4 className="font-bold flex items-center gap-2">
+                                <Icon className="size-4 text-app-accent"/>
+                                {feature.name}
+                            </h4>
+                            <div className="pt-2 border-t text-muted-foreground leading-relaxed">
+                                {feature.details}
+                            </div>
+                        </div>
+                    </PopoverContent>
+                </Popover>
             }
         </div>
     );

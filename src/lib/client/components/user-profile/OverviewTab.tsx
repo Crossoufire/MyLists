@@ -2,7 +2,7 @@ import {useMemo} from "react";
 import {Link} from "@tanstack/react-router";
 import {getMediaColor} from "@/lib/utils/functions";
 import {Activity, Clock, ClockAlert, MoveRight, Star} from "lucide-react";
-import {ProfileStatCard} from "@/lib/client/components/user-profile/ProfileStatCard";
+import {SimpleStatCard} from "@/lib/client/components/user-profile/SimpleStatCard";
 import {MediaFavoritesGrid} from "@/lib/client/components/user-profile/FavoritesGrid";
 import {DistributionContainer} from "@/lib/client/components/user-profile/ProfileDistrib";
 import {MediaGlobalSummaryType, PerMediaSummaryType} from "@/lib/types/query.options.types";
@@ -24,20 +24,20 @@ export const OverviewTab = ({ username, globalStats, perMedia }: OverviewTabProp
     return (
         <div className="space-y-6">
             <div className="grid grid-cols-4 gap-4 max-lg:grid-cols-2">
-                <ProfileStatCard
+                <SimpleStatCard
                     title="Total Time"
                     value={`${globalStats.totalDays.toFixed(0)} d`}
                 />
-                <ProfileStatCard
+                <SimpleStatCard
                     title="Total Entries"
                     value={globalStats.totalEntries}
                 />
-                <ProfileStatCard
+                <SimpleStatCard
                     title="Avg. Rating"
                     value={globalStats.avgRated?.toFixed(2)}
                     icon={<Star className="size-5 text-app-rating mt-1"/>}
                 />
-                <ProfileStatCard
+                <SimpleStatCard
                     title="Rated Media"
                     value={globalStats.percentRated ? `${globalStats.percentRated.toFixed(1)}%` : undefined}
                 />
@@ -61,7 +61,7 @@ export const OverviewTab = ({ username, globalStats, perMedia }: OverviewTabProp
                                     style={{ flex: media.timeSpentDays, backgroundColor: getMediaColor(media.mediaType) }}
                                 >
                                     {percentage > 5 &&
-                                        <span className="text-xs truncate font-bold text-background px-0.5">
+                                        <span className="text-xs truncate tracking-wider font-medium text-black px-0.5">
                                         {Math.round(percentage)}%
                                     </span>
                                     }

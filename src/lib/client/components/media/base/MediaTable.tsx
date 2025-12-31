@@ -65,7 +65,7 @@ export const MediaTable = ({ isCurrent, mediaType, results, queryOption, onChang
 
     return (
         <>
-            <div className="rounded-md border p-3 pt-0 max-w-screen-lg mx-auto">
+            <div className="rounded-md border p-3 pt-0">
                 <Table>
                     <TableHeader>
                         {table.getHeaderGroups().map((headerGroup) =>

@@ -25,7 +25,9 @@ export const PageTitle = ({ children, title, subtitle, onlyHelmet = false }: Pag
                             {subtitle}
                         </p>
                     </div>
-                    {children}
+                    <div className="mt-6">
+                        {children}
+                    </div>
                 </div>
             }
         </>

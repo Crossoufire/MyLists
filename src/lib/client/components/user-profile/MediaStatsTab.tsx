@@ -4,7 +4,7 @@ import {getStatusColor} from "@/lib/utils/functions";
 import {PerMediaSummaryType} from "@/lib/types/query.options.types";
 import {BarChart3, ChartNoAxesColumn, MoveRight, Star} from "lucide-react";
 import {EmptyState} from "@/lib/client/components/user-profile/EmptyState";
-import {ProfileStatCard} from "@/lib/client/components/user-profile/ProfileStatCard";
+import {SimpleStatCard} from "@/lib/client/components/user-profile/SimpleStatCard";
 import {MediaFavoritesGrid} from "@/lib/client/components/user-profile/FavoritesGrid";
 import {DistributionContainer} from "@/lib/client/components/user-profile/ProfileDistrib";
 
@@ -26,20 +26,20 @@ export const MediaStatsTab = ({ username, mediaSummary }: MediaStatsTabProps) =>
     return (
         <div className="space-y-6">
             <div className="grid grid-cols-4 gap-4 max-lg:grid-cols-2">
-                <ProfileStatCard
+                <SimpleStatCard
                     title="Entries"
                     value={mediaSummary.totalEntries}
                 />
-                <ProfileStatCard
+                <SimpleStatCard
                     title="Time (Days)"
                     value={Math.round(mediaSummary.timeSpentDays)}
                 />
-                <ProfileStatCard
+                <SimpleStatCard
                     title="Avg. Rating"
                     value={mediaSummary.avgRated?.toFixed(2)}
                     icon={<Star className="size-5 text-app-rating mt-1"/>}
                 />
-                <ProfileStatCard
+                <SimpleStatCard
                     title="Completed"
                     value={mediaSummary.statusList.find((s) => s.status === "Completed")?.count || 0}
                 />

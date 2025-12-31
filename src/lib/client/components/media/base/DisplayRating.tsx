@@ -13,8 +13,11 @@ export const DisplayRating = ({ rating, size = 15 }: DisplayRatingProps) => {
 
     return (
         <div className="flex items-center gap-x-1">
-            <Star className="text-amber-500" size={size}/>
-            <div>{rating}</div>
+            <Star
+                size={size}
+                className="text-app-rating"
+            />
+            <span>{rating}</span>
         </div>
     );
 };

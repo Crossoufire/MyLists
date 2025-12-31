@@ -36,19 +36,21 @@ export const BaseMediaListItem = (props: BaseMediaListItemProps) => {
                 <div className="absolute right-2 top-2 z-10">
                     {isCurrent &&
                         <div role="button" onClick={() => setDialogOpen(true)}>
-                            <Settings2 className="size-4 opacity-70"/>
+                            <Settings2 className="size-4 opacity-70 hover:opacity-90 transition-opacity"/>
                         </div>
                     }
                     {!isCurrent && !userMedia.common && isConnected &&
-                        <QuickAddMedia
-                            mediaType={mediaType}
-                            queryOption={queryOption}
-                            allStatuses={allStatuses}
-                            mediaId={userMedia.mediaId}
-                        />
+                        <div className="absolute -right-0.5 -top-0.5 z-10">
+                            <QuickAddMedia
+                                mediaType={mediaType}
+                                queryOption={queryOption}
+                                allStatuses={allStatuses}
+                                mediaId={userMedia.mediaId}
+                            />
+                        </div>
                     }
                 </div>
-                <div className="absolute left-1.5 top-1.5 z-10 rounded-md bg-gray-950 px-2 opacity-85">
+                <div className="absolute left-2 top-2 z-10 rounded-md bg-neutral-950 px-3 text-primary/95">
                     {mediaDetailsDisplay}
                 </div>
                 {isConnected &&
@@ -56,7 +58,8 @@ export const BaseMediaListItem = (props: BaseMediaListItemProps) => {
                         isCommon={userMedia.common}
                     />
                 }
-                <div className="absolute bottom-0 w-full space-y-3 rounded-b-sm bg-gray-900 px-3 pb-3 pt-2">
+
+                <div className="absolute bottom-0 w-full space-y-2 rounded-b-sm p-3">
                     <div className="flex w-full items-center justify-between space-x-2 max-sm:text-sm">
                         <h3 className="grow truncate font-semibold" title={userMedia.mediaName}>
                             {userMedia.mediaName}
@@ -68,21 +71,27 @@ export const BaseMediaListItem = (props: BaseMediaListItemProps) => {
                         </div>
                     </div>
                     <div className="flex w-full flex-wrap items-center justify-between">
-                        <Badge variant="outline" className="shrink-0">
+                        <Badge variant="outline" className="shrink-0 backdrop-blur-md">
                             {userMedia.status}
                         </Badge>
                         <div className="flex shrink-0 items-center gap-2">
                             {userMedia.favorite &&
-                                <DisplayFavorite isFavorite={userMedia.favorite} size={16}/>
+                                <DisplayFavorite
+                                    size={16}
+                                    isFavorite={userMedia.favorite}
+                                />
                             }
                             {userMedia.comment &&
-                                <DisplayComment content={userMedia.comment}/>
+                                <DisplayComment
+                                    content={userMedia.comment}
+                                />
                             }
                             {redoDisplay}
                         </div>
                     </div>
                 </div>
             </MediaCard>
+
             <UserMediaEditDialog
                 mediaType={mediaType}
                 userMedia={userMedia}

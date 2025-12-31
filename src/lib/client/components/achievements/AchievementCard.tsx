@@ -1,11 +1,10 @@
 import {useMemo} from "react";
+import {Award} from "lucide-react";
 import {cn} from "@/lib/utils/helpers";
-import {Award, CircleCheck} from "lucide-react";
-import {diffColors, formatRelativeTime} from "@/lib/utils/functions";
 import {Badge} from "@/lib/client/components/ui/badge";
 import {AchCard} from "@/lib/types/query.options.types";
-import {AchievementDifficulty} from "@/lib/utils/enums";
 import {Progress} from "@/lib/client/components/ui/progress";
+import {diffColors, formatRelativeTime} from "@/lib/utils/functions";
 import {TiersDetails} from "@/lib/client/components/achievements/TierDetails";
 import {Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle} from "@/lib/client/components/ui/card";
 

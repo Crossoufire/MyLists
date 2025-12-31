@@ -6,7 +6,7 @@ import {TrendGrid} from "@/lib/client/components/trends/TrendGrid";
 import {TrendHero} from "@/lib/client/components/trends/TrendHero";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
 import {trendsOptions} from "@/lib/client/react-query/query-options/query-options";
-import {ProfileTabHeader} from "@/lib/client/components/user-profile/ProfileTabHeader";
+import {TabHeader} from "@/lib/client/components/user-profile/TabHeader";
 
 
 export const Route = createFileRoute("/_main/_private/trends")({
@@ -34,7 +34,7 @@ function TrendsPage() {
     return (
         <PageTitle title="Week Trends" subtitle="Top Series and Movies trending this week according to TMDB">
             <div className="mt-6">
-                <ProfileTabHeader
+                <TabHeader
                     activeTab={activeTab}
                     setActiveTab={setActiveTab}
                     mediaTypes={["series", "movies"]}

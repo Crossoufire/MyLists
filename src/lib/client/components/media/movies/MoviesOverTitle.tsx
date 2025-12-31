@@ -10,7 +10,7 @@ type MoviesDetailsProps<T extends MediaType> = Parameters<MediaConfig[T]["overTi
 
 export const MoviesOverTitle = ({ mediaType, media }: MoviesDetailsProps<typeof MediaType.MOVIES>) => {
     return (
-        <Link to="/details/$mediaType/$job/$name" params={{ mediaType, job: "creator", name: media.name }}>
+        <Link to="/details/$mediaType/$job/$name" params={{ mediaType, job: "creator", name: media.directorName }}>
             <Badge variant="outline" className="text-primary bg-popover hover:text-app-accent">
                 {media.directorName}
             </Badge>
