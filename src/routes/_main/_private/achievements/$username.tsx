@@ -31,12 +31,12 @@ function AchievementPage() {
             id: "all",
             label: "All",
             isAccent: true,
-            icon: <LayoutGrid size={16}/>,
+            icon: <LayoutGrid size={15}/>,
         },
         ...mediaTypes.map((mediaType) => ({
             id: mediaType,
             label: mediaType,
-            icon: <MediaAndUserIcon size={16} type={mediaType}/>,
+            icon: <MediaAndUserIcon size={15} type={mediaType}/>,
         })),
     ];
 

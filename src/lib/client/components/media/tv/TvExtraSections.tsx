@@ -12,35 +12,39 @@ type TvDetailsProps<T extends MediaType> = Parameters<NonNullable<MediaConfig[T]
 export const TvExtraSections = ({ mediaType, media }: TvDetailsProps<typeof MediaType.SERIES | typeof MediaType.ANIME>) => {
     return (
         <>
-            <section>
-                <MediaSectionTitle title="Main Actors"/>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                    {media.actors?.map((actor) =>
-                        <Link to="/details/$mediaType/$job/$name" params={{ mediaType, job: "actor", name: actor.name }}>
+            {(media.actors && media.actors.length > 0) &&
+                <section>
+                    <MediaSectionTitle title="Main Actors"/>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                        {media.actors.map((actor) =>
+                            <Link to="/details/$mediaType/$job/$name" params={{ mediaType, job: "actor", name: actor.name }}>
+                                <MediaExtraGrid
+                                    subname="Actor"
+                                    clickable={true}
+                                    name={actor.name}
+                                    initials={actor.name[0] + actor.name[1]}
+                                />
+                            </Link>
+                        )}
+                    </div>
+                </section>
+            }
+            {(media.epsPerSeason && media.epsPerSeason.length > 0) &&
+                <section>
+                    <MediaSectionTitle title="Season Breakdown">
+                        {media.totalEpisodes} Episodes
+                    </MediaSectionTitle>
+                    <div className="grid grid-cols-1 sm:grid-cols-4 gap-2 overflow-y-auto scrollbar-thin max-h-68">
+                        {media.epsPerSeason.map((s) =>
                             <MediaExtraGrid
-                                subname="Actor"
-                                clickable={true}
-                                name={actor.name}
-                                initials={actor.name[0] + actor.name[1]}
+                                name={`Season ${s.season}`}
+                                initials={`S${zeroPad(s.season)}`}
+                                subname={`${s.episodes} Episodes`}
                             />
-                        </Link>
-                    )}
-                </div>
-            </section>
-            <section>
-                <MediaSectionTitle title="Season Breakdown">
-                    {media.totalEpisodes} Episodes
-                </MediaSectionTitle>
-                <div className="grid grid-cols-1 sm:grid-cols-4 gap-2 overflow-y-auto scrollbar-thin max-h-68">
-                    {media.epsPerSeason?.map((s) =>
-                        <MediaExtraGrid
-                            name={`Season ${s.season}`}
-                            initials={`S${zeroPad(s.season)}`}
-                            subname={`${s.episodes} Episodes`}
-                        />
-                    )}
-                </div>
-            </section>
+                        )}
+                    </div>
+                </section>
+            }
         </>
     );
 };

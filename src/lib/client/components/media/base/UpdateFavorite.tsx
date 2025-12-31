@@ -20,7 +20,7 @@ export const UpdateFavorite = ({ updateFavorite, isFavorite }: UpdateFavoritePro
         <div role="button" onClick={handleFavorite}>
             <Heart
                 className={cn(
-                    "opacity-100 w-5 h-5 text-white",
+                    "size-5 opacity-100",
                     isFavorite && "text-red-700",
                     updateFavorite.isPending && "opacity-20",
                 )}

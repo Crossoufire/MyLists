@@ -52,7 +52,7 @@ export const TvUserDetails = ({ userMedia, mediaType, queryOption }: TvUserDetai
                 </div>
             }
             {!(userMedia.status === Status.PLAN_TO_WATCH || userMedia.status === Status.RANDOM) &&
-                <div className="flex justify-between items-center h-7">
+                <div className="flex justify-between items-center">
                     <div>Re-watched</div>
                     <UpdateTvRedo
                         redoValues={userMedia.redo2}

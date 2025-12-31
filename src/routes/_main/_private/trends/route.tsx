@@ -1,12 +1,14 @@
+import {useState} from "react";
 import {MediaType} from "@/lib/utils/enums";
 import {createFileRoute} from "@tanstack/react-router";
 import {useSuspenseQuery} from "@tanstack/react-query";
-import {useHashTab} from "@/lib/client/hooks/use-hash-tab";
 import {TrendGrid} from "@/lib/client/components/trends/TrendGrid";
 import {TrendHero} from "@/lib/client/components/trends/TrendHero";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
+import {TabHeader, TabItem} from "@/lib/client/components/user-profile/TabHeader";
 import {trendsOptions} from "@/lib/client/react-query/query-options/query-options";
-import {TabHeader} from "@/lib/client/components/user-profile/TabHeader";
+import {LayoutGrid} from "lucide-react";
+import {MediaAndUserIcon} from "@/lib/client/components/media/base/MediaAndUserIcon";
 
 
 export const Route = createFileRoute("/_main/_private/trends")({
@@ -17,7 +19,7 @@ export const Route = createFileRoute("/_main/_private/trends")({
 
 function TrendsPage() {
     const { seriesTrends, moviesTrends } = useSuspenseQuery(trendsOptions).data;
-    const [activeTab, setActiveTab] = useHashTab<"overview" | typeof MediaType.SERIES | typeof MediaType.MOVIES>("overview");
+    const [activeTab, setActiveTab] = useState<"all" | typeof MediaType.SERIES | typeof MediaType.MOVIES>("all");
 
     const allTrends = [...seriesTrends, ...moviesTrends]
         .sort((a, b) => new Date(b.releaseDate).getTime() - new Date(a.releaseDate).getTime());
@@ -30,14 +32,27 @@ function TrendsPage() {
 
     const filteredTrends = getFilteredData();
     const heroMedia = (activeTab === MediaType.SERIES) ? seriesTrends[0] : moviesTrends[0];
+    const mediaTabs: TabItem<"all" | typeof MediaType.SERIES | typeof MediaType.MOVIES>[] = [
+        {
+            id: "all",
+            label: "All",
+            isAccent: true,
+            icon: <LayoutGrid size={15}/>,
+        },
+        ...[MediaType.SERIES, MediaType.MOVIES].map((mediaType) => ({
+            id: mediaType,
+            label: mediaType,
+            icon: <MediaAndUserIcon type={mediaType} size={15}/>,
+        })),
+    ];
 
     return (
         <PageTitle title="Week Trends" subtitle="Top Series and Movies trending this week according to TMDB">
             <div className="mt-6">
                 <TabHeader
+                    tabs={mediaTabs}
                     activeTab={activeTab}
                     setActiveTab={setActiveTab}
-                    mediaTypes={["series", "movies"]}
                 />
             </div>
 

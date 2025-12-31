@@ -7,12 +7,12 @@ import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/l
 interface StatusDropProps {
     status: Status;
     mediaType: MediaType;
-    canBeCompleted?: boolean;
+    completable?: boolean;
     updateStatus: ReturnType<typeof useUpdateUserMediaMutation>;
 }
 
 
-export const UpdateStatus = ({ status, mediaType, updateStatus, canBeCompleted = true }: StatusDropProps) => {
+export const UpdateStatus = ({ status, mediaType, updateStatus, completable = true }: StatusDropProps) => {
     const allStatuses = statusUtils.byMediaType(mediaType);
 
     const handleStatus = (status: Status) => {
@@ -23,15 +23,15 @@ export const UpdateStatus = ({ status, mediaType, updateStatus, canBeCompleted =
         <div className="flex justify-between items-center">
             <div>Status</div>
             <Select value={status} onValueChange={handleStatus} disabled={updateStatus?.isPending}>
-                <SelectTrigger className="w-[130px] border-hidden px-0" size="sm">
+                <SelectTrigger size="sm" className="w-34">
                     <SelectValue/>
                 </SelectTrigger>
                 <SelectContent>
-                    {allStatuses?.map(s => (
-                        <SelectItem key={s} value={s} disabled={s === Status.COMPLETED && !canBeCompleted}>
+                    {allStatuses?.map((s) =>
+                        <SelectItem key={s} value={s} disabled={s === Status.COMPLETED && !completable}>
                             {s}
                         </SelectItem>
-                    ))}
+                    )}
                 </SelectContent>
             </Select>
         </div>

@@ -1,6 +1,5 @@
 import {Badge} from "@/lib/client/components/ui/badge";
 import {MediaDetails} from "@/lib/types/query.options.types";
-
 import {MediaSectionTitle} from "@/lib/client/components/media/base/MediaDetailsComps";
 
 
@@ -17,7 +16,7 @@ export const MediaSynopsis = ({ media }: MediaSynopsisProps) => {
                 <p className="text-primary leading-relaxed text-base">
                     {media.synopsis}
                 </p>
-                {"tagline" in media &&
+                {("tagline" in media && media.tagline) &&
                     <blockquote className="text-muted-foreground mt-2 italic">
                         — {media.tagline}
                     </blockquote>

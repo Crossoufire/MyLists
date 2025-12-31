@@ -1,14 +1,16 @@
 import {useState} from "react";
+import {LayoutGrid} from "lucide-react";
 import {MediaType} from "@/lib/utils/enums";
 import {createFileRoute} from "@tanstack/react-router";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {MediaLevels} from "@/lib/client/components/user-profile/MediaLevels";
 import {OverviewTab} from "@/lib/client/components/user-profile/OverviewTab";
 import {MediaStatsTab} from "@/lib/client/components/user-profile/MediaStatsTab";
+import {TabHeader, TabItem} from "@/lib/client/components/user-profile/TabHeader";
 import {ProfileFollows} from "@/lib/client/components/user-profile/ProfileFollows";
 import {profileOptions} from "@/lib/client/react-query/query-options/query-options";
+import {MediaAndUserIcon} from "@/lib/client/components/media/base/MediaAndUserIcon";
 import {AchievementsCard} from "@/lib/client/components/user-profile/AchievementCard";
-import {TabHeader} from "@/lib/client/components/user-profile/TabHeader";
 import {FollowsUpdates, UserUpdates} from "@/lib/client/components/user-profile/UserUpdates";
 
 
@@ -22,6 +24,20 @@ function ProfileMain() {
     const apiData = useSuspenseQuery(profileOptions(username)).data;
     const [activeTab, setActiveTab] = useState<MediaType | "overview">("overview");
     const activeMediaTypes = apiData.userData.userMediaSettings.filter((s) => s.active).map((s) => s.mediaType);
+
+    const mediaTabs: TabItem<MediaType | "overview">[] = [
+        {
+            id: "overview",
+            isAccent: true,
+            label: "Overview",
+            icon: <LayoutGrid size={15}/>,
+        },
+        ...activeMediaTypes.map((mediaType) => ({
+            id: mediaType,
+            label: mediaType,
+            icon: <MediaAndUserIcon type={mediaType} size={15}/>,
+        })),
+    ];
 
     return (
         <div className="grid grid-cols-[0.26fr_0.74fr] gap-6 pt-2 max-lg:grid-cols-5 max-sm:grid-cols-1">
@@ -42,9 +58,9 @@ function ProfileMain() {
 
             <div className="space-y-6 max-lg:col-span-3 max-sm:col-span-2 max-sm:space-y-4 max-sm:mt-4">
                 <TabHeader
+                    tabs={mediaTabs}
                     activeTab={activeTab}
                     setActiveTab={setActiveTab}
-                    mediaTypes={activeMediaTypes}
                 />
                 <div className="min-h-113 animate-in fade-in duration-300">
                     {activeTab === "overview" ?

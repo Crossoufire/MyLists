@@ -1,14 +1,14 @@
 import {MediaType} from "@/lib/utils/enums";
 import {TabValue} from "@/lib/types/stats.types";
 import {useSuspenseQuery} from "@tanstack/react-query";
-import {Button} from "@/lib/client/components/ui/button";
-import {Award, EllipsisVertical, User} from "lucide-react";
 import {createFileRoute, Link} from "@tanstack/react-router";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
+import {Award, EllipsisVertical, LayoutGrid, User} from "lucide-react";
 import {DashboardContent} from "@/lib/client/media-stats/DashboardContent";
+import {TabHeader, TabItem} from "@/lib/client/components/user-profile/TabHeader";
+import {MediaAndUserIcon} from "@/lib/client/components/media/base/MediaAndUserIcon";
 import {userStatsOptions} from "@/lib/client/react-query/query-options/query-options";
-import {TabHeader} from "@/lib/client/components/user-profile/TabHeader";
-import {Popover, PopoverContent, PopoverTrigger} from "@/lib/client/components/ui/popover";
+import {DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem} from "@/lib/client/components/ui/dropdown-menu";
 
 
 export const Route = createFileRoute("/_main/_private/stats/$username")({
@@ -32,17 +32,29 @@ function UserStatsPage() {
         await navigate({ search: value === "overview" ? undefined : { mediaType: value as MediaType } });
     };
 
+    const mediaTabs: TabItem<"overview" | MediaType>[] = [
+        {
+            id: "overview",
+            isAccent: true,
+            label: "Overview",
+            icon: <LayoutGrid size={15}/>,
+        },
+        ...apiData.activatedMediaTypes.map((mediaType) => ({
+            id: mediaType,
+            label: mediaType,
+            icon: <MediaAndUserIcon size={15} type={mediaType}/>,
+        })),
+    ];
+
     return (
         <PageTitle title={`${username} Statistics`} subtitle="Comprehensive media tracking insights">
-            <div className="mt-4 mb-8">
-                <TabHeader
-                    activeTab={selectedTab}
-                    setActiveTab={handleTabChange}
-                    mediaTypes={apiData.activatedMediaTypes}
-                />
+            <div className="mb-6">
+                <TabHeader tabs={mediaTabs} activeTab={selectedTab} setActiveTab={handleTabChange}>
+                    <QuickActions
+                        username={username}
+                    />
+                </TabHeader>
             </div>
-
-            <QuickActions username={username}/>
 
             <DashboardContent
                 data={apiData}
@@ -53,28 +65,26 @@ function UserStatsPage() {
 }
 
 
-export function QuickActions({ username }: { username: string }) {
+const QuickActions = ({ username }: { username: string }) => {
     return (
-        <Popover>
-            <PopoverTrigger asChild>
-                <Button variant="outline" size="icon">
-                    <EllipsisVertical className="size-4"/>
-                </Button>
-            </PopoverTrigger>
-            <PopoverContent align="end" className="w-42 p-2">
+        <DropdownMenu>
+            <DropdownMenuTrigger className="opacity-70 hover:opacity-100">
+                <EllipsisVertical className="size-4"/>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-44">
                 <Link to="/profile/$username" params={{ username }}>
-                    <Button variant="ghost" className="w-full inline-flex items-center justify-start">
+                    <DropdownMenuItem className="cursor-pointer">
                         <User className="size-4 text-muted-foreground"/>
-                        User's Profile
-                    </Button>
+                        <span>User's Profile</span>
+                    </DropdownMenuItem>
                 </Link>
                 <Link to="/achievements/$username" params={{ username }}>
-                    <Button variant="ghost" className="w-full inline-flex items-center justify-start">
+                    <DropdownMenuItem className="cursor-pointer">
                         <Award className="size-4 text-muted-foreground"/>
-                        Achievements
-                    </Button>
+                        <span>Achievements</span>
+                    </DropdownMenuItem>
                 </Link>
-            </PopoverContent>
-        </Popover>
+            </DropdownMenuContent>
+        </DropdownMenu>
     );
-}
+};

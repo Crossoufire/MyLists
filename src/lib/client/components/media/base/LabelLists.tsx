@@ -58,20 +58,24 @@ export const LabelLists = ({ queryOption, mediaType, mediaId, mediaLabels }: Lab
                     updateUserMediaLabels={updateUserMediaLabels}
                 />
             </h4>
-            <Separator className="mb-1"/>
+            <Separator className="-mt-1 mb-1"/>
             <div className="flex flex-wrap gap-2">
                 {mediaLabels.length === 0 ?
-                    <MutedText className="text-sm">No labels added yet</MutedText>
+                    <MutedText className="text-sm">
+                        No labels added yet.
+                    </MutedText>
                     :
                     mediaLabels.map((label) =>
                         <Link
                             key={label.name}
                             to="/list/$mediaType/$username"
-                            params={{ mediaType, username: currentUser!.name }}
                             search={{ labels: [label.name] }}
+                            params={{ mediaType, username: currentUser!.name }}
                         >
                             <Badge variant="label" key={label.name}>
-                                <div className="flex justify-between gap-2">{label.name}</div>
+                                <div className="flex justify-between gap-2">
+                                    {label.name}
+                                </div>
                             </Badge>
                         </Link>
                     )

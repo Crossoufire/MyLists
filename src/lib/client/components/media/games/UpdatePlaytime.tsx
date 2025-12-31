@@ -21,7 +21,7 @@ export const UpdatePlaytime = ({ playtime, updatePlaytime }: UpdatePlaytimeProps
         <div className="flex justify-between items-center">
             <div>Playtime</div>
             <Select value={hoursPlaytime.toString()} onValueChange={handleSelect} disabled={updatePlaytime.isPending}>
-                <SelectTrigger className="w-32.5 border-hidden px-0" size="sm">
+                <SelectTrigger className="w-34" size="sm">
                     <SelectValue/>
                 </SelectTrigger>
                 <SelectContent>

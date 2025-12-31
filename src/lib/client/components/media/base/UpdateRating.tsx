@@ -24,10 +24,10 @@ export const UpdateRating = ({ rating, onUpdateMutation }: RatingComponentProps)
     return (
         <div className="flex justify-between items-center">
             <Select value={ratingValue?.toString() ?? "-"} onValueChange={handleSelectChange} disabled={onUpdateMutation?.isPending}>
-                <SelectTrigger className="w-[130px] border-hidden px-0" size="sm">
+                <SelectTrigger size="sm" className="w-34">
                     <SelectValue/>
                 </SelectTrigger>
-                <SelectContent className="max-h-[300px] overflow-y-auto">
+                <SelectContent className="max-h-75 overflow-y-auto">
                     {ratingList.map((rating) =>
                         <SelectItem key={rating.value} value={rating.value?.toString() ?? "-"}>
                             {rating.component}

@@ -28,11 +28,11 @@ export const UpdateSeasonsEps = ({ onUpdateMutation, epsPerSeason, currentSeason
                 <div>Season</div>
                 <Select value={currentSeason.toString()} onValueChange={handleSeasonUpdate}
                         disabled={onUpdateMutation.isPending}>
-                    <SelectTrigger className="w-[130px] border-hidden px-0" size="sm">
+                    <SelectTrigger size="sm" className="w-34">
                         <SelectValue/>
                     </SelectTrigger>
                     <SelectContent>
-                        {epsPerSeason.map(item =>
+                        {epsPerSeason.map((item) =>
                             <SelectItem key={item.season} value={item.season.toString()}>
                                 {item.season}
                             </SelectItem>
@@ -44,7 +44,7 @@ export const UpdateSeasonsEps = ({ onUpdateMutation, epsPerSeason, currentSeason
                 <div>Episode</div>
                 <Select value={currentEpisode.toString()} onValueChange={handleEpisodeUpdate}
                         disabled={onUpdateMutation.isPending}>
-                    <SelectTrigger className="w-[130px] border-hidden px-0" size="sm">
+                    <SelectTrigger size="sm" className="w-34">
                         <SelectValue/>
                     </SelectTrigger>
                     <SelectContent>

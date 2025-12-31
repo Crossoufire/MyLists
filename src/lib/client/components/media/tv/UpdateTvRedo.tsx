@@ -1,4 +1,3 @@
-import * as React from "react";
 import {useState} from "react";
 import {UpdateType} from "@/lib/utils/enums";
 import {Button} from "@/lib/client/components/ui/button";
@@ -41,16 +40,18 @@ export const UpdateTvRedo = ({ onUpdateMutation, redoValues }: UpdateTvRedoProps
 
     return (
         <>
-            <div className="w-[130px] text-start flex items-center justify-between">
-                <div className="text-sm">{totalRedo} Seasons</div>
-                <Pencil
-                    role="button"
-                    className="size-4 text-gray-400"
-                    onClick={() => onOpenChange(true)}
-                />
+            <div
+                role="button"
+                onClick={() => onOpenChange(true)}
+                className="w-34 text-start flex items-center justify-between bg-accent/30 h-8 rounded-md border px-3"
+            >
+                <div className="text-sm">
+                    {totalRedo} Seasons
+                </div>
+                <Pencil className="size-4 text-muted-foreground"/>
             </div>
             <Credenza open={open} onOpenChange={onOpenChange}>
-                <CredenzaContent className="w-[400px] max-sm:w-full">
+                <CredenzaContent className="w-100 max-sm:w-full">
                     <CredenzaHeader>
                         <CredenzaTitle>Re-watched Seasons Manager</CredenzaTitle>
                         <CredenzaDescription>Manage your re-watched seasons</CredenzaDescription>
@@ -68,8 +69,8 @@ export const UpdateTvRedo = ({ onUpdateMutation, redoValues }: UpdateTvRedoProps
                             </div>
                         </div>
                         <Separator className="mb-3"/>
-                        <div className="overflow-y-auto max-h-[290px]">
-                            {draftRedo.map((season, idx) => (
+                        <div className="overflow-y-auto max-h-73">
+                            {draftRedo.map((season, idx) =>
                                 <div key={idx} className="flex justify-between items-center px-3">
                                     <div className="flex items-center gap-6">
                                         <div className="font-semibold">
@@ -86,7 +87,7 @@ export const UpdateTvRedo = ({ onUpdateMutation, redoValues }: UpdateTvRedoProps
                                         </Button>
                                     </div>
                                 </div>
-                            ))}
+                            )}
                         </div>
                     </div>
                     <CredenzaFooter>

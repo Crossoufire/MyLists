@@ -1,12 +1,13 @@
+import {LayoutGrid} from "lucide-react";
 import {MediaType} from "@/lib/utils/enums";
 import {TabValue} from "@/lib/types/stats.types";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {createFileRoute} from "@tanstack/react-router";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
-import {MediaTypeTabs} from "@/lib/client/media-stats/MediaTypeTabs";
 import {DashboardContent} from "@/lib/client/media-stats/DashboardContent";
+import {TabHeader, TabItem} from "@/lib/client/components/user-profile/TabHeader";
+import {MediaAndUserIcon} from "@/lib/client/components/media/base/MediaAndUserIcon";
 import {platformStatsOptions} from "@/lib/client/react-query/query-options/query-options";
-import {TabHeader} from "@/lib/client/components/user-profile/TabHeader";
 
 
 export const Route = createFileRoute("/_main/_private/platform-stats")({
@@ -29,13 +30,28 @@ function PlatformStatsPage() {
         await navigate({ search: value === "overview" ? undefined : { mediaType: value as MediaType } });
     };
 
+    const mediaTypes = Object.values(MediaType);
+    const mediaTabs: TabItem<"overview" | MediaType>[] = [
+        {
+            id: "overview",
+            isAccent: true,
+            label: "Overview",
+            icon: <LayoutGrid size={15}/>,
+        },
+        ...mediaTypes.map((mediaType) => ({
+            id: mediaType,
+            label: mediaType,
+            icon: <MediaAndUserIcon size={15} type={mediaType}/>,
+        })),
+    ];
+
     return (
         <PageTitle title="MyLists Statistics" subtitle="Comprehensive media tracking insights">
-            <div className="mt-4 mb-8">
+            <div className="mb-6">
                 <TabHeader
+                    tabs={mediaTabs}
                     activeTab={selectedTab}
                     setActiveTab={handleTabChange}
-                    mediaTypes={apiData.activatedMediaTypes}
                 />
             </div>
 

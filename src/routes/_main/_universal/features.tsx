@@ -342,10 +342,10 @@ interface SectionHeaderProps {
 
 
 const SectionHeader = ({ title, icon: Icon }: SectionHeaderProps) => (
-    <div className="mb-8">
+    <div className="mb-6">
         <div className="flex items-center gap-2 mb-2">
-            <Icon className="size-5 text-app-accent"/>
-            <h2 className="text-xl font-bold text-primary uppercase tracking-wide">
+            <Icon className="size-4 text-app-accent"/>
+            <h2 className="text-lg font-bold text-primary tracking-wide">
                 {title}
             </h2>
         </div>
@@ -372,7 +372,7 @@ function FeaturesPage() {
 
     return (
         <PageTitle title="What's New in MyLists" subtitle="Discover the latest features and what's new and Improved">
-            <div className="space-y-20 mt-10 mb-20">
+            <div className="space-y-15 mb-20">
                 {activeCategories.map((category) =>
                     <section key={category}>
                         <SectionHeader

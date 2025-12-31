@@ -3,8 +3,8 @@ import {cn} from "@/lib/utils/helpers";
 import {Link} from "@tanstack/react-router";
 import {MediaType} from "@/lib/utils/enums";
 import {Pencil, RefreshCw} from "lucide-react";
+import {Button} from "@/lib/client/components/ui/button";
 import {formatRelativeTime} from "@/lib/utils/functions";
-import {Tooltip, TooltipContent, TooltipTrigger} from "@/lib/client/components/ui/tooltip";
 import {useRefreshMediaMutation} from "@/lib/client/react-query/query-mutations/media.mutations";
 
 
@@ -28,31 +28,32 @@ export const RefreshAndEditMedia = ({ mediaType, mediaId, apiId, external, lastU
     };
 
     return (
-        <div className="flex items-center gap-6 opacity-80">
-            <Tooltip>
-                <TooltipTrigger className="flex items-center text-xs gap-2 hover:text-app-accent" onClick={handleRefresh}>
-                    <RefreshCw className={cn("size-4", refreshMutation.isPending && "animate-spin opacity-30")}/>
-                    Refresh
-                </TooltipTrigger>
-                <TooltipContent side="bottom" align="start">
-                    <div>Refresh Metadata</div>
-                    <div>Last Refresh: {formatRelativeTime(lastUpdate)}</div>
-                </TooltipContent>
-            </Tooltip>
+        <div className="flex justify-center items-center gap-4 rounded-lg border p-1 shadow-sm max-sm:gap-2">
+            <Button
+                size="sm"
+                variant="ghost"
+                onClick={handleRefresh}
+                className="h-8 gap-2 px-3 text-xs"
+                disabled={refreshMutation.isPending}
+            >
+                <RefreshCw className={cn("size-3.5", refreshMutation.isPending && "animate-spin")}/>
+                Refresh
+            </Button>
 
-            <Tooltip>
-                <TooltipTrigger className="flex items-center text-xs gap-2 hover:text-app-accent" asChild>
-                    <Link to="/details/edit/$mediaType/$mediaId" params={{ mediaType, mediaId }}>
-                        <div className="flex items-center gap-2">
-                            <Pencil className="size-4"/>
-                            Edit
-                        </div>
-                    </Link>
-                </TooltipTrigger>
-                <TooltipContent>
-                    Edit Details
-                </TooltipContent>
-            </Tooltip>
+            <div className="border-l border h-6 border-muted-foreground/50"/>
+
+            <Button variant="ghost" size="sm" className="h-8 gap-2 px-3 text-xs" asChild>
+                <Link to="/details/edit/$mediaType/$mediaId" params={{ mediaType, mediaId }}>
+                    <Pencil className="size-3.5"/>
+                    Edit
+                </Link>
+            </Button>
+
+            <div className="border-l border h-6 border-muted-foreground/50"/>
+
+            <div className="px-3 text-xs text-muted-foreground">
+                Updated {formatRelativeTime(lastUpdate)}
+            </div>
         </div>
     );
 };

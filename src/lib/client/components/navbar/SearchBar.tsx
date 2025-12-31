@@ -100,7 +100,7 @@ export const SearchBar = ({ setMobileMenu }: SearchBarProps) => {
                     onChange={handleInputChange}
                     placeholder="Search for media/users..."
                     className="flex-1 text-sm border-none focus:outline-none focus:ring-0
-                    focus:border-none focus-visible:border-none focus-visible:ring-0"
+                    focus:border-none focus-visible:border-none focus-visible:ring-0 dark:bg-background"
                 />
                 <div className="px-3 text-muted-foreground">
                     {(isFetching && search.trim().length >= 2) ?

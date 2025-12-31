@@ -1,8 +1,9 @@
 import {useState} from "react";
+import {History} from "lucide-react";
 import {MediaType} from "@/lib/utils/enums";
 import {HistoryOptionsType} from "@/lib/types/query.options.types";
-import {MutedText} from "@/lib/client/components/general/MutedText";
 import {UserUpdate} from "@/lib/client/components/general/UserUpdate";
+import {EmptyState} from "@/lib/client/components/user-profile/EmptyState";
 import {useDeleteHistoryUpdatesMutation} from "@/lib/client/react-query/query-mutations/user-media.mutations";
 
 
@@ -25,7 +26,11 @@ export const HistoryDetails = ({ history, mediaId, mediaType }: HistoryDetailsPr
     return (
         <>
             {history.length === 0 ?
-                <MutedText>No history to display</MutedText>
+                <EmptyState
+                    icon={History}
+                    className="pt-5"
+                    message="No history to display."
+                />
                 :
                 history.map(update =>
                     <UserUpdate

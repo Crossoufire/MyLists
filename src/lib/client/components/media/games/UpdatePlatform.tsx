@@ -52,14 +52,14 @@ const PlatformComboBox = ({ resetValue = "", callback, isPending }: any) => {
                     variant="ghost"
                     aria-expanded={open}
                     disabled={isPending}
-                    className="w-[130px] justify-between has-[>svg]:px-0 font-normal hover:bg-transparent"
+                    className="w-34 justify-between font-normal bg-accent/30 border h-8"
                 >
                     {displayedLabel}
                     <ChevronDown className="size-4 opacity-30"/>
                 </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-[160px] p-0">
-                <Command className="overflow-y-auto max-h-[270px]">
+            <PopoverContent className="w-40 p-0" align="end">
+                <Command className="overflow-y-auto max-h-67">
                     <CommandInput placeholder="Search..." className="h-9"/>
                     <CommandList>
                         <CommandEmpty>No results</CommandEmpty>

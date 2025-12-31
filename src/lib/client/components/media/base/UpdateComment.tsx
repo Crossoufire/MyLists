@@ -35,18 +35,18 @@ export const UpdateComment = ({ content, updateComment }: CommentaryProps) => {
         <>
             <h4 className="text-lg flex justify-between items-center mt-4 font-semibold">
                 Comment
-                <MutedText className="text-sm mt-1">
+                <div className="text-muted-foreground text-sm mt-1">
                     <span role="button" onClick={handleEditToggle}>
                         {content ? "Edit" : "Add"}
                     </span>
-                </MutedText>
+                </div>
             </h4>
-            <Separator className="mb-1"/>
+            <Separator className="-mt-1 mb-1"/>
             {isEditing ?
                 <>
                     <Textarea
                         value={comment ?? ""}
-                        className="w-full h-20"
+                        className="w-full h-35"
                         disabled={updateComment.isPending}
                         placeholder="Enter your comment..."
                         onChange={(ev) => setComment(ev.target.value)}
@@ -61,8 +61,8 @@ export const UpdateComment = ({ content, updateComment }: CommentaryProps) => {
                     </div>
                 </>
                 :
-                <MutedText className="text-sm break-words max-h-[150px] overflow-y-auto">
-                    {content ? `${content}` : "No comments added yet"}
+                <MutedText className="text-sm wrap-break-word max-h-37 overflow-y-auto">
+                    {content ? `${content}` : "No comments added yet."}
                 </MutedText>
             }
         </>

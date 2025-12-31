@@ -12,18 +12,20 @@ export const GamesExtraSections = ({ media }: GamesDetailsProps<typeof MediaType
 
     return (
         <>
-            <section>
-                <MediaSectionTitle title="Game Platforms"/>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 overflow-y-auto max-h-50 scrollbar-thin">
-                    {platforms.map((plat) =>
-                        <MediaExtraGrid
-                            name={plat.name}
-                            subname="Platform"
-                            initials={plat.name[0] + plat.name[1]}
-                        />
-                    )}
-                </div>
-            </section>
+            {platforms &&
+                <section>
+                    <MediaSectionTitle title="Game Platforms"/>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 overflow-y-auto max-h-50 scrollbar-thin">
+                        {platforms.map((plat) =>
+                            <MediaExtraGrid
+                                name={plat.name}
+                                subname="Platform"
+                                initials={plat.name?.[0] + plat.name?.[1]}
+                            />
+                        )}
+                    </div>
+                </section>
+            }
         </>
     );
 };

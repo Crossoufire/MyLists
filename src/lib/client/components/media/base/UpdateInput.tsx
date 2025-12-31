@@ -62,7 +62,7 @@ export const UpdateInput = ({ total, initValue, updateInput, payloadName, update
     };
 
     return (
-        <div className="w-[135px] text-sm">
+        <div className="flex items-center w-34 text-sm bg-accent/30 rounded-md border h-8">
             <Input
                 inputMode="numeric"
                 value={currentValue}
@@ -70,7 +70,7 @@ export const UpdateInput = ({ total, initValue, updateInput, payloadName, update
                 onKeyDown={handleOnKeyDown}
                 disabled={updateInput.isPending}
                 onChange={(ev) => setCurrentValue(ev.target.value)}
-                className="w-[50px] px-1 text-base border-none bg-transparent cursor-pointer inline-block"
+                className="w-18 h-8 border-none cursor-pointer inline-block dark:bg-transparent"
             />
             <span>{" "}/{" "}{total ?? "?"}</span>
         </div>

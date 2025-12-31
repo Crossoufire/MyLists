@@ -2,9 +2,8 @@ import React from "react";
 import {Link} from "@tanstack/react-router";
 import {MediaType} from "@/lib/utils/enums";
 import {MediaConfig} from "@/lib/client/components/media/media-config";
-import {formatDateTime, formatMinutes, getLangCountryName} from "@/lib/utils/functions";
-
 import {MediaInfoGridItem} from "@/lib/client/components/media/base/MediaDetailsComps";
+import {formatDateTime, formatMinutes, getLangCountryName} from "@/lib/utils/functions";
 
 
 type BooksDetailsProps<T extends MediaType> = Parameters<MediaConfig[T]["infoGrid"]>[number];

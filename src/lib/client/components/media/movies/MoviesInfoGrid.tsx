@@ -3,8 +3,7 @@ import {Link} from "@tanstack/react-router";
 import {MediaType} from "@/lib/utils/enums";
 import {formatCurrency} from "@/lib/client/media-stats/stats-utils";
 import {MediaConfig} from "@/lib/client/components/media/media-config";
-import {formatDateTime, formatMinutes, getLangCountryName} from "@/lib/utils/functions";
-
+import {formatDateTime, getLangCountryName} from "@/lib/utils/functions";
 import {MediaInfoGridItem} from "@/lib/client/components/media/base/MediaDetailsComps";
 
 
