@@ -1,6 +1,5 @@
 import {Search} from "lucide-react";
 import React, {useMemo, useState} from "react";
-import {formatDateTime} from "@/lib/utils/functions";
 import {Input} from "@/lib/client/components/ui/input";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {SearchType} from "@/lib/types/zod.schema.types";
@@ -13,6 +12,7 @@ import {TablePagination} from "@/lib/client/components/general/TablePagination";
 import {adminMediadleOptions} from "@/lib/client/react-query/query-options/admin-options";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/lib/client/components/ui/table";
 import {ColumnDef, flexRender, getCoreRowModel, OnChangeFn, PaginationState, useReactTable} from "@tanstack/react-table";
+import {formatDateTime} from "@/lib/utils/formating";
 
 
 export const Route = createFileRoute("/_admin/admin/mediadle")({

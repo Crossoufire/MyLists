@@ -3,7 +3,6 @@ import {UpdateType} from "@/lib/utils/enums";
 import {Button} from "@/lib/client/components/ui/button";
 import {Textarea} from "@/lib/client/components/ui/textarea";
 import {Separator} from "@/lib/client/components/ui/separator";
-import {MutedText} from "@/lib/client/components/general/MutedText";
 import {useUpdateUserMediaMutation} from "@/lib/client/react-query/query-mutations/user-media.mutations";
 
 
@@ -61,9 +60,9 @@ export const UpdateComment = ({ content, updateComment }: CommentaryProps) => {
                     </div>
                 </>
                 :
-                <MutedText className="text-sm wrap-break-word max-h-37 overflow-y-auto">
+                <div className="text-muted-foreground text-sm wrap-break-word max-h-37 overflow-y-auto">
                     {content ? `${content}` : "No comments added yet."}
-                </MutedText>
+                </div>
             }
         </>
     );

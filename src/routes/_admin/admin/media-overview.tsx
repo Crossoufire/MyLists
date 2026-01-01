@@ -1,4 +1,3 @@
-import {capitalize} from "@/lib/utils/functions";
 import {createFileRoute} from "@tanstack/react-router";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {ArrowUpFromLine, BadgePlus} from "lucide-react";
@@ -6,6 +5,7 @@ import {UserStats} from "@/lib/client/components/admin/UserStats";
 import {DashboardShell} from "@/lib/client/components/admin/DashboardShell";
 import {DashboardHeader} from "@/lib/client/components/admin/DashboardHeader";
 import {adminMediaOverviewOptions} from "@/lib/client/react-query/query-options/admin-options";
+import {capitalize} from "@/lib/utils/formating";
 
 
 export const Route = createFileRoute("/_admin/admin/media-overview")({

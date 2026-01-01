@@ -1,7 +1,6 @@
 import {toast} from "sonner";
 import {useState} from "react";
 import {MediaType} from "@/lib/utils/enums";
-import {capitalize} from "@/lib/utils/functions";
 import {Card} from "@/lib/client/components/ui/card";
 import {Button} from "@/lib/client/components/ui/button";
 import {useQuery, useQueryClient} from "@tanstack/react-query";
@@ -10,10 +9,11 @@ import {UserMedia, UserMediaItem} from "@/lib/types/query.options.types";
 import {UpdateComment} from "@/lib/client/components/media/base/UpdateComment";
 import {HistoryDetails} from "@/lib/client/components/media/base/HistoryDetails";
 import {UpdateFavorite} from "@/lib/client/components/media/base/UpdateFavorite";
-import {TabHeader, TabItem} from "@/lib/client/components/user-profile/TabHeader";
+import {TabHeader, TabItem} from "@/lib/client/components/general/TabHeader";
 import {historyOptions} from "@/lib/client/react-query/query-options/query-options";
 import {UserMediaSpecificDetails} from "@/lib/client/components/media/base/UserMediaSpecificDetails";
 import {useRemoveMediaFromListMutation, UserMediaQueryOption, useUpdateUserMediaMutation} from "@/lib/client/react-query/query-mutations/user-media.mutations";
+import {capitalize} from "@/lib/utils/formating";
 
 
 interface UserMediaDetailsProps {

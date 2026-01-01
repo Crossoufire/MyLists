@@ -2,12 +2,12 @@ import {JobType, MediaType} from "@/lib/utils/enums";
 import {createFileRoute} from "@tanstack/react-router";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {SearchType} from "@/lib/types/zod.schema.types";
-import {capitalize, formatDateTime} from "@/lib/utils/functions";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
 import {Pagination} from "@/lib/client/components/general/Pagination";
 import {MediaCard} from "@/lib/client/components/media/base/MediaCard";
 import {jobDetailsOptions} from "@/lib/client/react-query/query-options/query-options";
 import {MediaCornerCommon} from "@/lib/client/components/media/base/MediaCornerCommon";
+import {capitalize, formatDateTime} from "@/lib/utils/formating";
 
 
 export const Route = createFileRoute("/_main/_private/details/$mediaType/$job/$name")({

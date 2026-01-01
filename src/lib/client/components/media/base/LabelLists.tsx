@@ -5,7 +5,6 @@ import {useAuth} from "@/lib/client/hooks/use-auth";
 import {useQueryClient} from "@tanstack/react-query";
 import {Badge} from "@/lib/client/components/ui/badge";
 import {Separator} from "@/lib/client/components/ui/separator";
-import {MutedText} from "@/lib/client/components/general/MutedText";
 import {LabelsDialog} from "@/lib/client/components/media/base/LabelsDialog";
 import {UserMediaQueryOption} from "@/lib/client/react-query/query-mutations/user-media.mutations";
 
@@ -61,9 +60,9 @@ export const LabelLists = ({ queryOption, mediaType, mediaId, mediaLabels }: Lab
             <Separator className="-mt-1 mb-1"/>
             <div className="flex flex-wrap gap-2">
                 {mediaLabels.length === 0 ?
-                    <MutedText className="text-sm">
+                    <div className="text-muted-foreground text-sm">
                         No labels added yet.
-                    </MutedText>
+                    </div>
                     :
                     mediaLabels.map((label) =>
                         <Link

@@ -5,7 +5,7 @@ import {createFileRoute, Link} from "@tanstack/react-router";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
 import {Award, EllipsisVertical, LayoutGrid, User} from "lucide-react";
 import {DashboardContent} from "@/lib/client/media-stats/DashboardContent";
-import {TabHeader, TabItem} from "@/lib/client/components/user-profile/TabHeader";
+import {TabHeader, TabItem} from "@/lib/client/components/general/TabHeader";
 import {MediaAndUserIcon} from "@/lib/client/components/media/base/MediaAndUserIcon";
 import {userStatsOptions} from "@/lib/client/react-query/query-options/query-options";
 import {DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem} from "@/lib/client/components/ui/dropdown-menu";
@@ -48,18 +48,18 @@ function UserStatsPage() {
 
     return (
         <PageTitle title={`${username} Statistics`} subtitle="Comprehensive media tracking insights">
-            <div className="mb-6">
-                <TabHeader tabs={mediaTabs} activeTab={selectedTab} setActiveTab={handleTabChange}>
-                    <QuickActions
-                        username={username}
-                    />
-                </TabHeader>
-            </div>
+            <TabHeader tabs={mediaTabs} activeTab={selectedTab} setActiveTab={handleTabChange}>
+                <QuickActions
+                    username={username}
+                />
+            </TabHeader>
 
-            <DashboardContent
-                data={apiData}
-                selectedTab={selectedTab}
-            />
+            <div className="mt-6">
+                <DashboardContent
+                    data={apiData}
+                    selectedTab={selectedTab}
+                />
+            </div>
         </PageTitle>
     );
 }

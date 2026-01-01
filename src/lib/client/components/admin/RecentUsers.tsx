@@ -1,7 +1,7 @@
 import {Link} from "@tanstack/react-router";
-import {formatRelativeTime} from "@/lib/utils/functions";
 import {AdminUserOverview} from "@/lib/types/query.options.types";
 import {ProfileIcon} from "@/lib/client/components/general/ProfileIcon";
+import {formatRelativeTime} from "@/lib/utils/formating";
 
 
 interface RecentUsersProps {

@@ -1,10 +1,10 @@
 import React from "react";
+import {Ban} from "lucide-react";
+import {capitalize} from "@/lib/utils/formating";
+import {getMediaColor} from "@/lib/utils/functions";
+import {HofUserRank} from "@/lib/types/query.options.types";
 import {Progress} from "@/lib/client/components/ui/progress";
 import {Card, CardContent} from "@/lib/client/components/ui/card";
-import {HofUserRank} from "@/lib/types/query.options.types";
-import {MutedText} from "@/lib/client/components/general/MutedText";
-import {capitalize, getMediaColor} from "@/lib/utils/functions";
-import {Ban} from "lucide-react";
 
 
 interface HofRankingProps {
@@ -27,7 +27,9 @@ export const HofRanking = ({ userRanks }: HofRankingProps) => {
                                     <div className="font-semibold text-lg">
                                         {capitalize(rank.mediaType)}
                                     </div>
-                                    <div className="font-semibold text-xl"># {rank.rank}</div>
+                                    <div className="font-semibold text-xl">
+                                        # {rank.rank}
+                                    </div>
                                 </div>
                                 <Progress
                                     max={100}

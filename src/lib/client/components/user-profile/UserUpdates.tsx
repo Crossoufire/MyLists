@@ -1,14 +1,14 @@
 import {useState} from "react";
-import {Activity, Trophy, UserRoundX} from "lucide-react";
+import {Activity} from "lucide-react";
 import {cn} from "@/lib/utils/helpers";
 import {useAuth} from "@/lib/client/hooks/use-auth";
 import {Link, useParams} from "@tanstack/react-router";
 import {Button} from "@/lib/client/components/ui/button";
 import {UserUpdateType} from "@/lib/types/query.options.types";
 import {UserUpdate} from "@/lib/client/components/general/UserUpdate";
+import {EmptyState} from "@/lib/client/components/general/EmptyState";
 import {Card, CardContent, CardHeader, CardTitle} from "@/lib/client/components/ui/card";
 import {useDeleteProfileUpdateMutation} from "@/lib/client/react-query/query-mutations/user-media.mutations";
-import {EmptyState} from "@/lib/client/components/user-profile/EmptyState";
 
 
 interface UserUpdatesProps {
@@ -38,6 +38,7 @@ export const UserUpdates = ({ updates }: UserUpdatesProps) => {
                 {updates.length === 0 ?
                     <EmptyState
                         icon={Activity}
+                        className="py-2"
                         message="No recent activity found."
                     />
                     :

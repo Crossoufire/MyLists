@@ -1,8 +1,9 @@
 import {Link} from "@tanstack/react-router";
 import {MediaType} from "@/lib/utils/enums";
+import {getMediaColor} from "@/lib/utils/functions";
+import {computeLevel} from "@/lib/utils/compute-level";
 import {Progress} from "@/lib/client/components/ui/progress";
 import {UserSettingsType} from "@/lib/types/query.options.types";
-import {computeLevel, getMediaColor} from "@/lib/utils/functions";
 import {MediaAndUserIcon} from "@/lib/client/components/media/base/MediaAndUserIcon";
 import {Card, CardContent, CardHeader, CardTitle} from "@/lib/client/components/ui/card";
 

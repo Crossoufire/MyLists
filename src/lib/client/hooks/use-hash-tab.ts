@@ -29,5 +29,5 @@ export const useHashTab = <T extends string>(defaultTab: T) => {
         window.history.pushState(null, "", `#${encodeURIComponent(tab)}`);
     };
 
-    return [selectedTab, handleTabChange] as [T, (tab: T) => void];
+    return [selectedTab, handleTabChange] as const;
 };

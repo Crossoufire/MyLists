@@ -1,16 +1,17 @@
 import {toast} from "sonner";
 import {useForm} from "react-hook-form";
-import {Input} from "@/lib/client/components/ui/input";
-import {Button} from "@/lib/client/components/ui/button";
 import {MediaType} from "@/lib/utils/enums";
-import {Textarea} from "@/lib/client/components/ui/textarea";
+import {Input} from "@/lib/client/components/ui/input";
 import {useSuspenseQuery} from "@tanstack/react-query";
-import {PageTitle} from "@/lib/client/components/general/PageTitle";
-import {capitalize, sliceIntoParts} from "@/lib/utils/functions";
+import {Button} from "@/lib/client/components/ui/button";
+import {Textarea} from "@/lib/client/components/ui/textarea";
 import {createFileRoute, useRouter} from "@tanstack/react-router";
+import {PageTitle} from "@/lib/client/components/general/PageTitle";
 import {editMediaDetailsOptions} from "@/lib/client/react-query/query-options/query-options";
 import {useEditMediaMutation} from "@/lib/client/react-query/query-mutations/media.mutations";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/lib/client/components/ui/form";
+import {capitalize} from "@/lib/utils/formating";
+import {splitIntoColumns} from "@/lib/utils/split-columns";
 
 
 export const Route = createFileRoute("/_main/_private/details/edit/$mediaType/$mediaId")({
@@ -66,7 +67,7 @@ function MediaEditPage() {
             hltbTotalCompleteTime: apiData.fields?.hltbTotalCompleteTime,
         }
     });
-    const parts = sliceIntoParts(Object.entries(apiData.fields), 3);
+    const parts = splitIntoColumns(Object.entries(apiData.fields), 3);
 
     const onSubmit = (submittedData: Record<string, any>) => {
         editMediaMutation.mutate({ data: { mediaType, mediaId, payload: submittedData } }, {

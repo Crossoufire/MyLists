@@ -1,12 +1,12 @@
 import {useMemo} from "react";
 import {Link} from "@tanstack/react-router";
 import {getMediaColor} from "@/lib/utils/functions";
-import {Activity, Clock, ClockAlert, MoveRight, Star} from "lucide-react";
+import {Clock, ClockAlert, MoveRight, Star} from "lucide-react";
+import {EmptyState} from "@/lib/client/components/general/EmptyState";
 import {SimpleStatCard} from "@/lib/client/components/user-profile/SimpleStatCard";
 import {MediaFavoritesGrid} from "@/lib/client/components/user-profile/FavoritesGrid";
 import {DistributionContainer} from "@/lib/client/components/user-profile/ProfileDistrib";
 import {MediaGlobalSummaryType, PerMediaSummaryType} from "@/lib/types/query.options.types";
-import {EmptyState} from "@/lib/client/components/user-profile/EmptyState";
 
 
 interface OverviewTabProps {

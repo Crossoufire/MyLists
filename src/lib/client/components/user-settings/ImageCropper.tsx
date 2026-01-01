@@ -3,7 +3,6 @@ import React, {useCallback, useState} from "react";
 import {Input} from "@/lib/client/components/ui/input";
 import {Button} from "@/lib/client/components/ui/button";
 import {FormDescription} from "@/lib/client/components/ui/form";
-import {MutedText} from "@/lib/client/components/general/MutedText";
 
 
 interface ImageCropperProps {
@@ -109,14 +108,20 @@ export const ImageCropper = ({ aspect, fileName, resultClassName = "", cropShape
                 onChange={onFileChange}
                 className="file:text-muted-foreground cursor-pointer"
             />
-            <FormDescription>Choose an image to crop and resize.</FormDescription>
+            <FormDescription>
+                Choose an image to crop and resize.
+            </FormDescription>
             {(state.imageSrc && state.open) &&
-                <div className="space-y-4 mt-6 bg-card rounded-lg p-3">
+                <div className="space-y-4 mt-6 bg-popover rounded-lg p-3">
                     <div>
-                        <div>Crop Profile Image</div>
-                        <MutedText className="not-italic">Resize your profile image to fit your needs.</MutedText>
+                        <h4 className="font-medium">
+                            Crop Profile Image
+                        </h4>
+                        <div className="text-sm text-muted-foreground">
+                            Resize your profile image to fit your needs.
+                        </div>
                     </div>
-                    <div className="relative h-[250px] w-full">
+                    <div className="relative h-60 w-full">
                         <Cropper
                             aspect={aspect}
                             zoom={state.zoom}
@@ -128,18 +133,24 @@ export const ImageCropper = ({ aspect, fileName, resultClassName = "", cropShape
                             onZoomChange={(zoom) => setState((prev) => ({ ...prev, zoom }))}
                         />
                     </div>
-                    <Button onClick={handleApplyCrop}>Apply Crop</Button>
+                    <Button onClick={handleApplyCrop}>
+                        Apply Crop
+                    </Button>
                 </div>
             }
             {(state.showResult && state.croppedImage) &&
-                <div className="space-y-4 mt-4 bg-card rounded-lg p-3 h-min-[250px]">
-                    <MutedText className="not-italic">Selected Image</MutedText>
+                <div className="space-y-4 mt-4 bg-popover rounded-lg p-3 h-min-65">
+                    <h4 className="font-medium">
+                        Selected Image
+                    </h4>
                     <img
                         alt={fileName}
                         className={resultClassName}
                         src={URL.createObjectURL(state.croppedImage)}
                     />
-                    <Button onClick={handleEditCrop}>Edit Crop</Button>
+                    <Button onClick={handleEditCrop}>
+                        Edit Crop
+                    </Button>
                 </div>
             }
         </div>

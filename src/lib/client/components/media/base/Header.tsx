@@ -2,7 +2,6 @@ import React from "react";
 import {MediaType} from "@/lib/utils/enums";
 import {Link} from "@tanstack/react-router";
 import {Button} from "@/lib/client/components/ui/button";
-import {capitalize, computeLevel} from "@/lib/utils/functions";
 import {MediaLevel} from "@/lib/client/components/general/MediaLevel";
 import {ListPagination, ListUserData} from "@/lib/types/query.options.types";
 import {SearchComponent} from "@/lib/client/components/media/base/SearchComponent";
@@ -15,6 +14,8 @@ import {
     DropdownMenuRadioItem,
     DropdownMenuTrigger
 } from "@/lib/client/components/ui/dropdown-menu";
+import {computeLevel} from "@/lib/utils/compute-level";
+import {capitalize} from "@/lib/utils/formating";
 
 
 interface HeaderProps {
@@ -32,15 +33,15 @@ interface HeaderProps {
 
 export const Header = (props: HeaderProps) => {
     const { username, mediaType, isGrid, userData, pagination, onGridClick, onFilterClick, onSortChange, onSearchEnter } = props;
-    const userLevel = computeLevel(userData?.userMediaSettings.find((s) => s.mediaType === mediaType)?.timeSpent ?? 0);
+    const timeSpent = userData?.userMediaSettings.find((s) => s.mediaType === mediaType)?.timeSpent ?? 0;
 
     return (
         <div className="flex flex-wrap items-center justify-between mt-8 mb-6 gap-6">
             <h3 className="flex items-center text-3xl font-medium truncate max-sm:text-xl">
                 <MediaLevel
+                    timeSpent={timeSpent}
                     mediaType={mediaType}
                     containerClassName="pt-1"
-                    intLevel={Math.floor(userLevel)}
                     className="text-2xl max-sm:text-xl"
                 />
                 &nbsp;- {`${username} ${capitalize(mediaType)} Collection`}

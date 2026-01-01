@@ -2,7 +2,7 @@ import {createFileRoute} from "@tanstack/react-router";
 import {useHashTab} from "@/lib/client/hooks/use-hash-tab";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
 import {DangerForm} from "@/lib/client/components/user-settings/DangerForm";
-import {Sidebar, SideBarItem} from "@/lib/client/components/general/Sidebar";
+import {Sidebar, SidebarItem} from "@/lib/client/components/general/Sidebar";
 import {GeneralForm} from "@/lib/client/components/user-settings/GeneralForm";
 import {PasswordForm} from "@/lib/client/components/user-settings/PasswordForm";
 import {MediaListForm} from "@/lib/client/components/user-settings/MediaListForm";
@@ -19,27 +19,29 @@ const tabConfig = [
     { sidebarTitle: "Password", component: <PasswordForm/> },
     { sidebarTitle: "Danger", component: <DangerForm/> },
 ] as const;
-type TabConfigTypes = typeof tabConfig[number]["sidebarTitle"];
+type TabTitles = typeof tabConfig[number]["sidebarTitle"];
 
 
 function SettingsPage() {
-    const [selectedTabTitle, handleTabChange] = useHashTab<TabConfigTypes>("General");
-    const selectedItem = tabConfig.find((tab) => tab.sidebarTitle === selectedTabTitle);
-    const sidebarItems: SideBarItem<typeof tabConfig[number]>[] = tabConfig.map((tab) => ({ is: "tab", data: tab }));
+    const [activeTabTitle, setActiveTabTitle] = useHashTab<TabTitles>("General");
 
-    const handleSidebarChange = (tab: typeof tabConfig[number]) => {
-        handleTabChange(tab.sidebarTitle);
-    };
+    const sidebarItems: SidebarItem[] = tabConfig.map((tab) => ({
+        id: tab.sidebarTitle,
+        label: tab.sidebarTitle,
+        isActive: activeTabTitle === tab.sidebarTitle,
+        onClick: () => setActiveTabTitle(tab.sidebarTitle),
+    }));
+
+    const activeTab = tabConfig.find((t) => t.sidebarTitle === activeTabTitle);
 
     return (
         <PageTitle title="Settings" subtitle="Customize Your Profile: Manage Your Preferences and Account Settings">
             <div className="grid md:grid-cols-[180px_1fr] lg:grid-cols-[250px_1fr] gap-10 mt-8">
                 <Sidebar
                     items={sidebarItems}
-                    selectedItem={selectedItem}
-                    onTabChange={handleSidebarChange}
                 />
-                {selectedItem?.component}
+
+                {activeTab?.component}
             </div>
         </PageTitle>
     );

@@ -3,8 +3,7 @@ import {Fragment} from "react";
 import {MediaType} from "@/lib/utils/enums";
 import {Badge} from "@/lib/client/components/ui/badge";
 import {MediaListArgs} from "@/lib/types/zod.schema.types";
-import {MutedText} from "@/lib/client/components/general/MutedText";
-import {capitalize, getLangCountryName} from "@/lib/utils/functions";
+import {capitalize, formatLocaleName} from "@/lib/utils/formating";
 
 
 interface AppliedFiltersProps {
@@ -45,9 +44,9 @@ export const AppliedFilters = ({ mediaType, filters, totalItems, onFilterRemove 
 
     return (
         <div className="flex flex-wrap items-center gap-2 h-10.5">
-            <MutedText italic={false}>
+            <div className="text-muted-foreground">
                 {totalItems} {capitalize(mediaType)}
-            </MutedText>
+            </div>
             {Object.keys(localFilters).length > 0 &&
                 <div className="text-muted-foreground ml-2 mr-2">|</div>
             }
@@ -55,9 +54,9 @@ export const AppliedFilters = ({ mediaType, filters, totalItems, onFilterRemove 
                 {normalFilters.map(([key, value]) =>
                     <div key={key} className="flex items-center flex-wrap gap-1 rounded-md border border-border/30 px-2 py-1
                      bg-muted/10 shadow-sm">
-                        <MutedText italic={false} className="mr-1 capitalize text-sm font-medium text-muted-foreground">
+                        <div className="mr-1 capitalize text-sm font-medium text-muted-foreground">
                             {key}
-                        </MutedText>
+                        </div>
 
                         <div className="flex items-center flex-wrap gap-1">
                             {Array.isArray(value) ?
@@ -68,7 +67,7 @@ export const AppliedFilters = ({ mediaType, filters, totalItems, onFilterRemove 
                                             className="h-8 px-3 text-sm gap-1 rounded-full border border-border/50
                                                 bg-secondary hover:bg-secondary/90 transition"
                                         >
-                                            {key === "langs" ? getLangCountryName(
+                                            {key === "langs" ? formatLocaleName(
                                                     item,
                                                     mediaType === MediaType.SERIES || mediaType === MediaType.ANIME ? "region" : "language"
                                                 )
@@ -110,12 +109,9 @@ export const AppliedFilters = ({ mediaType, filters, totalItems, onFilterRemove 
                 )}
                 {miscFilters.length > 0 &&
                     <div className="flex items-center flex-wrap gap-1 rounded-md border border-border/30 px-2 py-1 bg-muted/10 shadow-sm">
-                        <MutedText
-                            italic={false}
-                            className="mr-1 capitalize text-sm font-medium text-muted-foreground"
-                        >
+                        <div className="mr-1 capitalize text-sm font-medium text-muted-foreground">
                             misc
-                        </MutedText>
+                        </div>
 
                         <div className="flex items-center flex-wrap gap-1">
                             {miscFilters.map(([key, value]) => {
@@ -147,9 +143,9 @@ export const AppliedFilters = ({ mediaType, filters, totalItems, onFilterRemove 
                 }
                 {Object.keys(localFilters).length > 0 &&
                     <div role="button" className="ml-2" onClick={() => removeAllFilters()}>
-                        <MutedText italic={false}>
+                        <div className="text-muted-foreground">
                             Clear All
-                        </MutedText>
+                        </div>
                     </div>
                 }
             </>

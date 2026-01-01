@@ -1,11 +1,12 @@
 import {Link} from "@tanstack/react-router";
 import {MediaType} from "@/lib/utils/enums";
 import {Badge} from "@/lib/client/components/ui/badge";
+import {formatDateTime, zeroPad} from "@/lib/utils/formating";
 import {ComingNextItem} from "@/lib/types/query.options.types";
 import {Hourglass, AlertCircle, Clock, Calendar} from "lucide-react";
-import {MediaAndUserIcon} from "@/lib/client/components/media/base/MediaAndUserIcon";
-import {formatDateTime, getDaysRemaining, getStatusColor, getTextColor, zeroPad} from "@/lib/utils/functions";
 import {StatusBadge} from "@/lib/client/components/general/StatusBadge";
+import {MediaAndUserIcon} from "@/lib/client/components/media/base/MediaAndUserIcon";
+import {getDaysRemaining, getStatusColor, getTextColor} from "@/lib/utils/functions";
 
 
 export const ComingNextCard = ({ item, mediaType }: { item: ComingNextItem, mediaType: MediaType }) => {

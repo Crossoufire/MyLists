@@ -6,7 +6,7 @@ import {useDebounce} from "@/lib/client/hooks/use-debounce";
 import {createFileRoute, Link} from "@tanstack/react-router";
 import {useQuery, useSuspenseQuery} from "@tanstack/react-query";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
-import {EmptyState} from "@/lib/client/components/user-profile/EmptyState";
+import {EmptyState} from "@/lib/client/components/general/EmptyState";
 import {Loader2, PartyPopper, Search, SearchX, ThumbsDown} from "lucide-react";
 import {CountdownTimer} from "@/lib/client/components/moviedle/CountdownTimer";
 import {SimpleStatCard} from "@/lib/client/components/user-profile/SimpleStatCard";

@@ -6,7 +6,7 @@ import {useSuspenseQuery} from "@tanstack/react-query";
 import {MediaLevels} from "@/lib/client/components/user-profile/MediaLevels";
 import {OverviewTab} from "@/lib/client/components/user-profile/OverviewTab";
 import {MediaStatsTab} from "@/lib/client/components/user-profile/MediaStatsTab";
-import {TabHeader, TabItem} from "@/lib/client/components/user-profile/TabHeader";
+import {TabHeader, TabItem} from "@/lib/client/components/general/TabHeader";
 import {ProfileFollows} from "@/lib/client/components/user-profile/ProfileFollows";
 import {profileOptions} from "@/lib/client/react-query/query-options/query-options";
 import {MediaAndUserIcon} from "@/lib/client/components/media/base/MediaAndUserIcon";

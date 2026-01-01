@@ -25,8 +25,8 @@ export function StatusDistribution({ statuses, total }: StatusDistributionProps)
                     return (
                         <div key={name} className="flex items-center justify-start font-semibold">
                             <StatusBullet
-                                status={name as Status}
                                 className="size-4 mr-3"
+                                status={name as Status}
                             />
                             <div>
                                 <div className="text-muted-foreground">

@@ -1,5 +1,6 @@
 import {toast} from "sonner";
 import React, {useState} from "react";
+import {capitalize} from "@/lib/utils/formating";
 import {useForm, useWatch} from "react-hook-form";
 import {useAuth} from "@/lib/client/hooks/use-auth";
 import {Switch} from "@/lib/client/components/ui/switch";
@@ -7,7 +8,7 @@ import {Button} from "@/lib/client/components/ui/button";
 import {ListSettings} from "@/lib/types/zod.schema.types";
 import {Separator} from "@/lib/client/components/ui/separator";
 import {CircleHelp, Download, TriangleAlert} from "lucide-react";
-import {capitalize, downloadFile, jsonToCsv} from "@/lib/utils/functions";
+import {saveAsFile, convertToCsv} from "@/lib/utils/blob-download";
 import {ApiProviderType, MediaType, RatingSystemType} from "@/lib/utils/enums";
 import {MediaAndUserIcon} from "@/lib/client/components/media/base/MediaAndUserIcon";
 import {Popover, PopoverContent, PopoverTrigger} from "@/lib/client/components/ui/popover";
@@ -83,9 +84,11 @@ export const MediaListForm = () => {
         downloadListAsCSVMutation.mutate({ selectedList: selectedListForExport }, {
             onError: () => toast.error("An error occurred querying the CSV data"),
             onSuccess: (data) => {
+                if (!data) return;
+
                 try {
-                    const formattedData = jsonToCsv(data as any);
-                    downloadFile(formattedData, selectedListForExport, "text/csv");
+                    const formattedData = convertToCsv(data);
+                    saveAsFile(formattedData, selectedListForExport, "text/csv");
                 }
                 catch {
                     toast.error("An error occurred while formatting the CSV");

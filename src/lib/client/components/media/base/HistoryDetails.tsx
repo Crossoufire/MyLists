@@ -3,7 +3,7 @@ import {History} from "lucide-react";
 import {MediaType} from "@/lib/utils/enums";
 import {HistoryOptionsType} from "@/lib/types/query.options.types";
 import {UserUpdate} from "@/lib/client/components/general/UserUpdate";
-import {EmptyState} from "@/lib/client/components/user-profile/EmptyState";
+import {EmptyState} from "@/lib/client/components/general/EmptyState";
 import {useDeleteHistoryUpdatesMutation} from "@/lib/client/react-query/query-mutations/user-media.mutations";
 
 

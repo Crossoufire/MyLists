@@ -8,7 +8,7 @@ export const adminCookieOptions = {
     httpOnly: true,
     sameSite: "lax" as const,
     secure: process.env.NODE_ENV === "production",
-    maxAge: serverEnv.ADMIN_TTL_COOKIE_MIN * 60 * 1000
+    maxAge: serverEnv.ADMIN_TTL_COOKIE_MIN * 60 * 1000,
 };
 
 

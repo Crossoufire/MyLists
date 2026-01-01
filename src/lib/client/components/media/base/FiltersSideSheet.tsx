@@ -1,6 +1,5 @@
 import React, {useRef, useState} from "react";
 import {useQuery} from "@tanstack/react-query";
-import {statusUtils} from "@/lib/utils/functions";
 import {Input} from "@/lib/client/components/ui/input";
 import {Badge} from "@/lib/client/components/ui/badge";
 import {Button} from "@/lib/client/components/ui/button";
@@ -8,7 +7,6 @@ import {MediaListArgs} from "@/lib/types/zod.schema.types";
 import {useParams, useSearch} from "@tanstack/react-router";
 import {useDebounce} from "@/lib/client/hooks/use-debounce";
 import {Checkbox} from "@/lib/client/components/ui/checkbox";
-import {MutedText} from "@/lib/client/components/general/MutedText";
 import {GamesPlatformsEnum, JobType, Status} from "@/lib/utils/enums";
 import {mediaConfig} from "@/lib/client/components/media/media-config";
 import {useOnClickOutside} from "@/lib/client/hooks/use-clicked-outside";
@@ -32,7 +30,6 @@ export const FiltersSideSheet = ({ isCurrent, onClose, onFilterApply }: FiltersS
     const { username, mediaType } = useParams({ from: "/_main/_private/list/$mediaType/$username" });
     const { data: listFilters, isPending } = useQuery(listFiltersOptions(mediaType, username));
 
-    const allStatuses = statusUtils.byMediaType(mediaType);
     const activeFiltersConfig = mediaConfig[mediaType].sheetFilters();
 
     const handleRegisterChange = (filterType: keyof MediaListArgs, value: string[] | boolean) => {
@@ -221,7 +218,9 @@ const CheckboxGroup = ({ title, items, onChange, defaultChecked, renderLabel }: 
             </h3>
             <div className="grid grid-cols-2 gap-2">
                 {visibleItems.length === 0 ?
-                    <MutedText className="text-sm">Nothing to display</MutedText>
+                    <div className="text-muted-foreground text-sm">
+                        Nothing to display.
+                    </div>
                     :
                     visibleItems.map((item) =>
                         <div key={item.name} className="flex items-center space-x-2">

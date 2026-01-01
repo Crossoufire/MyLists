@@ -1,14 +1,14 @@
 import {MediaType} from "@/lib/utils/enums";
-import {capitalize} from "@/lib/utils/functions";
 import {ExtractStatsByType} from "@/lib/types/stats.types";
 import {StatCard} from "@/lib/client/media-stats/StatCard";
 import {RatingsChart} from "@/lib/client/media-stats/RatingsChart";
+import {getMediaNaming} from "@/lib/client/media-stats/stats-utils";
 import {ChartColumn, Clock, Heart, Play, Star, Tag} from "lucide-react";
 import {TopAffinityCard} from "@/lib/client/media-stats/TopAffinityCard";
 import {DistributionChart} from "@/lib/client/media-stats/DistributionChart";
 import {StatusDistribution} from "@/lib/client/media-stats/StatusDistribution";
 import {MediaAndUserIcon} from "@/lib/client/components/media/base/MediaAndUserIcon";
-import {formatAvgRating, formatCurrency, formatDuration, formatNumber, getMediaNaming} from "@/lib/client/media-stats/stats-utils";
+import {capitalize, formatAvgRating, formatCurrency, formatDuration, formatNumber} from "@/lib/utils/formating";
 
 
 interface MediaTypeDashboardProps {

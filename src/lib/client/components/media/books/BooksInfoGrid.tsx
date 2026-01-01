@@ -3,7 +3,9 @@ import {Link} from "@tanstack/react-router";
 import {MediaType} from "@/lib/utils/enums";
 import {MediaConfig} from "@/lib/client/components/media/media-config";
 import {MediaInfoGridItem} from "@/lib/client/components/media/base/MediaDetailsComps";
-import {formatDateTime, formatMinutes, getLangCountryName} from "@/lib/utils/functions";
+import {formatMinutes} from "@/lib/utils/functions";
+
+import {formatDateTime, formatLocaleName} from "@/lib/utils/formating";
 
 
 type BooksDetailsProps<T extends MediaType> = Parameters<MediaConfig[T]["infoGrid"]>[number];
@@ -28,7 +30,7 @@ export const BooksInfoGrid = ({ mediaType, media }: BooksDetailsProps<typeof Med
                 {formatDateTime(media.releaseDate, { noTime: true })}
             </MediaInfoGridItem>
             <MediaInfoGridItem label="Language">
-                {getLangCountryName(media.language, "language")}
+                {formatLocaleName(media.language, "language")}
             </MediaInfoGridItem>
             <MediaInfoGridItem label="Total Pages">
                 {media.pages ?? "-"} p.

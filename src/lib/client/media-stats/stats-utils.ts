@@ -1,5 +1,4 @@
-import {getFeelingIcon} from "@/lib/utils/functions";
-import {MediaType, RatingSystemType} from "@/lib/utils/enums";
+import {MediaType} from "@/lib/utils/enums";
 import {MediaNaming, NamedValue} from "@/lib/types/stats.types";
 
 
@@ -42,75 +41,6 @@ export const getMediaNaming = (mediaType: MediaType) => {
     }
 
     return data[mediaType];
-}
-
-
-export const formatCurrency = (num: number | null, options: Intl.NumberFormatOptions = {}) => {
-    if (!num) return "-";
-
-    return new Intl.NumberFormat("en", {
-        currency: "USD",
-        style: "currency",
-        notation: "compact",
-        maximumFractionDigits: 1,
-        ...options,
-    }).format(num);
-}
-
-
-export const formatDuration = (hours: number) => {
-    if (hours < 24) {
-        return `${hours.toFixed(1)}h`;
-    }
-
-    const days = Math.floor(hours / 24);
-    const remainingHours = Math.floor(hours % 24);
-
-    if (days < 30) {
-        return `${days}d ${remainingHours}h`;
-    }
-
-    if (days < 365) {
-        const months = Math.floor(days / 30);
-        const remainingDays = days % 30;
-        return `${months}m ${remainingDays}d`;
-    }
-
-    const years = Math.floor(days / 365);
-    const remainingMonths = Math.floor((days % 365) / 30);
-    return `${years}y ${remainingMonths}m`;
-};
-
-
-export const formatPercent = (num: number | null | undefined) => {
-    if (num === null || num === undefined) {
-        return "-";
-    }
-
-    return `${num.toFixed(1)}%`;
-};
-
-
-export const formatNumber = (num: number | null | undefined, options: Intl.NumberFormatOptions = {}) => {
-    if (num === null || num === undefined) {
-        return "-";
-    }
-
-    return num.toLocaleString("fr", { ...options });
-};
-
-
-export const formatAvgRating = (ratingSystem: RatingSystemType, rating: number | null) => {
-    let ratingValue: string | number | React.ReactElement | null = "-";
-
-    if (ratingSystem === RatingSystemType.FEELING) {
-        ratingValue = getFeelingIcon(rating, { size: 30 });
-    }
-    else {
-        ratingValue = rating?.toFixed(2) ?? "-";
-    }
-
-    return ratingValue;
 }
 
 

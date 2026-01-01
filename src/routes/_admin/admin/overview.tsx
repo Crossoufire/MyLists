@@ -1,4 +1,3 @@
-import {capitalize} from "@/lib/utils/functions";
 import {createFileRoute} from "@tanstack/react-router";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {Activity, Shield, UserPlus, Users} from "lucide-react";
@@ -9,6 +8,7 @@ import {DashboardHeader} from "@/lib/client/components/admin/DashboardHeader";
 import {Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis} from "recharts";
 import {adminOverviewOptions} from "@/lib/client/react-query/query-options/admin-options";
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/lib/client/components/ui/card";
+import {capitalize} from "@/lib/utils/formating";
 
 
 export const Route = createFileRoute("/_admin/admin/overview")({

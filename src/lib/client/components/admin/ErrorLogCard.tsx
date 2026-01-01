@@ -1,10 +1,10 @@
 import {useState} from "react";
 import {Clock, Info, Trash} from "lucide-react";
-import {formatDateTime} from "@/lib/utils/functions";
 import {Button} from "@/lib/client/components/ui/button";
 import {adminErrorLogsOptions} from "@/lib/client/react-query/query-options/admin-options";
 import {Card, CardAction, CardContent, CardHeader, CardTitle} from "@/lib/client/components/ui/card";
 import {useAdminDeleteErrorLogMutation} from "@/lib/client/react-query/query-mutations/admin.mutations";
+import {formatDateTime} from "@/lib/utils/formating";
 
 
 type ErrorLogType = Awaited<ReturnType<NonNullable<typeof adminErrorLogsOptions.queryFn>>>[number];

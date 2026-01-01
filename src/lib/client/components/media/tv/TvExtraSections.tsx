@@ -1,9 +1,10 @@
 import React from "react";
 import {Link} from "@tanstack/react-router";
 import {MediaType} from "@/lib/utils/enums";
-import {zeroPad} from "@/lib/utils/functions";
 import {MediaConfig} from "@/lib/client/components/media/media-config";
 import {MediaExtraGrid, MediaSectionTitle} from "@/lib/client/components/media/base/MediaDetailsComps";
+
+import {zeroPad} from "@/lib/utils/formating";
 
 
 type TvDetailsProps<T extends MediaType> = Parameters<NonNullable<MediaConfig[T]["extraSections"]>>[number];

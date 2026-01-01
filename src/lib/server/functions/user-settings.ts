@@ -3,7 +3,7 @@ import {MediaType} from "@/lib/utils/enums";
 import {createServerFn} from "@tanstack/react-start";
 import {user} from "@/lib/server/database/schema/index";
 import {getContainer} from "@/lib/server/core/container";
-import {saveUploadedImage} from "@/lib/utils/save-image";
+import {saveUploadedImage} from "@/lib/utils/image-saver";
 import {FormattedError} from "@/lib/utils/error-classes";
 import {tryFormZodError} from "@/lib/utils/try-not-found";
 import {authMiddleware} from "@/lib/server/middlewares/authentication";

@@ -1,20 +1,19 @@
-import {Search, UserX} from "lucide-react";
 import React, {useState} from "react";
+import {Search, UserX} from "lucide-react";
 import {MediaType} from "@/lib/utils/enums";
-import {capitalize} from "@/lib/utils/functions";
 import {Input} from "@/lib/client/components/ui/input";
 import {createFileRoute} from "@tanstack/react-router";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
-import {MutedText} from "@/lib/client/components/general/MutedText";
 import {useDebounceCallback} from "@/lib/client/hooks/use-debounce";
 import {HofCard} from "@/lib/client/components/hall-of-fame/HofCard";
 import {Pagination} from "@/lib/client/components/general/Pagination";
 import {HofSorting, SearchTypeHoF} from "@/lib/types/zod.schema.types";
 import {HofRanking} from "@/lib/client/components/hall-of-fame/HofRanking";
+import {EmptyState} from "@/lib/client/components/general/EmptyState";
 import {hallOfFameOptions} from "@/lib/client/react-query/query-options/query-options";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/lib/client/components/ui/select";
-import {EmptyState} from "@/lib/client/components/user-profile/EmptyState";
+import {capitalize} from "@/lib/utils/formating";
 
 
 export const Route = createFileRoute("/_main/_private/hall-of-fame")({
@@ -61,7 +60,7 @@ function HallOfFamePage() {
 
     return (
         <PageTitle title="Hall of Fame" subtitle="Showcase of all the active profiles ranked">
-            <div className="grid grid-cols-12 mx-auto w-250 gap-x-10 max-sm:w-full max-sm:grid-cols-1 mt-6">
+            <div className="grid grid-cols-12 mx-auto w-250 gap-x-10 max-sm:w-full max-sm:grid-cols-1">
                 <div className="col-span-7 max-sm:col-span-1 w-full max-sm:mt-4 max-sm:order-2">
                     <div className="flex items-center justify-between mt-3 mb-3">
                         <div className="flex items-center justify-start gap-3">

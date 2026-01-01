@@ -1,6 +1,8 @@
 import {JobType} from "@/lib/utils/enums";
 import {SheetFilterObject} from "@/lib/types/base.types";
-import {getLangCountryName} from "@/lib/utils/functions";
+
+
+import {formatLocaleName} from "@/lib/utils/formating";
 
 
 export const getMoviesActiveFilters = (): SheetFilterObject[] => {
@@ -10,7 +12,7 @@ export const getMoviesActiveFilters = (): SheetFilterObject[] => {
         {
             key: "langs", title: "Languages", type: "checkbox",
             getItems: (data) => data.langs,
-            renderLabel: (name) => getLangCountryName(name, "language"),
+            renderLabel: (name) => formatLocaleName(name, "language"),
         },
     ];
 }

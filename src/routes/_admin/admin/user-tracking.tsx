@@ -5,7 +5,7 @@ import {Label} from "@/lib/client/components/ui/label";
 import {createFileRoute} from "@tanstack/react-router";
 import {Button} from "@/lib/client/components/ui/button";
 import {useDebounce} from "@/lib/client/hooks/use-debounce";
-import {capitalize, getMediaColor} from "@/lib/utils/functions";
+import {getMediaColor} from "@/lib/utils/functions";
 import {ProviderSearchResult} from "@/lib/types/provider.types";
 import {ApiProviderType, MediaType, Status} from "@/lib/utils/enums";
 import {ProfileIcon} from "@/lib/client/components/general/ProfileIcon";
@@ -18,6 +18,7 @@ import {adminUserTracking} from "@/lib/client/react-query/query-options/admin-op
 import {Card, CardAction, CardContent, CardHeader, CardTitle} from "@/lib/client/components/ui/card";
 import {Area, AreaChart, Bar, BarChart, CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis} from "recharts";
 import {ArrowDown, ArrowUp, BarChart3, Clock, Heart, Loader2, type LucideIcon, MessageSquare, Percent, Search, Star, TrendingUp, X} from "lucide-react";
+import {capitalize} from "@/lib/utils/formating";
 
 
 type Granularity = "day" | "week" | "month";

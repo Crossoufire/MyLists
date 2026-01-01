@@ -1,7 +1,7 @@
 import React, {useState} from "react";
 import {RoleType} from "@/lib/utils/enums";
+import {capitalize} from "@/lib/utils/formating";
 import authClient from "@/lib/utils/auth-client";
-import {capitalize} from "@/lib/utils/functions";
 import {useAuth} from "@/lib/client/hooks/use-auth";
 import {useQueryClient} from "@tanstack/react-query";
 import {Button} from "@/lib/client/components/ui/button";

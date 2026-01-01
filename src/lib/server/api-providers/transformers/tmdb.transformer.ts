@@ -1,8 +1,7 @@
 import {MediaType} from "@/lib/utils/enums";
 import {CoverType} from "@/lib/types/base.types";
-import {isLatin1} from "@/lib/utils/check-latin";
 import {getImageUrl} from "@/lib/utils/image-url";
-import {saveImageFromUrl} from "@/lib/utils/save-image";
+import {saveImageFromUrl} from "@/lib/utils/image-saver";
 import {moviesConfig} from "@/lib/server/domain/media/movies/movies.config";
 import {
     JikanAnimeSearchResponse,
@@ -18,6 +17,7 @@ import {
     TmdbTvSearchResult,
     TrendsMedia
 } from "@/lib/types/provider.types";
+import {isLatin1} from "@/lib/utils/formating";
 
 
 type Options = {

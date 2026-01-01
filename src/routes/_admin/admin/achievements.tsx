@@ -1,5 +1,4 @@
 import {useEffect, useState} from "react";
-import {capitalize} from "@/lib/utils/functions";
 import {Badge} from "@/lib/client/components/ui/badge";
 import {Input} from "@/lib/client/components/ui/input";
 import {Label} from "@/lib/client/components/ui/label";
@@ -15,6 +14,7 @@ import {adminAchievementsOptions} from "@/lib/client/react-query/query-options/a
 import {Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle} from "@/lib/client/components/ui/card";
 import {Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle} from "@/lib/client/components/ui/dialog";
 import {useAdminUpdateAchievementMutation, useAdminUpdateTiersMutation} from "@/lib/client/react-query/query-mutations/admin.mutations";
+import {capitalize} from "@/lib/utils/formating";
 
 
 export const Route = createFileRoute("/_admin/admin/achievements")({

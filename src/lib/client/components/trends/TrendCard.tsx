@@ -1,4 +1,4 @@
-import {formatDateTime} from "@/lib/utils/functions";
+import {formatDateTime} from "@/lib/utils/formating";
 import {Badge} from "@/lib/client/components/ui/badge";
 import {TrendsMedia} from "@/lib/types/provider.types";
 import {MediaCard} from "@/lib/client/components/media/base/MediaCard";

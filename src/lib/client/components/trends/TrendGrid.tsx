@@ -1,7 +1,7 @@
 import {TrendingUp} from "lucide-react";
 import {TrendsMedia} from "@/lib/types/provider.types";
 import {TrendCard} from "@/lib/client/components/trends/TrendCard";
-import {EmptyState} from "@/lib/client/components/user-profile/EmptyState";
+import {EmptyState} from "@/lib/client/components/general/EmptyState";
 
 
 export const TrendGrid = ({ data }: { data: TrendsMedia[] }) => {

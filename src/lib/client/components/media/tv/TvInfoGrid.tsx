@@ -1,9 +1,11 @@
 import React from "react";
 import {Link} from "@tanstack/react-router";
 import {MediaType} from "@/lib/utils/enums";
-import {formatDateTime, formatMinutes} from "@/lib/utils/functions";
+import {formatMinutes} from "@/lib/utils/functions";
 import {MediaConfig} from "@/lib/client/components/media/media-config";
 import {MediaInfoGridItem} from "@/lib/client/components/media/base/MediaDetailsComps";
+
+import {formatDateTime, formatLocaleName} from "@/lib/utils/formating";
 
 
 type TvDetailsProps<T extends MediaType> = Parameters<MediaConfig[T]["infoGrid"]>[number];
@@ -32,7 +34,7 @@ export const TvInfoGrid = ({ mediaType, media }: TvDetailsProps<typeof MediaType
                 {formatDateTime(media.lastAirDate, { noTime: true })}
             </MediaInfoGridItem>
             <MediaInfoGridItem label="Origin">
-                {media.originCountry}
+                {formatLocaleName(media.originCountry, "region")}
             </MediaInfoGridItem>
             <MediaInfoGridItem label="Eps. Duration">
                 {media.duration ?? "-"} min

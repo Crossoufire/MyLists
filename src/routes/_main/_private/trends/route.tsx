@@ -1,13 +1,13 @@
 import {useState} from "react";
+import {LayoutGrid} from "lucide-react";
 import {MediaType} from "@/lib/utils/enums";
 import {createFileRoute} from "@tanstack/react-router";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {TrendGrid} from "@/lib/client/components/trends/TrendGrid";
 import {TrendHero} from "@/lib/client/components/trends/TrendHero";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
-import {TabHeader, TabItem} from "@/lib/client/components/user-profile/TabHeader";
+import {TabHeader, TabItem} from "@/lib/client/components/general/TabHeader";
 import {trendsOptions} from "@/lib/client/react-query/query-options/query-options";
-import {LayoutGrid} from "lucide-react";
 import {MediaAndUserIcon} from "@/lib/client/components/media/base/MediaAndUserIcon";
 
 
@@ -48,15 +48,13 @@ function TrendsPage() {
 
     return (
         <PageTitle title="Week Trends" subtitle="Top Series and Movies trending this week according to TMDB">
-            <div className="mt-6">
-                <TabHeader
-                    tabs={mediaTabs}
-                    activeTab={activeTab}
-                    setActiveTab={setActiveTab}
-                />
-            </div>
+            <TabHeader
+                tabs={mediaTabs}
+                activeTab={activeTab}
+                setActiveTab={setActiveTab}
+            />
 
-            <div className="mt-6">
+            <div className="mt-4">
                 <TrendHero trend={heroMedia}/>
                 <TrendGrid data={filteredTrends}/>
             </div>

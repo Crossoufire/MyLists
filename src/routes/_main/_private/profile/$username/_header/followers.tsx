@@ -8,7 +8,7 @@ import {Button} from "@/lib/client/components/ui/button";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
 import {BlockLink} from "@/lib/client/components/general/BlockLink";
 import {ProfileIcon} from "@/lib/client/components/general/ProfileIcon";
-import {EmptyState} from "@/lib/client/components/user-profile/EmptyState";
+import {EmptyState} from "@/lib/client/components/general/EmptyState";
 import {followersOptions} from "@/lib/client/react-query/query-options/query-options";
 import {useFollowMutation} from "@/lib/client/react-query/query-mutations/user.mutations";
 

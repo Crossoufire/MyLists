@@ -1,6 +1,6 @@
 import {Eye, Flame} from "lucide-react";
 import {Link} from "@tanstack/react-router";
-import {formatDateTime} from "@/lib/utils/functions";
+import {formatDateTime} from "@/lib/utils/formating";
 import {TrendsMedia} from "@/lib/types/provider.types";
 import {Button} from "@/lib/client/components/ui/button";
 

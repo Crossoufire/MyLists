@@ -2,13 +2,14 @@ import {useState} from "react";
 import {Trophy} from "lucide-react";
 import {cn} from "@/lib/utils/helpers";
 import {Link} from "@tanstack/react-router";
+import {capitalize} from "@/lib/utils/formating";
 import {useAuth} from "@/lib/client/hooks/use-auth";
+import {computeLevel} from "@/lib/utils/compute-level";
 import {HofUserData} from "@/lib/types/query.options.types";
 import {useBreakpoint} from "@/lib/client/hooks/use-breakpoint";
-import {capitalize, computeLevel} from "@/lib/utils/functions";
 import {Card, CardContent} from "@/lib/client/components/ui/card";
-import {ProfileIcon} from "@/lib/client/components/general/ProfileIcon";
 import {MediaLevel} from "@/lib/client/components/general/MediaLevel";
+import {ProfileIcon} from "@/lib/client/components/general/ProfileIcon";
 
 
 interface HofCardProps {
@@ -37,7 +38,11 @@ export const HofCard = ({ userData }: HofCardProps) => {
                 <div className="grid grid-cols-12 py-4">
                     <div className="col-span-1 max-sm:col-span-2">
                         <div className="flex items-center ml-2 text-xl h-full font-medium">
-                            {userData.rank === 1 ? <Trophy className="text-app-rating size-6"/> : <>#{userData.rank}</>}
+                            {userData.rank === 1 ?
+                                <Trophy className="text-app-rating size-6"/>
+                                :
+                                <>#{userData.rank}</>
+                            }
                         </div>
                     </div>
                     <div className="col-span-6 max-sm:col-span-10 ml-3">
@@ -75,7 +80,7 @@ export const HofCard = ({ userData }: HofCardProps) => {
                                     <MediaLevel
                                         isActive={setting.active}
                                         mediaType={setting.mediaType}
-                                        intLevel={Math.floor(computeLevel(setting.timeSpent))}
+                                        timeSpent={setting.timeSpent}
                                     />
                                     <div className="text-xs font-semibold text-muted-foreground">
                                         {capitalize(setting.mediaType)}

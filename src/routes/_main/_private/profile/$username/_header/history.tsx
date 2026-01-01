@@ -10,13 +10,13 @@ import {createFileRoute, Link} from "@tanstack/react-router";
 import {Payload} from "@/lib/client/components/general/Payload";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
 import {useDebounceCallback} from "@/lib/client/hooks/use-debounce";
-import {formatDateTime, formatRelativeTime} from "@/lib/utils/functions";
 import {TablePagination} from "@/lib/client/components/general/TablePagination";
 import {MediaAndUserIcon} from "@/lib/client/components/media/base/MediaAndUserIcon";
 import {allUpdatesOptions} from "@/lib/client/react-query/query-options/query-options";
 import {useDeleteAllUpdatesMutation} from "@/lib/client/react-query/query-mutations/user-media.mutations";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/lib/client/components/ui/table";
 import {ColumnDef, flexRender, getCoreRowModel, OnChangeFn, PaginationState, useReactTable} from "@tanstack/react-table";
+import {formatDateTime, formatRelativeTime} from "@/lib/utils/formating";
 
 
 export const Route = createFileRoute("/_main/_private/profile/$username/_header/history")({

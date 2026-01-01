@@ -1,10 +1,10 @@
 import {toast} from "sonner";
-import {Button} from "../ui/button";
 import {useForm} from "react-hook-form";
 import authClient from "@/lib/utils/auth-client";
 import {FaGithub, FaGoogle} from "react-icons/fa";
 import {useQueryClient} from "@tanstack/react-query";
 import {Input} from "@/lib/client/components/ui/input";
+import {Button} from "@/lib/client/components/ui/button";
 import {Separator} from "@/lib/client/components/ui/separator";
 import {Link, useNavigate, useRouter} from "@tanstack/react-router";
 import {authOptions} from "@/lib/client/react-query/query-options/query-options";

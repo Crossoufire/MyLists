@@ -1,5 +1,4 @@
 import {Plus} from "lucide-react";
-import {capitalize} from "@/lib/utils/functions";
 import {useAuth} from "@/lib/client/hooks/use-auth";
 import {Card} from "@/lib/client/components/ui/card";
 import {MediaType, RoleType} from "@/lib/utils/enums";
@@ -17,6 +16,7 @@ import {RefreshAndEditMedia} from "@/lib/client/components/media/base/RefreshAnd
 import {MediaFollowsSection} from "@/lib/client/components/media/base/MediaFollowsSection";
 import {useAddMediaToListMutation} from "@/lib/client/react-query/query-mutations/user-media.mutations";
 import {MediaSectionTitle} from "@/lib/client/components/media/base/MediaDetailsComps";
+import {capitalize} from "@/lib/utils/formating";
 
 
 export const Route = createFileRoute("/_main/_private/details/$mediaType/$mediaId")({

@@ -12,7 +12,7 @@ interface StatusBulletProps {
 export const StatusBullet = ({ status, className }: StatusBulletProps) => {
     return (
         <div
-            className={cn(`inline-block mr-[8px] w-[10px] h-[10px] rounded-full`, className)}
+            className={cn(`inline-block mr-2 size-2.5 rounded-full`, className)}
             style={{ backgroundColor: getStatusColor(status) }}
         />
     );

@@ -12,7 +12,7 @@ interface EmptyStateProps {
 
 export const EmptyState = ({ icon: Icon, message, className, iconSize = 30 }: EmptyStateProps) => {
     return (
-        <div className={cn("flex flex-col items-center justify-center h-full text-muted-foreground", className)}>
+        <div className={cn("flex flex-col items-center justify-center w-full h-full text-muted-foreground", className)}>
             <Icon
                 size={iconSize}
                 className="mb-2 opacity-30"

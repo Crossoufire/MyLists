@@ -1,9 +1,10 @@
 import {Award} from "lucide-react";
 import {cn} from "@/lib/utils/helpers";
+import {capitalize} from "@/lib/utils/formating";
+import {diffColors} from "@/lib/utils/functions";
 import {AchCard} from "@/lib/types/query.options.types";
 import {Button} from "@/lib/client/components/ui/button";
 import {Progress} from "@/lib/client/components/ui/progress";
-import {capitalize, diffColors} from "@/lib/utils/functions";
 import {Popover, PopoverContent, PopoverTrigger} from "@/lib/client/components/ui/popover";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/lib/client/components/ui/table";
 

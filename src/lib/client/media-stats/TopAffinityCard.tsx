@@ -1,9 +1,9 @@
 import React from "react";
-import {capitalize} from "@/lib/utils/functions";
+import {capitalize} from "@/lib/utils/formating";
 import {TopAffinity} from "@/lib/types/stats.types";
 import {Badge} from "@/lib/client/components/ui/badge";
 import {CircleHelp, Heart, Play, Star, CircleOff} from "lucide-react";
-import {EmptyState} from "@/lib/client/components/user-profile/EmptyState";
+import {EmptyState} from "@/lib/client/components/general/EmptyState";
 import {Popover, PopoverContent, PopoverTrigger} from "@/lib/client/components/ui/popover";
 import {Card, CardAction, CardContent, CardHeader, CardTitle} from "@/lib/client/components/ui/card";
 

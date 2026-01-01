@@ -5,7 +5,7 @@ import {useSuspenseQuery} from "@tanstack/react-query";
 import {createFileRoute} from "@tanstack/react-router";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
 import {DashboardContent} from "@/lib/client/media-stats/DashboardContent";
-import {TabHeader, TabItem} from "@/lib/client/components/user-profile/TabHeader";
+import {TabHeader, TabItem} from "@/lib/client/components/general/TabHeader";
 import {MediaAndUserIcon} from "@/lib/client/components/media/base/MediaAndUserIcon";
 import {platformStatsOptions} from "@/lib/client/react-query/query-options/query-options";
 
@@ -47,18 +47,18 @@ function PlatformStatsPage() {
 
     return (
         <PageTitle title="MyLists Statistics" subtitle="Comprehensive media tracking insights">
-            <div className="mb-6">
-                <TabHeader
-                    tabs={mediaTabs}
-                    activeTab={selectedTab}
-                    setActiveTab={handleTabChange}
+            <TabHeader
+                tabs={mediaTabs}
+                activeTab={selectedTab}
+                setActiveTab={handleTabChange}
+            />
+
+            <div className="mt-6">
+                <DashboardContent
+                    data={apiData}
+                    selectedTab={selectedTab}
                 />
             </div>
-
-            <DashboardContent
-                data={apiData}
-                selectedTab={selectedTab}
-            />
         </PageTitle>
     );
 }

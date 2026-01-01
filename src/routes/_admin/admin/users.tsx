@@ -1,4 +1,3 @@
-import {formatDateTime} from "@/lib/utils/functions";
 import {Input} from "@/lib/client/components/ui/input";
 import {Badge} from "@/lib/client/components/ui/badge";
 import {useSuspenseQuery} from "@tanstack/react-query";
@@ -26,6 +25,7 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/lib/client/components/ui/dropdown-menu";
+import {formatDateTime} from "@/lib/utils/formating";
 
 
 export const Route = createFileRoute("/_admin/admin/users")({

@@ -2,7 +2,7 @@ import {eq, isNotNull} from "drizzle-orm";
 import {notFound} from "@tanstack/react-router";
 import {DeltaStats} from "@/lib/types/stats.types";
 import {Status, UpdateType} from "@/lib/utils/enums";
-import {saveImageFromUrl} from "@/lib/utils/save-image";
+import {saveImageFromUrl} from "@/lib/utils/image-saver";
 import {FormattedError} from "@/lib/utils/error-classes";
 import {Achievement} from "@/lib/types/achievements.types";
 import {BaseService} from "@/lib/server/domain/media/base/base.service";

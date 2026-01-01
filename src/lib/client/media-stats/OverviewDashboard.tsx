@@ -1,7 +1,7 @@
 import {ExtractStatsByType} from "@/lib/types/stats.types";
 import {StatCard} from "@/lib/client/media-stats/StatCard";
 import {DistributionChart} from "@/lib/client/media-stats/DistributionChart";
-import {formatAvgRating, formatDuration, formatNumber, formatPercent} from "@/lib/client/media-stats/stats-utils";
+import {formatAvgRating, formatDuration, formatNumber, formatPercent} from "@/lib/utils/formating";
 import {ChartColumn, Clock, Heart, MessageSquare, RefreshCw, Star, Tag, TrendingUp, Trophy, User} from "lucide-react";
 
 

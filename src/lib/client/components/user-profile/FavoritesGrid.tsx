@@ -3,7 +3,7 @@ import {HeartOff, TrendingUp} from "lucide-react";
 import {Link, LinkProps} from "@tanstack/react-router";
 import {useBreakpoint} from "@/lib/client/hooks/use-breakpoint";
 import {BlockLink} from "@/lib/client/components/general/BlockLink";
-import {EmptyState} from "@/lib/client/components/user-profile/EmptyState";
+import {EmptyState} from "@/lib/client/components/general/EmptyState";
 import {Card, CardHeader, CardTitle} from "@/lib/client/components/ui/card";
 
 

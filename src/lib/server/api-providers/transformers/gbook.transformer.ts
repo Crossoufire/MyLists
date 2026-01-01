@@ -1,9 +1,9 @@
 import {MediaType} from "@/lib/utils/enums";
 import {getImageUrl} from "@/lib/utils/image-url";
 import {books} from "@/lib/server/database/schema";
-import {saveImageFromUrl} from "@/lib/utils/save-image";
-import {cleanHtmlText} from "@/lib/utils/clean-html-text";
+import {saveImageFromUrl} from "@/lib/utils/image-saver";
 import {GBooksDetails, GBooksSearchResults, ProviderSearchResult, ProviderSearchResults, SearchData} from "@/lib/types/provider.types";
+import {formatHtmlText} from "@/lib/utils/formating";
 
 
 type InsertBook = typeof books.$inferInsert;
@@ -34,7 +34,7 @@ export class GBooksTransformer {
             language: rawData.volumeInfo.language,
             publishers: rawData.volumeInfo.publisher,
             pages: rawData.volumeInfo.pageCount ?? 50,
-            synopsis: cleanHtmlText(rawData.volumeInfo.description),
+            synopsis: formatHtmlText(rawData.volumeInfo.description),
             releaseDate: rawData.volumeInfo.publishedDate ? new Date(rawData.volumeInfo.publishedDate).toISOString() : null,
             imageCover: await saveImageFromUrl({
                 dirSaveName: "books-covers",

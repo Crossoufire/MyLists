@@ -1,7 +1,7 @@
 import {Trash} from "lucide-react";
 import {cn} from "@/lib/utils/helpers";
 import {Button} from "@/lib/client/components/ui/button";
-import {formatRelativeTime} from "@/lib/utils/functions";
+import {formatRelativeTime} from "@/lib/utils/formating";
 import {UserUpdateType} from "@/lib/types/query.options.types";
 import {Payload} from "@/lib/client/components/general/Payload";
 import {BlockLink} from "@/lib/client/components/general/BlockLink";
@@ -49,8 +49,8 @@ export function UserUpdate({ update, username, onDelete, canDelete, isPending, m
                         </BlockLink>
                     </p>
                     <span className="text-xs text-muted-foreground whitespace-nowrap ml-2">
-                            {formatRelativeTime(update.timestamp)}
-                        </span>
+                        {formatRelativeTime(update.timestamp)}
+                    </span>
                 </div>
                 <div className="flex justify-between">
                     <Payload

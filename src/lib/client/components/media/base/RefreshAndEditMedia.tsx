@@ -4,8 +4,8 @@ import {Link} from "@tanstack/react-router";
 import {MediaType} from "@/lib/utils/enums";
 import {Pencil, RefreshCw} from "lucide-react";
 import {Button} from "@/lib/client/components/ui/button";
-import {formatRelativeTime} from "@/lib/utils/functions";
 import {useRefreshMediaMutation} from "@/lib/client/react-query/query-mutations/media.mutations";
+import {formatRelativeTime} from "@/lib/utils/formating";
 
 
 interface RefreshAndEditMediaProps {

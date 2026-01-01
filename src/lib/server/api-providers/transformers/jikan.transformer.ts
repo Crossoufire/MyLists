@@ -1,7 +1,7 @@
 import {MediaType} from "@/lib/utils/enums";
 import {manga} from "@/lib/server/database/schema";
 import {getImageUrl} from "@/lib/utils/image-url";
-import {saveImageFromUrl} from "@/lib/utils/save-image";
+import {saveImageFromUrl} from "@/lib/utils/image-saver";
 import {JikanDetails, JikanMangaSearchResponse, ProviderSearchResult, ProviderSearchResults, SearchData} from "@/lib/types/provider.types";
 
 

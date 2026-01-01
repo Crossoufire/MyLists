@@ -1,15 +1,15 @@
 import {cn} from "@/lib/utils/helpers";
 import {Label} from "@/lib/types/base.types";
 import {useQuery} from "@tanstack/react-query";
+import {useEffect, useRef, useState} from "react";
 import {Badge} from "@/lib/client/components/ui/badge";
 import {Input} from "@/lib/client/components/ui/input";
 import {Button} from "@/lib/client/components/ui/button";
-import {useEffect, useRef, useState} from "react";
-import {MutedText} from "@/lib/client/components/general/MutedText";
 import {LabelAction, MediaType} from "@/lib/utils/enums";
+import {EmptyState} from "@/lib/client/components/general/EmptyState";
 import {userMediaLabelsOptions} from "@/lib/client/react-query/query-options/query-options";
 import {useEditUserLabelMutation} from "@/lib/client/react-query/query-mutations/user-media.mutations";
-import {CircleCheck, CirclePlus, LoaderCircle, Pen, Plus, Trash2, TriangleAlert, X} from "lucide-react";
+import {CircleCheck, CirclePlus, LoaderCircle, Pen, Plus, Tag, Trash2, TriangleAlert, X} from "lucide-react";
 import {Credenza, CredenzaContent, CredenzaDescription, CredenzaHeader, CredenzaTitle, CredenzaTrigger} from "@/lib/client/components/ui/credenza";
 
 
@@ -123,7 +123,9 @@ export const LabelsDialog = ({ mediaType, mediaId, mediaLabels, updateUserMediaL
     return (
         <Credenza>
             <CredenzaTrigger onClick={() => setIsOpen(true)}>
-                <MutedText className="text-sm mt-1">Manage</MutedText>
+                <div className="text-muted-foreground text-sm mt-1">
+                    Manage
+                </div>
             </CredenzaTrigger>
             <CredenzaContent className="w-100 max-sm:w-full max-sm:p-4">
                 <CredenzaHeader>
@@ -157,16 +159,22 @@ export const LabelsDialog = ({ mediaType, mediaId, mediaLabels, updateUserMediaL
                         </Button>
                     </div>
                     <div className="space-y-2">
-                        <h4 className="font-medium">Current Labels</h4>
+                        <h4 className="font-medium">
+                            Current Labels
+                        </h4>
                         <div className="flex flex-wrap items-center gap-2">
                             {mediaLabels.length === 0 ?
-                                <MutedText className="text-sm">No labels added yet</MutedText>
+                                <EmptyState
+                                    icon={Tag}
+                                    iconSize={22}
+                                    message="No labels added yet."
+                                />
                                 :
                                 mediaLabels.map((label) =>
                                     <Badge key={label.name} variant="label">
                                         {label.name}
                                         <div role="button" className="ml-2 hover:opacity-60" onClick={() => removeFromMedia(label)}>
-                                            <X className="h-4 w-4"/>
+                                            <X className="size-4"/>
                                         </div>
                                     </Badge>
                                 )
@@ -174,13 +182,19 @@ export const LabelsDialog = ({ mediaType, mediaId, mediaLabels, updateUserMediaL
                         </div>
                     </div>
                     <div className="space-y-2">
-                        <h4 className="font-medium">Available Labels</h4>
+                        <h4 className="font-medium">
+                            Available Labels
+                        </h4>
                         <ul className="max-h-50 overflow-y-auto">
                             {isLoading ?
                                 <LoaderCircle className="size-6 animate-spin"/>
                                 :
                                 allLabels.length === 0 ?
-                                    <MutedText className="text-sm">No labels created yet</MutedText>
+                                    <EmptyState
+                                        icon={X}
+                                        iconSize={25}
+                                        message="No labels created yet."
+                                    />
                                     :
                                     allLabels.map((label) =>
                                         <li key={label.name} className="flex items-center justify-between text-sm">

@@ -1,9 +1,10 @@
 import React from "react";
 import {Link} from "@tanstack/react-router";
 import {MediaType} from "@/lib/utils/enums";
-import {formatDateTime, formatMinutes} from "@/lib/utils/functions";
+import {formatMinutes} from "@/lib/utils/functions";
 import {MediaConfig} from "@/lib/client/components/media/media-config";
 import {MediaInfoGridItem} from "@/lib/client/components/media/base/MediaDetailsComps";
+import {formatDateTime} from "@/lib/utils/formating";
 
 
 type GamesDetailsProps<T extends MediaType> = Parameters<MediaConfig[T]["infoGrid"]>[number];

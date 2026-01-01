@@ -3,8 +3,8 @@ import {Link} from "@tanstack/react-router";
 import {Button} from "@/lib/client/components/ui/button";
 import {UserFollowsType} from "@/lib/types/query.options.types";
 import {BlockLink} from "@/lib/client/components/general/BlockLink";
+import {EmptyState} from "@/lib/client/components/general/EmptyState";
 import {ProfileIcon} from "@/lib/client/components/general/ProfileIcon";
-import {EmptyState} from "@/lib/client/components/user-profile/EmptyState";
 import {Tooltip, TooltipContent, TooltipTrigger} from "@/lib/client/components/ui/tooltip";
 import {Card, CardAction, CardContent, CardHeader, CardTitle} from "@/lib/client/components/ui/card";
 
@@ -32,7 +32,7 @@ export const ProfileFollows = ({ username, followsCount, follows }: ProfileFollo
                     {followsCount === 0 ?
                         <EmptyState
                             icon={UserRoundX}
-                            className="col-span-4"
+                            className="col-span-4 py-2"
                             message="No follows added yet."
                         />
                         :
@@ -62,11 +62,14 @@ export const ProfileFollows = ({ username, followsCount, follows }: ProfileFollo
                             </div>
                         )}
                 </div>
-                <Button className="mt-4" variant="dashed" asChild>
-                    <Link to="/profile/$username/follows" params={{ username }}>
-                        View all {followsCount} follows
-                    </Link>
-                </Button>
+
+                {followsCount > 0 &&
+                    <Button className="mt-4" variant="dashed" asChild>
+                        <Link to="/profile/$username/follows" params={{ username }}>
+                            View all {followsCount} follows
+                        </Link>
+                    </Button>
+                }
             </CardContent>
         </Card>
     );
