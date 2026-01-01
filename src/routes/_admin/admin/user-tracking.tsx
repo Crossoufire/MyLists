@@ -82,8 +82,8 @@ function UserSearch({ onSelectUser }: { onSelectUser: (user: ProviderSearchResul
             <div className="relative">
                 <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"/>
                 <Input
-                    className="pl-9"
                     value={search}
+                    className="pl-9"
                     placeholder="Search by username..."
                     onFocus={() => setIsOpen(true)}
                     onBlur={() => setTimeout(() => setIsOpen(false), 200)}
@@ -185,8 +185,8 @@ function UserTrackingContent({ userId }: { userId: number }) {
         }> = [];
 
         for (let i = 1; i < byType.length; i++) {
-            const prev = byType[i - 1];
             const curr = byType[i];
+            const prev = byType[i - 1];
 
             // Calculate status count changes
             const statusChanges: Partial<Record<Status, number>> = {};
@@ -205,17 +205,17 @@ function UserTrackingContent({ userId }: { userId: number }) {
             }
 
             deltas.push({
-                timestamp: curr.timestamp,
-                entriesDelta: curr.totalEntries - prev.totalEntries,
-                specificDelta: curr.totalSpecific - prev.totalSpecific,
-                timeDelta: Math.max(0, curr.timeSpent - prev.timeSpent),
-                ratedDelta: curr.entriesRated - prev.entriesRated,
-                commentsDelta: curr.entriesCommented - prev.entriesCommented,
-                favoritesDelta: curr.entriesFavorites - prev.entriesFavorites,
-                redoDelta: curr.totalRedo - prev.totalRedo,
                 statusChanges,
+                timestamp: curr.timestamp,
                 currentRating: curr.averageRating,
                 currentEntries: curr.totalEntries,
+                redoDelta: curr.totalRedo - prev.totalRedo,
+                ratedDelta: curr.entriesRated - prev.entriesRated,
+                entriesDelta: curr.totalEntries - prev.totalEntries,
+                specificDelta: curr.totalSpecific - prev.totalSpecific,
+                commentsDelta: curr.entriesCommented - prev.entriesCommented,
+                favoritesDelta: curr.entriesFavorites - prev.entriesFavorites,
+                timeDelta: Math.max(0, curr.timeSpent - prev.timeSpent),
             });
         }
 

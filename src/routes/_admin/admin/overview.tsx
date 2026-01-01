@@ -85,7 +85,7 @@ function OverviewPage() {
                             <CardTitle>Recent Users</CardTitle>
                             <CardDescription>Latest user activity on MyLists</CardDescription>
                         </CardHeader>
-                        <CardContent className="mt-3 overflow-y-auto">
+                        <CardContent className="mt-3 overflow-y-auto scrollbar-thin pr-3">
                             <RecentUsers
                                 users={apiData.recentUsers}
                             />

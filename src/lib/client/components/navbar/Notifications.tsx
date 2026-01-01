@@ -113,7 +113,7 @@ const NotificationItem = ({ data, handlePopoverClose }: NotificationItemProps) =
                             </span>
                         </div>
                         <div className="flex justify-between">
-                            <div className="mt-1 flex items-center gap-1.5 text-xs font-semibold text-primary/95">
+                            <div className="mt-1 flex items-center gap-1.5 text-xs font-semibold text-primary/80">
                                 <span>
                                     {(data.mediaType === MediaType.ANIME || data.mediaType === MediaType.SERIES) ?
                                         <div>S{zeroPad(data.payload?.season)}.E{zeroPad(data.payload?.episode)}</div>
@@ -133,7 +133,7 @@ const NotificationItem = ({ data, handlePopoverClose }: NotificationItemProps) =
                 <div className="flex gap-3 py-3 px-2 border-b hover:bg-muted/30 rounded-lg">
                     <div className="mt-0.5">
                         <div className="flex items-center justify-center">
-                            <User className="size-4 mt-0.5"/>
+                            <User className="size-4 mt-0.5 text-muted-foreground"/>
                         </div>
                     </div>
                     <div className="flex-1">
@@ -154,7 +154,7 @@ const NotificationItem = ({ data, handlePopoverClose }: NotificationItemProps) =
                             </span>
                         </div>
                         <div className="flex justify-between">
-                            <div className="mt-1 flex items-center gap-1.5 text-xs font-semibold text-primary/95">
+                            <div className="mt-1 flex items-center gap-1.5 text-xs font-semibold text-primary/80">
                                 <span>
                                     {data.payload.message}
                                 </span>

@@ -1,6 +1,7 @@
 import React, {useState} from "react";
 import {Search, UserX} from "lucide-react";
 import {MediaType} from "@/lib/utils/enums";
+import {capitalize} from "@/lib/utils/formating";
 import {Input} from "@/lib/client/components/ui/input";
 import {createFileRoute} from "@tanstack/react-router";
 import {useSuspenseQuery} from "@tanstack/react-query";
@@ -13,7 +14,6 @@ import {HofRanking} from "@/lib/client/components/hall-of-fame/HofRanking";
 import {EmptyState} from "@/lib/client/components/general/EmptyState";
 import {hallOfFameOptions} from "@/lib/client/react-query/query-options/query-options";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/lib/client/components/ui/select";
-import {capitalize} from "@/lib/utils/formating";
 
 
 export const Route = createFileRoute("/_main/_private/hall-of-fame")({

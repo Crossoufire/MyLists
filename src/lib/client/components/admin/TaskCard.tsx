@@ -116,7 +116,7 @@ function LogViewer({ logsData }: { logsData: TaskType["logs"] }) {
     };
 
     return (
-        <div className="overflow-auto max-h-[400px] pr-2">
+        <div className="overflow-auto max-h-100 pr-2 pt-2">
             {logsData.map((log, idx) => {
                 const levelInfo = getLevelInfo(log.level);
                 const Icon = levelInfo.icon;
@@ -128,7 +128,7 @@ function LogViewer({ logsData }: { logsData: TaskType["logs"] }) {
                         className="border-b border-zinc-800 last:border-b-0 hover:bg-zinc-900 transition-colors bg-opacity-5"
                     >
                         <div className="px-3 py-2 flex items-start gap-2">
-                            <Icon className={`w-4 h-4 mt-0.5 flex-shrink-0 ${levelInfo.color}`}/>
+                            <Icon className={`w-4 h-4 mt-0.5 shrink-0 ${levelInfo.color}`}/>
 
                             <div className="flex-1 min-w-0" onClick={() => toggleExpanded(idx)}>
                                 <div className="flex items-start gap-2">
@@ -147,14 +147,14 @@ function LogViewer({ logsData }: { logsData: TaskType["logs"] }) {
                                                     [{log.durationMs} ms]
                                                 </span>
                                             }
-                                            <span className="text-sm text-zinc-200 break-words">
+                                            <span className="text-sm text-zinc-200 wrap-break-word">
                                                 {log.msg}
                                             </span>
                                         </div>
 
                                         {(isExpanded && log.json) &&
                                             <div className="mt-2 p-2 bg-zinc-900 rounded text-xs font-mono overflow-auto">
-                                                <pre className="text-zinc-300 whitespace-pre-wrap break-words">
+                                                <pre className="text-zinc-300 whitespace-pre-wrap wrap-break-word">
                                                     {JSON.stringify(Object.fromEntries(Object.entries(log.json)), null, 4)}
                                                 </pre>
                                             </div>

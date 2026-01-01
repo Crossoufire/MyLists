@@ -1,20 +1,20 @@
 import {useState} from "react";
+import {statusUtils} from "@/lib/utils/mapping";
+import {capitalize} from "@/lib/utils/formating";
 import {MediaType, Status} from "@/lib/utils/enums";
 import {useAuth} from "@/lib/client/hooks/use-auth";
 import {createFileRoute} from "@tanstack/react-router";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {MediaListArgs} from "@/lib/types/zod.schema.types";
-import {statusUtils} from "@/lib/utils/mapping";
 import {Header} from "@/lib/client/components/media/base/Header";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
 import {Pagination} from "@/lib/client/components/general/Pagination";
 import {MediaGrid} from "@/lib/client/components/media/base/MediaGrid";
 import {MediaTable} from "@/lib/client/components/media/base/MediaTable";
-import {AppliedFilters} from "@/lib/client/components/media/base/AppliedFilters";
 import {TabHeader, TabItem} from "@/lib/client/components/general/TabHeader";
+import {AppliedFilters} from "@/lib/client/components/media/base/AppliedFilters";
 import {FiltersSideSheet} from "@/lib/client/components/media/base/FiltersSideSheet";
 import {mediaListOptions} from "@/lib/client/react-query/query-options/query-options";
-import {capitalize} from "@/lib/utils/formating";
 
 
 export const Route = createFileRoute("/_main/_private/list/$mediaType/$username")({

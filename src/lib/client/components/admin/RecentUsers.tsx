@@ -29,7 +29,7 @@ export function RecentUsers({ users }: RecentUsersProps) {
                                 {user.name}
                             </Link>
                         </p>
-                        <p className="text-sm text-muted-foreground max-w-[280px] truncate" title={user.email}>
+                        <p className="text-sm text-muted-foreground max-w-70 truncate" title={user.email}>
                             {user.email}
                         </p>
                     </div>
