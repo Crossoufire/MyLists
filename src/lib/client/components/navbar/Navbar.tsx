@@ -1,5 +1,6 @@
 import React, {useState} from "react";
 import {RoleType} from "@/lib/utils/enums";
+import {cva} from "class-variance-authority";
 import {capitalize} from "@/lib/utils/formating";
 import authClient from "@/lib/utils/auth-client";
 import {useAuth} from "@/lib/client/hooks/use-auth";
@@ -7,13 +8,12 @@ import {useQueryClient} from "@tanstack/react-query";
 import {Button} from "@/lib/client/components/ui/button";
 import {LoginForm} from "@/lib/client/components/auth/LoginForm";
 import {SearchBar} from "@/lib/client/components/navbar/SearchBar";
-import {navStyle} from "@/lib/client/components/ui/navigation-menu";
 import {Link, useNavigate, useRouter} from "@tanstack/react-router";
 import {RegisterForm} from "@/lib/client/components/auth/RegisterForm";
 import {ProfileIcon} from "@/lib/client/components/general/ProfileIcon";
 import {Notifications} from "@/lib/client/components/navbar/Notifications";
-import {authOptions} from "@/lib/client/react-query/query-options/query-options";
 import {MainThemeIcon} from "@/lib/client/components/general/MainThemeIcons";
+import {authOptions} from "@/lib/client/react-query/query-options/query-options";
 import {BarChart2, Calendar, ChartNoAxesColumn, ChevronDown, Crown, LogOut, Menu, Popcorn, Settings, ShieldCheck, Sparkles, TrendingUp, Trophy, User, X} from "lucide-react";
 import {
     DropdownMenu,
@@ -24,6 +24,11 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger
 } from "@/lib/client/components/ui/dropdown-menu";
+
+
+const navStyle = cva("inline-flex items-center justify-center px-4 text-sm font-medium hover:text-app-accent " +
+    "disabled:pointer-events-none disabled:opacity-50"
+)
 
 
 export const Navbar = () => {

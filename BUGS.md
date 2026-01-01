@@ -12,9 +12,7 @@
 
 ## DESIGN TO FINISH
 
-- Too many "utils" functions, need some clean up.
 - PROFILE: Followers/follows mutation logic.
 - PROFILE: Add difference between score and feeling.
-- DETAILS: RefreshAndEdit bad display in mobile.
-- DETAILS: Make SimilarMedia similar to favorites imgs in profile page.
-- STATS: Check where to put Quick User Action Component.
+- DETAILS: Similar media not good in mobile.
+- NAVBAR: Remove Command and use simpler approach.
