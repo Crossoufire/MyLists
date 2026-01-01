@@ -1,6 +1,6 @@
 import {Status} from "@/lib/utils/enums";
 import {Link} from "@tanstack/react-router";
-import {getStatusColor} from "@/lib/utils/functions";
+import {getThemeColor} from "@/lib/utils/colors-and-icons";
 import {PerMediaSummaryType} from "@/lib/types/query.options.types";
 import {EmptyState} from "@/lib/client/components/general/EmptyState";
 import {BarChart3, ChartNoAxesColumn, MoveRight, Star} from "lucide-react";
@@ -58,7 +58,7 @@ export const MediaStatsTab = ({ username, mediaSummary }: MediaStatsTabProps) =>
                                 key={status.status}
                                 className="h-full flex items-center justify-center"
                                 title={`${status.status}: ${status.percent.toFixed(1)}%`}
-                                style={{ width: `${status.percent}%`, backgroundColor: getStatusColor(status.status) }}
+                                style={{ width: `${status.percent}%`, backgroundColor: getThemeColor(status.status) }}
                             />
                         )}
                     </div>
@@ -66,7 +66,7 @@ export const MediaStatsTab = ({ username, mediaSummary }: MediaStatsTabProps) =>
                 <div className="flex flex-wrap gap-x-4 gap-y-2 mt-1">
                     {mediaSummary.statusList.map((st) =>
                         <div key={st.status} className="flex items-center gap-1.5 overflow-hidden">
-                            <div className="size-2 rounded-full mt-1" style={{ backgroundColor: getStatusColor(st.status) }}/>
+                            <div className="size-2 rounded-full mt-1" style={{ backgroundColor: getThemeColor(st.status) }}/>
                             <Link
                                 to="/list/$mediaType/$username"
                                 search={{ status: [st.status] as Status[] }}

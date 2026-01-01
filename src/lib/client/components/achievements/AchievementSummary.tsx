@@ -1,7 +1,7 @@
 import {Award} from "lucide-react";
 import {cn} from "@/lib/utils/helpers";
-import {diffColors} from "@/lib/utils/functions";
 import {capitalize} from "@/lib/utils/formating";
+import {diffColors} from "@/lib/utils/colors-and-icons";
 import {AchSummary} from "@/lib/types/query.options.types";
 import {SimpleStatCard} from "@/lib/client/components/user-profile/SimpleStatCard";
 

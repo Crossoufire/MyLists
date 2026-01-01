@@ -1,7 +1,7 @@
 import React from "react";
 import {MediaType} from "@/lib/utils/enums";
 import {Calendar, Clock} from "lucide-react";
-import {formatDuration, getYear} from "@/lib/utils/functions";
+import {formatMinutes, getYear} from "@/lib/utils/formating";
 import {MediaConfig} from "@/lib/client/components/media/media-config";
 import {MediaUnderItem, MediaUnderRating} from "@/lib/client/components/media/base/MediaDetailsComps";
 
@@ -20,7 +20,7 @@ export const MoviesUnderTitle = ({ media }: MoviesDetailsProps<typeof MediaType.
                 {getYear(media.releaseDate)}
             </MediaUnderItem>
             <MediaUnderItem icon={Clock}>
-                {formatDuration(media.duration)}
+                {formatMinutes(media.duration)}
             </MediaUnderItem>
         </>
     );

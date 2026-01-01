@@ -3,14 +3,14 @@ import {MediaType} from "@/lib/utils/enums";
 import {LayoutGrid, List} from "lucide-react";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {createFileRoute} from "@tanstack/react-router";
-import {getDaysRemaining} from "@/lib/utils/functions";
 import {ComingNextItem} from "@/lib/types/query.options.types";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
 import {EmptyState} from "@/lib/client/components/general/EmptyState";
 import {TabHeader, TabItem} from "@/lib/client/components/general/TabHeader";
-import {MediaAndUserIcon} from "@/lib/client/components/media/base/MediaAndUserIcon";
+import {MainThemeIcon} from "@/lib/client/components/general/MainThemeIcons";
 import {upcomingOptions} from "@/lib/client/react-query/query-options/query-options";
 import {ComingNextSection} from "@/lib/client/components/coming-next/ComingNextSection";
+import {getDaysRemaining} from "@/lib/utils/formating";
 
 
 export const Route = createFileRoute("/_main/_private/coming-next")({
@@ -70,12 +70,12 @@ function ComingNextPage() {
             id: "all",
             label: "All",
             isAccent: true,
-            icon: <LayoutGrid size={15}/>,
+            icon: <MainThemeIcon size={15} type="all"/>,
         },
         ...mediaTypes.map((mediaType) => ({
             id: mediaType,
             label: mediaType,
-            icon: <MediaAndUserIcon size={15} type={mediaType}/>,
+            icon: <MainThemeIcon size={15} type={mediaType}/>,
         })),
     ];
 

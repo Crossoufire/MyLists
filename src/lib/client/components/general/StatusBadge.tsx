@@ -1,12 +1,12 @@
 import React from "react";
 import {Status} from "@/lib/utils/enums";
 import {Badge} from "@/lib/client/components/ui/badge";
-import {getStatusColor, getTextColor} from "@/lib/utils/functions";
+import {getThemeColor} from "@/lib/utils/colors-and-icons";
 
 
 export const StatusBadge = ({ status }: { status: Status }) => {
     return (
-        <Badge style={{ background: getStatusColor(status), color: getTextColor(getStatusColor(status)) }}>
+        <Badge style={{ color: "black", background: getThemeColor(status) }}>
             {status}
         </Badge>
     );

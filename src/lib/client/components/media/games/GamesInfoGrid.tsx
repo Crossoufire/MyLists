@@ -1,10 +1,9 @@
 import React from "react";
 import {Link} from "@tanstack/react-router";
 import {MediaType} from "@/lib/utils/enums";
-import {formatMinutes} from "@/lib/utils/functions";
+import {formatDateTime, formatMinutes} from "@/lib/utils/formating";
 import {MediaConfig} from "@/lib/client/components/media/media-config";
 import {MediaInfoGridItem} from "@/lib/client/components/media/base/MediaDetailsComps";
-import {formatDateTime} from "@/lib/utils/formating";
 
 
 type GamesDetailsProps<T extends MediaType> = Parameters<MediaConfig[T]["infoGrid"]>[number];
@@ -44,13 +43,13 @@ export const GamesInfoGrid = ({ mediaType, media }: GamesDetailsProps<typeof Med
                 {media.gameEngine ?? "-"}
             </MediaInfoGridItem>
             <MediaInfoGridItem label="HLTB Main">
-                {media.hltbMainTime ? formatMinutes(media.hltbMainTime * 60, true) : "-"}
+                {formatMinutes(media.hltbMainTime ? media.hltbMainTime * 60 : null, { onlyHours: true })}
             </MediaInfoGridItem>
             <MediaInfoGridItem label="HLTB Main & Extra">
-                {media.hltbMainAndExtraTime ? formatMinutes(media.hltbMainAndExtraTime * 60, true) : "-"}
+                {formatMinutes(media.hltbMainAndExtraTime ? media.hltbMainAndExtraTime * 60 : null, { onlyHours: true })}
             </MediaInfoGridItem>
             <MediaInfoGridItem label="HLTB 100%">
-                {media.hltbTotalCompleteTime ? formatMinutes(media.hltbTotalCompleteTime * 60, true) : "-"}
+                {formatMinutes(media.hltbTotalCompleteTime ? media.hltbTotalCompleteTime * 60 : null, { onlyHours: true })}
             </MediaInfoGridItem>
         </>
     );

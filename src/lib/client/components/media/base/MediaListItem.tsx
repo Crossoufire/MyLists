@@ -1,4 +1,4 @@
-import {formatRating} from "@/lib/utils/functions";
+import {formatRating} from "@/lib/utils/ratings";
 import {MediaType, Status} from "@/lib/utils/enums";
 import {ExtractListByType} from "@/lib/types/query.options.types";
 import {mediaConfig} from "@/lib/client/components/media/media-config";

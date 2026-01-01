@@ -1,12 +1,12 @@
 import {Award} from "lucide-react";
 import {cn} from "@/lib/utils/helpers";
 import {Link} from "@tanstack/react-router";
-import {diffColors} from "@/lib/utils/functions";
 import {Button} from "@/lib/client/components/ui/button";
 import {formatRelativeTime} from "@/lib/utils/formating";
 import {AchievementsType} from "@/lib/types/query.options.types";
 import {EmptyState} from "@/lib/client/components/general/EmptyState";
 import {Card, CardContent, CardHeader, CardTitle} from "@/lib/client/components/ui/card";
+import {diffColors} from "@/lib/utils/colors-and-icons";
 
 
 interface AchievementsProps {

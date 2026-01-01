@@ -13,8 +13,8 @@ import {RegisterForm} from "@/lib/client/components/auth/RegisterForm";
 import {ProfileIcon} from "@/lib/client/components/general/ProfileIcon";
 import {Notifications} from "@/lib/client/components/navbar/Notifications";
 import {authOptions} from "@/lib/client/react-query/query-options/query-options";
-import {MediaAndUserIcon} from "@/lib/client/components/media/base/MediaAndUserIcon";
-import {BarChart2, Calendar, ChartNoAxesColumn, ChevronDown, Crown, LogOut, Menu, Popcorn, Settings, ShieldCheck, Sparkles, TrendingUp, Trophy, X} from "lucide-react";
+import {MainThemeIcon} from "@/lib/client/components/general/MainThemeIcons";
+import {BarChart2, Calendar, ChartNoAxesColumn, ChevronDown, Crown, LogOut, Menu, Popcorn, Settings, ShieldCheck, Sparkles, TrendingUp, Trophy, User, X} from "lucide-react";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -131,7 +131,7 @@ export const Navbar = () => {
                                                 to="/list/$mediaType/$username"
                                                 params={{ mediaType: setting.mediaType, username: currentUser.name }}
                                             >
-                                                <MediaAndUserIcon type={setting.mediaType}/>
+                                                <MainThemeIcon type={setting.mediaType}/>
                                                 {capitalize(setting.mediaType)} List
                                             </Link>
                                         </DropdownMenuItem>
@@ -187,7 +187,7 @@ export const Navbar = () => {
                                 <DropdownMenuGroup className="space-y-1">
                                     <DropdownMenuItem asChild>
                                         <Link to="/profile/$username" params={{ username: currentUser.name! }}>
-                                            <MediaAndUserIcon type="user"/>
+                                            <User/>
                                             Profile
                                         </Link>
                                     </DropdownMenuItem>

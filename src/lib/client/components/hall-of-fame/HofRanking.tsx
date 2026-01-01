@@ -1,10 +1,10 @@
 import React from "react";
 import {Ban} from "lucide-react";
 import {capitalize} from "@/lib/utils/formating";
-import {getMediaColor} from "@/lib/utils/functions";
 import {HofUserRank} from "@/lib/types/query.options.types";
 import {Progress} from "@/lib/client/components/ui/progress";
 import {Card, CardContent} from "@/lib/client/components/ui/card";
+import {getThemeColor} from "@/lib/utils/colors-and-icons";
 
 
 interface HofRankingProps {
@@ -34,7 +34,7 @@ export const HofRanking = ({ userRanks }: HofRankingProps) => {
                                 <Progress
                                     max={100}
                                     className="mt-2"
-                                    color={getMediaColor(rank.mediaType)}
+                                    color={getThemeColor(rank.mediaType)}
                                     value={100 - (rank.percent ? rank.percent : 100)}
                                 />
                                 <div className="text-xs font-semibold text-app-accent">

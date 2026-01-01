@@ -7,8 +7,9 @@ import {ChartColumn, Clock, Heart, Play, Star, Tag} from "lucide-react";
 import {TopAffinityCard} from "@/lib/client/media-stats/TopAffinityCard";
 import {DistributionChart} from "@/lib/client/media-stats/DistributionChart";
 import {StatusDistribution} from "@/lib/client/media-stats/StatusDistribution";
-import {MediaAndUserIcon} from "@/lib/client/components/media/base/MediaAndUserIcon";
-import {capitalize, formatAvgRating, formatCurrency, formatDuration, formatNumber} from "@/lib/utils/formating";
+import {MainThemeIcon} from "@/lib/client/components/general/MainThemeIcons";
+import {capitalize, formatCurrency, formatHours, formatNumber} from "@/lib/utils/formating";
+import {formatAvgRating} from "@/lib/utils/ratings";
 
 
 interface MediaTypeDashboardProps {
@@ -26,13 +27,13 @@ export function MediaTypeDashboard({ stats }: MediaTypeDashboardProps) {
                 <StatCard
                     title="Total Entries"
                     value={formatNumber(stats.totalEntries)}
-                    icon={<MediaAndUserIcon type={mediaType}/>}
+                    icon={<MainThemeIcon type={mediaType}/>}
                     subtitle={`${capitalize(mediaType)} in list`}
                 />
                 <StatCard
                     title={"Time Spent"}
                     icon={<Clock className="size-4"/>}
-                    value={formatDuration(stats.timeSpentHours)}
+                    value={formatHours(stats.timeSpentHours)}
                     subtitle={`${stats.timeSpentHours.toFixed(1)} hours`}
                 />
                 {mediaType !== MediaType.GAMES &&

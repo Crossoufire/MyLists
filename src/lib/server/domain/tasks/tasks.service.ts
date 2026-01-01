@@ -5,7 +5,7 @@ import {serverEnv} from "@/env/server";
 import {readFile, unlink} from "fs/promises";
 import {and, eq, inArray, sql} from "drizzle-orm";
 import {MediaType, Status} from "@/lib/utils/enums";
-import {mediaTypeUtils} from "@/lib/utils/functions";
+import {mediaTypeUtils} from "@/lib/utils/mapping";
 import {sqliteTable, text} from "drizzle-orm/sqlite-core";
 import {llmResponseSchema} from "@/lib/types/zod.schema.types";
 import {movies, moviesList} from "@/lib/server/database/schema";

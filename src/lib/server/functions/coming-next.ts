@@ -1,4 +1,4 @@
-import {mediaTypeUtils} from "@/lib/utils/functions";
+import {mediaTypeUtils} from "@/lib/utils/mapping";
 import {createServerFn} from "@tanstack/react-start";
 import {getContainer} from "@/lib/server/core/container";
 import {authMiddleware} from "@/lib/server/middlewares/authentication";

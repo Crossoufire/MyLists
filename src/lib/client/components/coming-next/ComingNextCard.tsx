@@ -1,12 +1,11 @@
 import {Link} from "@tanstack/react-router";
 import {MediaType} from "@/lib/utils/enums";
 import {Badge} from "@/lib/client/components/ui/badge";
-import {formatDateTime, zeroPad} from "@/lib/utils/formating";
+import {formatDateTime, getDaysRemaining, zeroPad} from "@/lib/utils/formating";
 import {ComingNextItem} from "@/lib/types/query.options.types";
 import {Hourglass, AlertCircle, Clock, Calendar} from "lucide-react";
 import {StatusBadge} from "@/lib/client/components/general/StatusBadge";
-import {MediaAndUserIcon} from "@/lib/client/components/media/base/MediaAndUserIcon";
-import {getDaysRemaining, getStatusColor, getTextColor} from "@/lib/utils/functions";
+import {MainThemeIcon} from "@/lib/client/components/general/MainThemeIcons";
 
 
 export const ComingNextCard = ({ item, mediaType }: { item: ComingNextItem, mediaType: MediaType }) => {
@@ -33,7 +32,7 @@ export const ComingNextCard = ({ item, mediaType }: { item: ComingNextItem, medi
                         <div>
                             <div className="flex items-center gap-2 mb-1">
                                 <span className="hidden md:flex items-center justify-center size-4">
-                                    <MediaAndUserIcon
+                                    <MainThemeIcon
                                         type={mediaType}
                                     />
                                 </span>
@@ -45,7 +44,9 @@ export const ComingNextCard = ({ item, mediaType }: { item: ComingNextItem, medi
                             <div className="text-sm text-muted-foreground flex items-center gap-2">
                                 {isTvShow && item.seasonToAir && item.episodeToAir ?
                                     <div className="flex items-center gap-2 text-primary">
-                                        <span>S{zeroPad(item.seasonToAir)}.E{zeroPad(item.episodeToAir)}</span>
+                                        <span>
+                                            S{zeroPad(item.seasonToAir)}.E{zeroPad(item.episodeToAir)}
+                                        </span>
                                         {item.episodeToAir === 1 &&
                                             <span className="text-[10px] text-red-400 px-1.5 rounded border border-red-500">
                                                 Premiere

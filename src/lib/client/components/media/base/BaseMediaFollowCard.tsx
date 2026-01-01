@@ -1,8 +1,6 @@
 import React from "react";
 import {Link} from "@tanstack/react-router";
-import {Badge} from "@/lib/client/components/ui/badge";
 import {FollowData} from "@/lib/types/query.options.types";
-import {getStatusColor, getTextColor} from "@/lib/utils/functions";
 import {ProfileIcon} from "@/lib/client/components/general/ProfileIcon";
 import {StatusBadge} from "@/lib/client/components/general/StatusBadge";
 import {DisplayRating} from "@/lib/client/components/media/base/DisplayRating";

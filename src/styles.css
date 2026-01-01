@@ -128,6 +128,27 @@
     --shadow-lg: 0 1px 3px 0px hsl(0 0% 0% / 0.10), 0 4px 6px -1px hsl(0 0% 0% / 0.10);
     --shadow-xl: 0 1px 3px 0px hsl(0 0% 0% / 0.10), 0 8px 10px -1px hsl(0 0% 0% / 0.10);
     --shadow-2xl: 0 1px 3px 0px hsl(0 0% 0% / 0.25);
+
+    --series: #267f90;
+    --anime: #ab5e4b;
+    --movies: #a28b27;
+    --books: #6b5c86;
+    --games: #217f21;
+    --manga: #a04646;
+    --user: #6e6e6e;
+
+    --playing: #334d5c;
+    --reading: #334d5c;
+    --watching: #334d5c;
+    --completed: #45b29d;
+    --on_hold: #efc94c;
+    --multiplayer: #b19026;
+    --random: #e27a3f;
+    --dropped: #df5a49;
+    --endless: #48792c;
+    --plan_to_watch: #962d3e;
+    --plan_to_read: #962d3e;
+    --plan_to_play: #962d3e;
 }
 
 .dark {
@@ -225,13 +246,26 @@
     --color-sidebar-foreground: var(--sidebar-foreground);
     --color-sidebar: var(--sidebar);
 
-    --color-series: #267f90;
-    --color-anime: #ab5e4b;
-    --color-movies: #a28b27;
-    --color-books: #6b5c86;
-    --color-games: #217f21;
-    --color-manga: #a04646;
-    --color-user: #6e6e6e;
+    --color-series: var(--series);
+    --color-anime: var(--anime);
+    --color-movies: var(--movies);
+    --color-books: var(--books);
+    --color-games: var(--games);
+    --color-manga: var(--manga);
+    --color-user: var(--user);
+
+    --color-playing: var(--playing);
+    --color-reading: var(--reading);
+    --color-watching: var(--watching);
+    --color-completed: var(--completed);
+    --color-on_hold: var(--on_hold);
+    --color-multiplayer: var(--multiplayer);
+    --color-random: var(--random);
+    --color-dropped: var(--dropped);
+    --color-endless: var(--endless);
+    --color-plan_to_watch: var(--plan_to_watch);
+    --color-plan_to_read: var(--plan_to_read);
+    --color-plan_to_play: var(--plan_to_play);
 }
 
 @layer base {

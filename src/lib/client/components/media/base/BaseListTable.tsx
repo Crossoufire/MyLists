@@ -1,6 +1,6 @@
 import {MediaType} from "@/lib/utils/enums";
 import {ColumnDef} from "@tanstack/react-table";
-import {statusUtils} from "@/lib/utils/functions";
+import {statusUtils} from "@/lib/utils/mapping";
 import {CircleCheck, Settings2} from "lucide-react";
 import {UserMediaItem} from "@/lib/types/query.options.types";
 import {BlockLink} from "@/lib/client/components/general/BlockLink";

@@ -1,9 +1,9 @@
 import React from "react";
 import {MediaType} from "@/lib/utils/enums";
-import {getYear} from "@/lib/utils/functions";
 import {Bookmark, Calendar, SquareLibrary} from "lucide-react";
 import {MediaConfig} from "@/lib/client/components/media/media-config";
 import {MediaUnderItem} from "@/lib/client/components/media/base/MediaDetailsComps";
+import {getYear} from "@/lib/utils/formating";
 
 
 type MangaDetailsProps<T extends MediaType> = Parameters<MediaConfig[T]["underTitle"]>[number];

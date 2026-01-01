@@ -4,7 +4,7 @@ import {useAuth} from "@/lib/client/hooks/use-auth";
 import {createFileRoute} from "@tanstack/react-router";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {MediaListArgs} from "@/lib/types/zod.schema.types";
-import {statusUtils} from "@/lib/utils/functions";
+import {statusUtils} from "@/lib/utils/mapping";
 import {Header} from "@/lib/client/components/media/base/Header";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
 import {Pagination} from "@/lib/client/components/general/Pagination";

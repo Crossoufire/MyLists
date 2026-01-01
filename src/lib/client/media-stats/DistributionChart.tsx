@@ -3,9 +3,9 @@ import {MediaType} from "@/lib/utils/enums";
 import {useSearch} from "@tanstack/react-router";
 import {NamedValue} from "@/lib/types/stats.types";
 import {formatNumber} from "@/lib/utils/formating";
-import {getMediaColor} from "@/lib/utils/functions";
 import {Card, CardContent, CardHeader, CardTitle} from "@/lib/client/components/ui/card";
 import {Bar, BarChart, Cell, LabelList, LabelProps, ResponsiveContainer, Tooltip, XAxis, YAxis} from "recharts";
+import {getThemeColor} from "@/lib/utils/colors-and-icons";
 
 
 interface DistributionChartProps {
@@ -88,7 +88,7 @@ export function DistributionChart({ title, data, unit, enableBinning = false, he
                             {chartData.map((item, idx) =>
                                 <Cell
                                     key={idx}
-                                    fill={getMediaColor(mediaType ?? String(item.originalName) as MediaType)}
+                                    fill={getThemeColor(mediaType ?? String(item.originalName) as MediaType)}
                                 />
                             )}
                             <LabelList

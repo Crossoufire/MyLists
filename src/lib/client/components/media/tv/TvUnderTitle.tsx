@@ -1,7 +1,7 @@
 import React from "react";
 import {MediaType} from "@/lib/utils/enums";
 import {Calendar, Tv, Clock} from "lucide-react";
-import {formatDuration, getYear} from "@/lib/utils/functions";
+import {formatMinutes, getYear} from "@/lib/utils/formating";
 import {MediaConfig} from "@/lib/client/components/media/media-config";
 import {MediaUnderItem, MediaUnderRating} from "@/lib/client/components/media/base/MediaDetailsComps";
 
@@ -23,7 +23,7 @@ export const TvUnderTitle = ({ media }: TvDetailsProps<typeof MediaType.SERIES |
                 {media.totalSeasons ?? "-"} Seasons
             </MediaUnderItem>
             <MediaUnderItem icon={Clock}>
-                {formatDuration(media.duration)}
+                {formatMinutes(media.duration, { compact: true })}
             </MediaUnderItem>
         </>
     );

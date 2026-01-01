@@ -1,6 +1,6 @@
 import {useMemo} from "react";
 import {Link} from "@tanstack/react-router";
-import {getMediaColor} from "@/lib/utils/functions";
+import {getThemeColor} from "@/lib/utils/colors-and-icons";
 import {Clock, ClockAlert, MoveRight, Star} from "lucide-react";
 import {EmptyState} from "@/lib/client/components/general/EmptyState";
 import {SimpleStatCard} from "@/lib/client/components/user-profile/SimpleStatCard";
@@ -58,7 +58,7 @@ export const OverviewTab = ({ username, globalStats, perMedia }: OverviewTabProp
                                     key={media.mediaType}
                                     className="h-full flex items-center justify-center"
                                     title={`${media.mediaType}: ${percentage.toFixed(1)}%`}
-                                    style={{ flex: media.timeSpentDays, backgroundColor: getMediaColor(media.mediaType) }}
+                                    style={{ flex: media.timeSpentDays, backgroundColor: getThemeColor(media.mediaType) }}
                                 >
                                     {percentage > 5 &&
                                         <span className="text-xs truncate tracking-wider font-medium text-black px-0.5">

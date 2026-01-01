@@ -1,5 +1,4 @@
 import {toast} from "sonner";
-import {PrivacyIcon} from "@/lib/utils/functions";
 import {useAuth} from "@/lib/client/hooks/use-auth";
 import {createFileRoute} from "@tanstack/react-router";
 import {useSuspenseQuery} from "@tanstack/react-query";
@@ -11,6 +10,7 @@ import {ProfileIcon} from "@/lib/client/components/general/ProfileIcon";
 import {EmptyState} from "@/lib/client/components/general/EmptyState";
 import {followersOptions} from "@/lib/client/react-query/query-options/query-options";
 import {useFollowMutation} from "@/lib/client/react-query/query-mutations/user.mutations";
+import {PrivacyIcon} from "@/lib/client/components/general/MainThemeIcons";
 
 
 export const Route = createFileRoute("/_main/_private/profile/$username/_header/followers")({
@@ -58,7 +58,9 @@ function ProfileFollowers() {
                                             className="absolute -bottom-1 -right-1 bg-background rounded-full p-0.5 border"
                                         >
                                             <div className="bg-background rounded-full p-0.5">
-                                                <PrivacyIcon type={follower.privacy}/>
+                                                <PrivacyIcon
+                                                    type={follower.privacy}
+                                                />
                                             </div>
                                         </div>
                                     </div>

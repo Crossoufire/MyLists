@@ -6,7 +6,7 @@ import {createFileRoute} from "@tanstack/react-router";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
 import {DashboardContent} from "@/lib/client/media-stats/DashboardContent";
 import {TabHeader, TabItem} from "@/lib/client/components/general/TabHeader";
-import {MediaAndUserIcon} from "@/lib/client/components/media/base/MediaAndUserIcon";
+import {MainThemeIcon} from "@/lib/client/components/general/MainThemeIcons";
 import {platformStatsOptions} from "@/lib/client/react-query/query-options/query-options";
 
 
@@ -36,12 +36,12 @@ function PlatformStatsPage() {
             id: "overview",
             isAccent: true,
             label: "Overview",
-            icon: <LayoutGrid size={15}/>,
+            icon: <MainThemeIcon size={15} type="overview"/>,
         },
         ...mediaTypes.map((mediaType) => ({
             id: mediaType,
             label: mediaType,
-            icon: <MediaAndUserIcon size={15} type={mediaType}/>,
+            icon: <MainThemeIcon size={15} type={mediaType}/>,
         })),
     ];
 

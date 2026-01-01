@@ -1,12 +1,12 @@
 import {MediaType} from "@/lib/utils/enums";
 import {TabValue} from "@/lib/types/stats.types";
 import {useSuspenseQuery} from "@tanstack/react-query";
+import {Award, EllipsisVertical, User} from "lucide-react";
 import {createFileRoute, Link} from "@tanstack/react-router";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
-import {Award, EllipsisVertical, LayoutGrid, User} from "lucide-react";
 import {DashboardContent} from "@/lib/client/media-stats/DashboardContent";
 import {TabHeader, TabItem} from "@/lib/client/components/general/TabHeader";
-import {MediaAndUserIcon} from "@/lib/client/components/media/base/MediaAndUserIcon";
+import {MainThemeIcon} from "@/lib/client/components/general/MainThemeIcons";
 import {userStatsOptions} from "@/lib/client/react-query/query-options/query-options";
 import {DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem} from "@/lib/client/components/ui/dropdown-menu";
 
@@ -37,12 +37,12 @@ function UserStatsPage() {
             id: "overview",
             isAccent: true,
             label: "Overview",
-            icon: <LayoutGrid size={15}/>,
+            icon: <MainThemeIcon size={15} type="overview"/>,
         },
         ...apiData.activatedMediaTypes.map((mediaType) => ({
             id: mediaType,
             label: mediaType,
-            icon: <MediaAndUserIcon size={15} type={mediaType}/>,
+            icon: <MainThemeIcon size={15} type={mediaType}/>,
         })),
     ];
 

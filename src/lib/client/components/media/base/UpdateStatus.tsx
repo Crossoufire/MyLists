@@ -1,4 +1,4 @@
-import {statusUtils} from "@/lib/utils/functions";
+import {statusUtils} from "@/lib/utils/mapping";
 import {MediaType, Status, UpdateType} from "@/lib/utils/enums";
 import {useUpdateUserMediaMutation} from "@/lib/client/react-query/query-mutations/user-media.mutations";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/lib/client/components/ui/select";

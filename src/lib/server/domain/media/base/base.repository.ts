@@ -1,5 +1,5 @@
 import {notFound} from "@tanstack/react-router";
-import {statusUtils} from "@/lib/utils/functions";
+import {statusUtils} from "@/lib/utils/mapping";
 import {Achievement} from "@/lib/types/achievements.types";
 import {MediaListArgs} from "@/lib/types/zod.schema.types";
 import {getDbClient} from "@/lib/server/database/async-storage";

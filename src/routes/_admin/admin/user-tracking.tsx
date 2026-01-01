@@ -1,24 +1,24 @@
 import React, {useMemo, useState} from "react";
 import {useQuery} from "@tanstack/react-query";
+import {capitalize} from "@/lib/utils/formating";
 import {Input} from "@/lib/client/components/ui/input";
 import {Label} from "@/lib/client/components/ui/label";
 import {createFileRoute} from "@tanstack/react-router";
 import {Button} from "@/lib/client/components/ui/button";
+import {getThemeColor} from "@/lib/utils/colors-and-icons";
 import {useDebounce} from "@/lib/client/hooks/use-debounce";
-import {getMediaColor} from "@/lib/utils/functions";
 import {ProviderSearchResult} from "@/lib/types/provider.types";
 import {ApiProviderType, MediaType, Status} from "@/lib/utils/enums";
 import {ProfileIcon} from "@/lib/client/components/general/ProfileIcon";
 import {DashboardShell} from "@/lib/client/components/admin/DashboardShell";
 import {Tabs, TabsList, TabsTrigger} from "@/lib/client/components/ui/tabs";
 import {DashboardHeader} from "@/lib/client/components/admin/DashboardHeader";
-import {MediaAndUserIcon} from "@/lib/client/components/media/base/MediaAndUserIcon";
+import {MainThemeIcon} from "@/lib/client/components/general/MainThemeIcons";
 import {navSearchOptions} from "@/lib/client/react-query/query-options/query-options";
 import {adminUserTracking} from "@/lib/client/react-query/query-options/admin-options";
 import {Card, CardAction, CardContent, CardHeader, CardTitle} from "@/lib/client/components/ui/card";
 import {Area, AreaChart, Bar, BarChart, CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis} from "recharts";
 import {ArrowDown, ArrowUp, BarChart3, Clock, Heart, Loader2, type LucideIcon, MessageSquare, Percent, Search, Star, TrendingUp, X} from "lucide-react";
-import {capitalize} from "@/lib/utils/formating";
 
 
 type Granularity = "day" | "week" | "month";
@@ -160,7 +160,7 @@ function UserTrackingContent({ userId }: { userId: number }) {
     const [granularity, setGranularity] = useState<Granularity>("month");
     const [selectedMediaType, setSelectedMediaType] = useState<MediaType>(MediaType.SERIES);
 
-    const color = getMediaColor(selectedMediaType);
+    const color = getThemeColor(selectedMediaType);
 
     const processedData = useMemo(() => {
         const byType = rawData
@@ -444,7 +444,7 @@ function UserTrackingContent({ userId }: { userId: number }) {
                     <TabsList className="flex gap-6">
                         {Object.values(MediaType).map((mediaType) =>
                             <TabsTrigger key={mediaType} value={mediaType}>
-                                <MediaAndUserIcon type={mediaType}/>
+                                <MainThemeIcon type={mediaType}/>
                                 <span className="hidden sm:inline">
                                     {capitalize(mediaType)}
                                 </span>

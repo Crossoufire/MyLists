@@ -5,7 +5,7 @@ import {formatRelativeTime} from "@/lib/utils/formating";
 import {UserUpdateType} from "@/lib/types/query.options.types";
 import {Payload} from "@/lib/client/components/general/Payload";
 import {BlockLink} from "@/lib/client/components/general/BlockLink";
-import {MediaAndUserIcon} from "@/lib/client/components/media/base/MediaAndUserIcon";
+import {MainThemeIcon} from "@/lib/client/components/general/MainThemeIcons";
 
 
 interface UserUpdateProps {
@@ -29,7 +29,7 @@ export function UserUpdate({ update, username, onDelete, canDelete, isPending, m
             (mediaIdBeingDeleted === update.id && isPending) && "opacity-30")}>
             <div className="mt-0.5">
                 <div className="flex items-center justify-center">
-                    <MediaAndUserIcon
+                    <MainThemeIcon
                         type={update.mediaType}
                         className="size-4 mt-0.5"
                     />

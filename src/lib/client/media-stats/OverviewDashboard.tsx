@@ -1,8 +1,9 @@
 import {ExtractStatsByType} from "@/lib/types/stats.types";
 import {StatCard} from "@/lib/client/media-stats/StatCard";
 import {DistributionChart} from "@/lib/client/media-stats/DistributionChart";
-import {formatAvgRating, formatDuration, formatNumber, formatPercent} from "@/lib/utils/formating";
+import {formatHours, formatNumber, formatPercent} from "@/lib/utils/formating";
 import {ChartColumn, Clock, Heart, MessageSquare, RefreshCw, Star, Tag, TrendingUp, Trophy, User} from "lucide-react";
+import {formatAvgRating} from "@/lib/utils/ratings";
 
 
 interface OverviewDashboardProps {
@@ -34,7 +35,7 @@ export function OverviewDashboard({ stats }: OverviewDashboardProps) {
                 <StatCard
                     title="Total Time"
                     icon={<Clock className="size-4"/>}
-                    value={formatDuration(stats.totalHours)}
+                    value={formatHours(stats.totalHours)}
                     subtitle={`${formatNumber(Math.round(stats.totalHours))} hours`}
                 />
                 <StatCard

@@ -10,7 +10,7 @@ import {Separator} from "@/lib/client/components/ui/separator";
 import {CircleHelp, Download, TriangleAlert} from "lucide-react";
 import {saveAsFile, convertToCsv} from "@/lib/utils/blob-download";
 import {ApiProviderType, MediaType, RatingSystemType} from "@/lib/utils/enums";
-import {MediaAndUserIcon} from "@/lib/client/components/media/base/MediaAndUserIcon";
+import {MainThemeIcon} from "@/lib/client/components/general/MainThemeIcons";
 import {Popover, PopoverContent, PopoverTrigger} from "@/lib/client/components/ui/popover";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/lib/client/components/ui/form";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/lib/client/components/ui/select";
@@ -121,7 +121,7 @@ export const MediaListForm = () => {
                                 render={({ field }) => (
                                     <FormItem className="flex flex-row items-center justify-between space-x-3 rounded-md border p-3">
                                         <FormLabel className="font-normal">
-                                            <MediaAndUserIcon
+                                            <MainThemeIcon
                                                 size={15}
                                                 type={config.name}
                                             />

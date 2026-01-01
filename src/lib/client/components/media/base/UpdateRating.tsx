@@ -1,8 +1,8 @@
 import {useAuth} from "@/lib/client/hooks/use-auth";
 import {RatingSystemType, UpdateType} from "@/lib/utils/enums";
-import {getFeelingIcon, getFeelingList, getScoreList} from "@/lib/utils/functions";
 import {useUpdateUserMediaMutation} from "@/lib/client/react-query/query-mutations/user-media.mutations";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/lib/client/components/ui/select";
+import {getFeelingIcon, getFeelingList, getScoreList} from "@/lib/utils/ratings";
 
 
 interface RatingComponentProps {
@@ -14,10 +14,12 @@ interface RatingComponentProps {
 export const UpdateRating = ({ rating, onUpdateMutation }: RatingComponentProps) => {
     const { currentUser } = useAuth();
     const ratingList = (currentUser?.ratingSystem === RatingSystemType.SCORE) ? getScoreList() : getFeelingList({ size: 16 });
-    const ratingValue = (currentUser?.ratingSystem === RatingSystemType.SCORE) ? rating : getFeelingIcon(rating, { valueOnly: true });
+    const ratingValue = (currentUser?.ratingSystem === RatingSystemType.SCORE) ? rating : getFeelingIcon(rating, { labelOnly: true });
+
+    console.log({ rating, ratingList, ratingValue })
 
     const handleSelectChange = (value: string) => {
-        const valueToSend = value === "-" ? null : parseFloat(value);
+        const valueToSend = value === "-" ? null : Number(value);
         onUpdateMutation.mutate({ payload: { rating: valueToSend, type: UpdateType.RATING } });
     };
 
@@ -29,8 +31,8 @@ export const UpdateRating = ({ rating, onUpdateMutation }: RatingComponentProps)
                 </SelectTrigger>
                 <SelectContent className="max-h-75 overflow-y-auto">
                     {ratingList.map((rating) =>
-                        <SelectItem key={rating.value} value={rating.value?.toString() ?? "-"}>
-                            {rating.component}
+                        <SelectItem key={rating.label} value={rating.label ?? "-"}>
+                            {rating.value}
                         </SelectItem>
                     )}
                 </SelectContent>

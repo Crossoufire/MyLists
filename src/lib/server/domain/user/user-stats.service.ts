@@ -1,4 +1,4 @@
-import {statusUtils} from "@/lib/utils/functions";
+import {statusUtils} from "@/lib/utils/mapping";
 import {MediaType, Status} from "@/lib/utils/enums";
 import {UserMediaStats} from "@/lib/types/base.types";
 import {SearchTypeHoF} from "@/lib/types/zod.schema.types";

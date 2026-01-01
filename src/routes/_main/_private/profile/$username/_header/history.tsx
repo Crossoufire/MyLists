@@ -11,7 +11,7 @@ import {Payload} from "@/lib/client/components/general/Payload";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
 import {useDebounceCallback} from "@/lib/client/hooks/use-debounce";
 import {TablePagination} from "@/lib/client/components/general/TablePagination";
-import {MediaAndUserIcon} from "@/lib/client/components/media/base/MediaAndUserIcon";
+import {MainThemeIcon} from "@/lib/client/components/general/MainThemeIcons";
 import {allUpdatesOptions} from "@/lib/client/react-query/query-options/query-options";
 import {useDeleteAllUpdatesMutation} from "@/lib/client/react-query/query-mutations/user-media.mutations";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/lib/client/components/ui/table";
@@ -65,7 +65,7 @@ const getHistoryColumns = (isCurrent: boolean): ColumnDef<any>[] => {
             cell: ({ row: { original } }) => {
                 return (
                     <div className="flex items-center gap-3">
-                        <MediaAndUserIcon
+                        <MainThemeIcon
                             size={15}
                             type={original.mediaType}
                         />

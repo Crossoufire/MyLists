@@ -5,9 +5,9 @@ import {Button} from "@/lib/client/components/ui/button";
 import {useQuery, useQueryClient} from "@tanstack/react-query";
 import {useBreakpoint} from "@/lib/client/hooks/use-breakpoint";
 import {EmptyState} from "@/lib/client/components/general/EmptyState";
-import {Bell, LoaderCircle, MessageCircleOff, MoveRight} from "lucide-react";
+import {MainThemeIcon} from "@/lib/client/components/general/MainThemeIcons";
 import {formatDateTime, formatRelativeTime, zeroPad} from "@/lib/utils/formating";
-import {MediaAndUserIcon} from "@/lib/client/components/media/base/MediaAndUserIcon";
+import {Bell, LoaderCircle, MessageCircleOff, MoveRight, User} from "lucide-react";
 import {Popover, PopoverClose, PopoverContent, PopoverTrigger} from "@/lib/client/components/ui/popover";
 import {notificationsCountOptions, notificationsOptions} from "@/lib/client/react-query/query-options/query-options";
 
@@ -88,7 +88,7 @@ const NotificationItem = ({ data, handlePopoverClose }: NotificationItemProps) =
                 <div className="flex gap-3 py-3 px-2 border-b hover:bg-muted/30 rounded-lg">
                     <div className="mt-0.5">
                         <div className="flex items-center justify-center">
-                            <MediaAndUserIcon
+                            <MainThemeIcon
                                 type={data.mediaType}
                                 className="size-4 mt-0.5"
                             />
@@ -133,10 +133,7 @@ const NotificationItem = ({ data, handlePopoverClose }: NotificationItemProps) =
                 <div className="flex gap-3 py-3 px-2 border-b hover:bg-muted/30 rounded-lg">
                     <div className="mt-0.5">
                         <div className="flex items-center justify-center">
-                            <MediaAndUserIcon
-                                type="user"
-                                className="size-4 mt-0.5"
-                            />
+                            <User className="size-4 mt-0.5"/>
                         </div>
                     </div>
                     <div className="flex-1">

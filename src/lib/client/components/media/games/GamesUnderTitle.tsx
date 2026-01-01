@@ -1,7 +1,7 @@
 import React from "react";
 import {MediaType} from "@/lib/utils/enums";
 import {Calendar, Clock} from "lucide-react";
-import {formatMinutes, getYear} from "@/lib/utils/functions";
+import {formatMinutes, getYear} from "@/lib/utils/formating";
 import {MediaConfig} from "@/lib/client/components/media/media-config";
 import {MediaUnderItem, MediaUnderRating} from "@/lib/client/components/media/base/MediaDetailsComps";
 
@@ -21,7 +21,7 @@ export const GamesUnderTitle = ({ media }: GamesDetailsProps<typeof MediaType.GA
                 {getYear(media.releaseDate)}
             </MediaUnderItem>
             <MediaUnderItem icon={Clock}>
-                {media.hltbMainTime ? formatMinutes(media.hltbMainTime * 60, true) : "-"}
+                {formatMinutes(media.hltbMainTime ? (media.hltbMainTime * 60) : null, { onlyHours: true })}
             </MediaUnderItem>
         </>
     );

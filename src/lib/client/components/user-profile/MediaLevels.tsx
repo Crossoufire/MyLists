@@ -1,11 +1,11 @@
 import {Link} from "@tanstack/react-router";
 import {MediaType} from "@/lib/utils/enums";
-import {getMediaColor} from "@/lib/utils/functions";
 import {computeLevel} from "@/lib/utils/compute-level";
 import {Progress} from "@/lib/client/components/ui/progress";
 import {UserSettingsType} from "@/lib/types/query.options.types";
-import {MediaAndUserIcon} from "@/lib/client/components/media/base/MediaAndUserIcon";
+import {MainThemeIcon} from "@/lib/client/components/general/MainThemeIcons";
 import {Card, CardContent, CardHeader, CardTitle} from "@/lib/client/components/ui/card";
+import {getThemeColor} from "@/lib/utils/colors-and-icons";
 
 
 interface MediaLevelsProps {
@@ -54,7 +54,8 @@ const MediaLevelBar = ({ mediaType, username, level }: MediaLevelBarProps) => {
         <div>
             <div className="flex justify-between items-end mb-1">
                 <div className="flex items-center gap-2 text-sm font-medium text-primary">
-                    <MediaAndUserIcon
+                    <MainThemeIcon
+                        size={16}
                         type={mediaType}
                     />
                     <Link to="/list/$mediaType/$username" params={{ mediaType, username }}>
@@ -73,7 +74,7 @@ const MediaLevelBar = ({ mediaType, username, level }: MediaLevelBarProps) => {
             <Progress
                 value={percent}
                 className={"h-2"}
-                color={getMediaColor(mediaType)}
+                color={getThemeColor(mediaType)}
             />
         </div>
     );

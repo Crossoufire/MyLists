@@ -1,7 +1,7 @@
 import React from "react";
 import {cn} from "@/lib/utils/helpers";
-import {getDaysRemaining} from "@/lib/utils/functions";
 import {Calendar, Clock, LucideIcon, Star} from "lucide-react";
+import {getDaysRemaining} from "@/lib/utils/formating";
 
 
 interface MediaInfoGridItemProps {

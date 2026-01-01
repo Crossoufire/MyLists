@@ -5,7 +5,7 @@ import {useSuspenseQuery} from "@tanstack/react-query";
 import {createFileRoute} from "@tanstack/react-router";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
 import {TabHeader, TabItem} from "@/lib/client/components/general/TabHeader";
-import {MediaAndUserIcon} from "@/lib/client/components/media/base/MediaAndUserIcon";
+import {MainThemeIcon} from "@/lib/client/components/general/MainThemeIcons";
 import {AchievementCard} from "@/lib/client/components/achievements/AchievementCard";
 import {achievementOptions} from "@/lib/client/react-query/query-options/query-options";
 import {AchievementSummary} from "@/lib/client/components/achievements/AchievementSummary";
@@ -31,12 +31,12 @@ function AchievementPage() {
             id: "all",
             label: "All",
             isAccent: true,
-            icon: <LayoutGrid size={15}/>,
+            icon: <MainThemeIcon size={15} type="all"/>,
         },
         ...mediaTypes.map((mediaType) => ({
             id: mediaType,
             label: mediaType,
-            icon: <MediaAndUserIcon size={15} type={mediaType}/>,
+            icon: <MainThemeIcon size={15} type={mediaType}/>,
         })),
     ];
 

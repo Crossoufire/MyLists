@@ -1,15 +1,14 @@
 import {useState} from "react";
-import {LayoutGrid} from "lucide-react";
 import {MediaType} from "@/lib/utils/enums";
 import {createFileRoute} from "@tanstack/react-router";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {MediaLevels} from "@/lib/client/components/user-profile/MediaLevels";
 import {OverviewTab} from "@/lib/client/components/user-profile/OverviewTab";
-import {MediaStatsTab} from "@/lib/client/components/user-profile/MediaStatsTab";
 import {TabHeader, TabItem} from "@/lib/client/components/general/TabHeader";
+import {MainThemeIcon} from "@/lib/client/components/general/MainThemeIcons";
+import {MediaStatsTab} from "@/lib/client/components/user-profile/MediaStatsTab";
 import {ProfileFollows} from "@/lib/client/components/user-profile/ProfileFollows";
 import {profileOptions} from "@/lib/client/react-query/query-options/query-options";
-import {MediaAndUserIcon} from "@/lib/client/components/media/base/MediaAndUserIcon";
 import {AchievementsCard} from "@/lib/client/components/user-profile/AchievementCard";
 import {FollowsUpdates, UserUpdates} from "@/lib/client/components/user-profile/UserUpdates";
 
@@ -30,12 +29,12 @@ function ProfileMain() {
             id: "overview",
             isAccent: true,
             label: "Overview",
-            icon: <LayoutGrid size={15}/>,
+            icon: <MainThemeIcon size={15} type="overview"/>,
         },
         ...activeMediaTypes.map((mediaType) => ({
             id: mediaType,
             label: mediaType,
-            icon: <MediaAndUserIcon type={mediaType} size={15}/>,
+            icon: <MainThemeIcon size={15} type={mediaType}/>,
         })),
     ];
 

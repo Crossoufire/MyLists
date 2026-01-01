@@ -80,7 +80,7 @@ export const HofCard = ({ userData }: HofCardProps) => {
                                     <MediaLevel
                                         isActive={setting.active}
                                         mediaType={setting.mediaType}
-                                        timeSpent={setting.timeSpent}
+                                        timeSpentMin={setting.timeSpent}
                                     />
                                     <div className="text-xs font-semibold text-muted-foreground">
                                         {capitalize(setting.mediaType)}

@@ -1,10 +1,11 @@
 import {NamedValue} from "@/lib/types/stats.types";
 import {MediaType, RatingSystemType} from "@/lib/utils/enums";
-import {getFeelingList, getMediaColor} from "@/lib/utils/functions";
 import {CustomTooltip} from "@/lib/client/media-stats/DistributionChart";
 import {transformRatingToFeeling} from "@/lib/client/media-stats/stats-utils";
 import {Card, CardContent, CardHeader, CardTitle} from "@/lib/client/components/ui/card";
 import {Bar, BarChart, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis} from "recharts";
+import {getThemeColor} from "@/lib/utils/colors-and-icons";
+import {getFeelingList} from "@/lib/utils/ratings";
 
 
 interface RatingsChartProps {
@@ -53,7 +54,7 @@ export function RatingsChart({ height, ratings, mediaType, ratingSystem }: Ratin
                             {chartData.map((entry) =>
                                 <Cell
                                     key={entry.name}
-                                    fill={getMediaColor(mediaType)}
+                                    fill={getThemeColor(mediaType)}
                                 />
                             )}
                         </Bar>
@@ -70,9 +71,9 @@ const FeelingTickXAxis = (props: any) => {
 
     const getFeelingComponent = (value: number) => {
         const feelings = getFeelingList({ size: 18 });
-        const feeling = feelings.find((item) => item.value === value);
+        const feeling = feelings.find((item) => item.label === value.toString());
 
-        return feeling ? feeling.component : "-";
+        return feeling ? feeling.value : "-";
     };
 
     return (

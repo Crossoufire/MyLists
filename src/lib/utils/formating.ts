@@ -1,20 +1,22 @@
-import {RatingSystemType} from "@/lib/utils/enums";
-import {getFeelingIcon} from "@/lib/utils/functions";
+const RELATIVE_TIME_UNITS: { unit: Intl.RelativeTimeFormatUnit; seconds: number }[] = [
+    { unit: "year", seconds: 31536000 },
+    { unit: "month", seconds: 2592000 },
+    { unit: "day", seconds: 86400 },
+    { unit: "hour", seconds: 3600 },
+    { unit: "minute", seconds: 60 },
+];
 
+const parseDate = (input: string | number) => {
+    if (typeof input === "number") return new Date(input * 1000);
+    return new Date(input.includes("T") ? input : `${input.replace(" ", "T")}Z`);
+};
 
-const withFallback = (value: any, formatter: (v: any) => string, fallback = "-") => {
+export const withFallback = <T extends any>(value: T | null | undefined, formatter: (v: T) => string, fallback = "-") => {
     return value === null || value === undefined || value === "" ? fallback : formatter(value);
 };
 
 
-const parseDate = (input: string | number) => {
-    if (typeof input === "number") {
-        return new Date(input * 1000);
-    }
-
-    return new Date(input.includes("T") ? input : `${input.replace(" ", "T")}Z`);
-};
-
+export const CURRENT_DATE = new Date();
 
 export const zeroPad = (value: number | string | null | undefined) => {
     return String(value ?? 0).padStart(2, "0");
@@ -22,7 +24,7 @@ export const zeroPad = (value: number | string | null | undefined) => {
 
 export const isLatin1 = (input: string) => {
     return [...input].every((char) => char.charCodeAt(0) <= 255);
-}
+};
 
 export const capitalize = (input: string | null | undefined) => {
     const trimmed = input?.trim();
@@ -31,27 +33,62 @@ export const capitalize = (input: string | null | undefined) => {
 };
 
 
-export const formatLocaleName = (code: string | undefined | null, type: "language" | "region") => {
-    return withFallback(code?.trim(), (code) => {
-        if (type === "language" && code.toLowerCase() === "cn") {
-            return "Chinese";
-        }
+export const getDaysRemaining = (dateString: string | null) => {
+    if (!dateString) return null;
+    const diffTime = new Date(dateString).getTime() - CURRENT_DATE.getTime();
 
+    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+};
+
+export const getYear = (date?: string | null) => {
+    return date?.split("-")[0] ?? "-";
+};
+
+
+interface FormatDateTimeOptions {
+    noTime?: boolean;
+    seconds?: boolean;
+    onlyYear?: boolean;
+}
+
+
+export const formatDateTime = (value: string | number | null | undefined, options: FormatDateTimeOptions = {}) => {
+    return withFallback(value, (input) => {
+        const date = parseDate(input);
+        if (isNaN(date.getTime())) return "-";
+
+        const { noTime, seconds, onlyYear } = options;
+        const dtfOptions: Intl.DateTimeFormatOptions = {
+            year: "numeric",
+            month: onlyYear ? undefined : "short",
+            day: onlyYear ? undefined : "numeric",
+            hour: noTime || onlyYear ? undefined : "numeric",
+            minute: noTime || onlyYear ? undefined : "numeric",
+            second: seconds ? "numeric" : undefined,
+            hour12: false,
+        };
+
+        return new Intl.DateTimeFormat("en-US", dtfOptions).format(date);
+    });
+};
+
+export const formatLocaleName = (code: string | undefined | null, type: "language" | "region") => {
+    return withFallback(code?.trim(), (c) => {
+        if (type === "language" && c.toLowerCase() === "cn") return "Chinese";
         try {
-            return new Intl.DisplayNames(["en"], { type }).of(code) || code;
+            return new Intl.DisplayNames(["en"], { type }).of(c) || c;
         }
         catch {
-            return code;
+            return c;
         }
     });
 };
 
 export const formatHtmlText = (input: string) => {
-    if (!input) return "";
-    return input.replace(/<[^>]*>?/gm, "") || "";
+    return input?.replace(/<[^>]*>?/gm, "") ?? "";
 };
 
-export const formatCurrency = (value: number | null, options: Intl.NumberFormatOptions = {}) => {
+export const formatCurrency = (value: number | null, options: Intl.NumberFormatOptions = {}): string => {
     return withFallback(value, (val) =>
         new Intl.NumberFormat("en", {
             currency: "USD",
@@ -59,11 +96,11 @@ export const formatCurrency = (value: number | null, options: Intl.NumberFormatO
             notation: "compact",
             maximumFractionDigits: 1,
             ...options,
-        }).format(val),
+        }).format(val)
     );
 };
 
-export const formatDuration = (hours: number) => {
+export const formatHours = (hours: number) => {
     if (hours < 24) return `${hours.toFixed(1)}h`;
 
     const days = Math.floor(hours / 24);
@@ -83,63 +120,40 @@ export const formatNumber = (value: number | null | undefined, options: Intl.Num
     return withFallback(value, (val) => val.toLocaleString("fr", options));
 };
 
-export const formatAvgRating = (ratingSystem: RatingSystemType, value: number | null) => {
-    if (ratingSystem === RatingSystemType.FEELING) {
-        return getFeelingIcon(value, { size: 30 });
-    }
-    return withFallback(value, (val) => val.toFixed(2));
-};
-
 export const formatRelativeTime = (input: string | null | undefined) => {
     if (!input) return "Never";
 
     const date = parseDate(input);
     if (isNaN(date.getTime())) return "Never";
 
-    const diffInMs = date.getTime() - Date.now();
-    const diffInSecs = Math.floor(diffInMs / 1000);
+    const diffInSecs = Math.floor((date.getTime() - Date.now()) / 1000);
+    const rtf = new Intl.RelativeTimeFormat("en", { numeric: "always" });
 
-    const units: { unit: Intl.RelativeTimeFormatUnit; seconds: number }[] = [
-        { unit: "year", seconds: 31536000 },
-        { unit: "month", seconds: 2592000 },
-        { unit: "day", seconds: 86400 },
-        { unit: "hour", seconds: 3600 },
-        { unit: "minute", seconds: 60 },
-    ];
-
-    for (const { unit, seconds } of units) {
+    for (const { unit, seconds } of RELATIVE_TIME_UNITS) {
         if (Math.abs(diffInSecs) >= seconds) {
-            const value = Math.floor(diffInSecs / seconds);
-            return new Intl.RelativeTimeFormat("en", { numeric: "always" }).format(value, unit);
+            return rtf.format(Math.floor(diffInSecs / seconds), unit);
         }
     }
 
     return "Just now";
 };
 
+export const formatMinutes = (minutes: number | string | null | undefined, options: { onlyHours?: boolean; compact?: boolean } = {}) => {
+    if (!minutes) return "-";
 
-interface FormatDateTimeOptions {
-    noTime?: boolean;
-    seconds?: boolean;
-    onlyYear?: boolean;
-}
+    const mins = Number(minutes);
+    if (isNaN(mins) || mins <= 0) return "-";
 
+    const h = Math.floor(mins / 60);
+    const m = Math.floor(mins % 60);
 
-export const formatDateTime = (value: string | number | null | undefined, options: FormatDateTimeOptions = {}) => {
-    return withFallback(value, (input) => {
-        const date = parseDate(input);
-        if (isNaN(date.getTime())) return "-";
+    if (options.compact) {
+        return h > 0 ? `${h}h ${m}m` : `${m}m`;
+    }
 
-        const dtfOptions: Intl.DateTimeFormatOptions = {
-            year: "numeric",
-            month: options.onlyYear ? undefined : "short",
-            day: options.onlyYear ? undefined : "numeric",
-            hour: options.noTime || options.onlyYear ? undefined : "numeric",
-            minute: options.noTime || options.onlyYear ? undefined : "numeric",
-            second: options.seconds ? "numeric" : undefined,
-            hour12: false,
-        };
+    if (options.onlyHours) {
+        return `${zeroPad(h)} h`;
+    }
 
-        return new Intl.DateTimeFormat("en-US", dtfOptions).format(date);
-    });
+    return `${zeroPad(h)} h ${zeroPad(m)}`;
 };

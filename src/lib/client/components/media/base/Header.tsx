@@ -1,6 +1,7 @@
 import React from "react";
 import {MediaType} from "@/lib/utils/enums";
 import {Link} from "@tanstack/react-router";
+import {capitalize} from "@/lib/utils/formating";
 import {Button} from "@/lib/client/components/ui/button";
 import {MediaLevel} from "@/lib/client/components/general/MediaLevel";
 import {ListPagination, ListUserData} from "@/lib/types/query.options.types";
@@ -14,8 +15,6 @@ import {
     DropdownMenuRadioItem,
     DropdownMenuTrigger
 } from "@/lib/client/components/ui/dropdown-menu";
-import {computeLevel} from "@/lib/utils/compute-level";
-import {capitalize} from "@/lib/utils/formating";
 
 
 interface HeaderProps {
@@ -39,8 +38,8 @@ export const Header = (props: HeaderProps) => {
         <div className="flex flex-wrap items-center justify-between mt-8 mb-6 gap-6">
             <h3 className="flex items-center text-3xl font-medium truncate max-sm:text-xl">
                 <MediaLevel
-                    timeSpent={timeSpent}
                     mediaType={mediaType}
+                    timeSpentMin={timeSpent}
                     containerClassName="pt-1"
                     className="text-2xl max-sm:text-xl"
                 />
