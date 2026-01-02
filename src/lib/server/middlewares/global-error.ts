@@ -1,6 +1,5 @@
 import z from "zod";
 import {auth} from "@/lib/server/core/auth";
-import {isRedirect} from "@tanstack/react-router";
 import {createMiddleware} from "@tanstack/react-start";
 import {getRequest} from "@tanstack/react-start/server";
 import {getContainer} from "@/lib/server/core/container";
@@ -19,19 +18,11 @@ import {FormattedError, FormZodError} from "@/lib/utils/error-classes";
 export const funcErrorMiddleware = createMiddleware({ type: "function" }).server(async ({ next }) => {
     try {
         const results = await next();
-        if ("error" in results && isRedirect(results.error)) {
-            throw results.error;
-        }
-
         return results;
     }
     catch (err: any) {
         if (process.env.NODE_ENV !== "production") {
             console.error("ServerFunc Error:", { err });
-        }
-
-        if ("options" in err && isRedirect(err)) {
-            throw err;
         }
 
         await saveErrorToDb(err).catch();

@@ -51,7 +51,7 @@ export const UpdateTvRedo = ({ onUpdateMutation, redoValues }: UpdateTvRedoProps
                 <Pencil className="size-4 text-muted-foreground"/>
             </div>
             <Credenza open={open} onOpenChange={onOpenChange}>
-                <CredenzaContent className="w-100 max-sm:w-full">
+                <CredenzaContent className="w-100 max-sm:w-full max-sm:pb-5">
                     <CredenzaHeader>
                         <CredenzaTitle>Re-watched Seasons Manager</CredenzaTitle>
                         <CredenzaDescription>Manage your re-watched seasons</CredenzaDescription>
@@ -69,7 +69,7 @@ export const UpdateTvRedo = ({ onUpdateMutation, redoValues }: UpdateTvRedoProps
                             </div>
                         </div>
                         <Separator className="mb-3"/>
-                        <div className="overflow-y-auto max-h-73">
+                        <div className="overflow-y-auto scrollbar-thin max-h-73">
                             {draftRedo.map((season, idx) =>
                                 <div key={idx} className="flex justify-between items-center px-3">
                                     <div className="flex items-center gap-6">

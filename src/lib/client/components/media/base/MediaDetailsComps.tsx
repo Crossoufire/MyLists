@@ -124,26 +124,31 @@ export const UpComingAlert = ({ children, title, dateString }: UpComingAlertProp
     return (
         <div className="relative overflow-hidden rounded-xl border bg-card p-4 text-card-foreground shadow-sm">
             <div className="flex items-center gap-4">
-                <div className="flex size-12 items-center justify-center rounded-full bg-primary/10 text-primary">
-                    <Clock className="size-6"/>
+                <div className="flex size-12 max-sm:size-8 items-center justify-center rounded-full bg-primary/10 text-primary">
+                    <Clock className="size-6 max-sm:size-4"/>
                 </div>
 
                 <div className="flex-1 space-y-1">
-                    <h3 className="font-semibold leading-none tracking-tight">{title}</h3>
-                    <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                        {children}
-                        <Calendar className="size-3.5"/>
-                        <span>
-                            {daysRemaining === 0 ?
-                                "Releasing today"
-                                :
-                                `In ${daysRemaining} ${daysRemaining === 1 ? "day" : "days"}`
-                            }
-                        </span>
+                    <h3 className="font-semibold leading-none tracking-tight">
+                        {title}
+                    </h3>
+                    <div className="flex flex-wrap items-center gap-2 gap-y-1 text-sm text-muted-foreground">
+                        {children && <div>{children}</div>}
+                        {children && <span>•</span>}
+                        <div className="flex items-center gap-1.5">
+                            <Calendar className="size-3.5"/>
+                            <span>
+                                {daysRemaining === 0 ?
+                                    "Releasing today"
+                                    :
+                                    `In ${daysRemaining} ${daysRemaining === 1 ? "day" : "days"}`
+                                }
+                            </span>
+                        </div>
                     </div>
                 </div>
 
-                <div className="flex min-w-15 flex-col items-center justify-center rounded-md bg-app-accent/20 px-3 py-1.5">
+                <div className="flex min-w-10 flex-col items-center justify-center rounded-md bg-app-accent/20 px-3 py-1.5">
                     <span className="text-[10px] font-bold uppercase tracking-wider">
                         {airDate.toLocaleString("en-US", { month: "short" })}
                     </span>

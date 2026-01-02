@@ -43,7 +43,7 @@ export const AppliedFilters = ({ mediaType, filters, totalItems, onFilterRemove 
     };
 
     return (
-        <div className="flex flex-wrap items-center gap-2 h-10.5">
+        <div className="flex flex-wrap items-center gap-2 min-h-10.5">
             <div className="text-muted-foreground">
                 {totalItems} {capitalize(mediaType)}
             </div>
@@ -52,8 +52,8 @@ export const AppliedFilters = ({ mediaType, filters, totalItems, onFilterRemove 
             }
             <>
                 {normalFilters.map(([key, value]) =>
-                    <div key={key} className="flex items-center flex-wrap gap-1 rounded-md border border-border/30 px-2 py-1
-                     bg-muted/10 shadow-sm">
+                    <div key={key} className="flex items-center flex-wrap gap-1 rounded-md border border-border/30
+                        px-2 py-1 bg-muted/10 shadow-sm">
                         <div className="mr-1 capitalize text-sm font-medium text-muted-foreground">
                             {key}
                         </div>
@@ -92,7 +92,7 @@ export const AppliedFilters = ({ mediaType, filters, totalItems, onFilterRemove 
                                 <Badge
                                     variant="secondary"
                                     className="h-8 px-3 text-sm gap-1 rounded-full border border-border/50 bg-secondary
-                                    hover:bg-secondary/90 transition"
+                                        hover:bg-secondary/90 transition"
                                 >
                                     {String(value)}
                                     <div

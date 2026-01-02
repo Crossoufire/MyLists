@@ -1,6 +1,8 @@
 import React from "react";
+import {Link} from "@tanstack/react-router";
 import {capitalize} from "@/lib/utils/formating";
 import {TopAffinity} from "@/lib/types/stats.types";
+import {JobType, MediaType} from "@/lib/utils/enums";
 import {Badge} from "@/lib/client/components/ui/badge";
 import {CircleHelp, Heart, Play, Star, CircleOff} from "lucide-react";
 import {EmptyState} from "@/lib/client/components/general/EmptyState";
@@ -10,11 +12,13 @@ import {Card, CardAction, CardContent, CardHeader, CardTitle} from "@/lib/client
 
 interface TopAffinityCardProps {
     title: string;
+    job?: JobType;
+    mediaType?: MediaType;
     topAffinity: TopAffinity;
 }
 
 
-export const TopAffinityCard = ({ title, topAffinity }: TopAffinityCardProps) => (
+export const TopAffinityCard = ({ title, topAffinity, job, mediaType }: TopAffinityCardProps) => (
     <Card>
         <CardHeader>
             <CardTitle>
@@ -41,7 +45,13 @@ export const TopAffinityCard = ({ title, topAffinity }: TopAffinityCardProps) =>
                                 </span>
                             <div className="flex flex-col min-w-0">
                                 <span className="truncate text-sm font-medium">
-                                    {capitalize(item.name)}
+                                    {job && mediaType ?
+                                        <Link to="/details/$mediaType/$job/$name" params={{ mediaType, job, name: item.name }}>
+                                            <>{capitalize(item.name)}</>
+                                        </Link>
+                                        :
+                                        <>{capitalize(item.name)}</>
+                                    }
                                 </span>
                                 {item.metadata &&
                                     <div className="flex items-center gap-3 text-[10px] text-muted-foreground">

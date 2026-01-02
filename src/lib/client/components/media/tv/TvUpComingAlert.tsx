@@ -14,12 +14,7 @@ export const TvUpComingAlert = ({ media }: TvDetailsProps<typeof MediaType.SERIE
 
     return (
         <UpComingAlert title="Next Episode" dateString={media.nextEpisodeToAir}>
-            <>
-                <span>
-                    S{zeroPad(media.seasonToAir)}.E{zeroPad(media.episodeToAir)}
-                </span>
-                <span>•</span>
-            </>
+            S{zeroPad(media.seasonToAir)}.E{zeroPad(media.episodeToAir)}
         </UpComingAlert>
     );
 };

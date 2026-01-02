@@ -54,8 +54,8 @@ const DIFFICULTY_COLORS: Record<string, string> = {
 
 
 export const getThemeColor = (type: MediaType | Status | string | undefined) => {
-    if (!type) return "";
-    return THEME_COLOR_MAP[type] ?? "";
+    if (!type) return "#CBCBCB";
+    return THEME_COLOR_MAP[type] ?? "#CBCBCB";
 };
 
 

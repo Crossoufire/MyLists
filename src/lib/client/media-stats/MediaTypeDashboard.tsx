@@ -196,11 +196,15 @@ function MediaSpecificTopStats({ stats }: { stats: ExtractStatsByType<MediaType>
         return (
             <div className="grid max-sm:grid-cols-1 max-md:grid-cols-2 grid-cols-3 gap-4">
                 <TopAffinityCard
+                    job="platform"
                     title="Networks"
+                    mediaType={mediaType}
                     topAffinity={networksStats}
                 />
                 <TopAffinityCard
+                    job="actor"
                     title="Actors"
+                    mediaType={mediaType}
                     topAffinity={actorsStats}
                 />
                 <TopAffinityCard
@@ -217,11 +221,15 @@ function MediaSpecificTopStats({ stats }: { stats: ExtractStatsByType<MediaType>
         return (
             <div className="grid max-sm:grid-cols-1 max-md:grid-cols-2 grid-cols-4 gap-4">
                 <TopAffinityCard
+                    job="creator"
                     title="Directors"
+                    mediaType={mediaType}
                     topAffinity={directorsStats}
                 />
                 <TopAffinityCard
+                    job="actor"
                     title="Actors"
+                    mediaType={mediaType}
                     topAffinity={actorsStats}
                 />
                 <TopAffinityCard
@@ -237,14 +245,14 @@ function MediaSpecificTopStats({ stats }: { stats: ExtractStatsByType<MediaType>
     }
 
     if (mediaType === MediaType.GAMES) {
-        const {
-            developersStats, publishersStats, platformsStats, enginesStats, perspectivesStats
-        } = stats.specificMediaStats;
+        const { developersStats, publishersStats, platformsStats, enginesStats, perspectivesStats } = stats.specificMediaStats;
 
         return (
             <div className="grid max-sm:grid-cols-1 max-md:grid-cols-2 grid-cols-3 gap-4">
                 <TopAffinityCard
+                    job="creator"
                     title="Developers"
+                    mediaType={mediaType}
                     topAffinity={developersStats}
                 />
                 <TopAffinityCard
@@ -273,7 +281,9 @@ function MediaSpecificTopStats({ stats }: { stats: ExtractStatsByType<MediaType>
         return (
             <div className="grid max-sm:grid-cols-1 max-md:grid-cols-2 grid-cols-3 gap-4">
                 <TopAffinityCard
+                    job="creator"
                     title="Authors"
+                    mediaType={mediaType}
                     topAffinity={authorsStats}
                 />
                 <TopAffinityCard
@@ -294,11 +304,15 @@ function MediaSpecificTopStats({ stats }: { stats: ExtractStatsByType<MediaType>
         return (
             <div className="grid max-sm:grid-cols-1 max-md:grid-cols-2 grid-cols-3 gap-4">
                 <TopAffinityCard
+                    job="creator"
                     title="Authors"
+                    mediaType={mediaType}
                     topAffinity={authorsStats}
                 />
                 <TopAffinityCard
+                    job="publisher"
                     title="Publishers"
+                    mediaType={mediaType}
                     topAffinity={publishersStats}
                 />
             </div>

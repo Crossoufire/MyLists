@@ -127,7 +127,7 @@ export const LabelsDialog = ({ mediaType, mediaId, mediaLabels, updateUserMediaL
                     Manage
                 </div>
             </CredenzaTrigger>
-            <CredenzaContent className="w-100 max-sm:w-full max-sm:p-4">
+            <CredenzaContent className="w-100 max-sm:w-full">
                 <CredenzaHeader>
                     <CredenzaTitle>Manage Labels</CredenzaTitle>
                     <CredenzaDescription>Here you can manage your labels.</CredenzaDescription>
@@ -185,7 +185,7 @@ export const LabelsDialog = ({ mediaType, mediaId, mediaLabels, updateUserMediaL
                         <h4 className="font-medium">
                             Available Labels
                         </h4>
-                        <ul className="max-h-50 overflow-y-auto">
+                        <ul className="max-h-50 overflow-y-auto scrollbar-thin">
                             {isLoading ?
                                 <LoaderCircle className="size-6 animate-spin"/>
                                 :
