@@ -64,5 +64,5 @@ export const adminErrorLogsOptions = queryOptions({
 export const adminUserTracking = (userId: number) => queryOptions({
     queryKey: ["admin", "tracking", userId],
     queryFn: () => getAdminUserTracking({ data: { userId } }),
-    staleTime: 1 * 60 * 1000,
+    staleTime: 60 * 1000,
 });

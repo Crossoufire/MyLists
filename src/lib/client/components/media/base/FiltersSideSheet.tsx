@@ -1,21 +1,20 @@
 import React, {useRef, useState} from "react";
 import {useQuery} from "@tanstack/react-query";
-import {Input} from "@/lib/client/components/ui/input";
 import {Badge} from "@/lib/client/components/ui/badge";
 import {Button} from "@/lib/client/components/ui/button";
 import {MediaListArgs} from "@/lib/types/zod.schema.types";
 import {useParams, useSearch} from "@tanstack/react-router";
 import {Checkbox} from "@/lib/client/components/ui/checkbox";
-import {useSearchContainer} from "@/lib/client/hooks/use-search-container";
 import {GamesPlatformsEnum, JobType, Status} from "@/lib/utils/enums";
 import {mediaConfig} from "@/lib/client/components/media/media-config";
 import {ProfileIcon} from "@/lib/client/components/general/ProfileIcon";
+import {SearchInput} from "@/lib/client/components/general/SearchInput";
+import {useSearchContainer} from "@/lib/client/hooks/use-search-container";
 import {SearchContainer} from "@/lib/client/components/general/SearchContainer";
-import {ChevronDown, ChevronUp, CircleHelp, LoaderCircle, Search, X} from "lucide-react";
+import {ChevronDown, ChevronUp, CircleHelp, LoaderCircle, X} from "lucide-react";
 import {Popover, PopoverContent, PopoverTrigger} from "@/lib/client/components/ui/popover";
 import {filterSearchOptions, listFiltersOptions} from "@/lib/client/react-query/query-options/query-options";
 import {Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle} from "@/lib/client/components/ui/sheet";
-import {SearchInput} from "@/lib/client/components/general/SearchInput";
 
 
 interface FiltersSideSheetProps {
@@ -328,6 +327,7 @@ const SearchFilter = ({ filterKey, job, title, dataList, registerChange }: Searc
                 <SearchContainer
                     error={error}
                     isOpen={isOpen}
+                    search={search}
                     className="w-70"
                     isPending={isLoading}
                     debouncedSearch={debouncedSearch}

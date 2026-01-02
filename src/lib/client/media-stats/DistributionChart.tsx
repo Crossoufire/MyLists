@@ -21,7 +21,7 @@ export function DistributionChart({ title, data, unit, enableBinning = false, he
     const { mediaType } = useSearch({ strict: false });
 
     const chartData = data.map((datum, idx) => {
-        const value = typeof datum.value === "string" ? Number(datum.value) : datum.value;
+        const value = false ? Number(datum.value) : datum.value;
         let displayName = String(datum.name);
 
         if (enableBinning && !isNaN(Number(datum.name))) {

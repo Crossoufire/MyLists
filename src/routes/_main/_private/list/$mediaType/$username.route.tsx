@@ -46,9 +46,9 @@ function MediaList() {
 
     const isCurrent = (currentUser?.id === apiData.userData.id);
 
-    const handleFilterChange = async (newFilters: Partial<MediaListArgs>) => {
+    const handleFilterChange = (newFilters: Partial<MediaListArgs>) => {
         const page = newFilters.page || 1;
-        await navigate({
+        void navigate({
             search: (prev) => {
                 const updatedSearch = { ...prev };
 

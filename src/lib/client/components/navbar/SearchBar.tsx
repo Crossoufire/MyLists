@@ -1,14 +1,14 @@
 import {cn} from "@/lib/utils/helpers";
+import {useEffect, useState} from "react";
 import {useQuery} from "@tanstack/react-query";
 import {useAuth} from "@/lib/client/hooks/use-auth";
 import {Input} from "@/lib/client/components/ui/input";
-import React, {useEffect, useRef, useState} from "react";
 import {Button} from "@/lib/client/components/ui/button";
 import {ApiProviderType, MediaType} from "@/lib/utils/enums";
 import {Separator} from "@/lib/client/components/ui/separator";
 import {capitalize, formatDateTime} from "@/lib/utils/formating";
-import {useSearchContainer} from "@/lib/client/hooks/use-search-container";
 import {ProfileIcon} from "@/lib/client/components/general/ProfileIcon";
+import {useSearchContainer} from "@/lib/client/hooks/use-search-container";
 import {ChevronLeft, ChevronRight, Loader2, Search, X} from "lucide-react";
 import {SearchContainer} from "@/lib/client/components/general/SearchContainer";
 import {Link, LinkProps, useRouter, useRouterState} from "@tanstack/react-router";
@@ -103,13 +103,14 @@ export const SearchBar = ({ setMobileMenu }: SearchBarProps) => {
 
             <SearchContainer
                 error={error}
+                search={search}
                 isOpen={isOpen}
-                className="max-w-md"
                 isPending={isFetching}
+                className="max-w-md -mt-2"
                 debouncedSearch={debouncedSearch}
                 hasResults={!!searchResults?.data.length}
             >
-                <div className="flex flex-col overflow-y-auto scrollbar-thin max-h-88">
+                <div className="flex flex-col overflow-y-auto scrollbar-thin max-h-91">
                     {searchResults?.data.map((item) =>
                         <SearchComponent
                             item={item}
@@ -207,11 +208,11 @@ const SearchComponent = ({ item, resetSearch, setMobileMenu }: SearchComponentPr
                             </div>
                         }
                     </div>
-                    <div className={cn("transition-opacity duration-200 min-w-0 flex-1", isLoadingItem && "opacity-40")}>
+                    <div className={cn("flex-1 min-w-0 transition-opacity duration-200", isLoadingItem && "opacity-40")}>
                         <div className="font-semibold mb-2 line-clamp-2">
                             {item.name}
                         </div>
-                        <div className="text-neutral-300">
+                        <div className="text-primary">
                             {capitalize(item.itemType)}
                         </div>
                         <div className="text-muted-foreground text-sm">

@@ -23,7 +23,14 @@ export function useSearchContainer({ onReset, debounceMs = 400 }: UseSearchLogic
 
     const handleInputChange = (value: string) => {
         setSearch(value);
-        setIsOpen(true);
+        if (value.length > 0) {
+            setIsOpen(true);
+        }
+    };
+
+    const selectValue = (value: string) => {
+        setSearch(value);
+        setIsOpen(false);
     };
 
     useOnClickOutside(containerRef, reset);
@@ -33,6 +40,7 @@ export function useSearchContainer({ onReset, debounceMs = 400 }: UseSearchLogic
         search,
         isOpen,
         setIsOpen,
+        selectValue,
         containerRef,
         debouncedSearch,
         setSearch: handleInputChange,

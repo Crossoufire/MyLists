@@ -35,7 +35,7 @@ export const useSearchNavigate = <T extends BaseSearchParams>({ search, delay = 
     };
 
     const updateFilters = (updater: Partial<T>) => {
-        navigate({ search: (prev) => ({ ...prev, ...updater }), replace: true, ...options });
+        void navigate({ search: (prev) => ({ ...prev, ...updater }), replace: true, ...options });
     };
 
     useDebounceCallback(localSearch, delay, () => {

@@ -42,11 +42,7 @@ function UserTrackingPage() {
             />
 
             <div className="space-y-6">
-                {!selectedUser ?
-                    <UserSearch
-                        onSelectUser={setSelectedUser}
-                    />
-                    :
+                {selectedUser ?
                     <>
                         <SelectedUserBanner
                             user={selectedUser}
@@ -56,6 +52,10 @@ function UserTrackingPage() {
                             userId={selectedUser.id as number}
                         />
                     </>
+                    :
+                    <UserSearch
+                        onSelectUser={setSelectedUser}
+                    />
                 }
             </div>
         </DashboardShell>
@@ -84,7 +84,13 @@ function UserSearch({ onSelectUser }: { onSelectUser: (user: ProviderSearchResul
                 />
             </div>
 
-            <SearchContainer isOpen={isOpen} isPending={isLoading} hasResults={results.length > 0} debouncedSearch={debouncedSearch}>
+            <SearchContainer
+                search={search}
+                isOpen={isOpen}
+                isPending={isLoading}
+                hasResults={results.length > 0}
+                debouncedSearch={debouncedSearch}
+            >
                 <div className="flex flex-col overflow-y-auto scrollbar-thin max-h-60">
                     {results.map((user) =>
                         <button

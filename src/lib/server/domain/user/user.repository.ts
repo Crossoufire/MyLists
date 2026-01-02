@@ -222,15 +222,15 @@ export class UserRepository {
             where: and(eq(followers.followerId, userId), eq(followers.followedId, followedId)),
         });
 
-        if (!currentFollow) {
-            await getDbClient()
-                .insert(followers)
-                .values({ followerId: userId, followedId: followedId });
-        }
-        else {
+        if (currentFollow) {
             await getDbClient()
                 .delete(followers)
                 .where(and(eq(followers.followerId, userId), eq(followers.followedId, followedId)));
+        }
+        else {
+            await getDbClient()
+                .insert(followers)
+                .values({ followerId: userId, followedId: followedId });
         }
     }
 

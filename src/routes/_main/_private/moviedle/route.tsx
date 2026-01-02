@@ -28,7 +28,7 @@ export const Route = createFileRoute("/_main/_private/moviedle")({
 function MediadlePage() {
     const makeGuessMutation = useMoviedleGuessMutation();
     const mediadleData = useSuspenseQuery(dailyMediadleOptions).data;
-    const { search, setSearch, debouncedSearch, isOpen, reset, containerRef } = useSearchContainer();
+    const { search, setSearch, selectValue, debouncedSearch, isOpen, reset, containerRef } = useSearchContainer();
     const { data: suggestions = [], isLoading, error } = useQuery(mediadleSuggestionsOptions(debouncedSearch));
 
     const attemptsData = mediadleData.stats?.attempts ?? [];
@@ -41,8 +41,7 @@ function MediadlePage() {
     const maxFreq = frequencies.length > 0 ? Math.max(...frequencies) : 0;
 
     const handleSearchClick = (input: string) => {
-        reset();
-        setSearch(input);
+        selectValue(input);
     };
 
     const handleMutation = (guessValue: string) => {
@@ -146,6 +145,7 @@ function MediadlePage() {
                                             <SearchContainer
                                                 error={error}
                                                 position="top"
+                                                search={search}
                                                 isOpen={isOpen}
                                                 className="max-w-100"
                                                 isPending={isLoading}

@@ -107,7 +107,7 @@ export class GamesRepository extends BaseRepository<GamesSchemaConfig> {
     }
 
     getCompanyAchievementCte(achievement: Achievement, userId?: number) {
-        const isDevCompany = achievement.value == "developer";
+        const isDevCompany = achievement.value === "developer";
 
         const subQ = getDbClient()
             .select({

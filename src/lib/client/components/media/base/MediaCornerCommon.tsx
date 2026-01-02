@@ -1,4 +1,4 @@
-import {Check, CircleCheck} from "lucide-react";
+import {CircleCheck} from "lucide-react";
 
 
 export const MediaCornerCommon = ({ isCommon }: { isCommon?: boolean }) => {

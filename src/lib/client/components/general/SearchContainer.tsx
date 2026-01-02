@@ -5,6 +5,7 @@ import {EmptyState} from "@/lib/client/components/general/EmptyState";
 
 
 interface SearchContainerProps {
+    search: string;
     isOpen: boolean;
     isPending: boolean;
     className?: string;
@@ -18,9 +19,12 @@ interface SearchContainerProps {
 
 
 export const SearchContainer = (props: SearchContainerProps) => {
-    const { isOpen, isPending, hasResults, debouncedSearch, children, className, error, emptyMessage, position = "bottom" } = props;
+    const {
+        search, isOpen, isPending, hasResults, debouncedSearch,
+        children, className, error, emptyMessage, position = "bottom"
+    } = props;
 
-    if (!isOpen || debouncedSearch.length < 2) {
+    if (!isOpen || search.length === 0 || debouncedSearch.length < 2) {
         return null;
     }
 

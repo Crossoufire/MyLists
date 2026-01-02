@@ -1,12 +1,11 @@
-import {LayoutGrid} from "lucide-react";
 import {MediaType} from "@/lib/utils/enums";
 import {TabValue} from "@/lib/types/stats.types";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {createFileRoute} from "@tanstack/react-router";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
+import {MainThemeIcon} from "@/lib/client/components/general/MainIcons";
 import {DashboardContent} from "@/lib/client/media-stats/DashboardContent";
 import {TabHeader, TabItem} from "@/lib/client/components/general/TabHeader";
-import {MainThemeIcon} from "@/lib/client/components/general/MainIcons";
 import {platformStatsOptions} from "@/lib/client/react-query/query-options/query-options";
 
 

@@ -11,7 +11,7 @@ export class FormattedError extends Error {
             Error.captureStackTrace(this, FormattedError);
         }
     };
-};
+}
 
 
 export const formattedErrorAdapter = createSerializationAdapter({
@@ -30,7 +30,7 @@ export class FormZodError extends Error {
         this.name = "FormZodError";
         this.issues = zodError.issues;
     };
-};
+}
 
 
 export const formZodErrorAdapter = createSerializationAdapter({

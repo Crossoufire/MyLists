@@ -56,6 +56,7 @@ export const TrendHero = ({ trend }: { trend: TrendsMedia }) => {
                 hidden md:block transform rotate-3 group-hover:rotate-0 transition-transform duration-500">
                 <img
                     src={trend.posterPath}
+                    alt={trend.displayName}
                     className="w-full h-full object-cover rounded-md"
                 />
             </div>

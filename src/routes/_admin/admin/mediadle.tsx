@@ -2,16 +2,16 @@ import React, {useMemo} from "react";
 import {formatDateTime} from "@/lib/utils/formating";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {SearchType} from "@/lib/types/zod.schema.types";
-import {createFileRoute, Link, useSearch} from "@tanstack/react-router";
+import {createFileRoute, Link} from "@tanstack/react-router";
 import {SearchInput} from "@/lib/client/components/general/SearchInput";
 import {ProfileIcon} from "@/lib/client/components/general/ProfileIcon";
+import {useSearchNavigate} from "@/lib/client/hooks/use-search-navigate";
 import {DashboardShell} from "@/lib/client/components/admin/DashboardShell";
 import {DashboardHeader} from "@/lib/client/components/admin/DashboardHeader";
 import {TablePagination} from "@/lib/client/components/general/TablePagination";
 import {adminMediadleOptions} from "@/lib/client/react-query/query-options/admin-options";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/lib/client/components/ui/table";
 import {ColumnDef, flexRender, getCoreRowModel, OnChangeFn, PaginationState, useReactTable} from "@tanstack/react-table";
-import {useSearchNavigate} from "@/lib/client/hooks/use-search-navigate";
 
 
 export const Route = createFileRoute("/_admin/admin/mediadle")({

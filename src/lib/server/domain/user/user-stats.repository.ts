@@ -109,12 +109,14 @@ export class UserStatsRepository {
 
         // Dynamically create normalized score columns
         const normalizedScoreColumns: Record<string, SQL.Aliased<number>> = {};
-        mediaTypes.forEach((mt) => normalizedScoreColumns[`${mt}Score`] = sql<number>`sum(
-            CASE
-                WHEN ${umsAlias.mediaType} = ${mt} AND ${umsAlias.active} = 1 AND ${maxTimePerMedia.maxTime} > 0
-                THEN CAST(${umsAlias.timeSpent} AS REAL) / ${maxTimePerMedia.maxTime}
-            ELSE 0
-        END)`.as(`${mt}_score`));
+        mediaTypes.forEach((mt) => {
+            normalizedScoreColumns[`${mt}Score`] = sql<number>`sum(
+                CASE
+                    WHEN ${umsAlias.mediaType} = ${mt} AND ${umsAlias.active} = 1 AND ${maxTimePerMedia.maxTime} > 0
+                    THEN CAST(${umsAlias.timeSpent} AS REAL) / ${maxTimePerMedia.maxTime}
+                ELSE 0
+            END)`.as(`${mt}_score`)
+        });
 
         // Dynamically construct sum expression for `total_score`
         const totalScoreSumExpression = mediaTypes.map((mt) =>

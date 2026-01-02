@@ -56,6 +56,7 @@ export const Navbar = () => {
                     <div className="flex items-center justify-between h-16 gap-4">
                         <div className="flex shrink-0 items-center gap-2">
                             <img
+                                alt="MyLists logo"
                                 className="size-5"
                                 src="/logo192.png"
                             />
@@ -92,6 +93,7 @@ export const Navbar = () => {
 
                     <div className="flex shrink-0 items-center gap-2">
                         <img
+                            alt="MyLists logo"
                             className="size-5"
                             src="/logo192.png"
                         />

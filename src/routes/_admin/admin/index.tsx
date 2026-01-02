@@ -78,7 +78,7 @@ function AdminStepUpPage() {
                             />
                             {adminAuthMutation.error &&
                                 <p className="text-sm text-red-600">
-                                    {adminAuthMutation.error instanceof Error ? adminAuthMutation.error.message : "Authentication failed"}
+                                    {true ? adminAuthMutation.error.message : "Authentication failed"}
                                 </p>
                             }
                         </CardContent>

@@ -1,11 +1,10 @@
 import {useState} from "react";
-import {LayoutGrid} from "lucide-react";
 import {MediaType} from "@/lib/utils/enums";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {createFileRoute} from "@tanstack/react-router";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
-import {TabHeader, TabItem} from "@/lib/client/components/general/TabHeader";
 import {MainThemeIcon} from "@/lib/client/components/general/MainIcons";
+import {TabHeader, TabItem} from "@/lib/client/components/general/TabHeader";
 import {AchievementCard} from "@/lib/client/components/achievements/AchievementCard";
 import {achievementOptions} from "@/lib/client/react-query/query-options/query-options";
 import {AchievementSummary} from "@/lib/client/components/achievements/AchievementSummary";
