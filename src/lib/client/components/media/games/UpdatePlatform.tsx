@@ -1,11 +1,6 @@
-import {useState} from "react";
-import {cn} from "@/lib/utils/helpers";
-import {Check, ChevronDown} from "lucide-react";
-import {Button} from "@/lib/client/components/ui/button";
 import {GamesPlatformsEnum, UpdateType} from "@/lib/utils/enums";
-import {Popover, PopoverContent, PopoverTrigger} from "@/lib/client/components/ui/popover";
 import {useUpdateUserMediaMutation} from "@/lib/client/react-query/query-mutations/user-media.mutations";
-import {Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList} from "@/lib/client/components/ui/command";
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/lib/client/components/ui/select";
 
 
 interface UpdatePlatformProps {
@@ -15,65 +10,28 @@ interface UpdatePlatformProps {
 
 
 export const UpdatePlatform = ({ platform, updatePlatform }: UpdatePlatformProps) => {
-    const handleSelect = (platform: GamesPlatformsEnum) => {
-        updatePlatform.mutate({ payload: { platform: platform, type: UpdateType.PLATFORM } });
+    const allPlatforms = ["-", ...Object.values(GamesPlatformsEnum)];
+
+    const handleSelect = (value: string) => {
+        const valueToSend = value === "-" ? null : value as GamesPlatformsEnum;
+        updatePlatform.mutate({ payload: { platform: valueToSend, type: UpdateType.PLATFORM } });
     };
 
     return (
         <div className="flex justify-between items-center">
             <div>Platform</div>
-            <PlatformComboBox
-                resetValue={platform}
-                callback={handleSelect}
-                isPending={updatePlatform.isPending}
-            />
+            <Select value={platform?.toString() ?? "-"} onValueChange={handleSelect} disabled={updatePlatform.isPending}>
+                <SelectTrigger size="sm" className="w-34">
+                    <SelectValue/>
+                </SelectTrigger>
+                <SelectContent className="max-h-73 overflow-y-auto scrollbar-thin">
+                    {allPlatforms?.map((plat) =>
+                        <SelectItem key={plat} value={plat}>
+                            {plat}
+                        </SelectItem>
+                    )}
+                </SelectContent>
+            </Select>
         </div>
-    );
-};
-
-
-const PlatformComboBox = ({ resetValue = "", callback, isPending }: any) => {
-    const [open, setOpen] = useState(false);
-    const allPlatforms = Object.values(GamesPlatformsEnum).map(p => ({ value: p, label: p }));
-    const displayedLabel = allPlatforms.find((pt) => pt.value === resetValue)?.label || "-";
-
-    const onSelect = (currentValue: GamesPlatformsEnum) => {
-        setOpen(false);
-        if (resetValue !== currentValue) {
-            callback(currentValue);
-        }
-    };
-
-    return (
-        <Popover open={open} onOpenChange={setOpen}>
-            <PopoverTrigger asChild>
-                <Button
-                    role="combobox"
-                    variant="ghost"
-                    aria-expanded={open}
-                    disabled={isPending}
-                    className="w-34 justify-between font-normal bg-accent/30 border h-8"
-                >
-                    {displayedLabel}
-                    <ChevronDown className="size-4 opacity-30"/>
-                </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-40 p-0" align="end">
-                <Command className="overflow-y-auto max-h-67">
-                    <CommandInput placeholder="Search..." className="h-9"/>
-                    <CommandList>
-                        <CommandEmpty>No results</CommandEmpty>
-                        <CommandGroup>
-                            {allPlatforms.map(pt =>
-                                <CommandItem key={pt.value} value={pt.value} onSelect={() => onSelect(pt.value)}>
-                                    {pt.label}
-                                    <Check className={cn("ml-auto size-4", resetValue === pt.value ? "opacity-100" : "opacity-0")}/>
-                                </CommandItem>
-                            )}
-                        </CommandGroup>
-                    </CommandList>
-                </Command>
-            </PopoverContent>
-        </Popover>
     );
 };

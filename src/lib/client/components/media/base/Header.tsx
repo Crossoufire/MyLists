@@ -2,9 +2,11 @@ import React from "react";
 import {MediaType} from "@/lib/utils/enums";
 import {capitalize} from "@/lib/utils/formating";
 import {Link, useSearch} from "@tanstack/react-router";
+import {SearchType} from "@/lib/types/zod.schema.types";
 import {Button} from "@/lib/client/components/ui/button";
 import {MediaLevel} from "@/lib/client/components/general/MediaLevel";
 import {SearchInput} from "@/lib/client/components/general/SearchInput";
+import {useSearchNavigate} from "@/lib/client/hooks/use-search-navigate";
 import {ListPagination, ListUserData} from "@/lib/types/query.options.types";
 import {ArrowUpDown, Award, ChartLine, EllipsisVertical, Filter, Grid2X2, List, User} from "lucide-react";
 import {
@@ -26,13 +28,13 @@ interface HeaderProps {
     onFilterClick: () => void;
     pagination: ListPagination;
     onSortChange: ({ sort }: { sort: string }) => void;
-    onSearchEnter: ({ search }: { search: string }) => void;
 }
 
 
 export const Header = (props: HeaderProps) => {
     const { search } = useSearch({ strict: false });
-    const { username, mediaType, isGrid, userData, pagination, onGridClick, onFilterClick, onSortChange, onSearchEnter } = props;
+    const { localSearch, handleInputChange } = useSearchNavigate<SearchType>({ search: search ?? "" });
+    const { username, mediaType, isGrid, userData, pagination, onGridClick, onFilterClick, onSortChange } = props;
     const timeSpent = userData?.userMediaSettings.find((s) => s.mediaType === mediaType)?.timeSpent ?? 0;
 
     return (
@@ -49,9 +51,9 @@ export const Header = (props: HeaderProps) => {
             <div className="flex flex-wrap gap-3">
                 <SearchInput
                     className="w-62"
-                    value={search ?? ""}
+                    value={localSearch}
                     placeholder="Search Name..."
-                    onChange={(val) => onSearchEnter({ search: val })}
+                    onChange={handleInputChange}
                 />
                 <Button variant="outline" onClick={onFilterClick}>
                     <Filter className="size-4"/> Filters

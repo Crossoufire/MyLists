@@ -1,0 +1,40 @@
+import {useRef, useState} from "react";
+import {useDebounce} from "@/lib/client/hooks/use-debounce";
+import {useOnClickOutside} from "@/lib/client/hooks/use-clicked-outside";
+
+
+interface UseSearchLogicOptions {
+    debounceMs?: number;
+    onReset?: () => void;
+}
+
+
+export function useSearchContainer({ onReset, debounceMs = 400 }: UseSearchLogicOptions = {}) {
+    const [search, setSearch] = useState("");
+    const [isOpen, setIsOpen] = useState(false);
+    const debouncedSearch = useDebounce(search, debounceMs);
+    const containerRef = useRef<HTMLDivElement>(null);
+
+    const reset = () => {
+        setSearch("");
+        setIsOpen(false);
+        onReset?.();
+    };
+
+    const handleInputChange = (value: string) => {
+        setSearch(value);
+        setIsOpen(true);
+    };
+
+    useOnClickOutside(containerRef, reset);
+
+    return {
+        reset,
+        search,
+        isOpen,
+        setIsOpen,
+        containerRef,
+        debouncedSearch,
+        setSearch: handleInputChange,
+    };
+}

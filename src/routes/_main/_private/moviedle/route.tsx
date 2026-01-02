@@ -1,18 +1,20 @@
-import React, {useState} from "react";
 import {MediaType} from "@/lib/utils/enums";
-import {Input} from "@/lib/client/components/ui/input";
+import {PartyPopper, ThumbsDown} from "lucide-react";
 import {Button} from "@/lib/client/components/ui/button";
-import {useDebounce} from "@/lib/client/hooks/use-debounce";
 import {createFileRoute, Link} from "@tanstack/react-router";
 import {useQuery, useSuspenseQuery} from "@tanstack/react-query";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
-import {EmptyState} from "@/lib/client/components/general/EmptyState";
-import {Loader2, PartyPopper, Search, SearchX, ThumbsDown} from "lucide-react";
+import {ProfileIcon} from "@/lib/client/components/general/ProfileIcon";
+import {SearchInput} from "@/lib/client/components/general/SearchInput";
+import {useSearchContainer} from "@/lib/client/hooks/use-search-container";
 import {CountdownTimer} from "@/lib/client/components/moviedle/CountdownTimer";
+import {SearchContainer} from "@/lib/client/components/general/SearchContainer";
 import {SimpleStatCard} from "@/lib/client/components/user-profile/SimpleStatCard";
 import {Card, CardContent, CardHeader, CardTitle} from "@/lib/client/components/ui/card";
 import {useMoviedleGuessMutation} from "@/lib/client/react-query/query-mutations/mediadle.mutations";
 import {dailyMediadleOptions, mediadleSuggestionsOptions} from "@/lib/client/react-query/query-options/query-options";
+import React from "react";
+import {cn} from "@/lib/utils/helpers";
 
 
 export const Route = createFileRoute("/_main/_private/moviedle")({
@@ -24,15 +26,12 @@ export const Route = createFileRoute("/_main/_private/moviedle")({
 
 
 function MediadlePage() {
-    const [guess, setGuess] = useState("");
     const makeGuessMutation = useMoviedleGuessMutation();
-    const debouncedSearch = useDebounce(guess, 350);
     const mediadleData = useSuspenseQuery(dailyMediadleOptions).data;
-    const [showSuggestions, setShowSuggestions] = useState(false);
-    const { data = [], isFetching } = useQuery(mediadleSuggestionsOptions(debouncedSearch));
+    const { search, setSearch, debouncedSearch, isOpen, reset, containerRef } = useSearchContainer();
+    const { data: suggestions = [], isLoading, error } = useQuery(mediadleSuggestionsOptions(debouncedSearch));
 
     const attemptsData = mediadleData.stats?.attempts ?? [];
-
     const frequencyMap = attemptsData.reduce<Record<number, number>>((acc, curr) => {
         acc[curr.attempts] = (acc[curr.attempts] || 0) + 1;
         return acc;
@@ -41,28 +40,20 @@ function MediadlePage() {
     const frequencies = Object.values(frequencyMap);
     const maxFreq = frequencies.length > 0 ? Math.max(...frequencies) : 0;
 
-    const onInputChange = (ev: React.ChangeEvent<HTMLInputElement>) => {
-        setGuess(ev.target.value);
-        setShowSuggestions(true);
-    };
-
-    const onClickSuggestion = (suggestionName: string) => {
-        setGuess(suggestionName);
-        setShowSuggestions(false);
+    const handleSearchClick = (input: string) => {
+        reset();
+        setSearch(input);
     };
 
     const handleMutation = (guessValue: string) => {
         makeGuessMutation.mutate({ data: { guess: guessValue } }, {
-            onSuccess: () => {
-                setGuess("");
-                setShowSuggestions(false);
-            },
+            onSuccess: () => reset(),
         });
     };
 
     const onGuessClick = () => {
-        if (!guess) return;
-        handleMutation(guess);
+        if (!search) return;
+        handleMutation(search);
     };
 
     const onSkipClick = () => {
@@ -138,63 +129,54 @@ function MediadlePage() {
                                                     return (
                                                         <div
                                                             key={idx}
-                                                            className={`flex-1 rounded-sm transition-colors duration-300 
-                                                            ${isUsed ? "bg-destructive" : "bg-neutral-700"}`}
+                                                            className={cn("flex-1 rounded-sm transition-colors " +
+                                                                "bg-muted-foreground/50 duration-300", isUsed && "bg-destructive")}
                                                         />
                                                     );
                                                 })}
                                             </div>
                                         </div>
-                                        <div className="relative flex items-center bg-background border rounded-lg transition-all
-                                        duration-200 focus-within:ring-2 focus-within:ring-app-accent/50
-                                        focus-within:border-app-accent">
-                                            <Input
-                                                type="text"
-                                                value={guess}
-                                                onChange={onInputChange}
+                                        <div ref={containerRef} className="relative">
+                                            <SearchInput
+                                                value={search}
+                                                className="max-w-100"
                                                 placeholder="Search a movie..."
-                                                disabled={mediadleData.completed}
-                                                className="flex-1 text-sm border-none focus:outline-none focus:ring-0
-                                                    focus:border-none focus-visible:border-none focus-visible:ring-0"
+                                                onChange={(ev) => setSearch(ev.target.value)}
                                             />
-                                            <div className="px-3 text-muted-foreground">
-                                                {(isFetching && guess.trim().length >= 2) ?
-                                                    <Loader2 className="size-4 animate-spin text-app-accent"/>
-                                                    :
-                                                    <Search className="size-4"/>
-                                                }
-                                            </div>
-                                            {(showSuggestions && debouncedSearch.length >= 2) &&
-                                                <div className="absolute z-50 w-full bg-popover border rounded-lg shadow-2xl
-                                                    max-h-60 overflow-y-auto bottom-full mb-2 scrollbar-thin">
-                                                    {data.length > 0 ?
-                                                        data.map((suggestion, idx) =>
-                                                            <div
-                                                                key={idx}
-                                                                role="button"
-                                                                onClick={() => onClickSuggestion(suggestion.name)}
-                                                                className="px-4 py-2 hover:bg-app-accent/30 hover:text-primary
-                                                                cursor-pointer transition-colors border-b border-slate-800
-                                                                last:border-none"
-                                                            >
-                                                                {suggestion.name}
-                                                            </div>
-                                                        )
-                                                        :
-                                                        <EmptyState
-                                                            icon={SearchX}
-                                                            className="py-6"
-                                                            message={`No movies found for '${debouncedSearch}'`}
-                                                        />
-                                                    }
+                                            <SearchContainer
+                                                error={error}
+                                                position="top"
+                                                isOpen={isOpen}
+                                                className="max-w-100"
+                                                isPending={isLoading}
+                                                debouncedSearch={debouncedSearch}
+                                                hasResults={!!suggestions?.length}
+                                            >
+                                                <div className="flex flex-col overflow-y-auto scrollbar-thin max-h-60">
+                                                    {suggestions?.map((item, idx) =>
+                                                        <button
+                                                            key={idx}
+                                                            onClick={() => handleSearchClick(item.name!)}
+                                                            className="flex items-center gap-2 px-3 py-2 hover:bg-accent transition-colors"
+                                                        >
+                                                            <ProfileIcon
+                                                                fallbackSize="text-xs"
+                                                                className="size-9 border"
+                                                                user={{ image: null, name: item.name! }}
+                                                            />
+                                                            <span className="text-left">
+                                                                {item.name}
+                                                            </span>
+                                                        </button>
+                                                    )}
                                                 </div>
-                                            }
+                                            </SearchContainer>
                                         </div>
                                         <div className="flex gap-2">
                                             <Button className="flex-1" variant="emeraldy" onClick={onSkipClick}>
                                                 Skip
                                             </Button>
-                                            <Button className="flex-2" onClick={onGuessClick} disabled={!guess}>
+                                            <Button className="flex-2" onClick={onGuessClick} disabled={!search}>
                                                 Submit Guess
                                             </Button>
                                         </div>
@@ -238,7 +220,7 @@ function MediadlePage() {
                         <div className="space-y-3">
                             {[1, 2, 3, 4, 5].map((num) => {
                                 const count = frequencyMap[num] ?? 0;
-                                const percentage = maxFreq > 0 ? (count / maxFreq) * 100 * 0.9 : 0;
+                                const percentage = maxFreq > 0 ? (count / maxFreq) * 100 * 0.92 : 0;
 
                                 return (
                                     <div key={num} className="flex items-center gap-3 text-sm">
@@ -248,7 +230,7 @@ function MediadlePage() {
                                         <div className="flex-1 h-6 bg-popover rounded-r-md overflow-hidden flex items-center">
                                             <div
                                                 style={{ width: `${Math.max(percentage, 8)}%` }}
-                                                className="h-full transition-all duration-500 bg-app-accent/50"
+                                                className="h-full transition-all duration-500 bg-app-accent/50 rounded-r-md"
                                             />
                                             <span className="ml-2 text-xs font-bold text-primary">
                                                 {count}

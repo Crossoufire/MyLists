@@ -2,7 +2,7 @@ import React, {useMemo} from "react";
 import {formatDateTime} from "@/lib/utils/formating";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {SearchType} from "@/lib/types/zod.schema.types";
-import {createFileRoute, Link} from "@tanstack/react-router";
+import {createFileRoute, Link, useSearch} from "@tanstack/react-router";
 import {SearchInput} from "@/lib/client/components/general/SearchInput";
 import {ProfileIcon} from "@/lib/client/components/general/ProfileIcon";
 import {DashboardShell} from "@/lib/client/components/admin/DashboardShell";
@@ -11,6 +11,7 @@ import {TablePagination} from "@/lib/client/components/general/TablePagination";
 import {adminMediadleOptions} from "@/lib/client/react-query/query-options/admin-options";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/lib/client/components/ui/table";
 import {ColumnDef, flexRender, getCoreRowModel, OnChangeFn, PaginationState, useReactTable} from "@tanstack/react-table";
+import {useSearchNavigate} from "@/lib/client/hooks/use-search-navigate";
 
 
 export const Route = createFileRoute("/_admin/admin/mediadle")({
@@ -28,21 +29,17 @@ const DEFAULT = { search: "", page: 1 } satisfies SearchType;
 
 function AdminMediadlePage() {
     const filters = Route.useSearch();
-    const navigate = Route.useNavigate();
     const { search = DEFAULT.search } = filters;
     const apiData = useSuspenseQuery(adminMediadleOptions(filters)).data;
     const paginationState = { pageIndex: filters?.page ? (filters.page - 1) : 0, pageSize: 25 };
-
-    const updateFilters = (updater: Partial<SearchType>) => {
-        navigate({ search: (prev) => ({ ...prev, ...updater }), replace: true });
-    };
+    const { localSearch, handleInputChange, updateFilters } = useSearchNavigate<SearchType>({ search });
 
     const onPaginationChange: OnChangeFn<PaginationState> = (updaterOrValue) => {
         const newPagination = typeof updaterOrValue === "function" ? updaterOrValue(paginationState) : updaterOrValue;
         updateFilters({ search: search, page: newPagination.pageIndex + 1 });
     };
 
-    const mediadleColumns = useMemo((): ColumnDef<typeof apiData.items[0]>[] => [
+    const mediadleColumns: ColumnDef<typeof apiData.items[0]>[] = useMemo(() => [
         {
             accessorKey: "name",
             header: "Username",
@@ -140,10 +137,10 @@ function AdminMediadlePage() {
             />
             <div className="flex items-center justify-between mb-3 max-sm:flex-col max-sm:items-start max-sm:justify-center">
                 <SearchInput
-                    value={search}
                     className="w-64"
+                    value={localSearch}
+                    onChange={handleInputChange}
                     placeholder="Search by name..."
-                    onChange={(val) => updateFilters({ search: val, page: 1 })}
                 />
             </div>
             <div className="rounded-md border p-3 pt-0 overflow-x-auto">

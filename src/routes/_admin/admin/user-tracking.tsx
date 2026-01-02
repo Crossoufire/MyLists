@@ -1,24 +1,25 @@
 import React, {useMemo, useState} from "react";
 import {useQuery} from "@tanstack/react-query";
 import {capitalize} from "@/lib/utils/formating";
-import {Input} from "@/lib/client/components/ui/input";
 import {Label} from "@/lib/client/components/ui/label";
 import {createFileRoute} from "@tanstack/react-router";
 import {Button} from "@/lib/client/components/ui/button";
 import {getThemeColor} from "@/lib/utils/colors-and-icons";
-import {useDebounce} from "@/lib/client/hooks/use-debounce";
 import {ProviderSearchResult} from "@/lib/types/provider.types";
 import {ApiProviderType, MediaType, Status} from "@/lib/utils/enums";
+import {SearchInput} from "@/lib/client/components/general/SearchInput";
 import {ProfileIcon} from "@/lib/client/components/general/ProfileIcon";
+import {MainThemeIcon} from "@/lib/client/components/general/MainIcons";
+import {useSearchContainer} from "@/lib/client/hooks/use-search-container";
 import {DashboardShell} from "@/lib/client/components/admin/DashboardShell";
 import {Tabs, TabsList, TabsTrigger} from "@/lib/client/components/ui/tabs";
 import {DashboardHeader} from "@/lib/client/components/admin/DashboardHeader";
-import {MainThemeIcon} from "@/lib/client/components/general/MainIcons";
+import {SearchContainer} from "@/lib/client/components/general/SearchContainer";
 import {navSearchOptions} from "@/lib/client/react-query/query-options/query-options";
 import {adminUserTracking} from "@/lib/client/react-query/query-options/admin-options";
 import {Card, CardAction, CardContent, CardHeader, CardTitle} from "@/lib/client/components/ui/card";
 import {Area, AreaChart, Bar, BarChart, CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis} from "recharts";
-import {ArrowDown, ArrowUp, BarChart3, Clock, Heart, Loader2, type LucideIcon, MessageSquare, Percent, Search, Star, TrendingUp, X} from "lucide-react";
+import {ArrowDown, ArrowUp, BarChart3, Clock, Heart, Loader2, LucideIcon, MessageSquare, Percent, Star, TrendingUp, X} from "lucide-react";
 
 
 type Granularity = "day" | "week" | "month";
@@ -63,64 +64,44 @@ function UserTrackingPage() {
 
 
 function UserSearch({ onSelectUser }: { onSelectUser: (user: ProviderSearchResult) => void }) {
-    const [search, setSearch] = useState("");
-    const [isOpen, setIsOpen] = useState(false);
-    const debouncedSearch = useDebounce(search, 350);
-    const { data: users = { data: [] }, isLoading } = useQuery(navSearchOptions(debouncedSearch, 1, ApiProviderType.USERS));
+    const { search, setSearch, debouncedSearch, isOpen, containerRef, reset } = useSearchContainer();
+    const { data: users, isLoading } = useQuery(navSearchOptions(debouncedSearch, 1, ApiProviderType.USERS));
+    const results = users?.data || [];
 
-    const handleSelect = (user: ProviderSearchResult) => {
-        setSearch("");
-        setIsOpen(false);
+    const handleSearchClick = (user: ProviderSearchResult) => {
         onSelectUser(user);
+        reset();
     };
 
     return (
-        <div className="relative max-w-sm">
-            <Label className="mb-2">
-                Search user
-            </Label>
+        <div className="relative max-w-xs" ref={containerRef}>
+            <Label className="mb-2">Search user</Label>
             <div className="relative">
-                <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"/>
-                <Input
+                <SearchInput
                     value={search}
-                    className="pl-9"
                     placeholder="Search by username..."
-                    onFocus={() => setIsOpen(true)}
-                    onBlur={() => setTimeout(() => setIsOpen(false), 200)}
-                    onChange={(ev) => {
-                        setIsOpen(true);
-                        setSearch(ev.target.value);
-                    }}
+                    onChange={(ev) => setSearch(ev.target.value)}
                 />
-                {isLoading &&
-                    <Loader2 className="absolute right-3 top-1/2 size-4 -translate-y-1/2 animate-spin text-muted-foreground"/>
-                }
             </div>
 
-            {isOpen && debouncedSearch && users.data.length > 0 &&
-                <div className="absolute z-10 mt-1 w-full rounded-md border bg-popover shadow-lg">
-                    {users.data.map((user) =>
+            <SearchContainer isOpen={isOpen} isPending={isLoading} hasResults={results.length > 0} debouncedSearch={debouncedSearch}>
+                <div className="flex flex-col overflow-y-auto scrollbar-thin max-h-60">
+                    {results.map((user) =>
                         <button
                             key={user.id}
-                            onMouseDown={() => handleSelect(user)}
-                            className="flex w-full items-center gap-2 px-3 py-2 text-left hover:bg-accent"
+                            onClick={() => handleSearchClick(user)}
+                            className="flex items-center gap-2 px-3 py-2 hover:bg-accent transition-colors"
                         >
                             <ProfileIcon
-                                className="size-8"
-                                fallbackSize="text-md"
-                                user={{ name: user.name, image: user.image }}
+                                user={user}
+                                fallbackSize="text-xs"
+                                className="size-9 border"
                             />
                             <span>{user.name}</span>
                         </button>
                     )}
                 </div>
-            }
-
-            {isOpen && debouncedSearch && !isLoading && users.data.length === 0 &&
-                <div className="absolute z-10 mt-1 w-full rounded-md border bg-popover p-3 text-center text-sm text-muted-foreground shadow-lg">
-                    No users found
-                </div>
-            }
+            </SearchContainer>
         </div>
     );
 }

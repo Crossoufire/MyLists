@@ -4,17 +4,15 @@ import {useAuth} from "@/lib/client/hooks/use-auth";
 import {Input} from "@/lib/client/components/ui/input";
 import React, {useEffect, useRef, useState} from "react";
 import {Button} from "@/lib/client/components/ui/button";
-import {useDebounce} from "@/lib/client/hooks/use-debounce";
 import {ApiProviderType, MediaType} from "@/lib/utils/enums";
 import {Separator} from "@/lib/client/components/ui/separator";
 import {capitalize, formatDateTime} from "@/lib/utils/formating";
-import {EmptyState} from "@/lib/client/components/general/EmptyState";
+import {useSearchContainer} from "@/lib/client/hooks/use-search-container";
 import {ProfileIcon} from "@/lib/client/components/general/ProfileIcon";
-import {useOnClickOutside} from "@/lib/client/hooks/use-clicked-outside";
+import {ChevronLeft, ChevronRight, Loader2, Search, X} from "lucide-react";
+import {SearchContainer} from "@/lib/client/components/general/SearchContainer";
 import {Link, LinkProps, useRouter, useRouterState} from "@tanstack/react-router";
-import {ChevronLeft, ChevronRight, Loader2, Search, SearchX, X} from "lucide-react";
 import {navSearchOptions} from "@/lib/client/react-query/query-options/query-options";
-import {Command, CommandEmpty, CommandItem, CommandList} from "@/lib/client/components/ui/command";
 import {Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue} from "@/lib/client/components/ui/select";
 
 
@@ -25,13 +23,10 @@ interface SearchBarProps {
 
 export const SearchBar = ({ setMobileMenu }: SearchBarProps) => {
     const { currentUser } = useAuth();
-    const commandRef = useRef(null);
     const [page, setPage] = useState(1);
-    const [search, setSearch] = useState("");
-    const [isOpen, setIsOpen] = useState(false);
-    const debouncedSearch = useDebounce(search, 350);
     const [selectOpen, setSelectOpen] = useState(false);
     const [selectDrop, setSelectDrop] = useState(currentUser?.searchSelector || ApiProviderType.TMDB);
+    const { search, setSearch, debouncedSearch, isOpen, reset, containerRef } = useSearchContainer({ onReset: () => setPage(1) });
     const { data: searchResults, isFetching, error } = useQuery(navSearchOptions(debouncedSearch, page, selectDrop));
 
     useEffect(() => {
@@ -39,27 +34,18 @@ export const SearchBar = ({ setMobileMenu }: SearchBarProps) => {
         setSelectDrop(currentUser?.searchSelector || ApiProviderType.TMDB);
     }, [currentUser?.searchSelector]);
 
-    const handleInputChange = (ev: React.ChangeEvent<HTMLInputElement>) => {
+    const handleInputChange = (ev: any) => {
         setPage(1);
-        setIsOpen(true);
         setSearch(ev.target.value);
     };
 
     const handleValueChange = (value: string) => {
-        setSearch("");
+        reset();
         setSelectDrop(value as ApiProviderType);
     };
 
-    const resetSearch = () => {
-        setPage(1);
-        setSearch("");
-        setIsOpen(false);
-    };
-
-    useOnClickOutside(commandRef, resetSearch);
-
     return (
-        <div ref={commandRef}>
+        <div ref={containerRef}>
             <div className={cn("flex items-center bg-background border rounded-lg transition-all duration-200 overflow-hidden",
                 "focus-within:ring-2 focus-within:ring-app-accent/50 focus-within:border-app-accent",
                 selectOpen ? "ring-2 ring-app-accent/50 border-app-accent" : "border"
@@ -97,71 +83,63 @@ export const SearchBar = ({ setMobileMenu }: SearchBarProps) => {
                 </Select>
                 <Input
                     value={search}
+                    inputMode="search"
                     onChange={handleInputChange}
                     placeholder="Search for media/users..."
                     className="flex-1 text-sm border-none focus:outline-none focus:ring-0
                     focus:border-none focus-visible:border-none focus-visible:ring-0 dark:bg-background"
                 />
                 <div className="px-3 text-muted-foreground">
-                    {(isFetching && search.trim().length >= 2) ?
+                    {(isFetching && debouncedSearch) ?
                         <Loader2 className="size-4 animate-spin text-app-accent"/>
                         :
                         isOpen ?
-                            <X className="size-4 cursor-pointer" onClick={resetSearch}/>
+                            <X className="size-4 cursor-pointer" onClick={reset}/>
                             :
                             <Search className="size-4"/>
                     }
                 </div>
             </div>
-            {isOpen && (debouncedSearch.length >= 2 && !isFetching) &&
-                <div className="absolute top-full mt-1 bg-background border rounded-lg shadow-2xl overflow-hidden z-60
-                animate-in fade-in zoom-in-95 duration-200 w-full md:w-sm md:left-auto">
-                    <Command shouldFilter={false}>
-                        <CommandList className="max-h-88 overflow-y-auto scrollbar-thin">
-                            {error &&
-                                <CommandEmpty className="px-3">
-                                    {error.message}
-                                </CommandEmpty>
-                            }
-                            {searchResults && searchResults.data.length === 0 &&
-                                <EmptyState
-                                    icon={SearchX}
-                                    className="py-6"
-                                    message={`No results found for '${debouncedSearch}'`}
-                                />
-                            }
-                            {searchResults && searchResults.data.length > 0 && searchResults.data.map((item) =>
-                                <SearchComponent
-                                    item={item}
-                                    key={item.id}
-                                    resetSearch={resetSearch}
-                                    setMobileMenu={setMobileMenu}
-                                />
-                            )}
-                        </CommandList>
-                        {searchResults && searchResults.data.length !== 0 &&
-                            <div className="flex justify-end gap-2 items-center p-4">
-                                <Button
-                                    size="sm"
-                                    variant="outline"
-                                    disabled={page === 1}
-                                    onClick={() => setPage((p) => Math.max(1, p - 1))}
-                                >
-                                    <ChevronLeft/>
-                                </Button>
-                                <Button
-                                    size="sm"
-                                    variant="outline"
-                                    onClick={() => setPage(page + 1)}
-                                    disabled={searchResults?.hasNextPage ? !searchResults.hasNextPage : true}
-                                >
-                                    <ChevronRight/>
-                                </Button>
-                            </div>
-                        }
-                    </Command>
+
+            <SearchContainer
+                error={error}
+                isOpen={isOpen}
+                className="max-w-md"
+                isPending={isFetching}
+                debouncedSearch={debouncedSearch}
+                hasResults={!!searchResults?.data.length}
+            >
+                <div className="flex flex-col overflow-y-auto scrollbar-thin max-h-88">
+                    {searchResults?.data.map((item) =>
+                        <SearchComponent
+                            item={item}
+                            key={item.id}
+                            resetSearch={reset}
+                            setMobileMenu={setMobileMenu}
+                        />
+                    )}
+                    {searchResults && searchResults.data.length > 0 &&
+                        <div className="flex justify-end gap-2 items-center p-4">
+                            <Button
+                                size="sm"
+                                variant="outline"
+                                disabled={page === 1}
+                                onClick={() => setPage((p) => p - 1)}
+                            >
+                                <ChevronLeft/>
+                            </Button>
+                            <Button
+                                size="sm"
+                                variant="outline"
+                                disabled={!searchResults?.hasNextPage}
+                                onClick={() => setPage((p) => p + 1)}
+                            >
+                                <ChevronRight/>
+                            </Button>
+                        </div>
+                    }
                 </div>
-            }
+            </SearchContainer>
         </div>
     );
 };
@@ -206,7 +184,7 @@ const SearchComponent = ({ item, resetSearch, setMobileMenu }: SearchComponentPr
 
     return (
         <Link {...destination} onClick={handleLinkClick} disabled={isLoading}>
-            <CommandItem key={item.id} className={cn("cursor-pointer py-2", isLoadingItem && "cursor-auto")}>
+            <div key={item.id} className={cn("cursor-pointer p-3 hover:bg-popover/50", isLoadingItem && "cursor-auto")}>
                 <div className="flex w-full gap-4 items-center">
                     <div className="relative shrink-0">
                         {item.itemType === ApiProviderType.USERS ?
@@ -241,7 +219,7 @@ const SearchComponent = ({ item, resetSearch, setMobileMenu }: SearchComponentPr
                         </div>
                     </div>
                 </div>
-            </CommandItem>
+            </div>
             <Separator className="m-0"/>
         </Link>
     );

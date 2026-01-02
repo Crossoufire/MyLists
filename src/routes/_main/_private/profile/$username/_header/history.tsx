@@ -10,6 +10,7 @@ import {PageTitle} from "@/lib/client/components/general/PageTitle";
 import {MainThemeIcon} from "@/lib/client/components/general/MainIcons";
 import {SearchInput} from "@/lib/client/components/general/SearchInput";
 import {formatDateTime, formatRelativeTime} from "@/lib/utils/formating";
+import {useSearchNavigate} from "@/lib/client/hooks/use-search-navigate";
 import {TablePagination} from "@/lib/client/components/general/TablePagination";
 import {allUpdatesOptions} from "@/lib/client/react-query/query-options/query-options";
 import {useDeleteAllUpdatesMutation} from "@/lib/client/react-query/query-mutations/user-media.mutations";
@@ -33,7 +34,6 @@ const DEFAULT = { search: "", page: 1 } satisfies SearchType;
 function AllUpdates() {
     const { currentUser } = useAuth();
     const filters = Route.useSearch();
-    const navigate = Route.useNavigate();
     const { username } = Route.useParams();
     const isCurrent = (currentUser?.name === username);
     const [rowSelected, setRowSelected] = useState({});
@@ -42,7 +42,20 @@ function AllUpdates() {
     const paginationState = { pageIndex: filters?.page ? (filters.page - 1) : 0, pageSize: 25 };
 
     const { search = DEFAULT.search } = filters;
-    const historyColumns = useMemo((): ColumnDef<typeof apiData.items[number]>[] => [
+    const { localSearch, handleInputChange, updateFilters } = useSearchNavigate<SearchType>({ search, options: { resetScroll: false } });
+
+    const onPaginationChange: OnChangeFn<PaginationState> = async (updaterOrValue) => {
+        const newPagination = typeof updaterOrValue === "function" ? updaterOrValue(paginationState) : updaterOrValue;
+        updateFilters({ page: newPagination.pageIndex + 1 });
+    };
+
+    const deleteSelectedRows = async () => {
+        const selectedIds = Object.keys(rowSelected).map((key) => table.getRow(key).original.id);
+        await deleteUpdateMutation.mutateAsync({ data: { updateIds: selectedIds } });
+        setRowSelected({});
+    };
+
+    const historyColumns: ColumnDef<typeof apiData.items[number]>[] = useMemo(() => [
         {
             id: "select",
             header: ({ table }) => (
@@ -110,21 +123,6 @@ function AllUpdates() {
         },
     ], []);
 
-    const updateFilters = (updater: Partial<SearchType>) => {
-        navigate({ search: (prev) => ({ ...prev, ...updater }), replace: true, resetScroll: false });
-    };
-
-    const onPaginationChange: OnChangeFn<PaginationState> = async (updaterOrValue) => {
-        const newPagination = typeof updaterOrValue === "function" ? updaterOrValue(paginationState) : updaterOrValue;
-        updateFilters({ page: newPagination.pageIndex + 1 });
-    };
-
-    const deleteSelectedRows = async () => {
-        const selectedIds = Object.keys(rowSelected).map((key) => table.getRow(key).original.id);
-        await deleteUpdateMutation.mutateAsync({ data: { updateIds: selectedIds } });
-        setRowSelected({});
-    };
-
     const table = useReactTable({
         manualFiltering: true,
         manualPagination: true,
@@ -143,10 +141,10 @@ function AllUpdates() {
                 <div className="flex justify-between items-center pb-3">
                     <div className="flex items-center gap-2">
                         <SearchInput
-                            value={search}
                             className="w-55"
+                            value={localSearch}
+                            onChange={handleInputChange}
                             placeholder="Search by name..."
-                            onChange={(val) => updateFilters({ search: val, page: 1 })}
                         />
                     </div>
                     {(isCurrent && Object.keys(rowSelected).length !== 0) &&

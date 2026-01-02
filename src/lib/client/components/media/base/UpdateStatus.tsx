@@ -22,7 +22,7 @@ export const UpdateStatus = ({ status, mediaType, updateStatus, completable = tr
     return (
         <div className="flex justify-between items-center">
             <div>Status</div>
-            <Select value={status} onValueChange={handleStatus} disabled={updateStatus?.isPending}>
+            <Select value={status} onValueChange={handleStatus} disabled={updateStatus.isPending}>
                 <SelectTrigger size="sm" className="w-34">
                     <SelectValue/>
                 </SelectTrigger>

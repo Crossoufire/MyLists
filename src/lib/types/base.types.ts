@@ -23,7 +23,7 @@ export type CommentPayload = {
 }
 
 export type PlatformPayload = {
-    platform: GamesPlatformsEnum,
+    platform: GamesPlatformsEnum | null,
 }
 
 export type RatingPayload = {

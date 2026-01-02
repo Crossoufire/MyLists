@@ -7,6 +7,7 @@ import {Button} from "@/lib/client/components/ui/button";
 import {createFileRoute, Link} from "@tanstack/react-router";
 import {SearchInput} from "@/lib/client/components/general/SearchInput";
 import {ProfileIcon} from "@/lib/client/components/general/ProfileIcon";
+import {useSearchNavigate} from "@/lib/client/hooks/use-search-navigate";
 import {DashboardShell} from "@/lib/client/components/admin/DashboardShell";
 import {DashboardHeader} from "@/lib/client/components/admin/DashboardHeader";
 import {TablePagination} from "@/lib/client/components/general/TablePagination";
@@ -30,23 +31,24 @@ import {
 export const Route = createFileRoute("/_admin/admin/users")({
     validateSearch: (search) => search as SearchTypeAdmin,
     loaderDeps: ({ search }) => ({ search }),
-    loader: async ({ context: { queryClient }, deps: { search } }) => queryClient.ensureQueryData(userAdminOptions(search)),
+    loader: async ({ context: { queryClient }, deps: { search } }) => {
+        return queryClient.ensureQueryData(userAdminOptions(search));
+    },
     component: UserManagementPage,
 })
 
 
+const DEFAULT = { search: "", page: 1, sorting: "updatedAt" } satisfies SearchTypeAdmin;
+
+
 function UserManagementPage() {
     const filters = Route.useSearch();
-    const navigate = Route.useNavigate();
+    const { search = DEFAULT.search } = filters;
     const updateUserMutation = useAdminUpdateUserMutation(filters);
     const apiData = useSuspenseQuery(userAdminOptions(filters)).data;
     const paginationState = { pageIndex: filters?.page ? (filters.page - 1) : 0, pageSize: 25 };
-    const sortingState = [{ id: filters?.sorting ?? "updatedAt", desc: filters?.sortDesc === true }];
-    const { search = "" } = filters;
-
-    const updateFilters = (updater: Partial<SearchTypeAdmin>) => {
-        navigate({ search: (prev) => ({ ...prev, ...updater }), replace: true });
-    };
+    const sortingState = [{ id: filters?.sorting ?? DEFAULT.sorting, desc: filters?.sortDesc === true }];
+    const { localSearch, handleInputChange, updateFilters } = useSearchNavigate<SearchTypeAdmin>({ search });
 
     const onPaginationChange: OnChangeFn<PaginationState> = async (updaterOrValue) => {
         const newPagination = typeof updaterOrValue === "function" ? updaterOrValue(paginationState) : updaterOrValue;
@@ -163,7 +165,7 @@ function UserManagementPage() {
                 return original.showUpdateModal ?
                     <Badge variant="outline" className="text-green-600">Enabled</Badge>
                     :
-                    <Badge variant="outline" className="text-red-600">Disabled</Badge>
+                    <Badge variant="outline" className="text-red-500">Disabled</Badge>
             },
         },
         {
@@ -265,7 +267,7 @@ function UserManagementPage() {
                         </DropdownMenuCheckboxItem>
                         <DropdownMenuSeparator/>
                         <DropdownMenuItem
-                            className="text-red-600 focus:text-red-600"
+                            className="text-red-500 focus:text-red-500"
                             onSelect={() => updateUser(original.id, { deleteUser: true })}
                         >
                             <Trash2 className="mr-2 h-4 w-4"/>
@@ -299,10 +301,10 @@ function UserManagementPage() {
             />
             <div className="flex items-center justify-between mb-3 max-sm:flex-col max-sm:items-start max-sm:justify-center max-sm:gap-2">
                 <SearchInput
-                    value={search}
                     className="w-63"
+                    value={localSearch}
+                    onChange={handleInputChange}
                     placeholder="Search users..."
-                    onChange={(val) => updateFilters({ search: val, page: 1 })}
                 />
                 <Button variant="outline" onClick={() => updateUser(undefined, { showUpdateModal: true })}>
                     <CheckCircle className="size-4"/> Activate Features Flag

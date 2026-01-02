@@ -16,8 +16,6 @@ export const UpdateRating = ({ rating, onUpdateMutation }: RatingComponentProps)
     const ratingList = (currentUser?.ratingSystem === RatingSystemType.SCORE) ? getScoreList() : getFeelingList({ size: 16 });
     const ratingValue = (currentUser?.ratingSystem === RatingSystemType.SCORE) ? rating : getFeelingIcon(rating, { labelOnly: true });
 
-    console.log({ rating, ratingList, ratingValue })
-
     const handleSelectChange = (value: string) => {
         const valueToSend = value === "-" ? null : Number(value);
         onUpdateMutation.mutate({ payload: { rating: valueToSend, type: UpdateType.RATING } });

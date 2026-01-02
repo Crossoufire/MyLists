@@ -157,12 +157,12 @@ export const updateUserMediaSchema = z.object({
         comment: z.string().nullish().optional(),
         playtime: z.number().min(0).optional(),
         redo: z.number().int().min(0).optional(),
-        platform: z.enum(GamesPlatformsEnum).optional(),
         actualPage: z.number().int().min(0).optional(),
         currentSeason: z.number().int().min(1).optional(),
         currentChapter: z.number().int().min(0).optional(),
         redo2: z.array(z.number().int().min(0)).optional(),
         currentEpisode: z.number().int().min(0).optional(),
+        platform: z.enum(GamesPlatformsEnum).optional().nullable(),
         rating: z.number().min(0).max(10).optional().nullable(),
     }).refine((data) => {
         const definedFields = Object.entries(data)

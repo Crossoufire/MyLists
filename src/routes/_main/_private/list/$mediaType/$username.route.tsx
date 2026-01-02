@@ -41,8 +41,8 @@ function MediaList() {
     const allStatuses = statusUtils.byMediaType(mediaType);
     const [isGrid, setIsGrid] = useState(currentUser?.gridListView ?? true);
     const [filtersPanelOpen, setFiltersPanelOpen] = useState(false);
-    const apiData = useSuspenseQuery(mediaListOptions(mediaType, username, filters)).data;
     const [activeTab, setActiveTab] = useState<Status | "all">("all");
+    const apiData = useSuspenseQuery(mediaListOptions(mediaType, username, filters)).data;
 
     const isCurrent = (currentUser?.id === apiData.userData.id);
 
@@ -105,7 +105,6 @@ function MediaList() {
                 onGridClick={() => setIsGrid(!isGrid)}
                 onFilterClick={() => setFiltersPanelOpen(true)}
                 onSortChange={({ sort }) => handleFilterChange({ sort })}
-                onSearchEnter={({ search }) => handleFilterChange({ search })}
             />
             <AppliedFilters
                 filters={filters}

@@ -9,6 +9,7 @@ import {Pagination} from "@/lib/client/components/general/Pagination";
 import {EmptyState} from "@/lib/client/components/general/EmptyState";
 import {HofSorting, SearchTypeHoF} from "@/lib/types/zod.schema.types";
 import {SearchInput} from "@/lib/client/components/general/SearchInput";
+import {useSearchNavigate} from "@/lib/client/hooks/use-search-navigate";
 import {HofRanking} from "@/lib/client/components/hall-of-fame/HofRanking";
 import {hallOfFameOptions} from "@/lib/client/react-query/query-options/query-options";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/lib/client/components/ui/select";
@@ -27,13 +28,9 @@ const DEFAULT = { page: 1, search: "", sorting: "normalized" } satisfies SearchT
 
 function HallOfFamePage() {
     const filters = Route.useSearch();
-    const navigate = Route.useNavigate();
     const apiData = useSuspenseQuery(hallOfFameOptions(filters)).data;
     const { page = DEFAULT.page, sorting = DEFAULT.sorting, search = DEFAULT.search } = filters;
-
-    const updateFilters = (updater: Partial<SearchTypeHoF>) => {
-        navigate({ search: (prev) => ({ ...prev, ...updater }), replace: true });
-    };
+    const { localSearch, handleInputChange, updateFilters } = useSearchNavigate<SearchTypeHoF>({ search });
 
     return (
         <PageTitle title="Hall of Fame" subtitle="Showcase of all the active profiles ranked">
@@ -42,10 +39,10 @@ function HallOfFamePage() {
                     <div className="flex items-center justify-between mt-3 mb-3">
                         <div className="flex items-center justify-start gap-3">
                             <SearchInput
-                                value={search}
                                 className="w-55"
+                                value={localSearch}
+                                onChange={handleInputChange}
                                 placeholder="Search by name..."
-                                onChange={(val) => updateFilters({ page: 1, search: val })}
                             />
                         </div>
                         <div>

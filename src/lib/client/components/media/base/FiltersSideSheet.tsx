@@ -5,16 +5,17 @@ import {Badge} from "@/lib/client/components/ui/badge";
 import {Button} from "@/lib/client/components/ui/button";
 import {MediaListArgs} from "@/lib/types/zod.schema.types";
 import {useParams, useSearch} from "@tanstack/react-router";
-import {useDebounce} from "@/lib/client/hooks/use-debounce";
 import {Checkbox} from "@/lib/client/components/ui/checkbox";
+import {useSearchContainer} from "@/lib/client/hooks/use-search-container";
 import {GamesPlatformsEnum, JobType, Status} from "@/lib/utils/enums";
 import {mediaConfig} from "@/lib/client/components/media/media-config";
-import {useOnClickOutside} from "@/lib/client/hooks/use-clicked-outside";
+import {ProfileIcon} from "@/lib/client/components/general/ProfileIcon";
+import {SearchContainer} from "@/lib/client/components/general/SearchContainer";
 import {ChevronDown, ChevronUp, CircleHelp, LoaderCircle, Search, X} from "lucide-react";
 import {Popover, PopoverContent, PopoverTrigger} from "@/lib/client/components/ui/popover";
-import {Command, CommandEmpty, CommandItem, CommandList} from "@/lib/client/components/ui/command";
 import {filterSearchOptions, listFiltersOptions} from "@/lib/client/react-query/query-options/query-options";
 import {Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle} from "@/lib/client/components/ui/sheet";
+import {SearchInput} from "@/lib/client/components/general/SearchInput";
 
 
 interface FiltersSideSheetProps {
@@ -295,30 +296,16 @@ interface SearchFilterProps {
 
 
 const SearchFilter = ({ filterKey, job, title, dataList, registerChange }: SearchFilterProps) => {
-    const commandRef = useRef(null);
-    const [search, setSearch] = useState("");
-    const [isOpen, setIsOpen] = useState(false);
-    const debouncedSearch = useDebounce(search, 300);
     const [selectedData, setSelectedData] = useState(dataList ?? []);
-
+    const { search, setSearch, debouncedSearch, isOpen, reset, containerRef } = useSearchContainer();
     const { mediaType, username } = useParams({ from: "/_main/_private/list/$mediaType/$username" });
     const { data: filterResults, isLoading, error } = useQuery(filterSearchOptions(mediaType, username, debouncedSearch, job));
 
-    const handleInputChange = (ev: React.ChangeEvent<HTMLInputElement>) => {
-        setIsOpen(true);
-        setSearch(ev.target.value);
-    };
-
-    const resetSearch = () => {
-        setSearch("");
-        setIsOpen(false);
-    };
-
-    const handleAddClicked = (data: string) => {
-        resetSearch();
+    const handleSearchClick = (data: string) => {
+        reset();
         if (selectedData.includes(data)) return;
         registerChange(filterKey, [data]);
-        setSelectedData([...selectedData, data]);
+        setSelectedData((prev) => [...prev, data]);
     };
 
     const handleRemoveData = (data: string) => {
@@ -326,51 +313,45 @@ const SearchFilter = ({ filterKey, job, title, dataList, registerChange }: Searc
         setSelectedData(selectedData.filter((d) => d !== data));
     };
 
-    useOnClickOutside(commandRef, resetSearch);
-
     return (
         <div>
-            <h3 className="font-medium">{title}</h3>
-            <div ref={commandRef} className="mt-1 w-56 relative">
-                <div className="relative">
-                    <Search size={18} className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground"/>
-                    <Input
-                        value={search}
-                        className="w-70 pl-8"
-                        onChange={handleInputChange}
-                        placeholder={`Search ${title.toLowerCase()}...`}
-                    />
-                </div>
-                {isOpen && (debouncedSearch.length >= 2 || isLoading) &&
-                    <div className="z-50 absolute w-70 rounded-lg border shadow-md mt-1">
-                        <Command>
-                            <CommandList className="max-h-75 overflow-y-auto">
-                                {isLoading &&
-                                    <div className="flex items-center justify-center p-4">
-                                        <LoaderCircle className="h-6 w-6 animate-spin"/>
-                                    </div>
-                                }
-                                {error &&
-                                    <CommandEmpty>
-                                        An error occurred. Please try again.
-                                    </CommandEmpty>
-                                }
-                                {filterResults && filterResults.length === 0 &&
-                                    <CommandEmpty>
-                                        No results found.
-                                    </CommandEmpty>
-                                }
-                                {filterResults && filterResults.length > 0 &&
-                                    filterResults.map((item, idx) =>
-                                        <div key={idx} role="button" onClick={() => handleAddClicked(item.name!)}>
-                                            <CommandItem>{item.name}</CommandItem>
-                                        </div>
-                                    )
-                                }
-                            </CommandList>
-                        </Command>
+            <h3 className="font-medium">
+                {title}
+            </h3>
+            <div ref={containerRef} className="mt-1 relative">
+                <SearchInput
+                    value={search}
+                    className="w-70"
+                    placeholder={`Search ${title.toLowerCase()}...`}
+                    onChange={(ev) => setSearch(ev.target.value)}
+                />
+                <SearchContainer
+                    error={error}
+                    isOpen={isOpen}
+                    className="w-70"
+                    isPending={isLoading}
+                    debouncedSearch={debouncedSearch}
+                    hasResults={!!filterResults?.length}
+                >
+                    <div className="flex flex-col overflow-y-auto scrollbar-thin max-h-60">
+                        {filterResults?.map((item, idx) =>
+                            <button
+                                key={idx}
+                                onClick={() => handleSearchClick(item.name!)}
+                                className="flex items-center gap-2 px-3 py-2 hover:bg-accent transition-colors"
+                            >
+                                <ProfileIcon
+                                    fallbackSize="text-xs"
+                                    className="size-9 border"
+                                    user={{ image: null, name: item.name! }}
+                                />
+                                <span className="text-left">
+                                    {item.name}
+                                </span>
+                            </button>
+                        )}
                     </div>
-                }
+                </SearchContainer>
             </div>
             <div className="flex flex-wrap gap-2">
                 {selectedData.map(item =>

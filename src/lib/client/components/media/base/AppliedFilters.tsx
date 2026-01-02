@@ -39,7 +39,7 @@ export const AppliedFilters = ({ mediaType, filters, totalItems, onFilterRemove 
             return acc;
         }, {});
 
-        onFilterRemove(resetFilters);
+        onFilterRemove({ ...resetFilters, search: "" });
     };
 
     return (
@@ -83,8 +83,8 @@ export const AppliedFilters = ({ mediaType, filters, totalItems, onFilterRemove 
                                         </Badge>
                                         {i < value.length - 1 &&
                                             <span className="text-muted-foreground text-xs font-medium px-1.5">
-                                                    OR
-                                                </span>
+                                                OR
+                                            </span>
                                         }
                                     </Fragment>
                                 )
