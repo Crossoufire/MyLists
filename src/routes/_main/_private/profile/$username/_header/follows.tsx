@@ -10,7 +10,7 @@ import {ProfileIcon} from "@/lib/client/components/general/ProfileIcon";
 import {EmptyState} from "@/lib/client/components/general/EmptyState";
 import {followsOptions} from "@/lib/client/react-query/query-options/query-options";
 import {useFollowMutation} from "@/lib/client/react-query/query-mutations/user.mutations";
-import {PrivacyIcon} from "@/lib/client/components/general/MainThemeIcons";
+import {PrivacyIcon} from "@/lib/client/components/general/MainIcons";
 
 
 export const Route = createFileRoute("/_main/_private/profile/$username/_header/follows")({

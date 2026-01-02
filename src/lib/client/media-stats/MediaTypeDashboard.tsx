@@ -7,7 +7,7 @@ import {ChartColumn, Clock, Heart, Play, Star, Tag} from "lucide-react";
 import {TopAffinityCard} from "@/lib/client/media-stats/TopAffinityCard";
 import {DistributionChart} from "@/lib/client/media-stats/DistributionChart";
 import {StatusDistribution} from "@/lib/client/media-stats/StatusDistribution";
-import {MainThemeIcon} from "@/lib/client/components/general/MainThemeIcons";
+import {MainThemeIcon} from "@/lib/client/components/general/MainIcons";
 import {capitalize, formatCurrency, formatHours, formatNumber} from "@/lib/utils/formating";
 import {formatAvgRating} from "@/lib/utils/ratings";
 

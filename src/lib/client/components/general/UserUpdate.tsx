@@ -5,7 +5,7 @@ import {formatRelativeTime} from "@/lib/utils/formating";
 import {UserUpdateType} from "@/lib/types/query.options.types";
 import {Payload} from "@/lib/client/components/general/Payload";
 import {BlockLink} from "@/lib/client/components/general/BlockLink";
-import {MainThemeIcon} from "@/lib/client/components/general/MainThemeIcons";
+import {MainThemeIcon} from "@/lib/client/components/general/MainIcons";
 
 
 interface UserUpdateProps {

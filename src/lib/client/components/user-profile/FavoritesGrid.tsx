@@ -21,17 +21,23 @@ interface FavoritesGridProps {
 
 export const MediaFavoritesGrid = ({ favorites, title, linkProps }: FavoritesGridProps) => {
     const isBelowLg = useBreakpoint("lg");
-    const TitleWrapper = linkProps ? Link : "div";
     const favoritesToDisplay = favorites.slice(0, isBelowLg ? 4 : 7);
 
     return (
         <Card>
             <CardHeader>
                 <CardTitle>
-                    <TitleWrapper {...linkProps} className="text-sm text-primary font-semibold flex items-center gap-2">
-                        <TrendingUp className="size-4 text-app-accent"/>
-                        {title}
-                    </TitleWrapper>
+                    {linkProps ?
+                        <Link {...linkProps} className="text-sm text-primary font-semibold flex items-center gap-2 hover:text-app-accent">
+                            <TrendingUp className="size-4 text-app-accent"/>
+                            {title}
+                        </Link>
+                        :
+                        <div className="text-sm text-primary font-semibold flex items-center gap-2">
+                            <TrendingUp className="size-4 text-app-accent"/>
+                            {title}
+                        </div>
+                    }
                 </CardTitle>
             </CardHeader>
             <div className="grid grid-cols-7 gap-2 -mt-1 max-lg:grid-cols-4">

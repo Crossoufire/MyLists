@@ -5,7 +5,7 @@ import {Button} from "@/lib/client/components/ui/button";
 import {useQuery, useQueryClient} from "@tanstack/react-query";
 import {useBreakpoint} from "@/lib/client/hooks/use-breakpoint";
 import {EmptyState} from "@/lib/client/components/general/EmptyState";
-import {MainThemeIcon} from "@/lib/client/components/general/MainThemeIcons";
+import {MainThemeIcon} from "@/lib/client/components/general/MainIcons";
 import {formatDateTime, formatRelativeTime, zeroPad} from "@/lib/utils/formating";
 import {Bell, LoaderCircle, MessageCircleOff, MoveRight, User} from "lucide-react";
 import {Popover, PopoverClose, PopoverContent, PopoverTrigger} from "@/lib/client/components/ui/popover";

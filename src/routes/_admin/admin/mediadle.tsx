@@ -1,10 +1,9 @@
-import {Search} from "lucide-react";
-import React, {useMemo, useState} from "react";
-import {Input} from "@/lib/client/components/ui/input";
+import React, {useMemo} from "react";
+import {formatDateTime} from "@/lib/utils/formating";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {SearchType} from "@/lib/types/zod.schema.types";
 import {createFileRoute, Link} from "@tanstack/react-router";
-import {useDebounceCallback} from "@/lib/client/hooks/use-debounce";
+import {SearchInput} from "@/lib/client/components/general/SearchInput";
 import {ProfileIcon} from "@/lib/client/components/general/ProfileIcon";
 import {DashboardShell} from "@/lib/client/components/admin/DashboardShell";
 import {DashboardHeader} from "@/lib/client/components/admin/DashboardHeader";
@@ -12,7 +11,6 @@ import {TablePagination} from "@/lib/client/components/general/TablePagination";
 import {adminMediadleOptions} from "@/lib/client/react-query/query-options/admin-options";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/lib/client/components/ui/table";
 import {ColumnDef, flexRender, getCoreRowModel, OnChangeFn, PaginationState, useReactTable} from "@tanstack/react-table";
-import {formatDateTime} from "@/lib/utils/formating";
 
 
 export const Route = createFileRoute("/_admin/admin/mediadle")({
@@ -33,25 +31,15 @@ function AdminMediadlePage() {
     const navigate = Route.useNavigate();
     const { search = DEFAULT.search } = filters;
     const apiData = useSuspenseQuery(adminMediadleOptions(filters)).data;
-    const [currentSearch, setCurrentSearch] = useState(filters?.search ?? "");
     const paginationState = { pageIndex: filters?.page ? (filters.page - 1) : 0, pageSize: 25 };
 
-    const fetchData = async (filtersData: SearchType) => {
-        await navigate({ search: filtersData, resetScroll: false });
+    const updateFilters = (updater: Partial<SearchType>) => {
+        navigate({ search: (prev) => ({ ...prev, ...updater }), replace: true });
     };
 
-    const onSearchChange = async (ev: React.ChangeEvent<HTMLInputElement>) => {
-        const value = ev.target.value;
-        setCurrentSearch(value);
-        if (value === "") {
-            await fetchData({});
-            setCurrentSearch(DEFAULT.search);
-        }
-    }
-
-    const onPaginationChange: OnChangeFn<PaginationState> = async (updaterOrValue) => {
+    const onPaginationChange: OnChangeFn<PaginationState> = (updaterOrValue) => {
         const newPagination = typeof updaterOrValue === "function" ? updaterOrValue(paginationState) : updaterOrValue;
-        await fetchData({ search: search, page: newPagination.pageIndex + 1 });
+        updateFilters({ search: search, page: newPagination.pageIndex + 1 });
     };
 
     const mediadleColumns = useMemo((): ColumnDef<typeof apiData.items[0]>[] => [
@@ -144,8 +132,6 @@ function AdminMediadlePage() {
         state: { pagination: paginationState },
     });
 
-    useDebounceCallback(currentSearch, 300, () => fetchData({ search: currentSearch, page: 1 }));
-
     return (
         <DashboardShell>
             <DashboardHeader
@@ -153,16 +139,12 @@ function AdminMediadlePage() {
                 description="View all users moviedle stats."
             />
             <div className="flex items-center justify-between mb-3 max-sm:flex-col max-sm:items-start max-sm:justify-center">
-                <div className="relative">
-                    <Search className="absolute left-2.5 top-2.5 size-4 text-muted-foreground"/>
-                    <Input
-                        type="search"
-                        value={currentSearch}
-                        className="pl-8 w-64"
-                        onChange={onSearchChange}
-                        placeholder="Search by name..."
-                    />
-                </div>
+                <SearchInput
+                    value={search}
+                    className="w-64"
+                    placeholder="Search by name..."
+                    onChange={(val) => updateFilters({ search: val, page: 1 })}
+                />
             </div>
             <div className="rounded-md border p-3 pt-0 overflow-x-auto">
                 <Table>

@@ -6,7 +6,7 @@ import {TrendGrid} from "@/lib/client/components/trends/TrendGrid";
 import {TrendHero} from "@/lib/client/components/trends/TrendHero";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
 import {TabHeader, TabItem} from "@/lib/client/components/general/TabHeader";
-import {MainThemeIcon} from "@/lib/client/components/general/MainThemeIcons";
+import {MainThemeIcon} from "@/lib/client/components/general/MainIcons";
 import {trendsOptions} from "@/lib/client/react-query/query-options/query-options";
 
 

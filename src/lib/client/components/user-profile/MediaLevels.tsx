@@ -3,7 +3,7 @@ import {MediaType} from "@/lib/utils/enums";
 import {computeLevel} from "@/lib/utils/compute-level";
 import {Progress} from "@/lib/client/components/ui/progress";
 import {UserSettingsType} from "@/lib/types/query.options.types";
-import {MainThemeIcon} from "@/lib/client/components/general/MainThemeIcons";
+import {MainThemeIcon} from "@/lib/client/components/general/MainIcons";
 import {Card, CardContent, CardHeader, CardTitle} from "@/lib/client/components/ui/card";
 import {getThemeColor} from "@/lib/utils/colors-and-icons";
 

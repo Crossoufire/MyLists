@@ -12,7 +12,7 @@ import {Link, useNavigate, useRouter} from "@tanstack/react-router";
 import {RegisterForm} from "@/lib/client/components/auth/RegisterForm";
 import {ProfileIcon} from "@/lib/client/components/general/ProfileIcon";
 import {Notifications} from "@/lib/client/components/navbar/Notifications";
-import {MainThemeIcon} from "@/lib/client/components/general/MainThemeIcons";
+import {MainThemeIcon} from "@/lib/client/components/general/MainIcons";
 import {authOptions} from "@/lib/client/react-query/query-options/query-options";
 import {BarChart2, Calendar, ChartNoAxesColumn, ChevronDown, Crown, LogOut, Menu, Popcorn, Settings, ShieldCheck, Sparkles, TrendingUp, Trophy, User, X} from "lucide-react";
 import {

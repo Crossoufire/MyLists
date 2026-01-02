@@ -15,7 +15,7 @@ interface AppliedFiltersProps {
 
 
 export const AppliedFilters = ({ mediaType, filters, totalItems, onFilterRemove }: AppliedFiltersProps) => {
-    const { page: _page, sort: _sort, status: _status, ...rawFilters } = filters;
+    const { page: _page, sort: _sort, status: _status, search: _search, ...rawFilters } = filters;
 
     const booleanKeys = ["favorite", "comment", "hideCommon"];
     const localFilters = rawFilters as Partial<MediaListArgs>;

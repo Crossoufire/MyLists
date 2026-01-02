@@ -7,7 +7,7 @@ import {ComingNextItem} from "@/lib/types/query.options.types";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
 import {EmptyState} from "@/lib/client/components/general/EmptyState";
 import {TabHeader, TabItem} from "@/lib/client/components/general/TabHeader";
-import {MainThemeIcon} from "@/lib/client/components/general/MainThemeIcons";
+import {MainThemeIcon} from "@/lib/client/components/general/MainIcons";
 import {upcomingOptions} from "@/lib/client/react-query/query-options/query-options";
 import {ComingNextSection} from "@/lib/client/components/coming-next/ComingNextSection";
 import {getDaysRemaining} from "@/lib/utils/formating";

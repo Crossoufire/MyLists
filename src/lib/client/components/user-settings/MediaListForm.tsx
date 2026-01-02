@@ -10,7 +10,7 @@ import {Separator} from "@/lib/client/components/ui/separator";
 import {CircleHelp, Download, TriangleAlert} from "lucide-react";
 import {saveAsFile, convertToCsv} from "@/lib/utils/blob-download";
 import {ApiProviderType, MediaType, RatingSystemType} from "@/lib/utils/enums";
-import {MainThemeIcon} from "@/lib/client/components/general/MainThemeIcons";
+import {MainThemeIcon} from "@/lib/client/components/general/MainIcons";
 import {Popover, PopoverContent, PopoverTrigger} from "@/lib/client/components/ui/popover";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/lib/client/components/ui/form";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/lib/client/components/ui/select";

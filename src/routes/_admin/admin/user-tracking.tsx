@@ -13,7 +13,7 @@ import {ProfileIcon} from "@/lib/client/components/general/ProfileIcon";
 import {DashboardShell} from "@/lib/client/components/admin/DashboardShell";
 import {Tabs, TabsList, TabsTrigger} from "@/lib/client/components/ui/tabs";
 import {DashboardHeader} from "@/lib/client/components/admin/DashboardHeader";
-import {MainThemeIcon} from "@/lib/client/components/general/MainThemeIcons";
+import {MainThemeIcon} from "@/lib/client/components/general/MainIcons";
 import {navSearchOptions} from "@/lib/client/react-query/query-options/query-options";
 import {adminUserTracking} from "@/lib/client/react-query/query-options/admin-options";
 import {Card, CardAction, CardContent, CardHeader, CardTitle} from "@/lib/client/components/ui/card";

@@ -5,7 +5,7 @@ import {useSuspenseQuery} from "@tanstack/react-query";
 import {MediaLevels} from "@/lib/client/components/user-profile/MediaLevels";
 import {OverviewTab} from "@/lib/client/components/user-profile/OverviewTab";
 import {TabHeader, TabItem} from "@/lib/client/components/general/TabHeader";
-import {MainThemeIcon} from "@/lib/client/components/general/MainThemeIcons";
+import {MainThemeIcon} from "@/lib/client/components/general/MainIcons";
 import {MediaStatsTab} from "@/lib/client/components/user-profile/MediaStatsTab";
 import {ProfileFollows} from "@/lib/client/components/user-profile/ProfileFollows";
 import {profileOptions} from "@/lib/client/react-query/query-options/query-options";

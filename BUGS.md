@@ -16,3 +16,4 @@
 - PROFILE: Add difference between score and feeling.
 - DETAILS: Similar media not good in mobile.
 - NAVBAR: Remove Command and use simpler approach.
+- STATS: find a way to add Link for top affinity (when possible)

@@ -1,11 +1,11 @@
 import React from "react";
 import {MediaType} from "@/lib/utils/enums";
-import {Link} from "@tanstack/react-router";
 import {capitalize} from "@/lib/utils/formating";
+import {Link, useSearch} from "@tanstack/react-router";
 import {Button} from "@/lib/client/components/ui/button";
 import {MediaLevel} from "@/lib/client/components/general/MediaLevel";
+import {SearchInput} from "@/lib/client/components/general/SearchInput";
 import {ListPagination, ListUserData} from "@/lib/types/query.options.types";
-import {SearchComponent} from "@/lib/client/components/media/base/SearchComponent";
 import {ArrowUpDown, Award, ChartLine, EllipsisVertical, Filter, Grid2X2, List, User} from "lucide-react";
 import {
     DropdownMenu,
@@ -31,6 +31,7 @@ interface HeaderProps {
 
 
 export const Header = (props: HeaderProps) => {
+    const { search } = useSearch({ strict: false });
     const { username, mediaType, isGrid, userData, pagination, onGridClick, onFilterClick, onSortChange, onSearchEnter } = props;
     const timeSpent = userData?.userMediaSettings.find((s) => s.mediaType === mediaType)?.timeSpent ?? 0;
 
@@ -46,8 +47,11 @@ export const Header = (props: HeaderProps) => {
                 &nbsp;- {`${username} ${capitalize(mediaType)} Collection`}
             </h3>
             <div className="flex flex-wrap gap-3">
-                <SearchComponent
-                    onSearchEnter={onSearchEnter}
+                <SearchInput
+                    className="w-62"
+                    value={search ?? ""}
+                    placeholder="Search Name..."
+                    onChange={(val) => onSearchEnter({ search: val })}
                 />
                 <Button variant="outline" onClick={onFilterClick}>
                     <Filter className="size-4"/> Filters

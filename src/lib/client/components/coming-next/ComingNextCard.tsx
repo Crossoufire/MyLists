@@ -5,7 +5,7 @@ import {formatDateTime, getDaysRemaining, zeroPad} from "@/lib/utils/formating";
 import {ComingNextItem} from "@/lib/types/query.options.types";
 import {Hourglass, AlertCircle, Clock, Calendar} from "lucide-react";
 import {StatusBadge} from "@/lib/client/components/general/StatusBadge";
-import {MainThemeIcon} from "@/lib/client/components/general/MainThemeIcons";
+import {MainThemeIcon} from "@/lib/client/components/general/MainIcons";
 
 
 export const ComingNextCard = ({ item, mediaType }: { item: ComingNextItem, mediaType: MediaType }) => {

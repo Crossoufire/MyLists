@@ -1,7 +1,5 @@
-import {Search} from "lucide-react";
-import React, {useState} from "react";
+import React, {useMemo, useState} from "react";
 import {useAuth} from "@/lib/client/hooks/use-auth";
-import {Input} from "@/lib/client/components/ui/input";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {SearchType} from "@/lib/types/zod.schema.types";
 import {Button} from "@/lib/client/components/ui/button";
@@ -9,14 +7,14 @@ import {Checkbox} from "@/lib/client/components/ui/checkbox";
 import {createFileRoute, Link} from "@tanstack/react-router";
 import {Payload} from "@/lib/client/components/general/Payload";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
-import {useDebounceCallback} from "@/lib/client/hooks/use-debounce";
+import {MainThemeIcon} from "@/lib/client/components/general/MainIcons";
+import {SearchInput} from "@/lib/client/components/general/SearchInput";
+import {formatDateTime, formatRelativeTime} from "@/lib/utils/formating";
 import {TablePagination} from "@/lib/client/components/general/TablePagination";
-import {MainThemeIcon} from "@/lib/client/components/general/MainThemeIcons";
 import {allUpdatesOptions} from "@/lib/client/react-query/query-options/query-options";
 import {useDeleteAllUpdatesMutation} from "@/lib/client/react-query/query-mutations/user-media.mutations";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/lib/client/components/ui/table";
 import {ColumnDef, flexRender, getCoreRowModel, OnChangeFn, PaginationState, useReactTable} from "@tanstack/react-table";
-import {formatDateTime, formatRelativeTime} from "@/lib/utils/formating";
 
 
 export const Route = createFileRoute("/_main/_private/profile/$username/_header/history")({
@@ -32,8 +30,19 @@ export const Route = createFileRoute("/_main/_private/profile/$username/_header/
 const DEFAULT = { search: "", page: 1 } satisfies SearchType;
 
 
-const getHistoryColumns = (isCurrent: boolean): ColumnDef<any>[] => {
-    return [
+function AllUpdates() {
+    const { currentUser } = useAuth();
+    const filters = Route.useSearch();
+    const navigate = Route.useNavigate();
+    const { username } = Route.useParams();
+    const isCurrent = (currentUser?.name === username);
+    const [rowSelected, setRowSelected] = useState({});
+    const deleteUpdateMutation = useDeleteAllUpdatesMutation(username, filters);
+    const apiData = useSuspenseQuery(allUpdatesOptions(username, filters)).data;
+    const paginationState = { pageIndex: filters?.page ? (filters.page - 1) : 0, pageSize: 25 };
+
+    const { search = DEFAULT.search } = filters;
+    const historyColumns = useMemo((): ColumnDef<typeof apiData.items[number]>[] => [
         {
             id: "select",
             header: ({ table }) => (
@@ -99,41 +108,15 @@ const getHistoryColumns = (isCurrent: boolean): ColumnDef<any>[] => {
                 );
             },
         },
-    ]
-}
+    ], []);
 
-
-function AllUpdates() {
-    const { currentUser } = useAuth();
-    const filters = Route.useSearch();
-    const navigate = Route.useNavigate();
-    const { username } = Route.useParams();
-    const isCurrent = (currentUser?.name === username);
-    const [rowSelected, setRowSelected] = useState({});
-    const [currentSearch, setCurrentSearch] = useState(filters?.search ?? "");
-    const deleteUpdateMutation = useDeleteAllUpdatesMutation(username, filters);
-    const apiData = useSuspenseQuery(allUpdatesOptions(username, filters)).data;
-    const paginationState = { pageIndex: filters?.page ? (filters.page - 1) : 0, pageSize: 25 };
-
-    const { search = DEFAULT.search } = filters;
-    const historyColumns = getHistoryColumns(isCurrent);
-
-    const fetchData = async (filtersData: SearchType) => {
-        await navigate({ search: filtersData, resetScroll: false });
+    const updateFilters = (updater: Partial<SearchType>) => {
+        navigate({ search: (prev) => ({ ...prev, ...updater }), replace: true, resetScroll: false });
     };
-
-    const onSearchChange = async (ev: React.ChangeEvent<HTMLInputElement>) => {
-        const value = ev.target.value;
-        setCurrentSearch(value);
-        if (value === "") {
-            await fetchData({});
-            setCurrentSearch(DEFAULT.search);
-        }
-    }
 
     const onPaginationChange: OnChangeFn<PaginationState> = async (updaterOrValue) => {
         const newPagination = typeof updaterOrValue === "function" ? updaterOrValue(paginationState) : updaterOrValue;
-        await fetchData({ search: search, page: newPagination.pageIndex + 1 });
+        updateFilters({ page: newPagination.pageIndex + 1 });
     };
 
     const deleteSelectedRows = async () => {
@@ -154,27 +137,23 @@ function AllUpdates() {
         state: { rowSelection: rowSelected, pagination: paginationState },
     });
 
-    useDebounceCallback(currentSearch, 300, () => fetchData({ search: currentSearch, page: 1 }));
-
     return (
         <PageTitle title="History" subtitle={isCurrent ? "All of your media updates." : `All the updates of ${username}.`}>
             <div className="w-full max-w-5xl mx-auto mt-6">
                 <div className="flex justify-between items-center pb-3">
                     <div className="flex items-center gap-2">
-                        <div className="relative">
-                            <Search size={15} className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground"/>
-                            <Input
-                                type="search"
-                                value={currentSearch}
-                                onChange={onSearchChange}
-                                className="pl-8 w-56 text-sm"
-                                placeholder="Search by name..."
-                                disabled={deleteUpdateMutation.isPending}
-                            />
-                        </div>
+                        <SearchInput
+                            value={search}
+                            className="w-55"
+                            placeholder="Search by name..."
+                            onChange={(val) => updateFilters({ search: val, page: 1 })}
+                        />
                     </div>
                     {(isCurrent && Object.keys(rowSelected).length !== 0) &&
-                        <Button disabled={Object.keys(rowSelected).length === 0 || deleteUpdateMutation.isPending} onClick={deleteSelectedRows}>
+                        <Button
+                            onClick={deleteSelectedRows}
+                            disabled={Object.keys(rowSelected).length === 0 || deleteUpdateMutation.isPending}
+                        >
                             Delete Selected
                         </Button>
                     }

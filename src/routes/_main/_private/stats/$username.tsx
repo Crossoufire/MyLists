@@ -6,7 +6,7 @@ import {createFileRoute, Link} from "@tanstack/react-router";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
 import {DashboardContent} from "@/lib/client/media-stats/DashboardContent";
 import {TabHeader, TabItem} from "@/lib/client/components/general/TabHeader";
-import {MainThemeIcon} from "@/lib/client/components/general/MainThemeIcons";
+import {MainThemeIcon} from "@/lib/client/components/general/MainIcons";
 import {userStatsOptions} from "@/lib/client/react-query/query-options/query-options";
 import {DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem} from "@/lib/client/components/ui/dropdown-menu";
 

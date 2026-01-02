@@ -1,19 +1,19 @@
-import {Input} from "@/lib/client/components/ui/input";
+import React, {useCallback, useMemo} from "react";
+import {formatDateTime} from "@/lib/utils/formating";
 import {Badge} from "@/lib/client/components/ui/badge";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {PrivacyType, RoleType} from "@/lib/utils/enums";
 import {Button} from "@/lib/client/components/ui/button";
-import React, {useCallback, useMemo, useState} from "react";
 import {createFileRoute, Link} from "@tanstack/react-router";
-import {useDebounceCallback} from "@/lib/client/hooks/use-debounce";
+import {SearchInput} from "@/lib/client/components/general/SearchInput";
 import {ProfileIcon} from "@/lib/client/components/general/ProfileIcon";
 import {DashboardShell} from "@/lib/client/components/admin/DashboardShell";
 import {DashboardHeader} from "@/lib/client/components/admin/DashboardHeader";
 import {TablePagination} from "@/lib/client/components/general/TablePagination";
 import {AdminUpdatePayload, SearchTypeAdmin} from "@/lib/types/zod.schema.types";
 import {userAdminOptions} from "@/lib/client/react-query/query-options/admin-options";
+import {CheckCircle, ChevronsUpDown, MoreHorizontal, Trash2, UserCheck, UserX} from "lucide-react";
 import {useAdminUpdateUserMutation} from "@/lib/client/react-query/query-mutations/admin.mutations";
-import {CheckCircle, ChevronsUpDown, MoreHorizontal, Search, Trash2, UserCheck, UserX} from "lucide-react";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/lib/client/components/ui/table";
 import {ColumnDef, flexRender, getCoreRowModel, OnChangeFn, PaginationState, SortingState, useReactTable} from "@tanstack/react-table";
 import {
@@ -25,7 +25,6 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/lib/client/components/ui/dropdown-menu";
-import {formatDateTime} from "@/lib/utils/formating";
 
 
 export const Route = createFileRoute("/_admin/admin/users")({
@@ -41,31 +40,22 @@ function UserManagementPage() {
     const navigate = Route.useNavigate();
     const updateUserMutation = useAdminUpdateUserMutation(filters);
     const apiData = useSuspenseQuery(userAdminOptions(filters)).data;
-    const [currentSearch, setCurrentSearch] = useState(filters?.search ?? "");
     const paginationState = { pageIndex: filters?.page ? (filters.page - 1) : 0, pageSize: 25 };
     const sortingState = [{ id: filters?.sorting ?? "updatedAt", desc: filters?.sortDesc === true }];
+    const { search = "" } = filters;
 
-    const setFilters = async (filtersData: SearchTypeAdmin) => {
-        await navigate({ search: (prev) => ({ ...prev, ...filtersData }), replace: true });
+    const updateFilters = (updater: Partial<SearchTypeAdmin>) => {
+        navigate({ search: (prev) => ({ ...prev, ...updater }), replace: true });
     };
-
-    const onSearchChange = async (ev: React.ChangeEvent<HTMLInputElement>) => {
-        const value = ev.target.value;
-        setCurrentSearch(value);
-        if (value === "") {
-            setCurrentSearch("");
-            await navigate({ search: { sorting: filters?.sorting, sortDesc: filters?.sortDesc } });
-        }
-    }
 
     const onPaginationChange: OnChangeFn<PaginationState> = async (updaterOrValue) => {
         const newPagination = typeof updaterOrValue === "function" ? updaterOrValue(paginationState) : updaterOrValue;
-        await setFilters({ page: newPagination.pageIndex + 1 });
+        updateFilters({ page: newPagination.pageIndex + 1 });
     };
 
     const onSortingChange: OnChangeFn<SortingState> = async (updaterOrValue) => {
         const newSorting = typeof updaterOrValue === "function" ? updaterOrValue(sortingState) : updaterOrValue;
-        await setFilters({ sorting: newSorting[0]?.id ?? "updatedAt", sortDesc: newSorting[0]?.desc ?? true, page: 1 });
+        updateFilters({ sorting: newSorting[0]?.id ?? "updatedAt", sortDesc: newSorting[0]?.desc ?? true, page: 1 });
     };
 
     const updateUser = useCallback((userId: number | undefined, payload: AdminUpdatePayload) => {
@@ -301,8 +291,6 @@ function UserManagementPage() {
         state: { pagination: paginationState, sorting: sortingState },
     });
 
-    useDebounceCallback(currentSearch, 300, () => setFilters({ ...filters, search: currentSearch, page: 1 }));
-
     return (
         <DashboardShell>
             <DashboardHeader
@@ -310,16 +298,12 @@ function UserManagementPage() {
                 description="View and manage all users on your platform."
             />
             <div className="flex items-center justify-between mb-3 max-sm:flex-col max-sm:items-start max-sm:justify-center max-sm:gap-2">
-                <div className="relative">
-                    <Search className="absolute left-2.5 top-2.5 size-4 text-muted-foreground"/>
-                    <Input
-                        type="search"
-                        value={currentSearch}
-                        onChange={onSearchChange}
-                        className="w-[250px] pl-8"
-                        placeholder="Search users..."
-                    />
-                </div>
+                <SearchInput
+                    value={search}
+                    className="w-63"
+                    placeholder="Search users..."
+                    onChange={(val) => updateFilters({ search: val, page: 1 })}
+                />
                 <Button variant="outline" onClick={() => updateUser(undefined, { showUpdateModal: true })}>
                     <CheckCircle className="size-4"/> Activate Features Flag
                 </Button>

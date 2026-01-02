@@ -1,17 +1,15 @@
-import React, {useState} from "react";
-import {Search, UserX} from "lucide-react";
+import {UserX} from "lucide-react";
 import {MediaType} from "@/lib/utils/enums";
 import {capitalize} from "@/lib/utils/formating";
-import {Input} from "@/lib/client/components/ui/input";
 import {createFileRoute} from "@tanstack/react-router";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
-import {useDebounceCallback} from "@/lib/client/hooks/use-debounce";
 import {HofCard} from "@/lib/client/components/hall-of-fame/HofCard";
 import {Pagination} from "@/lib/client/components/general/Pagination";
-import {HofSorting, SearchTypeHoF} from "@/lib/types/zod.schema.types";
-import {HofRanking} from "@/lib/client/components/hall-of-fame/HofRanking";
 import {EmptyState} from "@/lib/client/components/general/EmptyState";
+import {HofSorting, SearchTypeHoF} from "@/lib/types/zod.schema.types";
+import {SearchInput} from "@/lib/client/components/general/SearchInput";
+import {HofRanking} from "@/lib/client/components/hall-of-fame/HofRanking";
 import {hallOfFameOptions} from "@/lib/client/react-query/query-options/query-options";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/lib/client/components/ui/select";
 
@@ -31,32 +29,11 @@ function HallOfFamePage() {
     const filters = Route.useSearch();
     const navigate = Route.useNavigate();
     const apiData = useSuspenseQuery(hallOfFameOptions(filters)).data;
-    const [currentSearch, setCurrentSearch] = useState(filters?.search ?? "");
     const { page = DEFAULT.page, sorting = DEFAULT.sorting, search = DEFAULT.search } = filters;
 
-    const fetchData = async (params: SearchTypeHoF) => {
-        await navigate({ search: params });
+    const updateFilters = (updater: Partial<SearchTypeHoF>) => {
+        navigate({ search: (prev) => ({ ...prev, ...updater }), replace: true });
     };
-
-    const onSearchChange = async (ev: React.ChangeEvent<HTMLInputElement>) => {
-        const value = ev.target.value;
-        setCurrentSearch(value);
-        if (value === "") {
-            setCurrentSearch(DEFAULT.search);
-            await fetchData({ ...filters, search: DEFAULT.search });
-        }
-    }
-
-    const onPageChange = async (page: number) => {
-        await fetchData({ page, sorting, search });
-    };
-
-    const onSortChanged = async (value: string) => {
-        const sorting: HofSorting = value as HofSorting;
-        await fetchData({ page: 1, sorting, search });
-    };
-
-    useDebounceCallback(currentSearch, 400, () => fetchData({ search: currentSearch, sorting, page: 1 }));
 
     return (
         <PageTitle title="Hall of Fame" subtitle="Showcase of all the active profiles ranked">
@@ -64,22 +41,19 @@ function HallOfFamePage() {
                 <div className="col-span-7 max-sm:col-span-1 w-full max-sm:mt-4 max-sm:order-2">
                     <div className="flex items-center justify-between mt-3 mb-3">
                         <div className="flex items-center justify-start gap-3">
-                            <div className="relative">
-                                <Input
-                                    type="search"
-                                    value={currentSearch}
-                                    onChange={onSearchChange}
-                                    placeholder="Search by name..."
-                                    className="pl-10 rounded-md w-55 max-sm:text-sm"
-                                />
-                                <Search
-                                    size={18}
-                                    className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground"
-                                />
-                            </div>
+                            <SearchInput
+                                value={search}
+                                className="w-55"
+                                placeholder="Search by name..."
+                                onChange={(val) => updateFilters({ page: 1, search: val })}
+                            />
                         </div>
                         <div>
-                            <Select value={sorting} onValueChange={onSortChanged} disabled={apiData.items.length === 0}>
+                            <Select
+                                value={sorting}
+                                disabled={apiData.items.length === 0}
+                                onValueChange={(val) => updateFilters({ page: 1, sorting: val as HofSorting })}
+                            >
                                 <SelectTrigger className="w-32.5 font-medium bg-outline border">
                                     <SelectValue/>
                                 </SelectTrigger>
@@ -98,7 +72,7 @@ function HallOfFamePage() {
                     {apiData.items.length === 0 ?
                         <EmptyState
                             icon={UserX}
-                            message={`No users found for '${currentSearch}'`}
+                            message={`No users found for '${search}'`}
                         />
                         :
                         apiData.items.map((userData) =>
@@ -111,7 +85,7 @@ function HallOfFamePage() {
                     <Pagination
                         currentPage={page}
                         totalPages={apiData.pages}
-                        onChangePage={onPageChange}
+                        onChangePage={(page) => updateFilters({ page })}
                     />
                 </div>
                 <div className="col-span-5 max-sm:col-span-1 mt-5.25 max-sm:mt-4 max-sm:order-1">
