@@ -6,8 +6,9 @@ import {FormDescription} from "@/lib/client/components/ui/form";
 
 
 interface ImageCropperProps {
-    aspect: number;
+    aspect?: number;
     fileName: string;
+    sliceHeight?: number;
     resultClassName?: string;
     cropShape: "round" | "rect";
     onCropApplied: (file: File) => void;
@@ -19,33 +20,60 @@ interface CropState {
     open: boolean;
     imageSrc: string;
     showResult: boolean;
+    imageWidth: number | null;
     croppedImage: Blob | null;
+    imageHeight: number | null;
     crop: { x: number; y: number };
     croppedAreaPixels: Area | null;
 }
 
 
-export const ImageCropper = ({ aspect, fileName, resultClassName = "", cropShape, onCropApplied }: ImageCropperProps) => {
+export const ImageCropper = ({ aspect, fileName, sliceHeight, cropShape, onCropApplied, resultClassName = "" }: ImageCropperProps) => {
     const [state, setState] = useState<CropState>({
         zoom: 1,
         open: true,
         imageSrc: "",
+        imageWidth: null,
+        imageHeight: null,
         showResult: false,
         croppedImage: null,
         crop: { x: 0, y: 0 },
         croppedAreaPixels: null,
     });
 
+    const computedAspect = (sliceHeight && state.imageWidth) ? state.imageWidth / sliceHeight : aspect ?? 1;
+
+    const createImage = (url: string): Promise<HTMLImageElement> => {
+        return new Promise((resolve, reject) => {
+            const image = new window.Image();
+            image.addEventListener("load", () => resolve(image));
+            image.addEventListener("error", reject);
+            image.src = url;
+        });
+    };
+
     const getCroppedImg = async (imageSrc: string, crop: Area) => {
         const image = await createImage(imageSrc);
         const canvas = document.createElement("canvas");
         const ctx = canvas.getContext("2d");
-        canvas.width = crop.width;
-        canvas.height = crop.height;
+        if (!ctx) {
+            throw new Error("Could not get canvas context");
+        }
 
-        if (!ctx) throw new Error("Could not get canvas context");
+        // Slice mode output full width and fixed height
+        if (sliceHeight) {
+            canvas.height = sliceHeight;
+            canvas.width = image.naturalWidth;
 
-        ctx.drawImage(image, crop.x, crop.y, crop.width, crop.height, 0, 0, crop.width, crop.height);
+            ctx.drawImage(image, 0, crop.y, image.naturalWidth, crop.height, 0, 0, image.naturalWidth, sliceHeight);
+        }
+        else {
+            // Normal crop mode (profile picture)
+            canvas.width = crop.width;
+            canvas.height = crop.height;
+
+            ctx.drawImage(image, crop.x, crop.y, crop.width, crop.height, 0, 0, crop.width, crop.height);
+        }
 
         return new Promise<Blob>((resolve, reject) => {
             canvas.toBlob((blob) => {
@@ -59,25 +87,24 @@ export const ImageCropper = ({ aspect, fileName, resultClassName = "", cropShape
         });
     };
 
-    const createImage = (url: string) => {
-        return new Promise((resolve, reject) => {
-            const image = new window.Image();
-            image.addEventListener("load", () => resolve(image));
-            image.addEventListener("error", reject);
-            image.src = url;
-        }) as Promise<HTMLImageElement>;
-    };
-
     const onFileChange = (ev: React.ChangeEvent<HTMLInputElement>) => {
         const file = ev.target.files?.[0];
         if (file) {
             const reader = new FileReader();
-            reader.onload = () => setState((prev) => ({
-                ...prev,
-                open: true,
-                showResult: false,
-                imageSrc: reader.result as string,
-            }));
+            reader.onload = () => {
+                const img = new window.Image();
+                img.onload = () => {
+                    setState((prev) => ({
+                        ...prev,
+                        open: true,
+                        showResult: false,
+                        imageWidth: img.naturalWidth,
+                        imageHeight: img.naturalHeight,
+                        imageSrc: reader.result as string,
+                    }));
+                };
+                img.src = reader.result as string;
+            };
             reader.readAsDataURL(file);
         }
     };
@@ -92,8 +119,9 @@ export const ImageCropper = ({ aspect, fileName, resultClassName = "", cropShape
 
         const croppedImage = await getCroppedImg(state.imageSrc, state.croppedAreaPixels);
         const croppedFile = new File([croppedImage], `${fileName}.jpg`, { type: "image/jpeg" });
+
         onCropApplied(croppedFile);
-        setState((prev) => ({ ...prev, open: false, showResult: true, croppedImage }));
+        setState((prev) => ({ ...prev, open: false, croppedImage, showResult: true }));
     };
 
     const handleEditCrop = () => {
@@ -115,22 +143,27 @@ export const ImageCropper = ({ aspect, fileName, resultClassName = "", cropShape
                 <div className="space-y-4 mt-6 bg-popover rounded-lg p-3">
                     <div>
                         <h4 className="font-medium">
-                            Crop Profile Image
+                            Crop Your Image
                         </h4>
                         <div className="text-sm text-muted-foreground">
-                            Resize your profile image to fit your needs.
+                            Crop the image to your liking.
                         </div>
                     </div>
                     <div className="relative h-60 w-full">
                         <Cropper
-                            aspect={aspect}
-                            zoom={state.zoom}
                             crop={state.crop}
                             cropShape={cropShape}
                             image={state.imageSrc}
+                            aspect={computedAspect}
+                            showGrid={!sliceHeight}
+                            minZoom={sliceHeight ? 1 : 1}
+                            maxZoom={sliceHeight ? 1 : 3}
                             onCropComplete={onCropComplete}
+                            zoom={sliceHeight ? 1 : state.zoom}
                             onCropChange={(crop) => setState((prev) => ({ ...prev, crop }))}
-                            onZoomChange={(zoom) => setState((prev) => ({ ...prev, zoom }))}
+                            onZoomChange={(zoom) =>
+                                !sliceHeight && setState((prev) => ({ ...prev, zoom }))
+                            }
                         />
                     </div>
                     <Button onClick={handleApplyCrop}>
@@ -139,7 +172,7 @@ export const ImageCropper = ({ aspect, fileName, resultClassName = "", cropShape
                 </div>
             }
             {(state.showResult && state.croppedImage) &&
-                <div className="space-y-4 mt-4 bg-popover rounded-lg p-3 h-min-65">
+                <div className="space-y-4 mt-4 bg-popover rounded-lg p-3">
                     <h4 className="font-medium">
                         Selected Image
                     </h4>

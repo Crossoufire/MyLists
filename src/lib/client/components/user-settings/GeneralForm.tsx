@@ -145,11 +145,11 @@ export const GeneralForm = () => {
                                 <FormControl>
                                     <ImageCropper
                                         cropShape="rect"
-                                        aspect={1280 / 256}
+                                        sliceHeight={256}
                                         fileName={field.name}
                                         key={imageCropperKey + 1}
                                         onCropApplied={field.onChange}
-                                        resultClassName="h-[100px] object-contain"
+                                        resultClassName="w-full h-16 object-cover rounded"
                                     />
                                 </FormControl>
                                 <FormMessage/>

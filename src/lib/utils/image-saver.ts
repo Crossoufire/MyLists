@@ -9,8 +9,8 @@ import {createServerOnlyFn} from "@tanstack/react-start";
 
 
 interface ResizeOptions {
-    width: number;
-    height: number;
+    width?: number;
+    height?: number;
 }
 
 
@@ -83,12 +83,10 @@ const processAndSaveImage = createServerOnlyFn(() => async ({ buffer, dirSaveNam
 
     const sharpInstance = sharp(buffer);
     if (resize) {
-        sharpInstance.resize(resize.width, resize.height);
+        sharpInstance.resize(resize.width ?? null, resize.height);
     }
 
-    await sharpInstance
-        .jpeg({ quality: 90 })
-        .toFile(filePath);
+    await sharpInstance.jpeg({ quality: 90 }).toFile(filePath);
 
     return fileName;
 })();

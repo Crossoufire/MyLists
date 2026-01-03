@@ -39,7 +39,7 @@ export const postGeneralSettings = createServerFn({ method: "POST" })
             const backgroundImageName = await saveUploadedImage({
                 file: data.backgroundImage,
                 dirSaveName: "profile-back-covers",
-                resize: { width: 1304, height: 288 },
+                resize: { height: 256 },
             });
             updatesToApply.backgroundImage = backgroundImageName;
         }
