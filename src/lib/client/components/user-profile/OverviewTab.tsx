@@ -1,5 +1,7 @@
 import {useMemo} from "react";
 import {Link} from "@tanstack/react-router";
+import {RatingSystemType} from "@/lib/utils/enums";
+import {getFeelingIcon} from "@/lib/utils/ratings";
 import {getThemeColor} from "@/lib/utils/colors-and-icons";
 import {Clock, ClockAlert, MoveRight, Star} from "lucide-react";
 import {EmptyState} from "@/lib/client/components/general/EmptyState";
@@ -12,14 +14,19 @@ import {MediaGlobalSummaryType, PerMediaSummaryType} from "@/lib/types/query.opt
 interface OverviewTabProps {
     username: string,
     perMedia: PerMediaSummaryType,
+    ratingSystem: RatingSystemType,
     globalStats: MediaGlobalSummaryType,
 }
 
 
-export const OverviewTab = ({ username, globalStats, perMedia }: OverviewTabProps) => {
+export const OverviewTab = ({ username, globalStats, perMedia, ratingSystem }: OverviewTabProps) => {
     const favoritesList = useMemo(() => perMedia.flatMap((media) =>
         media.favoritesList.map((fav) => ({ ...fav, mediaType: media.mediaType }))
     ).sort(() => Math.random() - 0.5), [perMedia]);
+
+    const rating = globalStats.avgRated;
+    const ratingDisplay = ratingSystem === "score" ?
+        rating?.toFixed(2) ?? "-" : getFeelingIcon(rating, { size: 28, className: "mt-1" });
 
     return (
         <div className="space-y-6">
@@ -34,7 +41,7 @@ export const OverviewTab = ({ username, globalStats, perMedia }: OverviewTabProp
                 />
                 <SimpleStatCard
                     title="Avg. Rating"
-                    value={globalStats.avgRated?.toFixed(2)}
+                    value={ratingDisplay}
                     icon={<Star className="size-5 text-app-rating mt-1"/>}
                 />
                 <SimpleStatCard

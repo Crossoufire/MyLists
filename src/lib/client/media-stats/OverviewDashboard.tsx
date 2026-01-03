@@ -17,7 +17,7 @@ export function OverviewDashboard({ stats }: OverviewDashboardProps) {
 
     return (
         <div className="space-y-6">
-            <div className="grid max-sm:grid-cols-2 grid-cols-5 gap-4">
+            <div className="grid grid-cols-5 gap-4 max-lg:grid-cols-3 max-sm:grid-cols-2">
                 {stats.totalUsers &&
                     <StatCard
                         title="Total Users"
@@ -82,7 +82,7 @@ export function OverviewDashboard({ stats }: OverviewDashboardProps) {
                 />
             </div>
 
-            <div className="grid max-sm:grid-cols-1 grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-4 max-lg:grid-cols-1">
                 <DistributionChart
                     height={350}
                     data={stats.mediaTimeDistribution}

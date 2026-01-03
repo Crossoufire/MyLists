@@ -2,10 +2,10 @@ import {useState} from "react";
 import {MediaType} from "@/lib/utils/enums";
 import {createFileRoute} from "@tanstack/react-router";
 import {useSuspenseQuery} from "@tanstack/react-query";
+import {MainThemeIcon} from "@/lib/client/components/general/MainIcons";
 import {MediaLevels} from "@/lib/client/components/user-profile/MediaLevels";
 import {OverviewTab} from "@/lib/client/components/user-profile/OverviewTab";
 import {TabHeader, TabItem} from "@/lib/client/components/general/TabHeader";
-import {MainThemeIcon} from "@/lib/client/components/general/MainIcons";
 import {MediaStatsTab} from "@/lib/client/components/user-profile/MediaStatsTab";
 import {ProfileFollows} from "@/lib/client/components/user-profile/ProfileFollows";
 import {profileOptions} from "@/lib/client/react-query/query-options/query-options";
@@ -67,10 +67,12 @@ function ProfileMain() {
                             username={username}
                             perMedia={apiData.perMediaSummary}
                             globalStats={apiData.mediaGlobalSummary}
+                            ratingSystem={apiData.userData.ratingSystem}
                         />
                         :
                         <MediaStatsTab
                             username={username}
+                            ratingSystem={apiData.userData.ratingSystem}
                             mediaSummary={apiData.perMediaSummary.find((p) => p.mediaType === activeTab)!}
                         />
                     }

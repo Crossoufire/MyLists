@@ -23,7 +23,7 @@ export function MediaTypeDashboard({ stats }: MediaTypeDashboardProps) {
 
     return (
         <div className="space-y-6">
-            <div className="grid grid-cols-5 gap-4 max-sm:grid-cols-2">
+            <div className="grid grid-cols-5 gap-4 max-lg:grid-cols-3 max-sm:grid-cols-2">
                 <StatCard
                     title="Total Entries"
                     value={formatNumber(stats.totalEntries)}
@@ -76,7 +76,7 @@ export function MediaTypeDashboard({ stats }: MediaTypeDashboardProps) {
                 statuses={stats.statusesCounts}
             />
 
-            <div className="grid max-sm:grid-cols-1 grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-4 max-lg:grid-cols-1">
                 <DistributionChart
                     height={300}
                     enableBinning={true}
@@ -194,7 +194,7 @@ function MediaSpecificTopStats({ stats }: { stats: ExtractStatsByType<MediaType>
         const { networksStats, actorsStats, countriesStats } = stats.specificMediaStats;
 
         return (
-            <div className="grid max-sm:grid-cols-1 max-md:grid-cols-2 grid-cols-3 gap-4">
+            <div className="grid grid-cols-3 gap-4 max-lg:grid-cols-2 max-sm:grid-cols-1">
                 <TopAffinityCard
                     job="platform"
                     title="Networks"
@@ -219,7 +219,7 @@ function MediaSpecificTopStats({ stats }: { stats: ExtractStatsByType<MediaType>
         const { directorsStats, actorsStats, langsStats, genresStats } = stats.specificMediaStats;
 
         return (
-            <div className="grid max-sm:grid-cols-1 max-md:grid-cols-2 grid-cols-4 gap-4">
+            <div className="grid grid-cols-4 gap-4 max-lg:grid-cols-2 max-sm:grid-cols-1">
                 <TopAffinityCard
                     job="creator"
                     title="Directors"
@@ -248,7 +248,7 @@ function MediaSpecificTopStats({ stats }: { stats: ExtractStatsByType<MediaType>
         const { developersStats, publishersStats, platformsStats, enginesStats, perspectivesStats } = stats.specificMediaStats;
 
         return (
-            <div className="grid max-sm:grid-cols-1 max-md:grid-cols-2 grid-cols-3 gap-4">
+            <div className="grid grid-cols-3 gap-4 max-lg:grid-cols-2 max-sm:grid-cols-1">
                 <TopAffinityCard
                     job="creator"
                     title="Developers"
@@ -279,7 +279,7 @@ function MediaSpecificTopStats({ stats }: { stats: ExtractStatsByType<MediaType>
         const { publishersStats, authorsStats, langsStats } = stats.specificMediaStats;
 
         return (
-            <div className="grid max-sm:grid-cols-1 max-md:grid-cols-2 grid-cols-3 gap-4">
+            <div className="grid grid-cols-3 gap-4 max-lg:grid-cols-2 max-sm:grid-cols-1">
                 <TopAffinityCard
                     job="creator"
                     title="Authors"
@@ -302,7 +302,7 @@ function MediaSpecificTopStats({ stats }: { stats: ExtractStatsByType<MediaType>
         const { publishersStats, authorsStats } = stats.specificMediaStats;
 
         return (
-            <div className="grid max-sm:grid-cols-1 max-md:grid-cols-2 grid-cols-3 gap-4">
+            <div className="grid grid-cols-3 gap-4 max-lg:grid-cols-2 max-sm:grid-cols-1">
                 <TopAffinityCard
                     job="creator"
                     title="Authors"

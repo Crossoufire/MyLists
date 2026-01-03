@@ -23,7 +23,7 @@ export const TrendCard = ({ media }: { media: TrendsMedia }) => {
                     <div className="shrink-0 text-xs font-medium text-muted-foreground">
                         {formatDateTime(media.releaseDate, { noTime: true })}
                     </div>
-                    <Badge variant="outline" className="shrink-0 backdrop-blur-md">
+                    <Badge variant="outline" className="shrink-0 backdrop-blur-md capitalize">
                         {media.mediaType}
                     </Badge>
                 </div>

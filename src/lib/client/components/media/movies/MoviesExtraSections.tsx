@@ -32,7 +32,7 @@ export const MoviesExtraSections = ({ mediaType, media }: MoviesDetailsProps<typ
             {(media.collection && media.collection.length > 0) &&
                 <section>
                     <MediaSectionTitle title="In The Same Collection"/>
-                    <div className="md:grid md:grid-cols-5 md:gap-y-6 md:overflow-x-hidden pb-4 flex gap-2 scrollbar-thin overflow-x-auto">
+                    <div className="grid grid-cols-5 gap-3 pb-4 max-sm:max-h-70 max-sm:grid-cols-2 max-sm:overflow-y-auto scrollbar-thin">
                         {media.collection?.map((item) =>
                             <SimilarMediaCard
                                 item={item}

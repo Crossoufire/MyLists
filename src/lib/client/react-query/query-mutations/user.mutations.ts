@@ -13,7 +13,7 @@ import {
 } from "@/lib/server/functions/user-settings";
 
 
-export const useFollowMutation = (ownerUsername: string, isOwnerProfilePage: boolean = true) => {
+export const useFollowMutation = (ownerUsername: string, isOwnerProfilePage = true) => {
     const { currentUser } = useAuth();
     const queryClient = useQueryClient();
 
@@ -30,48 +30,48 @@ export const useFollowMutation = (ownerUsername: string, isOwnerProfilePage: boo
                         followersCount: variables.data.followStatus ? oldData.followersCount + 1 : oldData.followersCount - 1
                     };
                 });
+
+                queryClient.setQueryData(followersOptions(ownerUsername).queryKey, (oldData) => {
+                    if (!oldData) return;
+
+                    if (variables.data.followStatus === true) {
+                        return {
+                            ...oldData, followers: [...oldData.followers, {
+                                id: currentUser!.id,
+                                isFollowedByMe: true,
+                                image: currentUser!.image!,
+                                username: currentUser!.name,
+                                privacy: currentUser!.privacy,
+                            }]
+                        };
+                    }
+
+                    return { ...oldData, followers: oldData.followers.filter((f) => f.id !== currentUser!.id) };
+                });
             }
+            else {
+                queryClient.setQueryData(followersOptions(ownerUsername).queryKey, (oldData) => {
+                    if (!oldData) return;
 
-            //@ts-expect-error
-            queryClient.setQueryData(followersOptions(ownerUsername).queryKey, (oldData) => {
-                if (!oldData) return;
-
-                const followerExists = oldData.followers.some((f) => f.id === variables.data.followId);
-
-                if (!followerExists) {
                     return {
                         ...oldData,
-                        followers: [
-                            ...oldData.followers,
-                            {
-                                image: currentUser!.image,
-                                username: currentUser!.name,
-                                id: variables.data.followId,
-                                privacy: currentUser!.privacy,
-                                isFollowedByMe: variables.data.followStatus,
-                            },
-                        ],
+                        followers: oldData.followers.map((f) =>
+                            f.id === variables.data.followId ? { ...f, isFollowedByMe: variables.data.followStatus } : f
+                        )
                     };
-                }
+                });
 
-                return {
-                    ...oldData,
-                    followers: oldData.followers.map((f) =>
-                        f.id === variables.data.followId ? { ...f, isFollowedByMe: variables.data.followStatus } : f,
-                    ),
-                };
-            });
+                queryClient.setQueryData(followsOptions(ownerUsername).queryKey, (oldData) => {
+                    if (!oldData) return;
 
-            queryClient.setQueryData(followsOptions(ownerUsername).queryKey, (oldData) => {
-                if (!oldData) return;
-
-                return {
-                    ...oldData,
-                    follows: oldData.follows.map((f) =>
-                        f.id === variables.data.followId ? { ...f, isFollowedByMe: variables.data.followStatus } : f
-                    )
-                };
-            });
+                    return {
+                        ...oldData,
+                        follows: oldData.follows.map((f) =>
+                            f.id === variables.data.followId ? { ...f, isFollowedByMe: variables.data.followStatus } : f
+                        )
+                    };
+                });
+            }
         },
     });
 };

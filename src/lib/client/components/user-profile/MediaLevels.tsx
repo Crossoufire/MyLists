@@ -64,12 +64,12 @@ const MediaLevelBar = ({ mediaType, username, level }: MediaLevelBarProps) => {
                             </span>
                     </Link>
                 </div>
-                <span className="inline-block text-sm font-semibold tracking-wide text-app-accent">
-                        <div className="inline-block text-xs text-muted-foreground text-right mt-0.5">
-                            ({Math.round(percent)}%)
-                        </div>
+                <span className="inline-block font-semibold text-sm tracking-wide" style={{ color: getThemeColor(mediaType) }}>
+                    <div className="inline-block text-[11px] text-muted-foreground text-right">
+                        ({Math.round(percent)}%)
+                    </div>
                     &nbsp; Lvl {intLevel}
-                    </span>
+                </span>
             </div>
             <Progress
                 value={percent}

@@ -1,5 +1,5 @@
 import React from "react";
-import {Ban} from "lucide-react";
+import {Ban, TrendingUp} from "lucide-react";
 import {capitalize} from "@/lib/utils/formating";
 import {HofUserRank} from "@/lib/types/query.options.types";
 import {Progress} from "@/lib/client/components/ui/progress";
@@ -22,7 +22,7 @@ export const HofRanking = ({ userRanks }: HofRankingProps) => {
                 {userRanks.map((rank) =>
                     <Card key={rank.mediaType} className="p-2 max-sm:py-0 bg-card">
                         {rank.active ?
-                            <CardContent className="max-sm:py-4 p-2 space-y-1">
+                            <CardContent className="max-sm:py-4 p-2">
                                 <div className="flex items-center justify-between gap-4">
                                     <div className="font-semibold text-lg">
                                         {capitalize(rank.mediaType)}
@@ -33,12 +33,15 @@ export const HofRanking = ({ userRanks }: HofRankingProps) => {
                                 </div>
                                 <Progress
                                     max={100}
-                                    className="mt-2"
+                                    className="mt-1.5"
                                     color={getThemeColor(rank.mediaType)}
                                     value={100 - (rank.percent ? rank.percent : 100)}
                                 />
-                                <div className="text-xs font-semibold text-app-accent">
-                                    {rank.percent ? <>Top {rank.percent.toFixed(1)}%</> : <>Top - %</>}
+                                <div className="text-xs font-semibold mt-2">
+                                    <div className="flex items-center gap-1">
+                                        <TrendingUp className="text-app-accent size-4"/>
+                                        {rank.percent ? <>Top {rank.percent.toFixed(1)}%</> : <>Top - %</>}
+                                    </div>
                                 </div>
                             </CardContent>
                             :

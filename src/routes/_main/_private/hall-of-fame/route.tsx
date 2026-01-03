@@ -34,8 +34,8 @@ function HallOfFamePage() {
 
     return (
         <PageTitle title="Hall of Fame" subtitle="Showcase of all the active profiles ranked">
-            <div className="grid grid-cols-12 mx-auto w-250 gap-x-10 max-sm:w-full max-sm:grid-cols-1">
-                <div className="col-span-7 max-sm:col-span-1 w-full max-sm:mt-4 max-sm:order-2">
+            <div className="grid grid-cols-12 w-250 mx-auto gap-x-10 max-lg:w-full max-lg:grid-cols-1">
+                <div className="col-span-7 w-full max-lg:col-span-1 max-lg:mt-4 max-lg:order-2">
                     <div className="flex items-center justify-between mt-3 mb-3">
                         <div className="flex items-center justify-start gap-3">
                             <SearchInput
@@ -85,7 +85,7 @@ function HallOfFamePage() {
                         onChangePage={(page) => updateFilters({ page })}
                     />
                 </div>
-                <div className="col-span-5 max-sm:col-span-1 mt-5.25 max-sm:mt-4 max-sm:order-1">
+                <div className="col-span-5 mt-5.25 max-lg:col-span-1 max-lg:mt-4 max-lg:order-1">
                     <HofRanking
                         userRanks={apiData.userRanks}
                     />

@@ -2,10 +2,10 @@ import {cn} from "@/lib/utils/helpers";
 
 
 interface StatCardProps {
+    value?: any;
     title: string;
     className?: string;
     icon?: React.ReactNode;
-    value?: string | number;
     children?: React.ReactNode;
 }
 

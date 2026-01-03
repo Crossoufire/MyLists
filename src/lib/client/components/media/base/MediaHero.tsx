@@ -18,11 +18,16 @@ export function MediaHero({ media, mediaType }: MediaHeroProps) {
     };
 
     return (
-        <div className="relative flex items-end overflow-hidden left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] w-screen h-[50vh] md:h-[50vh]">
+        <div className="relative flex items-end overflow-hidden min-h-[50vh] left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] w-screen">
             <div style={backdropStyle} className="absolute inset-0 z-0"/>
             <div className="relative max-w-7xl mx-auto w-full px-8 max-sm:px-2">
-                <div className="flex flex-row items-end gap-10 container mx-auto px-4 pb-12">
-                    <div className="hidden md:block w-48 lg:w-60 shrink-0 rounded-lg overflow-hidden shadow-2xl border">
+                <div className="
+                    flex flex-row items-end gap-10 container mx-auto px-4 pb-12
+                    max-lg:flex-col max-lg:items-start pt-15
+                    max-sm:items-center
+                    "
+                >
+                    <div className="lg:w-60 w-52 shrink-0 overflow-hidden rounded-lg shadow-2xl border">
                         <img
                             alt={media.name}
                             src={media.imageCover}

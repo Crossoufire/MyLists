@@ -1,3 +1,4 @@
+import {cn} from "@/lib/utils/helpers";
 import {MediaType} from "@/lib/utils/enums";
 import {PartyPopper, ThumbsDown} from "lucide-react";
 import {Button} from "@/lib/client/components/ui/button";
@@ -13,8 +14,6 @@ import {SimpleStatCard} from "@/lib/client/components/user-profile/SimpleStatCar
 import {Card, CardContent, CardHeader, CardTitle} from "@/lib/client/components/ui/card";
 import {useMoviedleGuessMutation} from "@/lib/client/react-query/query-mutations/mediadle.mutations";
 import {dailyMediadleOptions, mediadleSuggestionsOptions} from "@/lib/client/react-query/query-options/query-options";
-import React from "react";
-import {cn} from "@/lib/utils/helpers";
 
 
 export const Route = createFileRoute("/_main/_private/moviedle")({
@@ -61,7 +60,7 @@ function MediadlePage() {
 
     return (
         <PageTitle title="Daily Movie Challenge" subtitle="Play the daily movie game to check your skills!">
-            <div className="grid gap-6 md:grid-cols-2 mt-6">
+            <div className="grid gap-6 grid-cols-2 mt-6 max-lg:grid-cols-1">
                 <Card>
                     <CardHeader className="space-y-4 pb-4">
                         <div className="flex items-center justify-center gap-2">

@@ -1,5 +1,6 @@
-import {Status} from "@/lib/utils/enums";
 import {Link} from "@tanstack/react-router";
+import {getFeelingIcon} from "@/lib/utils/ratings";
+import {RatingSystemType, Status} from "@/lib/utils/enums";
 import {getThemeColor} from "@/lib/utils/colors-and-icons";
 import {PerMediaSummaryType} from "@/lib/types/query.options.types";
 import {EmptyState} from "@/lib/client/components/general/EmptyState";
@@ -11,15 +12,20 @@ import {DistributionContainer} from "@/lib/client/components/user-profile/Profil
 
 interface MediaStatsTabProps {
     username: string,
+    ratingSystem: RatingSystemType,
     mediaSummary: PerMediaSummaryType[number],
 }
 
 
-export const MediaStatsTab = ({ username, mediaSummary }: MediaStatsTabProps) => {
+export const MediaStatsTab = ({ username, mediaSummary, ratingSystem }: MediaStatsTabProps) => {
     if (!mediaSummary) return null;
 
-    const favoritesList = mediaSummary.favoritesList.map((fav) => ({
-        ...fav,
+    const rating = mediaSummary.avgRated;
+    const ratingDisplay = ratingSystem === "score" ?
+        rating?.toFixed(2) ?? "-" : getFeelingIcon(rating, { size: 28, className: "mt-1" });
+
+    const favoritesList = mediaSummary.favoritesList.map((favorite) => ({
+        ...favorite,
         mediaType: mediaSummary.mediaType,
     }));
 
@@ -36,7 +42,7 @@ export const MediaStatsTab = ({ username, mediaSummary }: MediaStatsTabProps) =>
                 />
                 <SimpleStatCard
                     title="Avg. Rating"
-                    value={mediaSummary.avgRated?.toFixed(2)}
+                    value={ratingDisplay}
                     icon={<Star className="size-5 text-app-rating mt-1"/>}
                 />
                 <SimpleStatCard

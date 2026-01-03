@@ -1,4 +1,5 @@
 import {Plus} from "lucide-react";
+import {capitalize} from "@/lib/utils/formating";
 import {useAuth} from "@/lib/client/hooks/use-auth";
 import {Card} from "@/lib/client/components/ui/card";
 import {MediaType, RoleType} from "@/lib/utils/enums";
@@ -7,16 +8,15 @@ import {createFileRoute} from "@tanstack/react-router";
 import {Button} from "@/lib/client/components/ui/button";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
 import {MediaHero} from "@/lib/client/components/media/base/MediaHero";
-import {SimilarMediaCard} from "@/lib/client/components/media/base/SimilarMedia";
 import {MediaSynopsis} from "@/lib/client/components/media/base/MediaSynopsis";
+import {SimilarMediaCard} from "@/lib/client/components/media/base/SimilarMedia";
 import {MediaComponent} from "@/lib/client/components/media/base/MediaComponent";
 import {UserMediaDetails} from "@/lib/client/components/media/base/UserMediaDetails";
+import {MediaSectionTitle} from "@/lib/client/components/media/base/MediaDetailsComps";
 import {mediaDetailsOptions} from "@/lib/client/react-query/query-options/query-options";
 import {RefreshAndEditMedia} from "@/lib/client/components/media/base/RefreshAndEditMedia";
 import {MediaFollowsSection} from "@/lib/client/components/media/base/MediaFollowsSection";
 import {useAddMediaToListMutation} from "@/lib/client/react-query/query-mutations/user-media.mutations";
-import {MediaSectionTitle} from "@/lib/client/components/media/base/MediaDetailsComps";
-import {capitalize} from "@/lib/utils/formating";
 
 
 export const Route = createFileRoute("/_main/_private/details/$mediaType/$mediaId")({
@@ -55,8 +55,8 @@ function MediaDetailsPage() {
                 media={media}
                 mediaType={mediaType}
             />
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 container mx-auto px-4 py-2 max-sm:py-0">
-                <div className="lg:col-span-8 space-y-8 max-sm:order-2">
+            <div className="grid grid-cols-12 gap-8 container mx-auto px-4 py-2 max-sm:py-0 max-lg:grid-cols-1">
+                <div className="col-span-8 space-y-8 max-lg:col-span-1 max-lg:order-2">
                     <section className="grid grid-cols-2 sm:grid-cols-4 gap-4 py-6 border-y border-app-accent/30">
                         <MediaComponent
                             media={media}
@@ -79,7 +79,7 @@ function MediaDetailsPage() {
                         <MediaSectionTitle
                             title={`Similar ${capitalize(mediaType)}`}
                         />
-                        <div className="md:grid md:grid-cols-5 md:overflow-x-hidden gap-3 flex scrollbar-thin overflow-x-auto pb-4">
+                        <div className="grid grid-cols-5 gap-3 pb-4 max-sm:max-h-140 max-sm:grid-cols-2 max-sm:overflow-y-auto scrollbar-thin">
                             {similarMedia.map((item) =>
                                 <SimilarMediaCard
                                     item={item}
@@ -90,60 +90,52 @@ function MediaDetailsPage() {
                         </div>
                     </section>
                 </div>
+                <div className="col-span-4 space-y-6 max-lg:col-span-1 max-lg:order-1">
+                    <div className="space-y-6 max-lg:grid max-lg:grid-cols-2 max-md:grid-cols-1 max-lg:gap-6">
+                        <div className="space-y-6 max-lg:mb-0">
+                            {(currentUser?.role === RoleType.MANAGER) &&
+                                <RefreshAndEditMedia
+                                    external={external}
+                                    mediaType={mediaType}
+                                    mediaId={apiData.media.id}
+                                    apiId={apiData.media.apiId}
+                                    lastUpdate={apiData.media.lastApiUpdate}
+                                />
+                            }
 
-                <div className="lg:col-span-4 space-y-6 max-sm:order-1">
-                    <div className="md:hidden flex justify-center items-center gap-4">
-                        <div className="w-50 shrink-0 rounded-lg overflow-hidden shadow-lg border">
-                            <img
-                                alt={media.name}
-                                src={media.imageCover}
-                                className="w-full h-full object-cover"
+                            <MediaComponent
+                                media={media}
+                                name="upComingAlert"
+                                mediaType={mediaType}
                             />
+
+                            {userMedia ?
+                                <UserMediaDetails
+                                    mediaType={mediaType}
+                                    userMedia={userMedia}
+                                    queryOption={mediaDetailsOptions(mediaType, mediaId, external)}
+                                />
+                                :
+                                <Card>
+                                    <div className="text-center space-y-2">
+                                        <h3 className="text-lg font-semibold text-slate-200">
+                                            Are you interested in this?
+                                        </h3>
+                                        <p className="text-sm text-muted-foreground">
+                                            Add this {mediaType} to your list to track your progress.
+                                        </p>
+                                    </div>
+                                    <Button className="w-full mt-2" onClick={handleAddMediaToUser}>
+                                        <Plus className="size-4"/> Add to List
+                                    </Button>
+                                </Card>
+                            }
                         </div>
+                        <MediaFollowsSection
+                            mediaType={mediaType}
+                            followsData={followsData}
+                        />
                     </div>
-
-                    {(currentUser?.role === RoleType.MANAGER) &&
-                        <RefreshAndEditMedia
-                            external={external}
-                            mediaType={mediaType}
-                            mediaId={apiData.media.id}
-                            apiId={apiData.media.apiId}
-                            lastUpdate={apiData.media.lastApiUpdate}
-                        />
-                    }
-
-                    <MediaComponent
-                        media={media}
-                        name="upComingAlert"
-                        mediaType={mediaType}
-                    />
-
-                    {userMedia ?
-                        <UserMediaDetails
-                            mediaType={mediaType}
-                            userMedia={userMedia}
-                            queryOption={mediaDetailsOptions(mediaType, mediaId, external)}
-                        />
-                        :
-                        <Card>
-                            <div className="text-center space-y-2">
-                                <h3 className="text-lg font-semibold text-slate-200">
-                                    Are you interested in this?
-                                </h3>
-                                <p className="text-sm text-muted-foreground">
-                                    Add this {mediaType} to your list to track your progress.
-                                </p>
-                            </div>
-                            <Button className="w-full mt-2" onClick={handleAddMediaToUser}>
-                                <Plus className="size-4"/> Add to List
-                            </Button>
-                        </Card>
-                    }
-
-                    <MediaFollowsSection
-                        mediaType={mediaType}
-                        followsData={followsData}
-                    />
                 </div>
             </div>
         </PageTitle>
