@@ -33,8 +33,8 @@ export const ProfileHeader = ({ user, followStatus, followId, followsCount, foll
                 <div className="absolute inset-0 bg-linear-to-t from-neutral-950 to-transparent opacity-20 z-10"/>
                 <img
                     alt="Cover"
+                    src={user.backgroundImage}
                     className="w-full h-full object-cover opacity-80"
-                    src="https://mylists.info/images/profile-back-covers/3a5ad1f758c838225c44c2e70258636e.jpg"
                 />
             </div>
 

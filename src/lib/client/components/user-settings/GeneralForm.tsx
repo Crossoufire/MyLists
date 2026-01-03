@@ -125,7 +125,7 @@ export const GeneralForm = () => {
                                 <FormControl>
                                     <ImageCropper
                                         aspect={1}
-                                        cropShape={"round"}
+                                        cropShape="round"
                                         fileName={field.name}
                                         key={imageCropperKey}
                                         onCropApplied={field.onChange}
@@ -144,12 +144,12 @@ export const GeneralForm = () => {
                                 <FormLabel>Background Image</FormLabel>
                                 <FormControl>
                                     <ImageCropper
-                                        cropShape={"rect"}
-                                        aspect={1304 / 288}
+                                        cropShape="rect"
+                                        aspect={1280 / 256}
                                         fileName={field.name}
                                         key={imageCropperKey + 1}
                                         onCropApplied={field.onChange}
-                                        resultClassName={"h-[100px] object-contain"}
+                                        resultClassName="h-[100px] object-contain"
                                     />
                                 </FormControl>
                                 <FormMessage/>
