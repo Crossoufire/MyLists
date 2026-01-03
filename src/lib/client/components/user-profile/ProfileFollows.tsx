@@ -49,8 +49,8 @@ export const ProfileFollows = ({ username, followsCount, follows }: ProfileFollo
                                             >
                                                 <ProfileIcon
                                                     fallbackSize="text-lg"
-                                                    className="size-12 border"
                                                     user={{ image: follow.image, name: follow.username }}
+                                                    className="size-12 border-none hover:ring-2 hover:ring-app-accent"
                                                 />
                                             </BlockLink>
                                         </TooltipTrigger>

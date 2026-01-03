@@ -159,7 +159,7 @@ export const Navbar = () => {
                         <Notifications/>
 
                         <DropdownMenu>
-                            <DropdownMenuTrigger>
+                            <DropdownMenuTrigger asChild>
                                 <div className="relative">
                                     <Button
                                         variant="invisible"
@@ -167,8 +167,8 @@ export const Navbar = () => {
                                     >
                                         <ProfileIcon
                                             fallbackSize="text-base"
-                                            className="size-12 hover:border hover:border-app-accent"
                                             user={{ name: currentUser.name, image: currentUser.image! }}
+                                            className="size-10 border-none hover:ring-2 hover:ring-app-accent"
                                         />
                                     </Button>
                                     {currentUser.showUpdateModal &&
