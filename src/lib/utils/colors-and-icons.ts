@@ -8,8 +8,8 @@ export const THEME_ICONS_MAP = {
     [MediaType.SERIES]: Monitor,
     [MediaType.ANIME]: Cat,
     [MediaType.MOVIES]: Popcorn,
-    [MediaType.BOOKS]: Gamepad2,
-    [MediaType.GAMES]: Library,
+    [MediaType.GAMES]: Gamepad2,
+    [MediaType.BOOKS]: Library,
     [MediaType.MANGA]: BookImage,
 };
 
