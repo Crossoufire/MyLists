@@ -25,7 +25,12 @@ export const MangaInfoGrid = ({ mediaType, media }: MangaDetailsProps<typeof Med
                 ) ?? "-"}
             </MediaInfoGridItem>
             <MediaInfoGridItem label="Published By">
-                {media.publishers ?? "-"}
+                {media.publishers ?
+                    <Link to="/details/$mediaType/$job/$name" params={{ mediaType, job: "publisher", name: media.publishers }}>
+                        {media.publishers}
+                    </Link>
+                    : "-"
+                }
             </MediaInfoGridItem>
             <MediaInfoGridItem label="Releasing Dates">
                 {formatDateTime(media.releaseDate, { noTime: true })}
