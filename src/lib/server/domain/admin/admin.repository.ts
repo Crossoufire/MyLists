@@ -1,6 +1,7 @@
-import {desc, eq} from "drizzle-orm";
 import {ErrorLog} from "@/lib/types/base.types";
+import {count, desc, eq, inArray} from "drizzle-orm";
 import {SaveToDbProps} from "@/lib/types/tasks.types";
+import {SearchTypeAdmin} from "@/lib/types/zod.schema.types";
 import {getDbClient} from "@/lib/server/database/async-storage";
 import {errorLogs, taskHistory, userMediaStatsHistory} from "@/lib/server/database/schema";
 
@@ -16,17 +17,40 @@ export class AdminRepository {
             });
     }
 
-    static async getErrorLogs() {
-        return getDbClient()
+    static async getPaginatedErrorLogs(data: SearchTypeAdmin) {
+        const page = data.page ?? 1;
+        const perPage = data.perPage ?? 10;
+        const offset = (page - 1) * perPage;
+
+        const totalLogs = await getDbClient()
+            .select({ count: count() })
+            .from(errorLogs)
+            .get().then((res) => res?.count ?? 0);
+
+        const logs = await getDbClient()
             .select()
             .from(errorLogs)
+            .offset(offset)
+            .limit(perPage)
             .orderBy(desc(errorLogs.createdAt));
+
+        return {
+            items: logs,
+            total: totalLogs,
+            pages: Math.ceil(totalLogs / perPage),
+        };
     }
 
-    static async deleteErrorLog(errorId: number) {
-        await getDbClient()
-            .delete(errorLogs)
-            .where(eq(errorLogs.id, errorId));
+    static async deleteErrorLogs(errorIds: number[] | null) {
+        if (!errorIds) {
+            await getDbClient()
+                .delete(errorLogs);
+        }
+        else {
+            await getDbClient()
+                .delete(errorLogs)
+                .where(inArray(errorLogs.id, errorIds));
+        }
     }
 
     static async saveTaskToDb(data: SaveToDbProps) {

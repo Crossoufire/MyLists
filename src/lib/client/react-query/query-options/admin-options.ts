@@ -55,9 +55,10 @@ export const adminArchivedTasksOptions = queryOptions({
     queryFn: getAdminArchivedTasks,
 });
 
-export const adminErrorLogsOptions = queryOptions({
-    queryKey: ["admin", "errors"],
-    queryFn: getAdminErrorLogs,
+
+export const adminErrorLogsOptions = (search: SearchTypeAdmin) => queryOptions({
+    queryKey: ["admin", "errors", search],
+    queryFn: () => getAdminErrorLogs({ data: search }),
 });
 
 

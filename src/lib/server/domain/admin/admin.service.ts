@@ -3,6 +3,7 @@ import {ErrorLog} from "@/lib/types/base.types";
 import {SaveToDbProps} from "@/lib/types/tasks.types";
 import {AdminRepository} from "@/lib/server/domain/admin/admin.repository";
 import {MediaServiceRegistry} from "@/lib/server/domain/media/media.registries";
+import {SearchTypeAdmin} from "@/lib/types/zod.schema.types";
 
 
 export class AdminService {
@@ -13,12 +14,12 @@ export class AdminService {
         return this.repository.saveErrorToDb(error);
     }
 
-    async getErrorLogs() {
-        return this.repository.getErrorLogs();
+    async getPaginatedErrorLogs(data: SearchTypeAdmin) {
+        return this.repository.getPaginatedErrorLogs(data);
     }
 
-    async deleteErrorLog(errorId: number) {
-        return this.repository.deleteErrorLog(errorId);
+    async deleteErrorLogs(errorIds: number[] | null) {
+        return this.repository.deleteErrorLogs(errorIds);
     }
 
     async saveTaskToDb(data: SaveToDbProps) {

@@ -176,18 +176,19 @@ export const postAdminDeleteArchivedTask = createServerFn({ method: "POST" })
 
 export const getAdminErrorLogs = createServerFn({ method: "GET" })
     .middleware([managerAuthMiddleware, adminAuthMiddleware])
-    .handler(async () => {
+    .inputValidator(searchTypeAdminSchema)
+    .handler(async ({ data }) => {
         const adminService = await getContainer().then((c) => c.services.admin);
-        return adminService.getErrorLogs();
+        return adminService.getPaginatedErrorLogs(data);
     });
 
 
 export const postAdminDeleteErrorLog = createServerFn({ method: "POST" })
     .middleware([managerAuthMiddleware, adminAuthMiddleware])
     .inputValidator(adminDeleteErrorLogSchema)
-    .handler(async ({ data: { errorId } }) => {
+    .handler(async ({ data: { errorIds } }) => {
         const adminService = await getContainer().then((c) => c.services.admin);
-        return adminService.deleteErrorLog(errorId);
+        return adminService.deleteErrorLogs(errorIds);
     });
 
 

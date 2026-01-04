@@ -277,7 +277,7 @@ export const adminDeleteArchivedTaskSchema = z.object({
 });
 
 export const adminDeleteErrorLogSchema = z.object({
-    errorId: z.number(),
+    errorIds: z.array(z.number()).nullable(),
 });
 
 export const llmResponseSchema = z.array(z.object({

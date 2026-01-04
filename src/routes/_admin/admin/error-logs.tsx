@@ -1,36 +1,84 @@
+import {ClipboardX} from "lucide-react";
+import {Badge} from "@/lib/client/components/ui/badge";
 import {createFileRoute} from "@tanstack/react-router";
 import {useSuspenseQuery} from "@tanstack/react-query";
+import {Button} from "@/lib/client/components/ui/button";
+import {SearchTypeAdmin} from "@/lib/types/zod.schema.types";
+import {Pagination} from "@/lib/client/components/general/Pagination";
+import {EmptyState} from "@/lib/client/components/general/EmptyState";
 import {ErrorLogCard} from "@/lib/client/components/admin/ErrorLogCard";
 import {DashboardShell} from "@/lib/client/components/admin/DashboardShell";
 import {DashboardHeader} from "@/lib/client/components/admin/DashboardHeader";
 import {adminErrorLogsOptions} from "@/lib/client/react-query/query-options/admin-options";
+import {useAdminDeleteErrorLogsMutation} from "@/lib/client/react-query/query-mutations/admin.mutations";
 
 
 export const Route = createFileRoute("/_admin/admin/error-logs")({
-    loader: async ({ context: { queryClient } }) => queryClient.ensureQueryData(adminErrorLogsOptions),
+    validateSearch: (search) => search as SearchTypeAdmin,
+    loaderDeps: ({ search }) => ({ search }),
+    loader: async ({ context: { queryClient }, deps: { search } }) => {
+        return queryClient.ensureQueryData(adminErrorLogsOptions(search));
+    },
     component: AdminErrorLogsPage,
 })
 
 
+const DEFAULT = { page: 1 } satisfies SearchTypeAdmin;
+
+
 function AdminErrorLogsPage() {
-    const errorLogs = useSuspenseQuery(adminErrorLogsOptions).data;
+    const filters = Route.useSearch();
+    const navigate = Route.useNavigate();
+    const { page = DEFAULT.page } = filters;
+    const apiData = useSuspenseQuery(adminErrorLogsOptions(filters)).data;
+    const deleteErrorLogsMutation = useAdminDeleteErrorLogsMutation(filters);
+
+    const onPageChange = async (page: number) => {
+        await navigate({ search: { page } });
+    };
+
+    const deleteAllErrorLogs = async () => {
+        deleteErrorLogsMutation.mutate({ data: { errorIds: null } });
+    }
 
     return (
         <DashboardShell>
             <DashboardHeader heading="Error Logs" description="View and manage system error logs."/>
             <div>
-                {errorLogs.length === 0 ?
-                    <p className="text-center text-muted-foreground p-8">
-                        No error logs yet.
-                    </p>
+                {apiData.total === 0 ?
+                    <EmptyState
+                        iconSize={35}
+                        className="py-8"
+                        icon={ClipboardX}
+                        message="No error logs found in the database."
+                    />
                     :
-                    <div className="space-y-4">
-                        {errorLogs.map((errorLog) =>
-                            <ErrorLogCard
-                                key={errorLog.id}
-                                errorLog={errorLog}
-                            />
-                        )}
+                    <div className="max-w-2xl">
+                        <div className="flex items-center justify-between mb-4">
+                            <Badge variant="black" className="px-3 py-1">
+                                {apiData.items.length} of {apiData.total} error logs - Page {page}/{apiData.pages}.
+                            </Badge>
+                            <div>
+                                <Button size="sm" variant="destructive" onClick={deleteAllErrorLogs}>
+                                    Delete All Logs
+                                </Button>
+                            </div>
+                        </div>
+
+                        <div className="space-y-4">
+                            {apiData.items.map((errorLog) =>
+                                <ErrorLogCard
+                                    key={errorLog.id}
+                                    errorLog={errorLog}
+                                    onDeleteMutation={deleteErrorLogsMutation}
+                                />
+                            )}
+                        </div>
+                        <Pagination
+                            currentPage={page}
+                            totalPages={apiData.pages}
+                            onChangePage={onPageChange}
+                        />
                     </div>
                 }
             </div>

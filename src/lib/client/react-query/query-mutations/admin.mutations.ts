@@ -73,14 +73,14 @@ export const useAdminDeleteTaskMutation = () => {
 };
 
 
-export const useAdminDeleteErrorLogMutation = () => {
+export const useAdminDeleteErrorLogsMutation = (search: SearchTypeAdmin) => {
     const queryClient = useQueryClient();
 
     return useMutation({
         mutationFn: postAdminDeleteErrorLog,
-        onError: (error) => toast.error(error.message ?? "Can't delete this error log."),
+        onError: (error) => toast.error(error.message ?? "Can't delete some error logs."),
         onSuccess: async () => {
-            await queryClient.invalidateQueries({ queryKey: adminErrorLogsOptions.queryKey });
+            await queryClient.invalidateQueries({ queryKey: adminErrorLogsOptions(search).queryKey });
         },
     });
 };

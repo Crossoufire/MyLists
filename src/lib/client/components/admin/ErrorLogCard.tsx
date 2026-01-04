@@ -1,25 +1,30 @@
 import {useState} from "react";
 import {Clock, Info, Trash} from "lucide-react";
+import {formatDateTime} from "@/lib/utils/formating";
 import {Button} from "@/lib/client/components/ui/button";
 import {adminErrorLogsOptions} from "@/lib/client/react-query/query-options/admin-options";
 import {Card, CardAction, CardContent, CardHeader, CardTitle} from "@/lib/client/components/ui/card";
-import {useAdminDeleteErrorLogMutation} from "@/lib/client/react-query/query-mutations/admin.mutations";
-import {formatDateTime} from "@/lib/utils/formating";
+import {useAdminDeleteErrorLogsMutation} from "@/lib/client/react-query/query-mutations/admin.mutations";
 
 
-type ErrorLogType = Awaited<ReturnType<NonNullable<typeof adminErrorLogsOptions.queryFn>>>[number];
+type ErrorLogType = Awaited<ReturnType<NonNullable<ReturnType<typeof adminErrorLogsOptions>["queryFn"]>>>["items"][number];
 
 
-export function ErrorLogCard({ errorLog }: { errorLog: ErrorLogType }) {
+interface ErrorLogCardProps {
+    errorLog: ErrorLogType;
+    onDeleteMutation: ReturnType<typeof useAdminDeleteErrorLogsMutation>;
+}
+
+
+export function ErrorLogCard({ errorLog, onDeleteMutation }: ErrorLogCardProps) {
     const [showStack, setShowStack] = useState(false);
-    const deleteErrorLogMutation = useAdminDeleteErrorLogMutation();
 
     const handleDeleteErrorLog = () => {
-        deleteErrorLogMutation.mutate({ data: { errorId: errorLog.id } });
+        onDeleteMutation.mutate({ data: { errorIds: [errorLog.id] } });
     }
 
     return (
-        <Card className="max-w-2xl">
+        <Card>
             <CardHeader>
                 <CardTitle>
                     {errorLog.name}
@@ -58,8 +63,8 @@ export function ErrorLogCard({ errorLog }: { errorLog: ErrorLogType }) {
                         </Button>
                         {showStack &&
                             <div className="mt-2 p-2 bg-zinc-900 rounded text-xs font-mono overflow-auto">
-                                <pre className="text-zinc-300 whitespace-pre-wrap break-words">
-                                    {JSON.stringify(JSON.parse(errorLog.stack), null, 4)}
+                                <pre className="text-zinc-300 whitespace-pre-wrap wrap-break-word">
+                                    {JSON.stringify(JSON.parse(errorLog.stack), null, 2)}
                                 </pre>
                             </div>
                         }
