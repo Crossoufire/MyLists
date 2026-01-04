@@ -60,5 +60,5 @@ export const AchievementsCard = ({ username, achievements }: AchievementsProps) 
                 }
             </CardContent>
         </Card>
-    )
-}
+    );
+};

@@ -10,10 +10,8 @@ interface SimilarMediaProps {
 
 
 export const SimilarMediaCard = ({ mediaType, item }: SimilarMediaProps) => {
-    const newItem = { ...item, imageCover: item.mediaCover };
-
     return (
-        <MediaCard mediaType={mediaType} item={newItem}>
+        <MediaCard mediaType={mediaType} item={item}>
             <div className="absolute bottom-0 w-full rounded-b-sm p-3 pb-2">
                 <div className="flex w-full items-center justify-between text-sm">
                     <h3 className="grow truncate font-semibold text-primary" title={item.mediaName}>

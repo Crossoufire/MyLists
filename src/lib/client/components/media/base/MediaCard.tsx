@@ -10,7 +10,8 @@ interface MediaCardProps {
     item: {
         mediaId: number;
         mediaName: string;
-        imageCover: string;
+        imageCover?: string;
+        mediaCover?: string;
     };
 }
 
@@ -22,7 +23,7 @@ export const MediaCard = ({ children, item, mediaType, external = false }: Media
                 <img
                     loading="lazy"
                     alt={item.mediaName}
-                    src={item.imageCover}
+                    src={item.imageCover ?? item.mediaCover}
                     className="object-cover w-full h-full transition-transform duration-300"
                 />
                 <div className="absolute inset-0 bg-linear-to-t from-black via-transparent to-transparent"/>

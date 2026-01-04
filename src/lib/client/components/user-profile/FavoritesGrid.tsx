@@ -2,8 +2,8 @@ import {MediaType} from "@/lib/utils/enums";
 import {HeartOff, TrendingUp} from "lucide-react";
 import {Link, LinkProps} from "@tanstack/react-router";
 import {useBreakpoint} from "@/lib/client/hooks/use-breakpoint";
-import {BlockLink} from "@/lib/client/components/general/BlockLink";
 import {EmptyState} from "@/lib/client/components/general/EmptyState";
+import {MediaCard} from "@/lib/client/components/media/base/MediaCard";
 import {Card, CardHeader, CardTitle} from "@/lib/client/components/ui/card";
 
 
@@ -49,26 +49,13 @@ export const MediaFavoritesGrid = ({ favorites, title, linkProps }: FavoritesGri
                     />
                     :
                     favoritesToDisplay.map((fav) =>
-                        <BlockLink
-                            key={fav.mediaId}
-                            search={{ external: false }}
-                            to={"/details/$mediaType/$mediaId"}
-                            params={{ mediaType: fav.mediaType, mediaId: fav.mediaId }}
-                        >
-                            <div className="relative group aspect-2/3 rounded-lg overflow-hidden border">
-                                <img
-                                    alt={fav.mediaName}
-                                    src={fav.mediaCover}
-                                    className="w-full h-full object-cover"
-                                />
-                                <div className="absolute inset-0 bg-linear-to-t from-black via-transparent to-transparent
-                                opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2">
-                                    <span className="text-[10px] font-bold text-primary line-clamp-2">
-                                        {fav.mediaName}
-                                    </span>
-                                </div>
+                        <MediaCard item={fav} mediaType={fav.mediaType}>
+                            <div className="absolute bottom-0 w-full rounded-b-sm p-3 pb-2">
+                                <h3 className="text-[10px] font-bold text-primary line-clamp-2" title={fav.mediaName}>
+                                    {fav.mediaName}
+                                </h3>
                             </div>
-                        </BlockLink>
+                        </MediaCard>
                     )
                 }
             </div>
