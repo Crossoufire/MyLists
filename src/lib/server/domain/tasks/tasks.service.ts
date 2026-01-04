@@ -235,7 +235,7 @@ export class TasksService {
             for (const achievement of mediaAchievements) {
                 await this.achievementsService.calculateAchievement(achievement, mediaService);
             }
-            ctx.logger.info(`Calculating ${mediaType} achievements completed.`);
+            ctx.logger.info(`Calculating achievements for ${mediaType} completed.`);
         }
 
         await this.achievementsService.calculateAllAchievementsRarity();
