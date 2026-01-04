@@ -1,23 +1,24 @@
 import React from "react";
 import {Link} from "@tanstack/react-router";
 import {MediaType} from "@/lib/utils/enums";
+import {zeroPad} from "@/lib/utils/formating";
 import {MediaConfig} from "@/lib/client/components/media/media-config";
 import {MediaExtraGrid, MediaSectionTitle} from "@/lib/client/components/media/base/MediaDetailsComps";
-
-import {zeroPad} from "@/lib/utils/formating";
 
 
 type TvDetailsProps<T extends MediaType> = Parameters<NonNullable<MediaConfig[T]["extraSections"]>>[number];
 
 
 export const TvExtraSections = ({ mediaType, media }: TvDetailsProps<typeof MediaType.SERIES | typeof MediaType.ANIME>) => {
+    const cleanedActors = (media.actors ?? []).filter((a) => a.name !== null);
+
     return (
         <>
-            {(media.actors && media.actors.length > 0) &&
+            {cleanedActors.length > 0 &&
                 <section>
                     <MediaSectionTitle title="Main Actors"/>
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                        {media.actors.map((actor) =>
+                        {cleanedActors.map((actor) =>
                             <Link to="/details/$mediaType/$job/$name" params={{ mediaType, job: "actor", name: actor.name }}>
                                 <MediaExtraGrid
                                     subname="Actor"

@@ -8,19 +8,20 @@ type GamesDetailsProps<T extends MediaType> = Parameters<NonNullable<MediaConfig
 
 
 export const GamesExtraSections = ({ media }: GamesDetailsProps<typeof MediaType.GAMES>) => {
-    const platforms = media.platforms ? media.platforms.sort((a, b) => a.name.localeCompare(b.name)) : [];
+    const cleanedPlatforms = (media.platforms ?? []).filter((a) => a.name !== null);
+    const sortedPlatforms = cleanedPlatforms.sort((a, b) => a.name.localeCompare(b.name));
 
     return (
         <>
-            {platforms &&
+            {sortedPlatforms.length > 0 &&
                 <section>
                     <MediaSectionTitle title="Game Platforms"/>
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 overflow-y-auto max-h-50 scrollbar-thin">
-                        {platforms.map((plat) =>
+                        {sortedPlatforms.map((plat) =>
                             <MediaExtraGrid
                                 name={plat.name}
                                 subname="Platform"
-                                initials={plat.name?.[0] + plat.name?.[1]}
+                                initials={plat.name[0] + plat.name[1]}
                             />
                         )}
                     </div>

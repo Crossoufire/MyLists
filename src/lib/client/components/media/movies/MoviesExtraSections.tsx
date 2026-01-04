@@ -10,19 +10,21 @@ type MoviesDetailsProps<T extends MediaType> = Parameters<NonNullable<MediaConfi
 
 
 export const MoviesExtraSections = ({ mediaType, media }: MoviesDetailsProps<typeof MediaType.MOVIES>) => {
+    const cleanedActors = (media.actors ?? []).filter((a) => a.name !== null);
+
     return (
         <>
-            {(media.actors && media.actors?.length > 0) &&
+            {cleanedActors.length > 0 &&
                 <section>
                     <MediaSectionTitle title="Main Actors"/>
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                        {media.actors.map((actor) =>
+                        {cleanedActors.map((actor) =>
                             <Link to="/details/$mediaType/$job/$name" params={{ mediaType, job: "actor", name: actor.name }}>
                                 <MediaExtraGrid
                                     subname="Actor"
                                     clickable={true}
                                     name={actor.name}
-                                    initials={actor.name?.[0] + actor.name?.[1]}
+                                    initials={actor.name[0] + actor.name[1]}
                                 />
                             </Link>
                         )}
