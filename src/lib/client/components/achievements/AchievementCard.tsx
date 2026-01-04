@@ -3,7 +3,7 @@ import {Award} from "lucide-react";
 import {cn} from "@/lib/utils/helpers";
 import {Badge} from "@/lib/client/components/ui/badge";
 import {AchCard} from "@/lib/types/query.options.types";
-import {formatRelativeTime} from "@/lib/utils/formating";
+import {formatDateTime, formatRelativeTime} from "@/lib/utils/formating";
 import {Progress} from "@/lib/client/components/ui/progress";
 import {TiersDetails} from "@/lib/client/components/achievements/TierDetails";
 import {Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle} from "@/lib/client/components/ui/card";
@@ -47,7 +47,7 @@ export const AchievementCard = ({ achievement }: AchievementCardProps) => {
                         <Award className={cn("size-6", iconColorClass)}/>
                         <div className="flex flex-col">
                             {name}
-                            <div className="text-xs font-medium text-muted-foreground">
+                            <div className="text-xs font-medium text-muted-foreground" title={formatDateTime(highestCompletedTier?.completedAt)}>
                                 {formatRelativeTime(highestCompletedTier?.completedAt)}
                             </div>
                         </div>

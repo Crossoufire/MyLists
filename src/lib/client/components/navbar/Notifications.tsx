@@ -108,7 +108,7 @@ const NotificationItem = ({ data, handlePopoverClose }: NotificationItemProps) =
                                     </span>
                                 </Link>
                             </p>
-                            <span className="text-xs text-muted-foreground whitespace-nowrap ml-2">
+                            <span className="text-xs text-muted-foreground whitespace-nowrap ml-2" title={formatDateTime(data.timestamp)}>
                                 {formatRelativeTime(data.timestamp)}
                             </span>
                         </div>
@@ -149,7 +149,7 @@ const NotificationItem = ({ data, handlePopoverClose }: NotificationItemProps) =
                                     </span>
                                 </Link>
                             </p>
-                            <span className="text-xs text-muted-foreground whitespace-nowrap ml-2">
+                            <span className="text-xs text-muted-foreground whitespace-nowrap ml-2" title={formatDateTime(data.timestamp)}>
                                 {formatRelativeTime(data.timestamp)}
                             </span>
                         </div>

@@ -83,7 +83,6 @@ export const userMediaSettings = sqliteTable("user_media_settings", {
 export const userMediaStatsHistory = sqliteTable("user_media_stats_history", {
     id: integer().primaryKey().notNull(),
     userId: integer().notNull().references(() => user.id, { onDelete: "cascade" }),
-    mediaId: integer(),
     mediaType: text().$type<MediaType>().notNull(),
     timeSpent: integer().default(0).notNull(),
     views: integer().default(0).notNull(),
@@ -98,6 +97,7 @@ export const userMediaStatsHistory = sqliteTable("user_media_stats_history", {
     statusCounts: customJson<Record<Status, number>>("status_counts").default(sql`'{}'`).notNull(),
     averageRating: real(),
     timestamp: text().default(sql`(CURRENT_TIMESTAMP)`).notNull(),
+    mediaId: integer(),
 }, (table) => [
     index("ix_user_media_stats_history_user_id").on(table.userId),
     index("ix_user_media_stats_history_media_type").on(table.mediaType),

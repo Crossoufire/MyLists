@@ -4,8 +4,8 @@ import {Link} from "@tanstack/react-router";
 import {MediaType} from "@/lib/utils/enums";
 import {Pencil, RefreshCw} from "lucide-react";
 import {Button} from "@/lib/client/components/ui/button";
+import {formatDateTime, formatRelativeTime} from "@/lib/utils/formating";
 import {useRefreshMediaMutation} from "@/lib/client/react-query/query-mutations/media.mutations";
-import {formatRelativeTime} from "@/lib/utils/formating";
 
 
 interface RefreshAndEditMediaProps {
@@ -51,7 +51,7 @@ export const RefreshAndEditMedia = ({ mediaType, mediaId, apiId, external, lastU
 
             <div className="border-l border h-6 border-muted-foreground/50"/>
 
-            <div className="px-3 text-xs text-muted-foreground">
+            <div className="px-3 text-xs text-muted-foreground" title={formatDateTime(lastUpdate)}>
                 Updated {formatRelativeTime(lastUpdate)}
             </div>
         </div>

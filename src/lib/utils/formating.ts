@@ -127,7 +127,7 @@ export const formatRelativeTime = (input: string | null | undefined) => {
     if (isNaN(date.getTime())) return "Never";
 
     const diffInSecs = Math.floor((date.getTime() - Date.now()) / 1000);
-    const rtf = new Intl.RelativeTimeFormat("en", { numeric: "always" });
+    const rtf = new Intl.RelativeTimeFormat("en", { numeric: "always", style: "short" });
 
     for (const { unit, seconds } of RELATIVE_TIME_UNITS) {
         if (Math.abs(diffInSecs) >= seconds) {

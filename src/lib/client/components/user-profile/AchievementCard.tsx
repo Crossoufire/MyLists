@@ -2,7 +2,7 @@ import {Award} from "lucide-react";
 import {cn} from "@/lib/utils/helpers";
 import {Link} from "@tanstack/react-router";
 import {Button} from "@/lib/client/components/ui/button";
-import {formatRelativeTime} from "@/lib/utils/formating";
+import {formatDateTime, formatRelativeTime} from "@/lib/utils/formating";
 import {AchievementsType} from "@/lib/types/query.options.types";
 import {EmptyState} from "@/lib/client/components/general/EmptyState";
 import {Card, CardContent, CardHeader, CardTitle} from "@/lib/client/components/ui/card";
@@ -40,7 +40,7 @@ export const AchievementsCard = ({ username, achievements }: AchievementsProps) 
                                             {ach.name}
                                         </div>
                                     </div>
-                                    <div className="text-muted-foreground text-xs">
+                                    <div className="text-muted-foreground text-xs" title={formatDateTime(ach.completedAt)}>
                                         {formatRelativeTime(ach.completedAt)}
                                     </div>
                                 </div>
