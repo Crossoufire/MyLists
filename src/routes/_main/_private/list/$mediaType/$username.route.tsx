@@ -41,8 +41,8 @@ function MediaList() {
     const allStatuses = statusUtils.byMediaType(mediaType);
     const [isGrid, setIsGrid] = useState(currentUser?.gridListView ?? true);
     const [filtersPanelOpen, setFiltersPanelOpen] = useState(false);
-    const [activeTab, setActiveTab] = useState<Status | "all">("all");
     const apiData = useSuspenseQuery(mediaListOptions(mediaType, username, filters)).data;
+    const [activeTab, setActiveTab] = useState<Status | "all">(filters?.status?.[0] ?? "all");
 
     const isCurrent = (currentUser?.id === apiData.userData.id);
 
