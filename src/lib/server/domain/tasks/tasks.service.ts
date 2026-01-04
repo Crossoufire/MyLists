@@ -35,7 +35,7 @@ export class TasksService {
         this.taskHandlers = {
             dbMaintenance: this.runDbMaintenance.bind(this),
             lockOldMovies: this.runLockOldMovies.bind(this),
-            checkHLTBWorks: this.runCheckHLTBWorks.bind(this),
+            checkHltbWorks: this.runCheckHLTBWorks.bind(this),
             updateIgdbToken: this.runUpdateIgdbToken.bind(this),
             bulkMediaRefresh: this.runBulkMediaRefresh.bind(this),
             seedAchievements: this.runSeedAchievements.bind(this),

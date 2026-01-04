@@ -16,7 +16,7 @@ export const taskNames = [
     "removeUnusedMediaCovers",
     "deleteNonActivatedUsers",
     "processCsv",
-    "checkHLTBWorks"
+    "checkHltbWorks"
 ] as const;
 
 
@@ -29,7 +29,7 @@ export const taskDefinitions: TaskDefinition[] = [
     { name: "maintenanceTasks", description: "Run all maintenance tasks in sequence" },
     { name: "addGenresToBooksUsingLlm", description: "Like the name of this task say" },
     { name: "seedAchievements", description: "Apply seed achievements to the database" },
-    { name: "checkHLTBWorks", description: "As the name suggests, check that HLTB works" },
+    { name: "checkHltbWorks", description: "As the name suggests, check that HLTB works" },
     { name: "removeNonListMedia", description: "Remove non-list media from the database" },
     { name: "dbMaintenance", description: "WAL checkpoint, Vacuum, and Analyze on the db" },
     { name: "bulkMediaRefresh", description: "Bulk refresh media data from APIs provider" },

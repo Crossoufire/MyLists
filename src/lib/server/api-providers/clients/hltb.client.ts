@@ -1,4 +1,4 @@
-import * as cheerio from "cheerio";
+// import * as cheerio from "cheerio";
 import UserAgent from "user-agents";
 import {closest} from "@/lib/utils/levenshtein";
 import {RateLimiterAbstract} from "rate-limiter-flexible";
@@ -10,7 +10,7 @@ import {HltbApiResponse, HltbGameEntry} from "@/lib/types/provider.types";
 export class HltbClient extends BaseClient {
     private static readonly consumeKey = "hltb-API";
     private static readonly baseUrl = "https://howlongtobeat.com/";
-    private static searchUrl = HltbClient.baseUrl + "api/s/"
+    private static searchUrl = HltbClient.baseUrl + "api/search/"
     private static tokenUrl = HltbClient.baseUrl + "api/search/init";
     private static readonly throttleOptions = { points: 4, duration: 1, keyPrefix: "hltbAPI" };
 
@@ -81,10 +81,11 @@ export class HltbClient extends BaseClient {
             headers["x-auth-token"] = authToken;
         }
 
-        const searchUrl = await this._getSearchInfo(false);
-        if (searchUrl) {
-            HltbClient.searchUrl = `${HltbClient.baseUrl}${searchUrl}`;
-        }
+        // Not needed anymore for now (search url always /api/search)
+        // const searchUrl = await this._getSearchInfo(false);
+        // if (searchUrl) {
+        //     HltbClient.searchUrl = `${HltbClient.baseUrl}${searchUrl}`;
+        // }
 
         try {
             const payload = this._getSearchPayload(gameName);
@@ -115,7 +116,7 @@ export class HltbClient extends BaseClient {
             if (response.ok) {
                 const data = await response.json();
                 const token = data?.token ?? data?.data?.token;
-                return String(token) as string;
+                return String(token);
             }
             else {
                 console.error("Request failed with status", response.status);
@@ -126,68 +127,72 @@ export class HltbClient extends BaseClient {
         }
     }
 
-    private async _getSearchInfo(searchAll: boolean) {
-        const ua = new UserAgent();
-        const headers = {
-            "User-Agent": ua.toString(),
-            "referer": HltbClient.baseUrl,
-        }
+    // private async _getSearchInfo(searchAll: boolean) {
+    //     const ua = new UserAgent();
+    //     const headers = {
+    //         "User-Agent": ua.toString(),
+    //         "referer": HltbClient.baseUrl,
+    //     }
+    //
+    //     try {
+    //         const response = await fetch(HltbClient.baseUrl, { method: "GET", headers });
+    //         if (!response.ok) return;
+    //
+    //         const htmlResult = await response.text();
+    //         console.log("Got HTML result:", htmlResult);
+    //
+    //         const $ = cheerio.load(htmlResult);
+    //         const scripts = $("script[src]");
+    //         console.log("Found scripts:", scripts.length);
+    //
+    //         const matchingScripts: string[] = [];
+    //         scripts.each((_, elem) => {
+    //             const src = $(elem).attr("src");
+    //             console.log("Found script:", src);
+    //             if (src && (searchAll || src.includes("_app-"))) {
+    //                 matchingScripts.push(src);
+    //             }
+    //         });
+    //
+    //         for (const scriptUrl of matchingScripts) {
+    //             try {
+    //                 const scriptResponse = await fetch(`${HltbClient.baseUrl}${scriptUrl}`, { headers, method: "GET" });
+    //                 if (scriptResponse.ok) {
+    //                     const scriptContent = await scriptResponse.text();
+    //                     let searchUrl = this._extractSearchUrlFromScript(scriptContent);
+    //                     if (searchUrl && HltbClient.baseUrl.endsWith("/")) {
+    //                         searchUrl = searchUrl.replace(/^\/+/, "");
+    //                     }
+    //                     return searchUrl;
+    //                 }
+    //             }
+    //             catch (err) {
+    //                 console.warn(`Failed to fetch script ${scriptUrl}:`, err);
+    //             }
+    //         }
+    //     }
+    //     catch (err) {
+    //         console.error("Error getting search info:", err);
+    //     }
+    // }
 
-        try {
-            const response = await fetch(HltbClient.baseUrl, { method: "GET", headers });
-            if (!response.ok) return;
-
-            const htmlResult = await response.text();
-            const $ = cheerio.load(htmlResult);
-            const scripts = $("script[src]");
-
-            const matchingScripts: string[] = [];
-            scripts.each((_, elem) => {
-                const src = $(elem).attr("src");
-                if (src && (searchAll || src.includes("_app-"))) {
-                    matchingScripts.push(src);
-                }
-            });
-
-            for (const scriptUrl of matchingScripts) {
-                try {
-                    const scriptResponse = await fetch(`${HltbClient.baseUrl}${scriptUrl}`, { headers, method: "GET" });
-                    if (scriptResponse.ok) {
-                        const scriptContent = await scriptResponse.text();
-                        let searchUrl = this._extractSearchUrlFromScript(scriptContent);
-                        if (searchUrl && HltbClient.baseUrl.endsWith("/")) {
-                            searchUrl = searchUrl.replace(/^\/+/, "");
-                        }
-                        return searchUrl;
-                    }
-                }
-                catch (err) {
-                    console.warn(`Failed to fetch script ${scriptUrl}:`, err);
-                }
-            }
-        }
-        catch (err) {
-            console.error("Error getting search info:", err);
-        }
-    }
-
-    private _extractSearchUrlFromScript(scriptContent: string) {
-        const pattern = new RegExp(
-            String.raw`fetch\s*\(\s*["']/api/([a-zA-Z0-9_/]+)[^"']*["']\s*,\s*{[^}]*method:\s*["']POST["'][^}]*}`,
-            "gis",
-        );
-
-        const match = pattern.exec(scriptContent);
-        if (match) {
-            const pathSuffix = match[1];
-            const basePath = pathSuffix.includes("/") ? pathSuffix.split("/")[0] : pathSuffix;
-            if (basePath !== "find") {
-                return `/api/${basePath}`;
-            }
-        }
-
-        return;
-    }
+    // private _extractSearchUrlFromScript(scriptContent: string) {
+    //     const pattern = new RegExp(
+    //         String.raw`fetch\s*\(\s*["']/api/([a-zA-Z0-9_/]+)[^"']*["']\s*,\s*{[^}]*method:\s*["']POST["'][^}]*}`,
+    //         "gis",
+    //     );
+    //
+    //     const match = pattern.exec(scriptContent);
+    //     if (match) {
+    //         const pathSuffix = match[1];
+    //         const basePath = pathSuffix.includes("/") ? pathSuffix.split("/")[0] : pathSuffix;
+    //         if (basePath !== "find") {
+    //             return `/api/${basePath}`;
+    //         }
+    //     }
+    //
+    //     return;
+    // }
 
     private _getSearchPayload(gameName: string) {
         const payload = {
