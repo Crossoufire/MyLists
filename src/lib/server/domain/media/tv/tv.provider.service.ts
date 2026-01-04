@@ -45,11 +45,20 @@ export class TvProviderService extends BaseTrendsProviderService<
     }
 
     protected async _enhanceDetails(details: UpsertTvWithDetails, isBulk: boolean, rawData: TmdbTvDetails) {
-        const isAnime = rawData.genres?.some((g: { id: number; }) => g.id === 16) && rawData.original_language === "ja";
+        const isAnime = rawData.genres?.some((g: { id: number }) => g.id === 16) && rawData.original_language === "ja";
 
-        if (isAnime && !isBulk) {
-            const jikanData = await this.jikanClient.getAnimeGenresAndDemographics(details.mediaData.name);
-            details.genresData = this.transformer.addAnimeSpecificGenres(jikanData, details.genresData);
+        if (isAnime) {
+            // Automatic refresh metadata, don't update anime genres to not erase better ones from jikan
+            // If I add an automatic storing somedays this will means that no genres will ever be added in the first
+            // place because this function is called on refresh and on storing.
+            // For now because storing is never with isBulk = true, this works (bandaid!)
+            if (isBulk) {
+                delete details.genresData;
+            }
+            else {
+                const jikanData = await this.jikanClient.getAnimeGenresAndDemographics(details.mediaData.name);
+                details.genresData = this.transformer.addAnimeSpecificGenres(jikanData, details.genresData);
+            }
         }
 
         return details;
