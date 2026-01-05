@@ -14,6 +14,7 @@ import {ProfileIcon} from "@/lib/client/components/general/ProfileIcon";
 import {MainThemeIcon} from "@/lib/client/components/general/MainIcons";
 import {Notifications} from "@/lib/client/components/navbar/Notifications";
 import {authOptions} from "@/lib/client/react-query/query-options/query-options";
+import {useFeatureFlagMutation} from "@/lib/client/react-query/query-mutations/user.mutations";
 import {BarChart2, Calendar, ChartNoAxesColumn, ChevronDown, Crown, LogOut, Menu, Popcorn, Settings, ShieldCheck, Sparkles, TrendingUp, Trophy, User, X} from "lucide-react";
 import {
     DropdownMenu,
@@ -36,6 +37,7 @@ export const Navbar = () => {
     const navigate = useNavigate();
     const { currentUser } = useAuth();
     const queryClient = useQueryClient();
+    const featureFlagMutation = useFeatureFlagMutation();
     const [showLogin, setShowLogin] = useState(false);
     const [showRegister, setShowRegister] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -47,6 +49,11 @@ export const Navbar = () => {
         await navigate({ to: "/", replace: true });
         queryClient.removeQueries();
     };
+
+    const onFeaturesClick = async () => {
+        if (!currentUser?.showUpdateModal) return;
+        featureFlagMutation.mutate(undefined);
+    }
 
     // Login page and public pages when not logged
     if (!currentUser) {
@@ -90,7 +97,6 @@ export const Navbar = () => {
         <nav className="sticky top-0 z-50 w-full bg-background border-b">
             <div className="max-w-7xl mx-auto px-4 md:px-8">
                 <div className="flex items-center justify-between h-16 gap-4">
-
                     <div className="flex shrink-0 items-center gap-2">
                         <img
                             alt="MyLists logo"
@@ -172,10 +178,10 @@ export const Navbar = () => {
                                         />
                                     </Button>
                                     {currentUser.showUpdateModal &&
-                                        <div className="absolute right-5 top-0">
+                                        <div className="absolute right-0 top-0">
                                             <div className="relative">
-                                                <div className="absolute rounded-full h-2 w-2 bg-linear-to-r from-blue-600 to-violet-600 opacity-75"/>
-                                                <div className="rounded-full h-2 w-2 bg-linear-to-r from-blue-600 to-violet-600 animate-ping"/>
+                                                <div className="absolute rounded-full h-2 w-2 bg-app-accent opacity-75"/>
+                                                <div className="rounded-full h-2 w-2 bg-linear-to-r from-app-accent to-app-accent/50 animate-ping"/>
                                             </div>
                                         </div>
                                     }
@@ -194,14 +200,23 @@ export const Navbar = () => {
                                 <DropdownMenuGroup className="space-y-1">
                                     <DropdownMenuItem asChild>
                                         <Link to="/profile/$username" params={{ username: currentUser.name! }}>
-                                            <User/>
-                                            Profile
+                                            <User/> Profile
                                         </Link>
                                     </DropdownMenuItem>
                                     <DropdownMenuItem asChild>
-                                        <Link to="/features">
-                                            <Sparkles/>
-                                            Features
+                                        <Link to="/features" className="relative w-full" onClick={onFeaturesClick}>
+                                            <div className="flex w-full items-center justify-between py-1">
+                                                <div className="flex items-center gap-2">
+                                                    <Sparkles className="size-4 text-app-accent"/>
+                                                    <span>Features</span>
+                                                </div>
+                                                {currentUser.showUpdateModal &&
+                                                    <div className="bg-app-accent px-2 py-0.5 text-[10px] font-bold
+                                                    text-black rounded-md animate-pulse">
+                                                        NEW
+                                                    </div>
+                                                }
+                                            </div>
                                         </Link>
                                     </DropdownMenuItem>
                                     <DropdownMenuItem asChild>
@@ -220,7 +235,9 @@ export const Navbar = () => {
                                         <DropdownMenuItem className="focus:bg-app-rating/10" asChild>
                                             <Link to="/admin">
                                                 <ShieldCheck className="text-app-rating"/>
-                                                <span className="text-app-rating">Admin Panel</span>
+                                                <span className="text-app-rating">
+                                                    Admin Panel
+                                                </span>
                                             </Link>
                                         </DropdownMenuItem>
                                     }
