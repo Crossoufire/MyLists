@@ -4,12 +4,12 @@ import Papa from "papaparse";
 import {serverEnv} from "@/env/server";
 import {readFile, unlink} from "fs/promises";
 import {and, eq, inArray, sql} from "drizzle-orm";
-import {MediaType, Status} from "@/lib/utils/enums";
 import {mediaTypeUtils} from "@/lib/utils/mapping";
 import {sqliteTable, text} from "drizzle-orm/sqlite-core";
+import {MediaType, Status} from "@/lib/utils/enums";
 import {llmResponseSchema} from "@/lib/types/zod.schema.types";
-import {movies, moviesList} from "@/lib/server/database/schema";
 import {Movie} from "@/lib/server/domain/media/movies/movies.types";
+import {movies, moviesList} from "@/lib/server/database/schema";
 import {TaskContext, TaskHandler, TaskName} from "@/lib/types/tasks.types";
 import {getDbClient, withTransaction} from "@/lib/server/database/async-storage";
 import {AchievementsService} from "@/lib/server/domain/achievements/achievements.service";
@@ -496,6 +496,7 @@ Make sure your response is **valid JSON** and strictly follows the schema.
             }
 
             // --- Categorize Records (Found, Not Found, Already in List) -------------------------
+            // noinspection JSMismatchedCollectionQueryUpdate
             const notFoundRecords: ValidRecord[] = [];
             const moviesToPotentiallyAdd: Movie[] = [];
 

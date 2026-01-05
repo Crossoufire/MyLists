@@ -31,7 +31,8 @@ const getAuthConfig = createServerOnlyFn(() => betterAuth({
                     const usernameExist = await getDbClient()
                         .select()
                         .from(userTable)
-                        .where(eq(userTable.name, user.name));
+                        .where(eq(userTable.name, user.name))
+                        .get();
 
                     if (!usernameExist) {
                         return { data: user };

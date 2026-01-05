@@ -16,7 +16,7 @@ export const taskNames = [
     "removeUnusedMediaCovers",
     "deleteNonActivatedUsers",
     "processCsv",
-    "checkHltbWorks"
+    "checkHltbWorks",
 ] as const;
 
 
@@ -35,6 +35,7 @@ export const taskDefinitions: TaskDefinition[] = [
     { name: "bulkMediaRefresh", description: "Bulk refresh media data from APIs provider" },
     { name: "removeUnusedMediaCovers", description: "Remove unused media covers from the database" },
     { name: "deleteNonActivatedUsers", description: "Delete non-activated users older than a week" },
+    // TODO: Not Implemented yet.
     {
         name: "processCsv",
         visibility: "user",
