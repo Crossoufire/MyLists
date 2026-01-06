@@ -1,10 +1,10 @@
 import React from "react";
-import {Link} from "@tanstack/react-router";
 import {capitalize} from "@/lib/utils/formating";
 import {TopAffinity} from "@/lib/types/stats.types";
 import {JobType, MediaType} from "@/lib/utils/enums";
 import {Badge} from "@/lib/client/components/ui/badge";
-import {CircleHelp, Heart, Play, Star, CircleOff} from "lucide-react";
+import {BlockLink} from "@/lib/client/components/general/BlockLink";
+import {CircleHelp, CircleOff, Heart, Play, Star} from "lucide-react";
 import {EmptyState} from "@/lib/client/components/general/EmptyState";
 import {Popover, PopoverContent, PopoverTrigger} from "@/lib/client/components/ui/popover";
 import {Card, CardAction, CardContent, CardHeader, CardTitle} from "@/lib/client/components/ui/card";
@@ -46,9 +46,9 @@ export const TopAffinityCard = ({ title, topAffinity, job, mediaType }: TopAffin
                             <div className="flex flex-col min-w-0">
                                 <span className="truncate text-sm font-medium">
                                     {job && mediaType ?
-                                        <Link to="/details/$mediaType/$job/$name" params={{ mediaType, job, name: item.name }}>
+                                        <BlockLink to="/details/$mediaType/$job/$name" params={{ mediaType, job, name: item.name }}>
                                             <>{capitalize(item.name)}</>
-                                        </Link>
+                                        </BlockLink>
                                         :
                                         <>{capitalize(item.name)}</>
                                     }
