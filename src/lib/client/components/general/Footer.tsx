@@ -58,7 +58,7 @@ export const Footer = () => {
                         <li><a href="https://github.com/Crossoufire/MyLists/releases" rel="noreferrer" target="_blank">Changelog</a></li>
                         <li><Link to="/about">About</Link></li>
                         <li><Link to="/privacy-policy">Privacy Policy</Link></li>
-                        <li><Link to="/features">Features</Link></li>
+                        <li><Link to="/features">News & Features</Link></li>
                     </ul>
                 </div>
             </div>

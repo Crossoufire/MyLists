@@ -3,7 +3,7 @@ import {mail} from "@/lib/utils/helpers";
 import {ApiProviderType} from "@/lib/utils/enums";
 import {createFileRoute} from "@tanstack/react-router";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
-import {Popover, PopoverTrigger, PopoverContent} from "@/lib/client/components/ui/popover";
+import {Popover, PopoverContent, PopoverTrigger} from "@/lib/client/components/ui/popover";
 import {
     Activity,
     BarChart3,
@@ -178,13 +178,7 @@ const FEATURES_DATA: FeatureData[] = [
         icon: LineChart,
         category: "Analytics",
         name: "Enhanced Stats Dashboard",
-        description: "Drill down into specific media lists via 'Detailed Stats' on your profile."
-    },
-    {
-        icon: Users,
-        category: "Analytics",
-        name: "User Stats Comparison",
-        description: "Compare your watching habits and scores directly against other users."
+        description: "Drill down into specific media lists via 'Advanced Stats' on your profile."
     },
     {
         icon: Trophy,

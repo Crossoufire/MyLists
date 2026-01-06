@@ -71,7 +71,7 @@ function UserManagementPage() {
             header: ({ column }) => {
                 return (
                     <Button variant="invisible" size="xs" onClick={() => column.toggleSorting()}>
-                        Id <ChevronsUpDown className="ml-1 h-4 w-4"/>
+                        Id <ChevronsUpDown className="ml-1 size-4"/>
                     </Button>
                 );
             },
@@ -82,7 +82,7 @@ function UserManagementPage() {
             header: ({ column }) => {
                 return (
                     <Button variant="invisible" size="xs" onClick={() => column.toggleSorting()}>
-                        Username <ChevronsUpDown className="ml-1 h-4 w-4"/>
+                        Username <ChevronsUpDown className="ml-1 size-4"/>
                     </Button>
                 )
             },
@@ -96,11 +96,17 @@ function UserManagementPage() {
                         />
                         <div>
                             <div>
-                                <Link to="/profile/$username" params={{ username: original.name }} className="hover:underline hover:underline-offset-2">
+                                <Link
+                                    to="/profile/$username"
+                                    params={{ username: original.name }}
+                                    className="hover:underline hover:underline-offset-2"
+                                >
                                     {original.name}
                                 </Link>
                             </div>
-                            <p className="text-sm text-gray-500">{original.email}</p>
+                            <p className="text-sm text-gray-500">
+                                {original.email}
+                            </p>
                         </div>
                     </div>
                 );
@@ -111,7 +117,7 @@ function UserManagementPage() {
             header: ({ column }) => {
                 return (
                     <Button variant="invisible" size="xs" onClick={() => column.toggleSorting()}>
-                        Registered <ChevronsUpDown className="ml-1 h-4 w-4"/>
+                        Registered <ChevronsUpDown className="ml-1 size-4"/>
                     </Button>
                 )
             },
@@ -124,7 +130,7 @@ function UserManagementPage() {
             header: ({ column }) => {
                 return (
                     <Button variant="invisible" size="xs" onClick={() => column.toggleSorting()}>
-                        Last Seen <ChevronsUpDown className="ml-1 h-4 w-4"/>
+                        Last Seen <ChevronsUpDown className="ml-1 size-4"/>
                     </Button>
                 )
             },
@@ -137,7 +143,7 @@ function UserManagementPage() {
             header: ({ column }) => {
                 return (
                     <Button variant="invisible" size="xs" onClick={() => column.toggleSorting()}>
-                        Privacy <ChevronsUpDown className="ml-1 h-4 w-4"/>
+                        Privacy <ChevronsUpDown className="ml-1 size-4"/>
                     </Button>
                 )
             },
@@ -157,7 +163,7 @@ function UserManagementPage() {
             header: ({ column }) => {
                 return (
                     <Button variant="invisible" size="xs" onClick={() => column.toggleSorting()}>
-                        Features <ChevronsUpDown className="ml-1 h-4 w-4"/>
+                        Features <ChevronsUpDown className="ml-1 size-4"/>
                     </Button>
                 )
             },
@@ -173,7 +179,7 @@ function UserManagementPage() {
             header: ({ column }) => {
                 return (
                     <Button variant="invisible" size="xs" onClick={() => column.toggleSorting()}>
-                        Role <ChevronsUpDown className="ml-1 h-4 w-4"/>
+                        Role <ChevronsUpDown className="ml-1 size-4"/>
                     </Button>
                 )
             },
@@ -189,7 +195,7 @@ function UserManagementPage() {
             header: ({ column }) => {
                 return (
                     <Button variant="invisible" size="xs" onClick={() => column.toggleSorting()}>
-                        Active <ChevronsUpDown className="ml-1 h-4 w-4"/>
+                        Active <ChevronsUpDown className="ml-1 size-4"/>
                     </Button>
                 )
             },
@@ -207,9 +213,9 @@ function UserManagementPage() {
             cell: ({ row: { original } }) => (
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="h-8 w-8 p-0">
+                        <Button variant="ghost" className="size-8 p-0">
                             <span className="sr-only">Open menu</span>
-                            <MoreHorizontal className="h-4 w-4"/>
+                            <MoreHorizontal className="size-4"/>
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
@@ -221,12 +227,12 @@ function UserManagementPage() {
                         <DropdownMenuItem onClick={() => updateUser(original.id, { emailVerified: !original.emailVerified })}>
                             {original.emailVerified ?
                                 <>
-                                    <UserX className="mr-2 h-4 w-4"/>
+                                    <UserX className="mr-2 size-4"/>
                                     <span>Disable account</span>
                                 </>
                                 :
                                 <>
-                                    <UserCheck className="mr-2 h-4 w-4"/>
+                                    <UserCheck className="mr-2 size-4"/>
                                     <span>Enable account</span>
                                 </>
                             }
@@ -270,7 +276,7 @@ function UserManagementPage() {
                             className="text-red-500 focus:text-red-500"
                             onSelect={() => updateUser(original.id, { deleteUser: true })}
                         >
-                            <Trash2 className="mr-2 h-4 w-4"/>
+                            <Trash2 className="mr-2 size-4"/>
                             <span>Delete user</span>
                         </DropdownMenuItem>
                     </DropdownMenuContent>

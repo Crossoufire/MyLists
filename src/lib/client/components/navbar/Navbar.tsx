@@ -204,22 +204,6 @@ export const Navbar = () => {
                                         </Link>
                                     </DropdownMenuItem>
                                     <DropdownMenuItem asChild>
-                                        <Link to="/features" className="relative w-full" onClick={onFeaturesClick}>
-                                            <div className="flex w-full items-center justify-between py-1">
-                                                <div className="flex items-center gap-2">
-                                                    <Sparkles className="size-4 text-app-accent"/>
-                                                    <span>Features</span>
-                                                </div>
-                                                {currentUser.showUpdateModal &&
-                                                    <div className="bg-app-accent px-2 py-0.5 text-[10px] font-bold
-                                                    text-black rounded-md animate-pulse">
-                                                        NEW
-                                                    </div>
-                                                }
-                                            </div>
-                                        </Link>
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem asChild>
                                         <Link to="/stats/$username" params={{ username: currentUser.name! }}>
                                             <ChartNoAxesColumn/>
                                             My Stats
@@ -241,6 +225,22 @@ export const Navbar = () => {
                                             </Link>
                                         </DropdownMenuItem>
                                     }
+                                    <DropdownMenuItem asChild>
+                                        <Link to="/features" className="relative w-full" onClick={onFeaturesClick}>
+                                            <div className="flex w-full items-center justify-between py-1">
+                                                <div className="flex items-center gap-2">
+                                                    <Sparkles className="size-4 text-app-accent"/>
+                                                    <span>News & Features</span>
+                                                </div>
+                                                {currentUser.showUpdateModal &&
+                                                    <div className="bg-app-accent px-2 py-0.5 text-[10px] font-bold
+                                                    text-black rounded-md animate-pulse">
+                                                        NEW
+                                                    </div>
+                                                }
+                                            </div>
+                                        </Link>
+                                    </DropdownMenuItem>
                                 </DropdownMenuGroup>
                                 <DropdownMenuSeparator/>
                                 <DropdownMenuGroup>
