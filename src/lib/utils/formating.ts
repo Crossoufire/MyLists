@@ -11,7 +11,7 @@ const parseDate = (input: string | number) => {
     return new Date(input.includes("T") ? input : `${input.replace(" ", "T")}Z`);
 };
 
-export const withFallback = <T extends any>(value: T | null | undefined, formatter: (v: T) => string, fallback = "-") => {
+export const withFallback = <T>(value: T | null | undefined, formatter: (v: T) => string, fallback = "-") => {
     return value === null || value === undefined || value === "" ? fallback : formatter(value);
 };
 
@@ -156,4 +156,9 @@ export const formatMinutes = (minutes: number | string | null | undefined, optio
     }
 
     return `${zeroPad(h)} h ${zeroPad(m)}`;
+};
+
+export const formatCamelCase = (str: string) => {
+    const withSpaces = str.replace(/([A-Z])/g, " $1");
+    return withSpaces.charAt(0).toUpperCase() + withSpaces.slice(1).trim();
 };

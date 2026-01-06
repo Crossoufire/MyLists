@@ -53,10 +53,7 @@ export const useAdminUpdateTiersMutation = () => {
 
 
 export const useAdminTriggerTaskMutation = () => {
-    return useMutation({
-        mutationFn: postAdminTriggerTask,
-        onError: (error) => toast.error(error.message),
-    });
+    return useMutation({ mutationFn: postAdminTriggerTask });
 };
 
 

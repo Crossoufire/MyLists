@@ -1,5 +1,4 @@
 import * as z from "zod";
-import {taskNames} from "@/lib/server/domain/tasks/tasks-config";
 import {
     AchievementDifficulty,
     ApiProviderType,
@@ -13,6 +12,7 @@ import {
     Status,
     UpdateType
 } from "@/lib/utils/enums";
+import {taskNames} from "@/lib/server/tasks/registry";
 
 
 export type SearchType = z.infer<typeof searchTypeSchema>;
@@ -269,7 +269,8 @@ export const postAdminUpdateTiersSchema = z.object({
 });
 
 export const adminTriggerTaskSchema = z.object({
-    taskName: z.enum(taskNames),
+    input: z.looseObject({}),
+    taskName: z.lazy(() => z.enum(taskNames)),
 });
 
 export const adminDeleteArchivedTaskSchema = z.object({

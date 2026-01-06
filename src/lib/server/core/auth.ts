@@ -38,7 +38,12 @@ const getAuthConfig = createServerOnlyFn(() => betterAuth({
                         return { data: user };
                     }
 
-                    return { data: { ...user, name: `${user.name}-${crypto.randomBytes(4).toString("hex")}` } };
+                    return {
+                        data: {
+                            ...user,
+                            name: `${user.name}-${crypto.randomBytes(4).toString("hex")}`,
+                        }
+                    };
                 },
                 after: async (user) => {
                     const mediaTypes = Object.values(MediaType);

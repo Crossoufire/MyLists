@@ -2,7 +2,8 @@ import {hostname} from "os";
 import {Writable} from "stream";
 import pretty from "pino-pretty";
 import pino, {Logger} from "pino";
-import {LogTask, TaskData} from "@/lib/types/tasks.types";
+import {TaskName} from "@/lib/server/tasks/registry";
+import {LogTask, TaskTrigger} from "@/lib/types/tasks.types";
 
 
 const pinoOptions: pino.LoggerOptions = {
@@ -15,10 +16,7 @@ const pinoOptions: pino.LoggerOptions = {
 };
 
 
-export const rootLogger = pino(pinoOptions);
-
-
-export class InMemoryLogStream extends Writable {
+class InMemoryLogStream extends Writable {
     public logs: LogTask[] = [];
 
     _write(chunk: any, _encoding: BufferEncoding, callback: (error?: Error | null) => void) {
@@ -33,20 +31,28 @@ export class InMemoryLogStream extends Writable {
 }
 
 
-interface CapturingLoggerResult {
+type CapturingLoggerResult = {
     logger: Logger;
     getLogs: () => LogTask[];
 }
 
 
-export const createCapturingLogger = (base: TaskData): CapturingLoggerResult => {
+type CapturingLoggerOptions = {
+    taskId: string;
+    taskName: TaskName;
+    stdoutAsJson?: boolean;
+    triggeredBy: TaskTrigger;
+}
+
+
+export const createCapturingLogger = (task: CapturingLoggerOptions): CapturingLoggerResult => {
     const inMemoryStream = new InMemoryLogStream();
 
-    const jsonMode = "stdoutAsJson" in base && Boolean(base.stdoutAsJson);
+    const jsonMode = "stdoutAsJson" in task && Boolean(task.stdoutAsJson);
     const stdoutStream = jsonMode ? process.stdout : pretty({ colorize: true, translateTime: "HH:MM:ss.l", singleLine: false });
 
     const logger = pino(
-        { ...pinoOptions, base },
+        { ...pinoOptions, base: task },
         pino.multistream([
             { stream: stdoutStream },
             { stream: inMemoryStream },

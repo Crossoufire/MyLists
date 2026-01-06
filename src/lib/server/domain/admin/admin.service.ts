@@ -1,9 +1,9 @@
 import {MediaType} from "@/lib/utils/enums";
 import {ErrorLog} from "@/lib/types/base.types";
-import {SaveToDbProps} from "@/lib/types/tasks.types";
+import {SaveTaskToDb} from "@/lib/types/tasks.types";
+import {SearchTypeAdmin} from "@/lib/types/zod.schema.types";
 import {AdminRepository} from "@/lib/server/domain/admin/admin.repository";
 import {MediaServiceRegistry} from "@/lib/server/domain/media/media.registries";
-import {SearchTypeAdmin} from "@/lib/types/zod.schema.types";
 
 
 export class AdminService {
@@ -22,7 +22,7 @@ export class AdminService {
         return this.repository.deleteErrorLogs(errorIds);
     }
 
-    async saveTaskToDb(data: SaveToDbProps) {
+    async saveTaskToDb(data: SaveTaskToDb) {
         return this.repository.saveTaskToDb(data);
     }
 

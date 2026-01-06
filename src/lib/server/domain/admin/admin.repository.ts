@@ -1,6 +1,6 @@
 import {ErrorLog} from "@/lib/types/base.types";
 import {count, desc, eq, inArray} from "drizzle-orm";
-import {SaveToDbProps} from "@/lib/types/tasks.types";
+import {SaveTaskToDb} from "@/lib/types/tasks.types";
 import {SearchTypeAdmin} from "@/lib/types/zod.schema.types";
 import {getDbClient} from "@/lib/server/database/async-storage";
 import {errorLogs, taskHistory, userMediaStatsHistory} from "@/lib/server/database/schema";
@@ -42,18 +42,18 @@ export class AdminRepository {
     }
 
     static async deleteErrorLogs(errorIds: number[] | null) {
-        if (!errorIds) {
-            await getDbClient()
-                .delete(errorLogs);
-        }
-        else {
+        if (errorIds) {
             await getDbClient()
                 .delete(errorLogs)
                 .where(inArray(errorLogs.id, errorIds));
         }
+        else {
+            await getDbClient()
+                .delete(errorLogs);
+        }
     }
 
-    static async saveTaskToDb(data: SaveToDbProps) {
+    static async saveTaskToDb(data: SaveTaskToDb) {
         await getDbClient()
             .insert(taskHistory)
             .values({

@@ -1,6 +1,10 @@
-import {Logger} from "pino";
-import {taskNames} from "@/lib/server/domain/tasks/tasks-config";
-import {ProcessResult} from "@/lib/server/domain/tasks/tasks.service";
+import {TaskName} from "@/lib/server/tasks/registry";
+import {ProcessResult} from "@/lib/server/tasks/handlers/process-csv.task";
+
+
+export type TaskVisibility = "admin" | "user";
+export type TaskStatus = "completed" | "failed";
+export type TaskTrigger = "user" | "cron/cli" | "dashboard";
 
 
 export type LogTask = {
@@ -16,46 +20,14 @@ export type LogTask = {
 }
 
 
-export type TaskData = {
-    taskId: string,
-    userId?: number,
-    filePath?: string,
-    taskName: TaskName,
-    stdoutAsJson?: boolean,
-    triggeredBy: "user" | "cron/cli" | "dashboard",
-};
-
-
-export type TaskContext = {
-    data: TaskData,
-    logger: Logger,
-};
-
-
-export type TaskDefinition = {
-    name: TaskName,
-    description: string,
-    visibility?: "user" | "admin",
-    options?: {
-        flags: string,
-        required: boolean,
-        description: string,
-    }[],
-}
-
-
-export type SaveToDbProps = {
+export type SaveTaskToDb = {
     taskId: string,
     logs: LogTask[],
     userId?: number,
     startedAt: string,
     finishedAt: string,
     taskName: TaskName,
+    status: TaskStatus;
+    triggeredBy: TaskTrigger,
     errorMessage: string | null,
-    status: "completed" | "failed";
-    triggeredBy: "user" | "cron/cli" | "dashboard",
 }
-
-
-export type TaskName = (typeof taskNames)[number];
-export type TaskHandler = (ctx: TaskContext) => Promise<void>;

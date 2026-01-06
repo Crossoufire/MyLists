@@ -1,11 +1,12 @@
+import {z} from "zod";
 import {serverEnv} from "@/env/server";
-import {randomUUID} from "node:crypto";
 import {redirect} from "@tanstack/react-router";
 import {createServerFn} from "@tanstack/react-start";
+import {runTask} from "@/lib/server/tasks/task-runner";
 import {getContainer} from "@/lib/server/core/container";
-import {executeTask} from "@/lib/server/core/task-runner";
+import {VISITS_CACHE_KEY} from "@/lib/server/domain/user";
+import {getTasksByVisibility} from "@/lib/server/tasks/registry";
 import {getCookie, setCookie} from "@tanstack/react-start/server";
-import {taskDefinitions} from "@/lib/server/domain/tasks/tasks-config";
 import {adminCookieOptions, createAdminToken, verifyAdminToken} from "@/lib/utils/jwt-utils";
 import {ADMIN_COOKIE_NAME, adminAuthMiddleware, managerAuthMiddleware} from "@/lib/server/middlewares/authentication";
 import {
@@ -18,19 +19,13 @@ import {
     searchTypeAdminSchema,
     searchTypeSchema
 } from "@/lib/types/zod.schema.types";
-import {VISITS_CACHE_KEY} from "@/lib/server/domain/user";
 
 
 export const checkAdminAuth = createServerFn({ method: "GET" })
     .middleware([managerAuthMiddleware])
     .handler(async () => {
         const adminToken = getCookie(ADMIN_COOKIE_NAME);
-
-        if (!adminToken || !verifyAdminToken(adminToken)) {
-            return false;
-        }
-
-        return true;
+        return !(!adminToken || !verifyAdminToken(adminToken));
     });
 
 
@@ -141,17 +136,24 @@ export const postAdminUpdateTiers = createServerFn({ method: "POST" })
 export const getAdminTasks = createServerFn({ method: "GET" })
     .middleware([managerAuthMiddleware, adminAuthMiddleware])
     .handler(async () => {
-        return taskDefinitions.filter((task) => task.visibility !== "user");
+        const tasks = getTasksByVisibility("admin");
+
+        return tasks.map((task) => ({
+            name: task.name,
+            description: task.meta.description,
+            inputSchema: z.toJSONSchema(task.inputSchema) as any,
+        }));
     });
 
 
 export const postAdminTriggerTask = createServerFn({ method: "POST" })
     .middleware([managerAuthMiddleware, adminAuthMiddleware])
     .inputValidator(adminTriggerTaskSchema)
-    .handler(async ({ data: { taskName } }) => {
-        await executeTask({
-            taskName,
-            taskId: randomUUID(),
+    .handler(async ({ data: { taskName, input } }) => {
+        // Pass direct input (z.looseObject({})), validation in `runTask`
+        await runTask({
+            input,
+            taskName: taskName,
             triggeredBy: "dashboard",
         });
     });

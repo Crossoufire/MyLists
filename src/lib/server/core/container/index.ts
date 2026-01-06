@@ -1,7 +1,5 @@
 import {AdminService} from "@/lib/server/domain/admin/admin.service";
-import {TasksService} from "@/lib/server/domain/tasks/tasks.service";
 import {setupMediaModule} from "@/lib/server/core/container/media.module";
-import {setupTasksModule} from "@/lib/server/core/container/tasks.module";
 import {setupAdminModule} from "@/lib/server/core/container/admin.module";
 import {CacheManager, initCacheManager} from "@/lib/server/core/cache-manager";
 import {setupUserModule, UserModule} from "@/lib/server/core/container/user.module";
@@ -14,7 +12,7 @@ interface AppContainer {
     clients: ProviderModule["clients"];
     repositories: UserModule["repositories"];
     transformers: ProviderModule["transformers"];
-    services: UserModule["services"] & { tasks: TasksService, admin: AdminService };
+    services: UserModule["services"] & { admin: AdminService };
     registries: {
         mediaRepo: typeof MediaRepositoryRegistry;
         mediaService: typeof MediaServiceRegistry;
@@ -32,11 +30,6 @@ async function initContainer(): Promise<AppContainer> {
     const mediaModule = setupMediaModule(apiModule);
     const userModule = setupUserModule(mediaModule.mediaServiceRegistry);
     const adminService = setupAdminModule();
-    const tasksService = setupTasksModule({
-        userModule,
-        mediaServiceRegistry: mediaModule.mediaServiceRegistry,
-        mediaProviderServiceRegistry: mediaModule.mediaProviderServiceRegistry,
-    });
 
     return {
         cacheManager,
@@ -45,7 +38,6 @@ async function initContainer(): Promise<AppContainer> {
         repositories: userModule.repositories,
         services: {
             ...userModule.services,
-            tasks: tasksService,
             admin: adminService,
         },
         registries: {
