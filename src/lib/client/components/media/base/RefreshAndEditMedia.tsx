@@ -22,8 +22,8 @@ export const RefreshAndEditMedia = ({ mediaType, mediaId, apiId, external, lastU
 
     const handleRefresh = () => {
         refreshMutation.mutate({ data: { mediaType, apiId } }, {
-            onError: () => toast.error("An error occurred while refreshing the MediaData"),
-            onSuccess: () => toast.success("MediaData successfully refreshed"),
+            onError: () => toast.error("An error occurred while refreshing the metadata"),
+            onSuccess: () => toast.success("Metadata successfully refreshed"),
         });
     };
 

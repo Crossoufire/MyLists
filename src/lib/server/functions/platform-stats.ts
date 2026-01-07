@@ -1,4 +1,5 @@
 import {createServerFn} from "@tanstack/react-start";
+import {tryNotFound} from "@/lib/utils/try-not-found";
 import {getContainer} from "@/lib/server/core/container";
 import {AdvancedMediaStats} from "@/lib/types/stats.types";
 import {MediaType, RatingSystemType} from "@/lib/utils/enums";
@@ -9,7 +10,7 @@ import {platformStatsCacheMiddleware} from "@/lib/server/middlewares/caching";
 
 export const getPlatformStats = createServerFn({ method: "GET" })
     .middleware([authMiddleware, platformStatsCacheMiddleware])
-    .inputValidator(platformStatsSchema)
+    .inputValidator(tryNotFound(platformStatsSchema))
     .handler(async ({ data: { mediaType } }) => {
         const userStatsService = await getContainer().then(c => c.services.userStats);
 

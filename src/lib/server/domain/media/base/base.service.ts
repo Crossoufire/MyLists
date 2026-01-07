@@ -167,12 +167,12 @@ export abstract class BaseService<
         return delta;
     }
 
-    async getMediaAndUserDetails(userId: number, mediaId: number | string, external: boolean, providerService: BaseProviderService<any, any, any>) {
-        const media = external ? await this.repository.findByApiId(mediaId) : await this.repository.findById(mediaId as number);
+    async getMediaAndUserDetails(userId: number, mediaId: string, external: boolean, providerService: BaseProviderService<any, any, any>) {
+        const media = external ? await this.repository.findByApiId(mediaId) : await this.repository.findById(Number(mediaId));
 
         let internalMediaId = media?.id;
         if (external && !internalMediaId) {
-            internalMediaId = await providerService.fetchAndStoreMediaDetails(mediaId as unknown as number);
+            internalMediaId = await providerService.fetchAndStoreMediaDetails(Number(mediaId));
         }
 
         if (internalMediaId) {

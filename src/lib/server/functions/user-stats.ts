@@ -9,7 +9,7 @@ import {authorizationMiddleware} from "@/lib/server/middlewares/authorization";
 
 export const getUserStats = createServerFn({ method: "GET" })
     .middleware([authorizationMiddleware])
-    .inputValidator((data) => tryNotFound(() => getUserStatsSchema.parse(data)))
+    .inputValidator(tryNotFound(getUserStatsSchema))
     .handler(async ({ data: { mediaType }, context: { user } }) => {
         const userStatsService = await getContainer().then(c => c.services.userStats);
         const activatedMediaTypes = user.userMediaSettings.filter((s) => s.active).map((s) => s.mediaType)

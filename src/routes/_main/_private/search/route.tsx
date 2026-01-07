@@ -66,12 +66,12 @@ function SearchPage() {
                         value={currentSearch}
                         onKeyDown={(ev) => onSearchEnter(ev)}
                         placeholder="Search for media/users..."
-                        className="pl-8 rounded-md w-[450px] max-sm:w-full"
+                        className="pl-8 rounded-md w-112 max-sm:w-full"
                         onChange={(ev) => setCurrentSearch(ev.target.value)}
                     />
                 </div>
                 <Select value={selectDrop} onValueChange={(value: ApiProviderType) => onTypeChanged(value)}>
-                    <SelectTrigger className="w-[120px]">
+                    <SelectTrigger className="w-30">
                         <SelectValue/>
                     </SelectTrigger>
                     <SelectContent>

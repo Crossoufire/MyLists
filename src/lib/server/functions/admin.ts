@@ -31,9 +31,9 @@ export const checkAdminAuth = createServerFn({ method: "GET" })
 
 export const adminAuth = createServerFn({ method: "GET" })
     .middleware([managerAuthMiddleware])
-    .inputValidator((data) => data as { password: string })
+    .inputValidator((data) => data as { password?: string })
     .handler(async ({ data }) => {
-        if (data.password === serverEnv.ADMIN_PASSWORD) {
+        if (data?.password === serverEnv.ADMIN_PASSWORD) {
             const adminToken = createAdminToken();
             setCookie(ADMIN_COOKIE_NAME, adminToken, adminCookieOptions);
 
@@ -196,7 +196,7 @@ export const postAdminDeleteErrorLog = createServerFn({ method: "POST" })
 
 export const getAdminUserTracking = createServerFn({ method: "GET" })
     .middleware([managerAuthMiddleware, adminAuthMiddleware])
-    .inputValidator((data) => data as { userId: number })
+    .inputValidator((data) => z.object({ userId: z.coerce.number().int().positive() }).parse(data))
     .handler(async ({ data: { userId } }) => {
         const adminService = await getContainer().then((c) => c.services.admin);
         return adminService.getAdminUserTracking(userId);

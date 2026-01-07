@@ -3,18 +3,21 @@ import {notFound} from "@tanstack/react-router";
 import {FormZodError} from "@/lib/utils/error-classes";
 
 
-export function tryNotFound<T>(callback: () => T): T {
+export const tryNotFound = <T>(schema: z.ZodSchema<T>) => (data: unknown): T => {
     try {
-        return callback();
+        return schema.parse(data);
     }
     catch {
         throw notFound();
     }
-}
+};
 
 
-export function tryFormZodError<T>(schema: z.ZodSchema<T>, data: unknown): T {
+export const tryFormZodError = <T>(schema: z.ZodSchema<T>) => (data: unknown): T => {
     try {
+        if (data instanceof FormData) {
+            return schema.parse(Object.fromEntries(data.entries()));
+        }
         return schema.parse(data);
     }
     catch (err: unknown) {
@@ -23,4 +26,4 @@ export function tryFormZodError<T>(schema: z.ZodSchema<T>, data: unknown): T {
         }
         throw err;
     }
-}
+};

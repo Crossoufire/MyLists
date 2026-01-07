@@ -9,7 +9,7 @@ import {baseUsernameSchema} from "@/lib/types/zod.schema.types";
 
 
 export const authorizationMiddleware = createMiddleware({ type: "function" })
-    .inputValidator((data) => tryNotFound(() => baseUsernameSchema.parse(data)))
+    .inputValidator(tryNotFound(baseUsernameSchema))
     .server(async ({ next, data: { username } }) => {
         const container = await getContainer();
 

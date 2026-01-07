@@ -9,7 +9,7 @@ import {mediaListFiltersSchema, mediaListSchema, mediaListSearchFiltersSchema} f
 
 export const getMediaListServerFunction = createServerFn({ method: "GET" })
     .middleware([authorizationMiddleware])
-    .inputValidator((data) => tryNotFound(() => mediaListSchema.parse(data)))
+    .inputValidator(tryNotFound(mediaListSchema))
     .handler(async ({ data, context: { currentUser, user } }) => {
         const { mediaType, args } = data;
         const container = await getContainer();
@@ -36,7 +36,7 @@ export const getMediaListServerFunction = createServerFn({ method: "GET" })
 
 export const getMediaListFilters = createServerFn({ method: "GET" })
     .middleware([authorizationMiddleware])
-    .inputValidator((data) => mediaListFiltersSchema.parse(data))
+    .inputValidator(mediaListFiltersSchema)
     .handler(async ({ data: { mediaType }, context: { user } }) => {
         const container = await getContainer();
         const mediaService = container.registries.mediaService.getService(mediaType);
@@ -46,7 +46,7 @@ export const getMediaListFilters = createServerFn({ method: "GET" })
 
 export const getMediaListSearchFilters = createServerFn({ method: "GET" })
     .middleware([authorizationMiddleware])
-    .inputValidator((data) => mediaListSearchFiltersSchema.parse(data))
+    .inputValidator(mediaListSearchFiltersSchema)
     .handler(async ({ data: { mediaType, query, job }, context: { user } }) => {
         const container = await getContainer();
         const mediaService = container.registries.mediaService.getService(mediaType);

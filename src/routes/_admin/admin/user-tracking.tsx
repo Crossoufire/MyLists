@@ -65,7 +65,7 @@ function UserTrackingPage() {
 
 function UserSearch({ onSelectUser }: { onSelectUser: (user: ProviderSearchResult) => void }) {
     const { search, setSearch, debouncedSearch, isOpen, containerRef, reset } = useSearchContainer();
-    const { data: users, isLoading } = useQuery(navSearchOptions(debouncedSearch, 1, ApiProviderType.USERS));
+    const { data: users, isLoading, error } = useQuery(navSearchOptions(debouncedSearch, 1, ApiProviderType.USERS));
     const results = users?.data || [];
 
     const handleSearchClick = (user: ProviderSearchResult) => {
@@ -85,6 +85,7 @@ function UserSearch({ onSelectUser }: { onSelectUser: (user: ProviderSearchResul
             </div>
 
             <SearchContainer
+                error={error}
                 search={search}
                 isOpen={isOpen}
                 isPending={isLoading}
@@ -263,12 +264,7 @@ function UserTrackingContent({ userId }: { userId: number }) {
                     break;
                 case "week": {
                     const startOfYear = new Date(date.getFullYear(), 0, 1);
-                    const weekNum = Math.ceil(
-                        ((date.getTime() - startOfYear.getTime()) / 86400000 +
-                            startOfYear.getDay() +
-                            1) /
-                        7
-                    );
+                    const weekNum = Math.ceil(((date.getTime() - startOfYear.getTime()) / 86400000 + startOfYear.getDay() + 1) / 7);
                     key = `W${weekNum} '${date.getFullYear().toString().slice(-2)}`;
                     sortKey = date.getFullYear() * 100 + weekNum;
                     break;

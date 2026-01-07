@@ -8,7 +8,7 @@ import {editMediaDetailsSchema, jobDetailsSchema, mediaDetailsSchema, mediaDetai
 
 export const getMediaDetails = createServerFn({ method: "GET" })
     .middleware([authMiddleware, transactionMiddleware])
-    .inputValidator((data) => tryNotFound(() => mediaDetailsSchema.parse(data)))
+    .inputValidator(tryNotFound(mediaDetailsSchema))
     .handler(async ({ data: { mediaType, mediaId, external }, context: { currentUser } }) => {
         const container = await getContainer();
         const mediaService = container.registries.mediaService.getService(mediaType);
@@ -37,7 +37,7 @@ export const refreshMediaDetails = createServerFn({ method: "POST" })
 
 export const getMediaDetailsToEdit = createServerFn({ method: "GET" })
     .middleware([managerAuthMiddleware, transactionMiddleware])
-    .inputValidator((data) => tryNotFound(() => mediaDetailsToEditSchema.parse(data)))
+    .inputValidator(tryNotFound(mediaDetailsToEditSchema))
     .handler(async ({ data: { mediaType, mediaId } }) => {
         const container = await getContainer();
         const mediaService = container.registries.mediaService.getService(mediaType);
@@ -57,7 +57,7 @@ export const postEditMediaDetails = createServerFn({ method: "POST" })
 
 export const getJobDetails = createServerFn({ method: "GET" })
     .middleware([authMiddleware])
-    .inputValidator((data) => tryNotFound(() => jobDetailsSchema.parse(data)))
+    .inputValidator(tryNotFound(jobDetailsSchema))
     .handler(async ({ data: { mediaType, job, name, search }, context: { currentUser } }) => {
         const container = await getContainer();
         const mediaService = container.registries.mediaService.getService(mediaType);

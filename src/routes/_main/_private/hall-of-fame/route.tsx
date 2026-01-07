@@ -18,7 +18,9 @@ import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/l
 export const Route = createFileRoute("/_main/_private/hall-of-fame")({
     validateSearch: (search) => search as SearchTypeHoF,
     loaderDeps: ({ search }) => ({ search }),
-    loader: ({ context: { queryClient }, deps: { search } }) => queryClient.ensureQueryData(hallOfFameOptions(search)),
+    loader: ({ context: { queryClient }, deps: { search } }) => {
+        return queryClient.ensureQueryData(hallOfFameOptions(search));
+    },
     component: HallOfFamePage,
 });
 

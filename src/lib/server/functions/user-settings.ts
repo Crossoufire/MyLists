@@ -13,10 +13,7 @@ import {downloadListAsCsvSchema, generalSettingsSchema, mediaListSettingsSchema,
 
 export const postGeneralSettings = createServerFn({ method: "POST" })
     .middleware([authMiddleware, transactionMiddleware])
-    .inputValidator((data) => {
-        if (!(data instanceof FormData)) throw new Error();
-        return tryFormZodError(generalSettingsSchema, Object.fromEntries(data.entries()));
-    })
+    .inputValidator(tryFormZodError(generalSettingsSchema))
     .handler(async ({ data, context: { currentUser } }) => {
         const userService = await getContainer().then((c) => c.services.user);
         const updatesToApply: Partial<typeof user.$inferInsert> = { privacy: data.privacy };
@@ -50,7 +47,7 @@ export const postGeneralSettings = createServerFn({ method: "POST" })
 
 export const postMediaListSettings = createServerFn({ method: "POST" })
     .middleware([authMiddleware, transactionMiddleware])
-    .inputValidator((data) => tryFormZodError(mediaListSettingsSchema, data))
+    .inputValidator(tryFormZodError(mediaListSettingsSchema))
     .handler(async ({ data, context: { currentUser } }) => {
         const userService = await getContainer().then(c => c.services.user);
         const userStatsService = await getContainer().then(c => c.services.userStats);
@@ -75,7 +72,7 @@ export const postMediaListSettings = createServerFn({ method: "POST" })
 
 export const getDownloadListAsCSV = createServerFn({ method: "GET" })
     .middleware([authMiddleware])
-    .inputValidator((data) => tryFormZodError(downloadListAsCsvSchema, data))
+    .inputValidator(tryFormZodError(downloadListAsCsvSchema))
     .handler(async ({ data: { selectedList }, context: { currentUser } }) => {
         const container = await getContainer();
         const mediaService = container.registries.mediaService.getService(selectedList);
@@ -85,7 +82,7 @@ export const getDownloadListAsCSV = createServerFn({ method: "GET" })
 
 export const postPasswordSettings = createServerFn({ method: "POST" })
     .middleware([authMiddleware])
-    .inputValidator((data) => tryFormZodError(passwordSettingsSchema, data))
+    .inputValidator(tryFormZodError(passwordSettingsSchema))
     .handler(async ({ data: { newPassword, currentPassword }, context: { currentUser } }) => {
         const ctx = await auth.$context;
         const userAccount = await ctx.internalAdapter.findAccount(currentUser.id.toString());

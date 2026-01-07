@@ -27,7 +27,7 @@ export type AchievementTier = z.infer<typeof tierAchievementSchema>;
 export type UpdateUserMedia = z.infer<typeof updateUserMediaSchema>;
 
 
-export const hofSortingSchema = z.enum(["normalized", "profile", ...Object.values(MediaType)]).optional().catch("normalized");
+export const hofSortingSchema = z.enum(["normalized", "profile", ...Object.values(MediaType)]).optional().catch(undefined);
 
 export const searchTypeSchema = z.object({
     search: z.string().optional().catch(undefined),
@@ -103,11 +103,11 @@ export const mediaListSchema = z.object({
     args: mediaListArgsSchema,
 });
 
-export const mediaListFiltersSchema = z.object({
+export const mediaListFiltersSchema = z.looseObject({
     mediaType: z.enum(MediaType),
 });
 
-export const mediaListSearchFiltersSchema = z.object({
+export const mediaListSearchFiltersSchema = z.looseObject({
     job: z.enum(JobType),
     mediaType: z.enum(MediaType),
     query: z.string().min(1),
@@ -122,13 +122,13 @@ export const addMediadleGuessSchema = z.object({
 });
 
 export const platformStatsSchema = z.object({
-    mediaType: z.enum(MediaType).optional().catch(undefined),
+    mediaType: z.enum(MediaType).optional(),
 });
 
 export const navbarSearchSchema = z.object({
-    query: z.string().catch(""),
-    page: z.coerce.number().int().positive().catch(1),
-    apiProvider: z.enum(ApiProviderType).catch(ApiProviderType.TMDB),
+    query: z.string(),
+    apiProvider: z.enum(ApiProviderType),
+    page: z.coerce.number().int().positive(),
 });
 
 export const labelSchema = z.object({
