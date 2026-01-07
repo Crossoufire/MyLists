@@ -1,4 +1,5 @@
 import * as z from "zod";
+import {taskNames} from "@/lib/server/tasks/registry";
 import {
     AchievementDifficulty,
     ApiProviderType,
@@ -12,7 +13,6 @@ import {
     Status,
     UpdateType
 } from "@/lib/utils/enums";
-import {taskNames} from "@/lib/server/tasks/registry";
 
 
 export type SearchType = z.infer<typeof searchTypeSchema>;
@@ -27,7 +27,7 @@ export type AchievementTier = z.infer<typeof tierAchievementSchema>;
 export type UpdateUserMedia = z.infer<typeof updateUserMediaSchema>;
 
 
-export const hofSortingSchema = z.enum(["normalized", "profile", ...Object.values(MediaType)] as const).optional().catch("normalized");
+export const hofSortingSchema = z.enum(["normalized", "profile", ...Object.values(MediaType)]).optional().catch("normalized");
 
 export const searchTypeSchema = z.object({
     search: z.string().optional().catch(undefined),
@@ -206,7 +206,7 @@ export const updateFollowStatusSchema = z.object({
 export const generalSettingsSchema = z.object({
     profileImage: z.instanceof(File).optional(),
     backgroundImage: z.instanceof(File).optional(),
-    privacy: z.enum(Object.values(PrivacyType) as [PrivacyType, ...PrivacyType[]]),
+    privacy: z.enum(PrivacyType),
     username: z.string().trim()
         .min(3, "Username too short (3 min)")
         .max(15, "Username too long (15 max)"),
@@ -218,8 +218,8 @@ export const mediaListSettingsSchema = z.object({
     manga: z.boolean(),
     books: z.boolean(),
     gridListView: z.boolean(),
-    searchSelector: z.enum(Object.values(ApiProviderType) as [ApiProviderType, ...ApiProviderType[]]),
-    ratingSystem: z.enum(Object.values(RatingSystemType) as [RatingSystemType, ...RatingSystemType[]]),
+    searchSelector: z.enum(ApiProviderType),
+    ratingSystem: z.enum(RatingSystemType),
 });
 
 export const passwordSettingsSchema = z.object({

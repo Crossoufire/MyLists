@@ -25,6 +25,7 @@ type FormValues = {
 export const GeneralForm = () => {
     const { currentUser, setCurrentUser } = useAuth();
     const generalSettingsMutation = useGeneralSettingsMutation();
+    // eslint-disable-next-line react-hooks/purity
     const [imageCropperKey, setImageCropperKey] = useState(Date.now());
     const form = useForm<FormValues>({
         values: {

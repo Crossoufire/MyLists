@@ -3,6 +3,7 @@ import {auth} from "@/lib/server/core/auth";
 import {createMiddleware} from "@tanstack/react-start";
 import {getRequest} from "@tanstack/react-start/server";
 import {getContainer} from "@/lib/server/core/container";
+import {isNotFound, isRedirect} from "@tanstack/router-core";
 import {FormattedError, FormZodError} from "@/lib/utils/error-classes";
 
 
@@ -18,6 +19,10 @@ import {FormattedError, FormZodError} from "@/lib/utils/error-classes";
 export const funcErrorMiddleware = createMiddleware({ type: "function" }).server(async ({ next }) => {
     try {
         const results = await next();
+        if ("error" in results && results.error !== undefined && !isRedirect(results.error) && !isNotFound(results.error)) {
+            throw results.error;
+        }
+
         return results;
     }
     catch (err: any) {
