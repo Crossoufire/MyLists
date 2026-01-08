@@ -4,6 +4,8 @@ import {TaskCard} from "@/lib/client/components/admin/TaskCard";
 import {DashboardShell} from "@/lib/client/components/admin/DashboardShell";
 import {DashboardHeader} from "@/lib/client/components/admin/DashboardHeader";
 import {adminArchivedTasksOptions} from "@/lib/client/react-query/query-options/admin-options";
+import {EmptyState} from "@/lib/client/components/general/EmptyState";
+import {Archive} from "lucide-react";
 
 
 export const Route = createFileRoute("/_admin/admin/archived-tasks")({
@@ -20,9 +22,11 @@ function AdminArchivedTasksPage() {
             <DashboardHeader heading="Archived Tasks" description="Manage and execute maintenance and background tasks."/>
             <div>
                 {archivedTasks.length === 0 ?
-                    <p className="text-center text-muted-foreground p-8">
-                        No archived tasks yet.
-                    </p>
+                    <EmptyState
+                        icon={Archive}
+                        className="py-8"
+                        message="No archived tasks found."
+                    />
                     :
                     <div className="space-y-4">
                         {archivedTasks.map((task) =>

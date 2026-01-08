@@ -1,6 +1,6 @@
 import {sql} from "drizzle-orm";
 import {relations} from "drizzle-orm/relations";
-import {LogTask} from "@/lib/types/tasks.types";
+import {TaskResult} from "@/lib/types/tasks.types";
 import {user} from "@/lib/server/database/schema/auth.schema";
 import {index, integer, sqliteTable, text} from "drizzle-orm/sqlite-core";
 import {customJson, dateAsString} from "@/lib/server/database/custom-types";
@@ -23,7 +23,7 @@ export const taskHistory = sqliteTable("task_history", {
     errorMessage: text("error_message"),
     taskName: text("task_name").notNull(),
     triggeredBy: text("triggered_by").notNull(),
-    logs: customJson<LogTask[]>("logs").notNull(),
+    logs: customJson<TaskResult>("logs").notNull(),
     startedAt: dateAsString("started_at").notNull(),
     finishedAt: dateAsString("finished_at").notNull(),
 }, (table) => [

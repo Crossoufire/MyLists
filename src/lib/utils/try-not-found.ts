@@ -3,7 +3,7 @@ import {notFound} from "@tanstack/react-router";
 import {FormZodError} from "@/lib/utils/error-classes";
 
 
-export const tryNotFound = <T>(schema: z.ZodSchema<T>) => (data: unknown): T => {
+export const tryNotFound = <T extends z.ZodType>(schema: T) => (data: unknown): z.infer<T> => {
     try {
         return schema.parse(data);
     }
@@ -13,7 +13,7 @@ export const tryNotFound = <T>(schema: z.ZodSchema<T>) => (data: unknown): T => 
 };
 
 
-export const tryFormZodError = <T>(schema: z.ZodSchema<T>) => (data: unknown): T => {
+export const tryFormZodError = <T extends z.ZodType>(schema: T) => (data: unknown): z.infer<T> => {
     try {
         if (data instanceof FormData) {
             return schema.parse(Object.fromEntries(data.entries()));

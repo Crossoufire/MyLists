@@ -1,39 +1,58 @@
+import {toast} from "sonner";
 import {FormEvent, useState} from "react";
+import {TaskMetadata} from "@/lib/types/tasks.types";
 import {Loader2, Play, Settings2} from "lucide-react";
-import {formatCamelCase} from "@/lib/utils/formating";
 import {Label} from "@/lib/client/components/ui/label";
+import {FormZodError} from "@/lib/utils/error-classes";
 import {Input} from "@/lib/client/components/ui/input";
 import {Button} from "@/lib/client/components/ui/button";
 import {Checkbox} from "@/lib/client/components/ui/checkbox";
-import {InputSchema, TaskItem} from "@/routes/_admin/admin/admin-tasks";
+import {useAdminTriggerTaskMutation} from "@/lib/client/react-query/query-mutations/admin.mutations";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/lib/client/components/ui/select";
 import {Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger} from "@/lib/client/components/ui/dialog";
 
 
 interface TaskFormDialogProps {
-    task: TaskItem;
     isRunning: boolean;
-    onSubmit: (input: Record<string, any>) => void;
+    task: TaskMetadata;
+    mutation: ReturnType<typeof useAdminTriggerTaskMutation>;
 }
 
 
-export function TaskFormDialog({ task, isRunning, onSubmit }: TaskFormDialogProps) {
+export function TaskFormDialog({ task, isRunning, mutation }: TaskFormDialogProps) {
     const [open, setOpen] = useState(false);
-    const [formData, setFormData] = useState<Record<string, any>>(() => getDefaultValues(task.inputSchema));
+    const [errors, setErrors] = useState<{ field: string, message: string }[] | null>(null);
+    const [formData, setFormData] = useState<Record<string, any>>(() => getDefaultValues(task.inputSchema!));
 
     const handleSubmit = (ev: FormEvent) => {
         ev.preventDefault();
-        onSubmit(formData);
-        setOpen(false);
-    };
 
-    const updateField = (key: string, value: unknown) => {
-        setFormData((prev) => ({ ...prev, [key]: value }));
+        setErrors(null);
+        mutation.mutate({ data: { taskName: task.name, input: formData } }, {
+            onError: (err: any) => {
+                if (err instanceof FormZodError && err?.issues && Array.isArray(err?.issues)) {
+                    err?.issues.forEach((issue: any) => {
+                        setErrors((prev) => [
+                            ...(prev || []),
+                            { field: issue.path?.[1] ?? issue.path[0], message: issue.message },
+                        ]);
+                    });
+                }
+                else {
+                    toast.error(err.message || "An unexpected error occurred.");
+                }
+            },
+            onSuccess: () => {
+                setOpen(false);
+                setErrors(null);
+                toast.info(`Task ${task.name} Finished`);
+            },
+        });
     };
 
     const handleOpenChange = (newOpen: boolean) => {
         if (newOpen) {
-            setFormData(getDefaultValues(task.inputSchema));
+            setFormData(getDefaultValues(task.inputSchema!));
         }
         setOpen(newOpen);
     };
@@ -49,23 +68,28 @@ export function TaskFormDialog({ task, isRunning, onSubmit }: TaskFormDialogProp
             <DialogContent className="sm:max-w-md">
                 <form onSubmit={handleSubmit}>
                     <DialogHeader>
-                        <DialogTitle>{formatCamelCase(task.name)}</DialogTitle>
+                        <DialogTitle>{task.name}</DialogTitle>
                         <DialogDescription>{task.description}</DialogDescription>
                     </DialogHeader>
                     <div className="grid gap-4 py-4">
-                        {Object.entries(task.inputSchema.properties).map(([key, schema]) =>
+                        {Object.entries(task.inputSchema!.properties).map(([key, prop]) =>
                             <TaskFormField
                                 key={key}
                                 name={key}
-                                fieldSchema={schema}
+                                property={prop}
                                 value={formData[key]}
-                                required={task.inputSchema.required?.includes(key)}
-                                onChange={(value) => updateField(key, value)}
+                                isRunning={isRunning}
+                                onChange={(value) => setFormData((prev) => ({ ...prev, [key]: value }))}
                             />
                         )}
                     </div>
+                    {errors && errors.map((error, idx) =>
+                        <p key={idx} className="text-red-400 text-sm">
+                            {error.field}: {error.message}
+                        </p>
+                    )}
                     <DialogFooter>
-                        <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+                        <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={isRunning}>
                             Cancel
                         </Button>
                         <Button type="submit" disabled={isRunning}>
@@ -81,35 +105,35 @@ export function TaskFormDialog({ task, isRunning, onSubmit }: TaskFormDialogProp
 
 
 interface TaskFormFieldProps {
+    value: any;
     name: string;
-    value: unknown;
-    required: boolean;
-    onChange: (value: unknown) => void;
-    fieldSchema: InputSchema["properties"][string];
+    isRunning: boolean;
+    onChange: (value: any) => void;
+    property: TaskMetadata["inputSchema"]["properties"][string];
 }
 
 
-function TaskFormField({ name, fieldSchema, value, required, onChange }: TaskFormFieldProps) {
-    const label = formatCamelCase(name);
+function TaskFormField({ name, property, value, onChange, isRunning }: TaskFormFieldProps) {
+    const { type, description, required } = property;
 
-    if (fieldSchema.enum && fieldSchema.enum.length > 0) {
+    if (property.enum && property.enum.length > 0) {
         return (
             <div className="grid gap-2">
                 <Label htmlFor={name}>
-                    {label}
+                    {name}
                     {required && <span className="text-destructive ml-1">*</span>}
                 </Label>
-                {fieldSchema.description &&
+                {description &&
                     <p className="text-muted-foreground text-xs">
-                        {fieldSchema.description}
+                        {description}
                     </p>
                 }
                 <Select value={String(value ?? "")} onValueChange={(v) => onChange(v)}>
-                    <SelectTrigger id={name}>
-                        <SelectValue placeholder={`Select ${label.toLowerCase()}`}/>
+                    <SelectTrigger id={name} disabled={isRunning}>
+                        <SelectValue placeholder={`Select ${name.toLowerCase()}`}/>
                     </SelectTrigger>
                     <SelectContent>
-                        {fieldSchema.enum.map((option) =>
+                        {property.enum.map((option) =>
                             <SelectItem key={option} value={option}>
                                 {option}
                             </SelectItem>
@@ -120,21 +144,22 @@ function TaskFormField({ name, fieldSchema, value, required, onChange }: TaskFor
         );
     }
 
-    if (fieldSchema.type === "boolean") {
+    if (type === "boolean") {
         return (
             <div className="flex items-center space-x-2">
                 <Checkbox
                     id={name}
+                    disabled={isRunning}
                     checked={Boolean(value)}
                     onCheckedChange={(checked) => onChange(checked)}
                 />
                 <div className="grid gap-1.5 leading-none">
                     <Label htmlFor={name} className="cursor-pointer">
-                        {label}
+                        {name}
                     </Label>
-                    {fieldSchema.description &&
+                    {description &&
                         <p className="text-muted-foreground text-xs">
-                            {fieldSchema.description}
+                            {description}
                         </p>
                     }
                 </div>
@@ -142,20 +167,23 @@ function TaskFormField({ name, fieldSchema, value, required, onChange }: TaskFor
         );
     }
 
-    if (fieldSchema.type === "number" || fieldSchema.type === "integer") {
+    if (type === "number" || type === "integer") {
         return (
             <div className="grid gap-2">
                 <Label htmlFor={name}>
-                    {label}
+                    {name}
                     {required && <span className="text-destructive ml-1">*</span>}
                 </Label>
-                {fieldSchema.description &&
-                    <p className="text-muted-foreground text-xs">{fieldSchema.description}</p>
+                {description &&
+                    <p className="text-muted-foreground text-xs">
+                        {description}
+                    </p>
                 }
                 <Input
                     id={name}
                     type="number"
                     required={required}
+                    disabled={isRunning}
                     value={value === undefined ? "" : String(value)}
                     onChange={(ev) => {
                         const val = ev.target.value;
@@ -166,30 +194,27 @@ function TaskFormField({ name, fieldSchema, value, required, onChange }: TaskFor
         );
     }
 
-    if (fieldSchema.type === "array") {
+    if (type === "array") {
         const arrayValue = Array.isArray(value) ? value : [];
         return (
             <div className="grid gap-2">
                 <Label htmlFor={name}>
-                    {label}
+                    {name}
                     {required && <span className="text-destructive ml-1">*</span>}
                 </Label>
-                {fieldSchema.description &&
-                    <p className="text-muted-foreground text-xs">{fieldSchema.description}</p>
+                {description &&
+                    <p className="text-muted-foreground text-xs">{description}</p>
                 }
                 <Input
                     id={name}
                     type="text"
+                    disabled={isRunning}
                     placeholder="Comma-separated values"
                     value={arrayValue.join(", ")}
                     onChange={(ev) => {
                         const val = ev.target.value;
-                        if (val.trim() === "") {
-                            onChange([]);
-                        }
-                        else {
-                            onChange(val.split(",").map((s) => s.trim()));
-                        }
+                        if (val.trim() === "") onChange([]);
+                        else onChange(val.split(",").map((s) => s.trim()));
                     }}
                 />
             </div>
@@ -199,38 +224,42 @@ function TaskFormField({ name, fieldSchema, value, required, onChange }: TaskFor
     return (
         <div className="grid gap-2">
             <Label htmlFor={name}>
-                {label}
+                {name}
                 {required && <span className="text-destructive ml-1">*</span>}
             </Label>
-            {fieldSchema.description &&
+            {description &&
                 <p className="text-muted-foreground text-xs">
-                    {fieldSchema.description}
+                    {description}
                 </p>
             }
             <Input
                 id={name}
                 type="text"
                 required={required}
+                disabled={isRunning}
                 value={String(value ?? "")}
-                onChange={(e) => onChange(e.target.value)}
+                onChange={(ev) => onChange(ev.target.value)}
             />
         </div>
     );
 }
 
 
-function getDefaultValues(schema: InputSchema) {
+function getDefaultValues(inputSchema: TaskMetadata["inputSchema"]) {
     const defaults: Record<string, any> = {};
 
-    for (const [key, fieldSchema] of Object.entries(schema.properties)) {
-        if (fieldSchema.default !== undefined) {
-            defaults[key] = fieldSchema.default;
+    for (const [key, prop] of Object.entries(inputSchema.properties)) {
+        if (prop.default !== undefined) {
+            defaults[key] = prop.default;
         }
-        else if (fieldSchema.type === "boolean") {
+        else if (prop.type === "boolean") {
             defaults[key] = false;
         }
-        else if (fieldSchema.type === "array") {
-            defaults[key] = [];
+        else if (prop.type === "number") {
+            defaults[key] = 0;
+        }
+        else {
+            defaults[key] = "";
         }
     }
 

@@ -47,10 +47,9 @@ function AdminErrorLogsPage() {
             <div>
                 {apiData.total === 0 ?
                     <EmptyState
-                        iconSize={35}
                         className="py-8"
                         icon={ClipboardX}
-                        message="No error logs found in the database."
+                        message="No error logs found."
                     />
                     :
                     <div className="max-w-2xl">

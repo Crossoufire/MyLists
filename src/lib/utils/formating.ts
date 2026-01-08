@@ -158,7 +158,12 @@ export const formatMinutes = (minutes: number | string | null | undefined, optio
     return `${zeroPad(h)} h ${zeroPad(m)}`;
 };
 
-export const formatCamelCase = (str: string) => {
-    const withSpaces = str.replace(/([A-Z])/g, " $1");
-    return withSpaces.charAt(0).toUpperCase() + withSpaces.slice(1).trim();
+
+export const formatMs = (ms: number) => {
+    if (ms < 1000) return `${ms}ms`;
+    if (ms < 60000) return `${(ms / 1000).toFixed(1)}s`;
+    const mins = Math.floor(ms / 60000);
+    const secs = Math.floor((ms % 60000) / 1000);
+
+    return `${mins}m ${secs}s`;
 };

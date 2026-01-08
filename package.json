@@ -50,6 +50,7 @@
         "class-variance-authority": "^0.7.1",
         "clsx": "^2.1.1",
         "commander": "^14.0.2",
+        "dedent": "^1.7.1",
         "drizzle-orm": "^0.45.1",
         "ioredis": "^5.8.2",
         "jsonwebtoken": "^9.0.3",

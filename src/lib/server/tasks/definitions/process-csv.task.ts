@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 import {z} from "zod";
 import Papa from "papaparse";
 import {readFile, unlink} from "fs/promises";
@@ -43,10 +45,9 @@ export interface ProcessResult {
 
 // Not implemented yet
 export const processCsvTask = defineTask({
-    meta: {
-        visibility: "user",
-        description: "Import movies from a CSV file into user's list",
-    },
+    name: "process-csv" as const,
+    visibility: "user",
+    description: "Import movies from a CSV file into user's list",
     inputSchema: z.object({
         filePath: z.string().describe("Path to the CSV file"),
         userId: z.coerce.number().describe("User ID to import movies for"),

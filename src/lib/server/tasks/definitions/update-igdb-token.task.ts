@@ -7,26 +7,33 @@ import {defineTask} from "@/lib/server/tasks/define-task";
 
 
 export const updateIgdbTokenTask = defineTask({
-    meta: {
-        visibility: "admin",
-        description: "Fetch and update IGDB API token in .env file",
-    },
+    name: "update-igdb-token" as const,
+    visibility: "admin",
+    description: "Fetch and update IGDB API token in .env file",
     inputSchema: z.object({}),
     handler: async (ctx) => {
-        ctx.logger.info("Starting: UpdateIgdbToken execution.");
-
         const container = await getContainer();
         const gamesProvider = container.registries.mediaProviderService.getService(MediaType.GAMES);
 
-        const accessToken = await gamesProvider.fetchNewIgdbToken();
-        if (!accessToken) {
-            throw new Error("Failed to fetch new IGDB token");
-        }
+        const accessToken = await ctx.step("fetch-token", async () => {
+            const token = await gamesProvider.fetchNewIgdbToken();
 
-        await updateEnvFile("IGDB_API_KEY", accessToken);
+            if (!token) {
+                throw new Error("IGDB API returned an empty access token");
+            }
 
-        ctx.logger.info("IGDB token updated successfully.");
-        ctx.logger.info("Completed: UpdateIgdbToken execution.");
+            ctx.info("Successfully retrieved new token from IGDB");
+            return token;
+        });
+
+        if (!accessToken) return;
+
+        await ctx.step("write-to-env", async () => {
+            await updateEnvFile("IGDB_API_KEY", accessToken);
+
+            ctx.metric("token_updated", 1);
+            ctx.info("IGDB_API_KEY has been updated in the .env file");
+        });
     },
 });
 

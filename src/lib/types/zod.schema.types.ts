@@ -1,5 +1,4 @@
 import * as z from "zod";
-import {taskNames} from "@/lib/server/tasks/registry";
 import {
     AchievementDifficulty,
     ApiProviderType,
@@ -269,8 +268,8 @@ export const postAdminUpdateTiersSchema = z.object({
 });
 
 export const adminTriggerTaskSchema = z.object({
-    input: z.looseObject({}),
-    taskName: z.lazy(() => z.enum(taskNames)),
+    taskName: z.string(),
+    input: z.record(z.any(), z.any()),
 });
 
 export const adminDeleteArchivedTaskSchema = z.object({

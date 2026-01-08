@@ -1,42 +1,20 @@
 import {z} from "zod";
-import {Logger} from "pino";
-import {TaskTrigger, TaskVisibility} from "@/lib/types/tasks.types";
+import {TaskVisibility} from "@/lib/types/tasks.types";
+import {TaskContext} from "@/lib/server/tasks/task-context";
 
 
-type TaskMeta = {
+export type TaskDefinition<TName extends string, TInputSchema extends z.ZodType> = {
+    name: TName;
     description: string;
-    visibility?: TaskVisibility;
+    inputSchema: TInputSchema;
+    visibility: TaskVisibility;
+    handler: (ctx: TaskContext, input: z.infer<TInputSchema>) => Promise<void>;
 };
 
 
-type TaskContext<TInput> = {
-    input: TInput;
-    logger: Logger;
-    taskId: string;
-    triggeredBy: TaskTrigger;
-};
-
-
-export type TaskDefinition<TInput extends z.ZodSchema = z.ZodSchema> = {
-    meta: TaskMeta;
-    inputSchema: TInput;
-    handler: (ctx: TaskContext<z.infer<TInput>>) => Promise<void>;
-};
-
-
-export type RegisteredTask<TName, TInput extends z.ZodSchema> = TaskDefinition<TInput> & { name: TName };
-
-
-export const defineTask = <TInput extends z.ZodSchema>(def: TaskDefinition<TInput>): TaskDefinition<TInput> => {
+export const defineTask = <
+    TName extends string,
+    TInputSchema extends z.ZodType,
+>(def: TaskDefinition<TName, TInputSchema>): TaskDefinition<TName, TInputSchema> => {
     return def;
 }
-
-
-export const createTaskRegistry = <T extends Record<string, TaskDefinition>>(tasks: T): { [K in keyof T]: RegisteredTask<K, T[K]["inputSchema"]> } => {
-    const result: any = {};
-    for (const key of Object.keys(tasks)) {
-        result[key] = { ...tasks[key], name: key };
-    }
-
-    return result;
-};

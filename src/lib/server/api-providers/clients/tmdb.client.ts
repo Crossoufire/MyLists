@@ -64,6 +64,7 @@ export class TmdbClient extends BaseClient {
         return response.json();
     }
 
+    // TODO: change to use cache manager
     async getTvChangedIds() {
         const { connectRedis } = await import("@/lib/server/core/redis-client");
 
@@ -98,6 +99,7 @@ export class TmdbClient extends BaseClient {
                 page += 1;
             }
             catch {
+                // Ignore error and continue to fetch data from API
             }
         }
 

@@ -10,7 +10,7 @@ export abstract class BaseProviderService<
     protected constructor(protected repository: R) {
     }
 
-    async* bulkProcessAndRefreshMedia() {
+    async* bulkProcessAndRefreshMedia(limit?: number) {
         let mediaIds: (number | string)[] = [];
 
         try {
@@ -21,7 +21,12 @@ export abstract class BaseProviderService<
             return;
         }
 
+        let yieldedCount = 0;
         for (const apiId of mediaIds) {
+            if (limit !== undefined && yieldedCount >= limit) {
+                return;
+            }
+
             try {
                 await this.fetchAndRefreshMediaDetails(apiId, true);
                 yield { apiId, state: "fulfilled", reason: undefined };
@@ -29,6 +34,8 @@ export abstract class BaseProviderService<
             catch (reason) {
                 yield { apiId, state: "rejected", reason: reason as Error };
             }
+
+            yieldedCount += 1;
         }
     }
 

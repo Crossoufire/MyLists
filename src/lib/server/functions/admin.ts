@@ -5,8 +5,8 @@ import {createServerFn} from "@tanstack/react-start";
 import {runTask} from "@/lib/server/tasks/task-runner";
 import {getContainer} from "@/lib/server/core/container";
 import {VISITS_CACHE_KEY} from "@/lib/server/domain/user";
-import {getTasksByVisibility} from "@/lib/server/tasks/registry";
 import {getCookie, setCookie} from "@tanstack/react-start/server";
+import {getAllTasksMetadata, getTask} from "@/lib/server/tasks/registry";
 import {adminCookieOptions, createAdminToken, verifyAdminToken} from "@/lib/utils/jwt-utils";
 import {ADMIN_COOKIE_NAME, adminAuthMiddleware, managerAuthMiddleware} from "@/lib/server/middlewares/authentication";
 import {
@@ -19,6 +19,7 @@ import {
     searchTypeAdminSchema,
     searchTypeSchema
 } from "@/lib/types/zod.schema.types";
+import {tryFormZodError} from "@/lib/utils/try-not-found";
 
 
 export const checkAdminAuth = createServerFn({ method: "GET" })
@@ -135,26 +136,22 @@ export const postAdminUpdateTiers = createServerFn({ method: "POST" })
 
 export const getAdminTasks = createServerFn({ method: "GET" })
     .middleware([managerAuthMiddleware, adminAuthMiddleware])
-    .handler(async () => {
-        const tasks = getTasksByVisibility("admin");
-
-        return tasks.map((task) => ({
-            name: task.name,
-            description: task.meta.description,
-            inputSchema: z.toJSONSchema(task.inputSchema) as any,
-        }));
-    });
+    .handler(async () => getAllTasksMetadata());
 
 
 export const postAdminTriggerTask = createServerFn({ method: "POST" })
     .middleware([managerAuthMiddleware, adminAuthMiddleware])
     .inputValidator(adminTriggerTaskSchema)
     .handler(async ({ data: { taskName, input } }) => {
-        // Pass direct input (z.looseObject({})), validation in `runTask`
+        const task = getTask(taskName);
+        if (!task) throw new Error(`Task ${taskName} not found`);
+
+        const validatedInput = tryFormZodError(task.inputSchema)(input);
+
         await runTask({
-            input,
-            taskName: taskName,
+            taskName: task.name,
             triggeredBy: "dashboard",
+            input: validatedInput as any,
         });
     });
 

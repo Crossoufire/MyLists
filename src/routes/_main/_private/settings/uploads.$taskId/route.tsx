@@ -3,7 +3,7 @@ import {createFileRoute} from "@tanstack/react-router";
 import {AlertCircle, CheckCircle2, XCircle} from "lucide-react";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
 // import {getUserUploads} from "@/lib/server/functions/user-settings";
-import {ProcessResult} from "@/lib/server/tasks/handlers/process-csv.task";
+import {ProcessResult} from "@/lib/server/tasks/definitions/process-csv.task";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/lib/client/components/ui/tabs"
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/lib/client/components/ui/card"
 
