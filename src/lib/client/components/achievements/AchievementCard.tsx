@@ -64,7 +64,7 @@ export const AchievementCard = ({ achievement }: AchievementCardProps) => {
                     {description}
                 </CardDescription>
                 <div>
-                    <div className="flex justify-between items-center mb-1 text-muted-foreground text-xs">
+                    <div className="flex justify-between items-center mb-1 text-muted-foreground text-xs capitalize">
                         <span>Next: {nextTier?.difficulty ?? "-"}</span>
                         <p>{currentCount}/{criteriaCount} ({Math.round(currentCount / criteriaCount * 100)}%)</p>
                     </div>

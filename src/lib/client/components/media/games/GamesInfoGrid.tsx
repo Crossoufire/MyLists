@@ -16,22 +16,24 @@ export const GamesInfoGrid = ({ mediaType, media }: GamesDetailsProps<typeof Med
     return (
         <>
             <MediaInfoGridItem label="Developed By">
-                {developers.slice(0, 3).map((dev) =>
-                    <Link to="/details/$mediaType/$job/$name" params={{ mediaType, job: "creator", name: dev.name }}>
-                        <div key={dev.name}>
-                            {dev.name}
-                        </div>
-                    </Link>
-                ) ?? "-"}
+                {developers.length > 0 ?
+                    developers.slice(0, 3).map((dev) =>
+                        <Link key={dev.name} to="/details/$mediaType/$job/$name" params={{ mediaType, job: "creator", name: dev.name }}>
+                            <div>{dev.name}</div>
+                        </Link>
+                    )
+                    : "-"
+                }
             </MediaInfoGridItem>
             <MediaInfoGridItem label="Published By">
-                {publishers.slice(0, 3).map((pub) =>
-                    <Link to="/details/$mediaType/$job/$name" params={{ mediaType, job: "publisher", name: pub.name }}>
-                        <div key={pub.name}>
-                            {pub.name}
-                        </div>
-                    </Link>
-                ) ?? "-"}
+                {publishers.length > 0 ?
+                    publishers.slice(0, 3).map((pub) =>
+                        <Link key={pub.name} to="/details/$mediaType/$job/$name" params={{ mediaType, job: "publisher", name: pub.name }}>
+                            <div>{pub.name}</div>
+                        </Link>
+                    )
+                    : "-"
+                }
             </MediaInfoGridItem>
             <MediaInfoGridItem label="Release Date">
                 {formatDateTime(media.releaseDate, { noTime: true })}

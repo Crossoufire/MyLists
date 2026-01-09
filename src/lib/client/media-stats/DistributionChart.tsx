@@ -2,10 +2,10 @@ import {SVGProps, useMemo} from "react";
 import {MediaType} from "@/lib/utils/enums";
 import {useSearch} from "@tanstack/react-router";
 import {NamedValue} from "@/lib/types/stats.types";
-import {formatNumber} from "@/lib/utils/formating";
+import {getThemeColor} from "@/lib/utils/colors-and-icons";
+import {capitalize, formatNumber} from "@/lib/utils/formating";
 import {Card, CardContent, CardHeader, CardTitle} from "@/lib/client/components/ui/card";
 import {Bar, BarChart, Cell, LabelList, LabelProps, ResponsiveContainer, Tooltip, XAxis, YAxis} from "recharts";
-import {getThemeColor} from "@/lib/utils/colors-and-icons";
 
 
 interface DistributionChartProps {
@@ -21,7 +21,7 @@ export function DistributionChart({ title, data, unit, enableBinning = false, he
     const { mediaType } = useSearch({ strict: false });
 
     const chartData = data.map((datum, idx) => {
-        const value = false ? Number(datum.value) : datum.value;
+        const value = datum.value;
         let displayName = String(datum.name);
 
         if (enableBinning && !isNaN(Number(datum.name))) {
@@ -68,6 +68,7 @@ export function DistributionChart({ title, data, unit, enableBinning = false, he
                             tickLine={false}
                             axisLine={false}
                             angle={enableBinning ? -30 : 0}
+                            tickFormatter={(v) => capitalize(v)}
                             tick={{
                                 fontSize: 12,
                                 fill: "var(--primary)",

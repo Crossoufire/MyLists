@@ -14,13 +14,14 @@ export const BooksInfoGrid = ({ mediaType, media }: BooksDetailsProps<typeof Med
     return (
         <>
             <MediaInfoGridItem label="Authored By">
-                {media.authors?.slice(0, 3).map((author) =>
-                    <Link to="/details/$mediaType/$job/$name" params={{ mediaType, job: "creator", name: author.name }}>
-                        <div key={author.name}>
-                            {author.name}
-                        </div>
-                    </Link>
-                ) ?? "-"}
+                {media.authors && media.authors.length > 0 ?
+                    media.authors.slice(0, 3).map((author) =>
+                        <Link key={author.name} to="/details/$mediaType/$job/$name" params={{ mediaType, job: "creator", name: author.name }}>
+                            <div>{author.name}</div>
+                        </Link>
+                    )
+                    : "-"
+                }
             </MediaInfoGridItem>
             <MediaInfoGridItem label="Published By">
                 {media.publishers ?? "-"}

@@ -2,9 +2,8 @@ import React from "react";
 import {Link} from "@tanstack/react-router";
 import {MediaType} from "@/lib/utils/enums";
 import {MediaConfig} from "@/lib/client/components/media/media-config";
-import {MediaInfoGridItem} from "@/lib/client/components/media/base/MediaDetailsComps";
-
 import {formatDateTime, formatLocaleName, formatMinutes} from "@/lib/utils/formating";
+import {MediaInfoGridItem} from "@/lib/client/components/media/base/MediaDetailsComps";
 
 
 type TvDetailsProps<T extends MediaType> = Parameters<MediaConfig[T]["infoGrid"]>[number];
@@ -19,13 +18,16 @@ export const TvInfoGrid = ({ mediaType, media }: TvDetailsProps<typeof MediaType
                 {media.prodStatus}
             </MediaInfoGridItem>
             <MediaInfoGridItem label="Created By">
-                {creators.map((c) =>
-                    <Link to="/details/$mediaType/$job/$name" params={{ mediaType, job: "creator", name: c.name }}>
-                        <div key={c.name}>
-                            {c.name}
-                        </div>
-                    </Link>
-                ) ?? "-"}
+                {creators.length > 0 ?
+                    creators.map((c) =>
+                        <Link to="/details/$mediaType/$job/$name" params={{ mediaType, job: "creator", name: c.name }}>
+                            <div key={c.name}>
+                                {c.name}
+                            </div>
+                        </Link>
+                    )
+                    : "-"
+                }
             </MediaInfoGridItem>
             <MediaInfoGridItem label="Airing Dates">
                 {formatDateTime(media.releaseDate, { noTime: true })}
