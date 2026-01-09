@@ -2,7 +2,7 @@ import {Button} from "@/lib/client/components/ui/button";
 import {createFileRoute, Link} from "@tanstack/react-router";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
 import {Card, CardContent, CardHeader, CardTitle} from "@/lib/client/components/ui/card";
-import {ArrowRight, Bug, Clock, Code, Heart, Monitor, Play, Shield, Sparkles, Users,} from "lucide-react";
+import {ArrowRight, Bug, Clock, Code, Heart, Monitor, Play, Shield, Sprout, Users,} from "lucide-react";
 
 
 export const Route = createFileRoute("/_main/_public/")({
@@ -38,7 +38,7 @@ const features = [
         description: "Made by one person, I hope you will like it. If you have any suggestions, do not hesitate to contact me.",
     },
     {
-        icon: <Sparkles className="size-6"/>,
+        icon: <Sprout className="size-6"/>,
         title: "Always Evolving",
         description: "Regular updates with new features, improvements, and integrations. Stay tuned!",
     },
@@ -48,15 +48,15 @@ const features = [
 function HomePage() {
     return (
         <PageTitle title="HomePage" onlyHelmet>
-            <section className="relative flex flex-col items-center justify-center bg-cover h-[600px] w-[99.7vw] left-[calc(-50vw+50%)] max-sm:h-[350px]">
-                <div className="absolute inset-0 bg-gradient-to-br from-background via-background/90 to-background/80">
+            <section className="relative flex flex-col items-center justify-center bg-cover h-150 w-[99.7vw] left-[calc(-50vw+50%)] max-sm:h-87">
+                <div className="absolute inset-0 bg-linear-to-br from-background via-background/90 to-background/80">
                     <div className="absolute inset-0 opacity-20">
                         <div className="grid grid-cols-8 gap-1 h-full">
                             {Array.from({ length: 32 }).map((_, i) =>
                                 <div
                                     key={i}
                                     style={{ animationDelay: `${i * Math.random()}s` }}
-                                    className="bg-gradient-to-br from-primary/20 to-accent/20 rounded-lg float-animation"
+                                    className="bg-linear-to-br from-primary/20 to-accent/20 rounded-lg float-animation"
                                 />
                             )}
                         </div>
@@ -135,7 +135,7 @@ function HomePage() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-8">
                     {features.map((feature, idx) =>
                         <div key={idx} className="flex items-start gap-4 p-6 rounded-xl hover:bg-card transition-colors">
-                            <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <div className="size-12 bg-primary/10 rounded-lg flex items-center justify-center shrink-0">
                                 {feature.icon}
                             </div>
                             <div>

@@ -15,7 +15,7 @@ import {MainThemeIcon} from "@/lib/client/components/general/MainIcons";
 import {Notifications} from "@/lib/client/components/navbar/Notifications";
 import {authOptions} from "@/lib/client/react-query/query-options/query-options";
 import {useFeatureFlagMutation} from "@/lib/client/react-query/query-mutations/user.mutations";
-import {BarChart2, Calendar, ChartNoAxesColumn, ChevronDown, Crown, LogOut, Menu, Popcorn, Settings, ShieldCheck, Sparkles, TrendingUp, Trophy, User, X} from "lucide-react";
+import {Activity, BarChart2, Calendar, ChartNoAxesColumn, ChevronDown, Crown, LogOut, Menu, Popcorn, Settings, ShieldCheck, TrendingUp, Trophy, User, X} from "lucide-react";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -229,7 +229,7 @@ export const Navbar = () => {
                                         <Link to="/features" className="relative w-full" onClick={onFeaturesClick}>
                                             <div className="flex w-full items-center justify-between py-1">
                                                 <div className="flex items-center gap-2">
-                                                    <Sparkles className="size-4 text-app-accent"/>
+                                                    <Activity className="size-4 text-app-accent"/>
                                                     <span>News & Features</span>
                                                 </div>
                                                 {currentUser.showUpdateModal &&
