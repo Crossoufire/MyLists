@@ -88,7 +88,9 @@ export const formatHtmlText = (input: string) => {
     return input?.replace(/<[^>]*>?/gm, "") ?? "";
 };
 
-export const formatCurrency = (value: number | null, options: Intl.NumberFormatOptions = {}): string => {
+export const formatCurrency = (value: number | null, options: Intl.NumberFormatOptions = {}) => {
+    if (value === null || value === 0) return "$ -";
+    
     return withFallback(value, (val) =>
         new Intl.NumberFormat("en", {
             currency: "USD",
