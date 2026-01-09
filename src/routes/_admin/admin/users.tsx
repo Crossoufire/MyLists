@@ -1,10 +1,13 @@
+import {toast} from "sonner";
 import React, {useCallback, useMemo} from "react";
+import {useAuth} from "@/lib/client/hooks/use-auth";
 import {formatDateTime} from "@/lib/utils/formating";
 import {Badge} from "@/lib/client/components/ui/badge";
-import {useSuspenseQuery} from "@tanstack/react-query";
 import {PrivacyType, RoleType} from "@/lib/utils/enums";
 import {Button} from "@/lib/client/components/ui/button";
 import {createFileRoute, Link} from "@tanstack/react-router";
+import {postImpersonateUser} from "@/lib/server/functions/admin";
+import {useMutation, useSuspenseQuery} from "@tanstack/react-query";
 import {SearchInput} from "@/lib/client/components/general/SearchInput";
 import {ProfileIcon} from "@/lib/client/components/general/ProfileIcon";
 import {useSearchNavigate} from "@/lib/client/hooks/use-search-navigate";
@@ -13,8 +16,8 @@ import {DashboardHeader} from "@/lib/client/components/admin/DashboardHeader";
 import {TablePagination} from "@/lib/client/components/general/TablePagination";
 import {AdminUpdatePayload, SearchTypeAdmin} from "@/lib/types/zod.schema.types";
 import {userAdminOptions} from "@/lib/client/react-query/query-options/admin-options";
-import {CheckCircle, ChevronsUpDown, MoreHorizontal, Trash2, UserCheck, UserX} from "lucide-react";
 import {useAdminUpdateUserMutation} from "@/lib/client/react-query/query-mutations/admin.mutations";
+import {CheckCircle, ChevronsUpDown, MoreHorizontal, Trash2, UserCheck, UserPen, UserX} from "lucide-react";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/lib/client/components/ui/table";
 import {ColumnDef, flexRender, getCoreRowModel, OnChangeFn, PaginationState, SortingState, useReactTable} from "@tanstack/react-table";
 import {
@@ -43,9 +46,12 @@ const DEFAULT = { search: "", page: 1, sorting: "updatedAt" } satisfies SearchTy
 
 function UserManagementPage() {
     const filters = Route.useSearch();
+    const { setCurrentUser } = useAuth();
+    const navigate = Route.useNavigate();
     const { search = DEFAULT.search } = filters;
     const updateUserMutation = useAdminUpdateUserMutation(filters);
     const apiData = useSuspenseQuery(userAdminOptions(filters)).data;
+    const impersonateMutation = useMutation({ mutationFn: postImpersonateUser });
     const paginationState = { pageIndex: filters?.page ? (filters.page - 1) : 0, pageSize: 25 };
     const sortingState = [{ id: filters?.sorting ?? DEFAULT.sorting, desc: filters?.sortDesc === true }];
     const { localSearch, handleInputChange, updateFilters } = useSearchNavigate<SearchTypeAdmin>({ search });
@@ -64,6 +70,16 @@ function UserManagementPage() {
         if (payload.deleteUser && !window.confirm("Are you sure you want to delete this user?")) return;
         updateUserMutation.mutate({ data: { userId, payload } });
     }, [updateUserMutation]);
+
+    const impersonateUser = (userId: number, username: string) => {
+        impersonateMutation.mutate({ data: { userId } }, {
+            onError: (error) => toast.error(error.message),
+            onSuccess: async () => {
+                await setCurrentUser();
+                await navigate({ to: "/profile/$username", params: { username } });
+            },
+        });
+    }
 
     const usersColumns: ColumnDef<typeof apiData.items[0]>[] = useMemo(() => [
         {
@@ -224,15 +240,19 @@ function UserManagementPage() {
                             <span className="text-yellow-500">{original.name}</span>
                         </DropdownMenuLabel>
                         <DropdownMenuSeparator/>
+                        <DropdownMenuItem onClick={() => impersonateUser(original.id, original.name)}>
+                            <UserPen className="size-4"/>
+                            <span>Impersonate </span>
+                        </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => updateUser(original.id, { emailVerified: !original.emailVerified })}>
                             {original.emailVerified ?
                                 <>
-                                    <UserX className="mr-2 size-4"/>
+                                    <UserX className="size-4"/>
                                     <span>Disable account</span>
                                 </>
                                 :
                                 <>
-                                    <UserCheck className="mr-2 size-4"/>
+                                    <UserCheck className="size-4"/>
                                     <span>Enable account</span>
                                 </>
                             }

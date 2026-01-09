@@ -1,14 +1,18 @@
 import {z} from "zod";
 import {serverEnv} from "@/env/server";
+import {auth} from "@/lib/server/core/auth";
 import {redirect} from "@tanstack/react-router";
 import {createServerFn} from "@tanstack/react-start";
 import {runTask} from "@/lib/server/tasks/task-runner";
+import {FormattedError} from "@/lib/utils/error-classes";
 import {getContainer} from "@/lib/server/core/container";
+import {tryFormZodError} from "@/lib/utils/try-not-found";
 import {VISITS_CACHE_KEY} from "@/lib/server/domain/user";
-import {getCookie, setCookie} from "@tanstack/react-start/server";
+import {deleteCookie} from "@tanstack/react-start/server";
 import {getAllTasksMetadata, getTask} from "@/lib/server/tasks/registry";
-import {adminCookieOptions, createAdminToken, verifyAdminToken} from "@/lib/utils/jwt-utils";
-import {ADMIN_COOKIE_NAME, adminAuthMiddleware, managerAuthMiddleware} from "@/lib/server/middlewares/authentication";
+import {setSignedCookie} from "@/lib/utils/auth-cookies";
+import {ADMIN_COOKIE_NAME, isAdminAuthenticated, setAdminCookie} from "@/lib/utils/admin-token";
+import {adminAuthMiddleware, managerAuthMiddleware} from "@/lib/server/middlewares/authentication";
 import {
     adminDeleteArchivedTaskSchema,
     adminDeleteErrorLogSchema,
@@ -19,45 +23,38 @@ import {
     searchTypeAdminSchema,
     searchTypeSchema
 } from "@/lib/types/zod.schema.types";
-import {tryFormZodError} from "@/lib/utils/try-not-found";
 
 
 export const checkAdminAuth = createServerFn({ method: "GET" })
     .middleware([managerAuthMiddleware])
-    .handler(async () => {
-        const adminToken = getCookie(ADMIN_COOKIE_NAME);
-        return !(!adminToken || !verifyAdminToken(adminToken));
+    .handler(async ({ context: { currentUser } }) => {
+        return isAdminAuthenticated(currentUser.id);
     });
 
 
-export const adminAuth = createServerFn({ method: "GET" })
+export const adminAuth = createServerFn({ method: "POST" })
     .middleware([managerAuthMiddleware])
-    .inputValidator((data) => data as { password?: string })
-    .handler(async ({ data }) => {
-        if (data?.password === serverEnv.ADMIN_PASSWORD) {
-            const adminToken = createAdminToken();
-            setCookie(ADMIN_COOKIE_NAME, adminToken, adminCookieOptions);
-
-            return { success: true };
+    .inputValidator((data) => z.object({ password: z.string() }).parse(data))
+    .handler(async ({ data, context: { currentUser } }) => {
+        if (data.password !== serverEnv.ADMIN_PASSWORD) {
+            return { success: false, message: "Incorrect Password" };
         }
 
-        return {
-            success: false,
-            message: "Incorrect Password",
-        };
+        await setAdminCookie(currentUser.id);
+        return { success: true };
     });
 
 
 export const adminLogout = createServerFn({ method: "POST" })
     .middleware([managerAuthMiddleware])
     .handler(async () => {
-        setCookie(ADMIN_COOKIE_NAME, "", { ...adminCookieOptions, maxAge: 0 });
+        deleteCookie(ADMIN_COOKIE_NAME);
         throw redirect({ to: "/" });
     });
 
 
 export const getAdminOverview = createServerFn({ method: "GET" })
-    .middleware([managerAuthMiddleware, adminAuthMiddleware])
+    .middleware([adminAuthMiddleware])
     .handler(async () => {
         const container = await getContainer();
         const userService = container.services.user;
@@ -72,7 +69,7 @@ export const getAdminOverview = createServerFn({ method: "GET" })
 
 
 export const getAdminMediaOverview = createServerFn({ method: "GET" })
-    .middleware([managerAuthMiddleware, adminAuthMiddleware])
+    .middleware([adminAuthMiddleware])
     .handler(async () => {
         const adminService = await getContainer().then((c) => c.services.admin);
         const mediaServiceRegistry = await getContainer().then((c) => c.registries.mediaService);
@@ -82,7 +79,7 @@ export const getAdminMediaOverview = createServerFn({ method: "GET" })
 
 
 export const getAdminAllUsers = createServerFn({ method: "GET" })
-    .middleware([managerAuthMiddleware, adminAuthMiddleware])
+    .middleware([adminAuthMiddleware])
     .inputValidator(searchTypeAdminSchema)
     .handler(async ({ data }) => {
         const userService = await getContainer().then((c) => c.services.user);
@@ -91,7 +88,7 @@ export const getAdminAllUsers = createServerFn({ method: "GET" })
 
 
 export const getAdminAchievements = createServerFn({ method: "GET" })
-    .middleware([managerAuthMiddleware, adminAuthMiddleware])
+    .middleware([adminAuthMiddleware])
     .handler(async () => {
         const achievementService = await getContainer().then((c) => c.services.achievements);
         return achievementService.getAllAchievements();
@@ -99,7 +96,7 @@ export const getAdminAchievements = createServerFn({ method: "GET" })
 
 
 export const getAdminMediadleStats = createServerFn({ method: "GET" })
-    .middleware([managerAuthMiddleware, adminAuthMiddleware])
+    .middleware([adminAuthMiddleware])
     .inputValidator(searchTypeSchema)
     .handler(async ({ data }) => {
         const mediadleService = await getContainer().then((c) => c.services.mediadle);
@@ -108,7 +105,7 @@ export const getAdminMediadleStats = createServerFn({ method: "GET" })
 
 
 export const postAdminUpdateUser = createServerFn({ method: "POST" })
-    .middleware([managerAuthMiddleware, adminAuthMiddleware])
+    .middleware([adminAuthMiddleware])
     .inputValidator(postAdminUpdateUserSchema)
     .handler(async ({ data: { userId, payload } }) => {
         const userService = await getContainer().then((c) => c.services.user);
@@ -117,7 +114,7 @@ export const postAdminUpdateUser = createServerFn({ method: "POST" })
 
 
 export const postAdminUpdateAchievement = createServerFn({ method: "POST" })
-    .middleware([managerAuthMiddleware, adminAuthMiddleware])
+    .middleware([adminAuthMiddleware])
     .inputValidator(adminUpdateAchievementSchema)
     .handler(async ({ data: { achievementId, name, description } }) => {
         const achievementService = await getContainer().then((c) => c.services.achievements);
@@ -126,7 +123,7 @@ export const postAdminUpdateAchievement = createServerFn({ method: "POST" })
 
 
 export const postAdminUpdateTiers = createServerFn({ method: "POST" })
-    .middleware([managerAuthMiddleware, adminAuthMiddleware])
+    .middleware([adminAuthMiddleware])
     .inputValidator(postAdminUpdateTiersSchema)
     .handler(async ({ data: { tiers } }) => {
         const achievementService = await getContainer().then((c) => c.services.achievements);
@@ -135,12 +132,12 @@ export const postAdminUpdateTiers = createServerFn({ method: "POST" })
 
 
 export const getAdminTasks = createServerFn({ method: "GET" })
-    .middleware([managerAuthMiddleware, adminAuthMiddleware])
+    .middleware([adminAuthMiddleware])
     .handler(async () => getAllTasksMetadata());
 
 
 export const postAdminTriggerTask = createServerFn({ method: "POST" })
-    .middleware([managerAuthMiddleware, adminAuthMiddleware])
+    .middleware([adminAuthMiddleware])
     .inputValidator(adminTriggerTaskSchema)
     .handler(async ({ data: { taskName, input } }) => {
         const task = getTask(taskName);
@@ -157,7 +154,7 @@ export const postAdminTriggerTask = createServerFn({ method: "POST" })
 
 
 export const getAdminArchivedTasks = createServerFn({ method: "GET" })
-    .middleware([managerAuthMiddleware, adminAuthMiddleware])
+    .middleware([adminAuthMiddleware])
     .handler(async () => {
         const adminService = await getContainer().then((c) => c.services.admin);
         return adminService.getArchivedTasksForAdmin();
@@ -165,7 +162,7 @@ export const getAdminArchivedTasks = createServerFn({ method: "GET" })
 
 
 export const postAdminDeleteArchivedTask = createServerFn({ method: "POST" })
-    .middleware([managerAuthMiddleware, adminAuthMiddleware])
+    .middleware([adminAuthMiddleware])
     .inputValidator(adminDeleteArchivedTaskSchema)
     .handler(async ({ data: { taskId } }) => {
         const adminService = await getContainer().then((c) => c.services.admin);
@@ -174,7 +171,7 @@ export const postAdminDeleteArchivedTask = createServerFn({ method: "POST" })
 
 
 export const getAdminErrorLogs = createServerFn({ method: "GET" })
-    .middleware([managerAuthMiddleware, adminAuthMiddleware])
+    .middleware([adminAuthMiddleware])
     .inputValidator(searchTypeAdminSchema)
     .handler(async ({ data }) => {
         const adminService = await getContainer().then((c) => c.services.admin);
@@ -183,7 +180,7 @@ export const getAdminErrorLogs = createServerFn({ method: "GET" })
 
 
 export const postAdminDeleteErrorLog = createServerFn({ method: "POST" })
-    .middleware([managerAuthMiddleware, adminAuthMiddleware])
+    .middleware([adminAuthMiddleware])
     .inputValidator(adminDeleteErrorLogSchema)
     .handler(async ({ data: { errorIds } }) => {
         const adminService = await getContainer().then((c) => c.services.admin);
@@ -192,9 +189,38 @@ export const postAdminDeleteErrorLog = createServerFn({ method: "POST" })
 
 
 export const getAdminUserTracking = createServerFn({ method: "GET" })
-    .middleware([managerAuthMiddleware, adminAuthMiddleware])
+    .middleware([adminAuthMiddleware])
     .inputValidator((data) => z.object({ userId: z.coerce.number().int().positive() }).parse(data))
     .handler(async ({ data: { userId } }) => {
         const adminService = await getContainer().then((c) => c.services.admin);
         return adminService.getAdminUserTracking(userId);
+    });
+
+
+export const postImpersonateUser = createServerFn({ method: "POST" })
+    .middleware([adminAuthMiddleware])
+    .inputValidator((data) => z.object({ userId: z.coerce.number().int().positive() }).parse(data))
+    .handler(async ({ data: { userId } }) => {
+        const ctx = await auth.$context;
+        const prefix = ctx.options?.advanced?.cookiePrefix ?? "better-auth";
+        const cookies = { sessionData: `${prefix}.session_data`, sessionToken: `${prefix}.session_token` };
+
+        const targetUser = await ctx.internalAdapter.findUserById(String(userId));
+        if (!targetUser) throw new FormattedError("User not found");
+
+        // 10 min session
+        const newSession = await ctx.internalAdapter.createSession(
+            targetUser.id,
+            true,
+            { expiresAt: new Date(Date.now() + (10 * 60 * 1000)) },
+            true,
+        );
+        if (!newSession) throw new FormattedError("Failed to create session");
+
+        // Delete current user and admin cookie
+        deleteCookie(ADMIN_COOKIE_NAME);
+        deleteCookie(cookies.sessionData);
+
+        // 10 min cookie
+        await setSignedCookie(cookies.sessionToken, newSession.token, ctx.secret, 10 * 60);
     });

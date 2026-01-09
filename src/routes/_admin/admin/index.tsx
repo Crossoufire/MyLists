@@ -1,7 +1,7 @@
 import {useForm} from "react-hook-form";
+import {useMutation} from "@tanstack/react-query";
 import {Input} from "@/lib/client/components/ui/input";
 import {Button} from "@/lib/client/components/ui/button";
-import {useMutation} from "@tanstack/react-query";
 import {adminAuth, checkAdminAuth} from "@/lib/server/functions/admin";
 import {createFileRoute, redirect, useNavigate} from "@tanstack/react-router";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/lib/client/components/ui/form";
@@ -55,7 +55,7 @@ function AdminStepUpPage() {
 
     return (
         <div className="mt-16 flex items-center justify-center">
-            <Card className="w-full max-w-[350px] mx-auto">
+            <Card className="w-full max-w-87 mx-auto">
                 <CardHeader>
                     <CardTitle>Admin Step Up</CardTitle>
                     <CardDescription>Enter your admin password to access elevated privileges.</CardDescription>
@@ -78,7 +78,7 @@ function AdminStepUpPage() {
                             />
                             {adminAuthMutation.error &&
                                 <p className="text-sm text-red-600">
-                                    {true ? adminAuthMutation.error.message : "Authentication failed"}
+                                    {adminAuthMutation.error.message}
                                 </p>
                             }
                         </CardContent>

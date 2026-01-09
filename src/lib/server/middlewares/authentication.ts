@@ -2,12 +2,9 @@ import {RoleType} from "@/lib/utils/enums";
 import {auth} from "@/lib/server/core/auth";
 import {redirect} from "@tanstack/react-router";
 import {createMiddleware} from "@tanstack/react-start";
-import {verifyAdminToken} from "@/lib/utils/jwt-utils";
+import {getRequest} from "@tanstack/react-start/server";
 import {getContainer} from "@/lib/server/core/container";
-import {getCookie, getRequest} from "@tanstack/react-start/server";
-
-
-export const ADMIN_COOKIE_NAME = "myListsAdminToken";
+import {isAdminAuthenticated} from "@/lib/utils/admin-token";
 
 
 export const authMiddleware = createMiddleware({ type: "function" }).server(async ({ next }) => {
@@ -56,12 +53,12 @@ export const managerAuthMiddleware = createMiddleware({ type: "function" }).serv
 });
 
 
-export const adminAuthMiddleware = createMiddleware({ type: "function" }).server(async ({ next }) => {
-    const adminToken = getCookie(ADMIN_COOKIE_NAME);
+export const adminAuthMiddleware = createMiddleware({ type: "function" })
+    .middleware([managerAuthMiddleware])
+    .server(async ({ next, context }) => {
+        if (await isAdminAuthenticated(context.currentUser.id)) {
+            return next();
+        }
 
-    if (!adminToken || !verifyAdminToken(adminToken)) {
         throw redirect({ to: "/admin" });
-    }
-
-    return next();
-});
+    });

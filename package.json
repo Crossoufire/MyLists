@@ -53,7 +53,6 @@
         "dedent": "^1.7.1",
         "drizzle-orm": "^0.45.1",
         "ioredis": "^5.8.2",
-        "jsonwebtoken": "^9.0.3",
         "lucide-react": "^0.562.0",
         "nodemailer": "^7.0.12",
         "nprogress": "^0.2.0",
