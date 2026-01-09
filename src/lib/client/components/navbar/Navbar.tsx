@@ -216,7 +216,7 @@ export const Navbar = () => {
                                             Achievements
                                         </Link>
                                     </DropdownMenuItem>
-                                    {isAtLeastRole(currentUser.role, RoleType.MANAGER) &&
+                                    {isAtLeastRole(currentUser.role, RoleType.ADMIN) &&
                                         <DropdownMenuItem className="focus:bg-app-rating/10" asChild>
                                             <Link to="/admin">
                                                 <ShieldCheck className="text-app-rating"/>

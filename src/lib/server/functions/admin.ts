@@ -6,11 +6,11 @@ import {createServerFn} from "@tanstack/react-start";
 import {runTask} from "@/lib/server/tasks/task-runner";
 import {FormattedError} from "@/lib/utils/error-classes";
 import {getContainer} from "@/lib/server/core/container";
+import {setSignedCookie} from "@/lib/utils/auth-cookies";
 import {tryFormZodError} from "@/lib/utils/try-not-found";
 import {VISITS_CACHE_KEY} from "@/lib/server/domain/user";
 import {deleteCookie} from "@tanstack/react-start/server";
 import {getAllTasksMetadata, getTask} from "@/lib/server/tasks/registry";
-import {setSignedCookie} from "@/lib/utils/auth-cookies";
 import {ADMIN_COOKIE_NAME, isAdminAuthenticated, setAdminCookie} from "@/lib/utils/admin-token";
 import {adminAuthMiddleware, managerAuthMiddleware} from "@/lib/server/middlewares/authentication";
 import {

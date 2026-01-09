@@ -56,7 +56,7 @@ export const managerAuthMiddleware = createMiddleware({ type: "function" }).serv
 export const adminAuthMiddleware = createMiddleware({ type: "function" })
     .middleware([managerAuthMiddleware])
     .server(async ({ next, context }) => {
-        if (!isAtLeastRole(context.currentUser.role as RoleType, RoleType.MANAGER)) {
+        if (!isAtLeastRole(context.currentUser.role as RoleType, RoleType.ADMIN)) {
             throw redirect({ to: "/", search: { authExpired: true } });
         }
 

@@ -9,7 +9,7 @@ import {SidebarInset, SidebarProvider, SidebarTrigger} from "@/lib/client/compon
 export const Route = createFileRoute("/_admin")({
     beforeLoad: ({ context: { queryClient } }) => {
         const currentUser = queryClient.getQueryData(authOptions.queryKey);
-        if (!currentUser || !isAtLeastRole(currentUser.role, RoleType.MANAGER)) {
+        if (!currentUser || !isAtLeastRole(currentUser.role, RoleType.ADMIN)) {
             throw notFound();
         }
     },
