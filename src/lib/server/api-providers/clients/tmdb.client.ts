@@ -1,4 +1,5 @@
 import {serverEnv} from "@/env/server";
+import {getContainer} from "@/lib/server/core/container";
 import {RateLimiterAbstract} from "rate-limiter-flexible";
 import {createRateLimiter} from "@/lib/server/core/rate-limiter";
 import {BaseClient} from "@/lib/server/api-providers/clients/base.client";
@@ -15,10 +16,10 @@ import {
 
 export class TmdbClient extends BaseClient {
     private static readonly consumeKey = "tmdb-API";
-    private static readonly tvChangedIdsTtl = 60 * 5;
     private readonly apiKey = serverEnv.THEMOVIEDB_API_KEY;
     private readonly baseUrl = "https://api.themoviedb.org/3";
     private static readonly tvChangedIdsCacheKey = "tmdb:tvChangedIds";
+    private static readonly tvChangedIdsTtl = 5 * 60 * 1000; // 5 min in ms
     private static readonly throttleOptions = { points: 30, duration: 1, keyPrefix: "tmdbAPI" };
 
     constructor(limiter: RateLimiterAbstract, consumeKey: string) {
@@ -64,8 +65,41 @@ export class TmdbClient extends BaseClient {
         return response.json();
     }
 
-    // TODO: change to use cache manager
     async getTvChangedIds() {
+        const cacheStore = await getContainer().then((c) => c.cacheManager);
+
+        return cacheStore.wrap<number[]>(TmdbClient.tvChangedIdsCacheKey, async () => {
+            let page = 1;
+            let totalPages = 1;
+            const changedApiIds: number[] = [];
+
+            while (page <= Math.min(totalPages, 20)) {
+                try {
+                    const response = await this.call(`${this.baseUrl}/tv/changes?api_key=${this.apiKey}&page=${page}`);
+                    const data: TmdbChangesResponse = await response.json();
+
+                    if (data?.results) {
+                        changedApiIds.push(...data.results.map((item) => item.id))
+                    }
+
+                    totalPages = data.total_pages || 1;
+                    page += 1;
+                }
+                catch (error) {
+                    // Failed on 1st page -> Throw so task system log 'failure'. No cache created.
+                    if (changedApiIds.length === 0) {
+                        throw error;
+                    }
+                    // Else return what we have so task can process pages 1 to N-1.
+                    break;
+                }
+            }
+
+            return changedApiIds;
+        }, { ttl: TmdbClient.tvChangedIdsTtl });
+    }
+
+    async getTvChangedIds2() {
         const { connectRedis } = await import("@/lib/server/core/redis-client");
 
         const redisConnection = await connectRedis();

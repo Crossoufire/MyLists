@@ -17,7 +17,7 @@ export abstract class BaseProviderService<
             mediaIds = await this._getMediaIdsForBulkRefresh();
         }
         catch (err) {
-            yield { apiId: undefined, state: "rejected", reason: err as Error };
+            yield { apiId: undefined, state: "rejected", reason: err };
             return;
         }
 

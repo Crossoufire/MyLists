@@ -20,7 +20,7 @@ export class BaseClient {
 
             const response = await fetch(url, {
                 method: method.toUpperCase(),
-                signal: AbortSignal.timeout(60_000),
+                signal: AbortSignal.timeout(100_000),
                 ...options,
             });
 
