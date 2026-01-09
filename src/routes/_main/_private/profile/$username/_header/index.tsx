@@ -38,6 +38,8 @@ function ProfileMain() {
         })),
     ];
 
+    const effectiveActiveTab = mediaTabs.some((tab) => tab.id === activeTab) ? activeTab : "overview";
+
     return (
         <div className="grid grid-cols-[0.26fr_0.74fr] gap-6 pt-2 max-lg:grid-cols-5 max-sm:grid-cols-1">
             <div className="space-y-4 max-lg:col-span-2 max-sm:space-y-6">
@@ -58,11 +60,11 @@ function ProfileMain() {
             <div className="space-y-6 max-lg:col-span-3 max-sm:col-span-2 max-sm:space-y-4 max-sm:mt-4">
                 <TabHeader
                     tabs={mediaTabs}
-                    activeTab={activeTab}
                     setActiveTab={setActiveTab}
+                    activeTab={effectiveActiveTab}
                 />
                 <div className="min-h-113 animate-in fade-in duration-300">
-                    {activeTab === "overview" ?
+                    {effectiveActiveTab === "overview" ?
                         <OverviewTab
                             username={username}
                             perMedia={apiData.perMediaSummary}
@@ -81,6 +83,7 @@ function ProfileMain() {
                 <div className="grid grid-cols-[0.42fr_0.58fr] gap-6 pt-6 border-t-2 max-lg:grid-cols-1 max-sm:grid-cols-1">
                     <div className="max-lg:order-2">
                         <AchievementsCard
+                            key={username}
                             username={username}
                             achievements={apiData.achievements}
                         />

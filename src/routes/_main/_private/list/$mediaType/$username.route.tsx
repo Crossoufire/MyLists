@@ -42,7 +42,6 @@ function MediaList() {
     const [isGrid, setIsGrid] = useState(currentUser?.gridListView ?? true);
     const [filtersPanelOpen, setFiltersPanelOpen] = useState(false);
     const apiData = useSuspenseQuery(mediaListOptions(mediaType, username, filters)).data;
-    const [activeTab, setActiveTab] = useState<Status | "all">(filters?.status?.[0] ?? "all");
 
     const isCurrent = (currentUser?.id === apiData.userData.id);
 
@@ -115,9 +114,8 @@ function MediaList() {
             <div className="mt-2 mb-6">
                 <TabHeader
                     tabs={statusTabs}
-                    activeTab={activeTab}
+                    activeTab={filters?.status?.[0] ?? "all"}
                     setActiveTab={(status) => {
-                        setActiveTab(status);
                         // @ts-expect-error - Can be "all"
                         handleFilterChange({ status: [...(filters.status || []), status] });
                     }}
