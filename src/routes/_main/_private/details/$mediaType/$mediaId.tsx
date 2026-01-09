@@ -2,7 +2,7 @@ import {Plus} from "lucide-react";
 import {capitalize} from "@/lib/utils/formating";
 import {useAuth} from "@/lib/client/hooks/use-auth";
 import {Card} from "@/lib/client/components/ui/card";
-import {MediaType, RoleType} from "@/lib/utils/enums";
+import {isAtLeastRole, MediaType, RoleType} from "@/lib/utils/enums";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {createFileRoute} from "@tanstack/react-router";
 import {Button} from "@/lib/client/components/ui/button";
@@ -93,7 +93,7 @@ function MediaDetailsPage() {
                 <div className="col-span-4 space-y-6 max-lg:col-span-1 max-lg:order-1">
                     <div className="space-y-6 max-lg:grid max-lg:grid-cols-2 max-md:grid-cols-1 max-lg:gap-6">
                         <div className="space-y-6 max-lg:mb-0">
-                            {(currentUser?.role === RoleType.MANAGER) &&
+                            {isAtLeastRole(currentUser?.role, RoleType.MANAGER) &&
                                 <RefreshAndEditMedia
                                     external={external}
                                     mediaType={mediaType}

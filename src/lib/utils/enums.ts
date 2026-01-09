@@ -1,10 +1,22 @@
 // --- USERS ------------------------------------------------------------------------
 
 export const RoleType = {
+    ADMIN: "admin",
     MANAGER: "manager",
     USER: "user",
 } as const;
 export type RoleType = (typeof RoleType)[keyof typeof RoleType];
+
+export const RoleWeight: Record<RoleType, number> = {
+    [RoleType.USER]: 10,
+    [RoleType.MANAGER]: 20,
+    [RoleType.ADMIN]: 30,
+};
+
+export const isAtLeastRole = (userRole: RoleType | undefined | null, requiredRole: RoleType): boolean => {
+    if (!userRole) return false;
+    return RoleWeight[userRole] >= RoleWeight[requiredRole];
+};
 
 
 export const PrivacyType = {

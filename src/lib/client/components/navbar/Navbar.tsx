@@ -1,11 +1,11 @@
 import React, {useState} from "react";
-import {RoleType} from "@/lib/utils/enums";
 import {cva} from "class-variance-authority";
 import {capitalize} from "@/lib/utils/formating";
 import authClient from "@/lib/utils/auth-client";
 import {useAuth} from "@/lib/client/hooks/use-auth";
 import {useQueryClient} from "@tanstack/react-query";
 import {Button} from "@/lib/client/components/ui/button";
+import {isAtLeastRole, RoleType} from "@/lib/utils/enums";
 import {LoginForm} from "@/lib/client/components/auth/LoginForm";
 import {SearchBar} from "@/lib/client/components/navbar/SearchBar";
 import {Link, useNavigate, useRouter} from "@tanstack/react-router";
@@ -200,7 +200,8 @@ export const Navbar = () => {
                                 <DropdownMenuGroup className="space-y-1">
                                     <DropdownMenuItem asChild>
                                         <Link to="/profile/$username" params={{ username: currentUser.name! }}>
-                                            <User/> Profile
+                                            <User/>
+                                            Profile
                                         </Link>
                                     </DropdownMenuItem>
                                     <DropdownMenuItem asChild>
@@ -215,7 +216,7 @@ export const Navbar = () => {
                                             Achievements
                                         </Link>
                                     </DropdownMenuItem>
-                                    {currentUser.role === RoleType.MANAGER &&
+                                    {isAtLeastRole(currentUser.role, RoleType.MANAGER) &&
                                         <DropdownMenuItem className="focus:bg-app-rating/10" asChild>
                                             <Link to="/admin">
                                                 <ShieldCheck className="text-app-rating"/>
@@ -251,7 +252,7 @@ export const Navbar = () => {
                                         </Link>
                                     </DropdownMenuItem>
                                     <DropdownMenuItem className="focus:bg-red-500/10" onSelect={logoutUser}>
-                                        <LogOut/>
+                                        <LogOut className="text-red-500"/>
                                         <span className="text-red-500">Logout</span>
                                     </DropdownMenuItem>
                                 </DropdownMenuGroup>

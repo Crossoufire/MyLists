@@ -13,7 +13,7 @@ export const createUserTask = defineTask({
         email: z.email().describe("Email address"),
         password: z.string().min(8).describe("Password (min 8 characters)"),
         username: z.string().min(3).describe("Username for the new account"),
-        role: z.enum(RoleType).default(RoleType.USER).describe("User role (user or manager)"),
+        role: z.enum(RoleType).default(RoleType.USER).describe("User role"),
     }),
     handler: async (ctx, input) => {
         const container = await getContainer();

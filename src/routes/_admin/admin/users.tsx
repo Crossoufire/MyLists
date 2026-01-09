@@ -200,10 +200,15 @@ function UserManagementPage() {
                 )
             },
             cell: ({ row: { original } }) => {
-                return original.role === RoleType.USER ?
-                    <Badge variant="outline" className="text-green-600">User</Badge>
-                    :
-                    <Badge variant="outline" className="text-yellow-600">Manager</Badge>
+                switch (original.role) {
+                    case RoleType.ADMIN:
+                        return <Badge variant="outline" className="text-cyan-600">Admin</Badge>
+                    case RoleType.MANAGER:
+                        return <Badge variant="outline" className="text-yellow-600">Manager</Badge>
+                    case RoleType.USER:
+                    default:
+                        return <Badge variant="outline" className="text-green-600">User</Badge>
+                }
             },
         },
         {
@@ -279,18 +284,16 @@ function UserManagementPage() {
                         </DropdownMenuCheckboxItem>
                         <DropdownMenuSeparator/>
                         <DropdownMenuLabel>Role Settings</DropdownMenuLabel>
-                        <DropdownMenuCheckboxItem
-                            checked={original.role === RoleType.USER}
-                            onCheckedChange={() => updateUser(original.id, { role: RoleType.USER })}
-                        >
-                            User
-                        </DropdownMenuCheckboxItem>
-                        <DropdownMenuCheckboxItem
-                            checked={original.role === RoleType.MANAGER}
-                            onCheckedChange={() => updateUser(original.id, { role: RoleType.MANAGER })}
-                        >
-                            Manager
-                        </DropdownMenuCheckboxItem>
+                        {Object.values(RoleType).map((role) =>
+                            <DropdownMenuCheckboxItem
+                                key={role}
+                                className="capitalize"
+                                checked={original.role === role}
+                                onCheckedChange={() => updateUser(original.id, { role })}
+                            >
+                                {role}
+                            </DropdownMenuCheckboxItem>
+                        )}
                         <DropdownMenuSeparator/>
                         <DropdownMenuItem
                             className="text-red-500 focus:text-red-500"

@@ -1,9 +1,9 @@
-import {RoleType} from "@/lib/utils/enums";
 import {auth} from "@/lib/server/core/auth";
 import {redirect} from "@tanstack/react-router";
 import {createMiddleware} from "@tanstack/react-start";
 import {getRequest} from "@tanstack/react-start/server";
 import {getContainer} from "@/lib/server/core/container";
+import {isAtLeastRole, RoleType} from "@/lib/utils/enums";
 import {isAdminAuthenticated} from "@/lib/utils/admin-token";
 
 
@@ -34,7 +34,7 @@ export const managerAuthMiddleware = createMiddleware({ type: "function" }).serv
     const { headers } = getRequest();
     const session = await auth.api.getSession({ headers, query: { disableCookieCache: true } });
 
-    if (!session || !session.user || session.user.role !== RoleType.MANAGER) {
+    if (!session || !session.user || !isAtLeastRole(session.user.role as RoleType, RoleType.MANAGER)) {
         throw redirect({ to: "/", search: { authExpired: true } });
     }
 
@@ -56,6 +56,10 @@ export const managerAuthMiddleware = createMiddleware({ type: "function" }).serv
 export const adminAuthMiddleware = createMiddleware({ type: "function" })
     .middleware([managerAuthMiddleware])
     .server(async ({ next, context }) => {
+        if (!isAtLeastRole(context.currentUser.role as RoleType, RoleType.MANAGER)) {
+            throw redirect({ to: "/", search: { authExpired: true } });
+        }
+
         if (await isAdminAuthenticated(context.currentUser.id)) {
             return next();
         }
