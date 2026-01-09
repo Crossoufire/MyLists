@@ -114,7 +114,7 @@ function MediadlePage() {
                                     </p>
                                 </div>
                                 :
-                                <div className="max-w-100 mx-auto mb-8">
+                                <div ref={containerRef} className="max-w-100 mx-auto mb-8">
                                     <div className="space-y-4">
                                         <div className="space-y-1">
                                             <div className="flex justify-between text-xs font-medium uppercase text-muted-foreground">
@@ -134,7 +134,7 @@ function MediadlePage() {
                                                 })}
                                             </div>
                                         </div>
-                                        <div ref={containerRef} className="relative">
+                                        <div className="relative">
                                             <SearchInput
                                                 value={search}
                                                 className="max-w-100"
