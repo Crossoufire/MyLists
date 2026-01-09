@@ -4,7 +4,7 @@ import {MediaType} from "@/lib/utils/enums";
 import {MediaConfig} from "@/lib/client/components/media/media-config";
 import {MediaInfoGridItem} from "@/lib/client/components/media/base/MediaDetailsComps";
 
-import {formatDateTime, formatLocaleName, formatMinutes} from "@/lib/utils/formating";
+import {formatLocaleName, formatMinutes, getYear} from "@/lib/utils/formating";
 
 
 type BooksDetailsProps<T extends MediaType> = Parameters<MediaConfig[T]["infoGrid"]>[number];
@@ -26,7 +26,7 @@ export const BooksInfoGrid = ({ mediaType, media }: BooksDetailsProps<typeof Med
                 {media.publishers ?? "-"}
             </MediaInfoGridItem>
             <MediaInfoGridItem label="Release Date">
-                {formatDateTime(media.releaseDate, { noTime: true })}
+                {getYear(media.releaseDate)}
             </MediaInfoGridItem>
             <MediaInfoGridItem label="Language">
                 {formatLocaleName(media.language, "language")}
