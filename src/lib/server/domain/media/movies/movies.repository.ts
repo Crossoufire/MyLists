@@ -7,7 +7,7 @@ import {BaseRepository} from "@/lib/server/domain/media/base/base.repository";
 import {movies, moviesActors, moviesGenre, moviesList} from "@/lib/server/database/schema";
 import {Movie, UpsertMovieWithDetails} from "@/lib/server/domain/media/movies/movies.types";
 import {MovieSchemaConfig, moviesConfig} from "@/lib/server/domain/media/movies/movies.config";
-import {and, asc, count, countDistinct, eq, getTableColumns, gte, isNotNull, lte, max, ne, sql} from "drizzle-orm";
+import {and, asc, count, countDistinct, eq, getTableColumns, gte, isNotNull, isNull, lte, max, ne, or, sql} from "drizzle-orm";
 
 
 export class MoviesRepository extends BaseRepository<MovieSchemaConfig> {
@@ -48,8 +48,9 @@ export class MoviesRepository extends BaseRepository<MovieSchemaConfig> {
             .select({ apiId: movies.apiId })
             .from(movies)
             .where(and(
+                eq(movies.lockStatus, false),
                 lte(movies.lastApiUpdate, sql`datetime('now', '-2 days')`),
-                gte(movies.releaseDate, sql`datetime('now', '-6 months')`)
+                or(isNull(movies.releaseDate), gte(movies.releaseDate, sql`datetime('now', '-6 months')`)),
             ));
 
         return results.map((r) => r.apiId);

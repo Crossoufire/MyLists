@@ -22,6 +22,7 @@ export class MangaRepository extends BaseRepository<MangaSchemaConfig> {
             .select({ apiId: manga.apiId })
             .from(manga)
             .where(and(
+                eq(manga.lockStatus, false),
                 lte(manga.lastApiUpdate, sql`datetime('now', '-6 days')`),
                 or(
                     isNull(manga.releaseDate),

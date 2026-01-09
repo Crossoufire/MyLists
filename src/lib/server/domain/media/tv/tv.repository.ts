@@ -33,6 +33,8 @@ export class TvRepository extends BaseRepository<AnimeSchemaConfig | SeriesSchem
     async getMediaIdsToBeRefreshed(apiIds: number[]) {
         const { mediaTable } = this.config;
 
+        if (apiIds.length === 0) return [];
+
         const mediaIds = await getDbClient()
             .select({ apiId: mediaTable.apiId })
             .from(mediaTable)

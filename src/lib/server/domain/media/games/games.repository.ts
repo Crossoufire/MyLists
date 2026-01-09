@@ -22,11 +22,9 @@ export class GamesRepository extends BaseRepository<GamesSchemaConfig> {
             .select({ apiId: games.apiId })
             .from(games)
             .where(and(
+                eq(games.lockStatus, false),
                 lte(games.lastApiUpdate, sql`datetime('now', '-6 days')`),
-                or(
-                    isNull(games.releaseDate),
-                    gte(games.releaseDate, sql`datetime('now')`),
-                ),
+                or(isNull(games.releaseDate), gte(games.releaseDate, sql`datetime('now')`)),
             ));
 
         return results.map((r) => r.apiId);
