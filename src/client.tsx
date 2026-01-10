@@ -22,6 +22,7 @@ function App() {
                 capture_pageview: "history_change",
                 person_profiles: "identified_only",
                 api_host: clientEnv.VITE_PUBLIC_POSTHOG_HOST,
+                ui_host: clientEnv.VITE_PUBLIC_POSTHOG_UI_HOST,
             }}
         >
             <StartClient/>
