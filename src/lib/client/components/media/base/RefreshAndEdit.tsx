@@ -8,19 +8,21 @@ import {formatDateTime, formatRelativeTime} from "@/lib/utils/formating";
 import {useRefreshMediaMutation} from "@/lib/client/react-query/query-mutations/media.mutations";
 
 
-interface RefreshAndEditMediaProps {
+interface RefreshAndEditProps {
     mediaId: number;
     external: boolean;
     mediaType: MediaType;
     apiId: number | string;
     lastUpdate: string | null;
+    lockStatus: boolean | null;
 }
 
 
-export const RefreshAndEditMedia = ({ mediaType, mediaId, apiId, external, lastUpdate }: RefreshAndEditMediaProps) => {
+export const RefreshAndEdit = ({ mediaType, mediaId, apiId, external, lastUpdate, lockStatus }: RefreshAndEditProps) => {
     const refreshMutation = useRefreshMediaMutation(mediaType, external ? apiId : mediaId, external);
 
     const handleRefresh = () => {
+        if (lockStatus) return;
         refreshMutation.mutate({ data: { mediaType, apiId } }, {
             onError: () => toast.error("An error occurred while refreshing the metadata"),
             onSuccess: () => toast.success("Metadata successfully refreshed"),
@@ -29,16 +31,18 @@ export const RefreshAndEditMedia = ({ mediaType, mediaId, apiId, external, lastU
 
     return (
         <div className="flex justify-center items-center gap-4 rounded-lg border p-1 shadow-sm max-sm:gap-2">
-            <Button
-                size="sm"
-                variant="ghost"
-                onClick={handleRefresh}
-                className="h-8 gap-2 px-3 text-xs"
-                disabled={refreshMutation.isPending}
-            >
-                <RefreshCw className={cn("size-3.5", refreshMutation.isPending && "animate-spin")}/>
-                Refresh
-            </Button>
+            <div title={lockStatus ? "Media locked and cannot be refreshed" : ""}>
+                <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={handleRefresh}
+                    className="h-8 gap-2 px-3 text-xs"
+                    disabled={refreshMutation.isPending || !!lockStatus}
+                >
+                    <RefreshCw className={cn("size-3.5", refreshMutation.isPending && "animate-spin")}/>
+                    Refresh
+                </Button>
+            </div>
 
             <div className="border-l border h-6 border-muted-foreground/50"/>
 

@@ -2,19 +2,19 @@ import {Plus} from "lucide-react";
 import {capitalize} from "@/lib/utils/formating";
 import {useAuth} from "@/lib/client/hooks/use-auth";
 import {Card} from "@/lib/client/components/ui/card";
-import {isAtLeastRole, MediaType, RoleType} from "@/lib/utils/enums";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {createFileRoute} from "@tanstack/react-router";
 import {Button} from "@/lib/client/components/ui/button";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
+import {isAtLeastRole, MediaType, RoleType} from "@/lib/utils/enums";
 import {MediaHero} from "@/lib/client/components/media/base/MediaHero";
 import {MediaSynopsis} from "@/lib/client/components/media/base/MediaSynopsis";
 import {SimilarMediaCard} from "@/lib/client/components/media/base/SimilarMedia";
 import {MediaComponent} from "@/lib/client/components/media/base/MediaComponent";
+import {RefreshAndEdit} from "@/lib/client/components/media/base/RefreshAndEdit";
 import {UserMediaDetails} from "@/lib/client/components/media/base/UserMediaDetails";
 import {MediaSectionTitle} from "@/lib/client/components/media/base/MediaDetailsComps";
 import {mediaDetailsOptions} from "@/lib/client/react-query/query-options/query-options";
-import {RefreshAndEditMedia} from "@/lib/client/components/media/base/RefreshAndEditMedia";
 import {MediaFollowsSection} from "@/lib/client/components/media/base/MediaFollowsSection";
 import {useAddMediaToListMutation} from "@/lib/client/react-query/query-mutations/user-media.mutations";
 
@@ -94,11 +94,12 @@ function MediaDetailsPage() {
                     <div className="space-y-6 max-lg:grid max-lg:grid-cols-2 max-md:grid-cols-1 max-lg:gap-6">
                         <div className="space-y-6 max-lg:mb-0">
                             {isAtLeastRole(currentUser?.role, RoleType.MANAGER) &&
-                                <RefreshAndEditMedia
+                                <RefreshAndEdit
                                     external={external}
                                     mediaType={mediaType}
                                     mediaId={apiData.media.id}
                                     apiId={apiData.media.apiId}
+                                    lockStatus={apiData.media.lockStatus}
                                     lastUpdate={apiData.media.lastApiUpdate}
                                 />
                             }
