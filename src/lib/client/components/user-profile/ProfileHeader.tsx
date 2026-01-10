@@ -39,7 +39,7 @@ export const ProfileHeader = ({ user, followStatus, followId, followsCount, foll
             </div>
 
             {isBelowSm ?
-                <div className="flex flex-col justify-center items-center gap-3 -mt-15">
+                <div className="relative z-20 flex flex-col justify-center items-center gap-3 -mt-15">
                     <div className="relative">
                         <ProfileIcon
                             fallbackSize="text-4xl"
