@@ -1,6 +1,4 @@
-import {JSX} from "react";
 import {SQL} from "drizzle-orm";
-import {NameValuePair} from "@/lib/types/base.types";
 import {TvService} from "@/lib/server/domain/media/tv";
 import {MangaService} from "@/lib/server/domain/media/manga";
 import {GamesService} from "@/lib/server/domain/media/games";
@@ -8,42 +6,8 @@ import {BooksService} from "@/lib/server/domain/media/books";
 import {MoviesService} from "@/lib/server/domain/media/movies";
 import {SQLiteColumn, SQLiteTable} from "drizzle-orm/sqlite-core";
 import {MediaType, RatingSystemType, Status} from "@/lib/utils/enums";
-import {UserStatsRepository, UserStatsService, UserUpdatesRepository} from "@/lib/server/domain/user";
 import {BaseRepository} from "@/lib/server/domain/media/base/base.repository";
-
-
-export type StatCardData = {
-    title: string;
-    subtitle: string;
-    valuesList?: NameValuePair[];
-    value: string | number | JSX.Element;
-}
-
-
-export type StatListData = {
-    title: string;
-    data: NameValuePair[];
-}
-
-
-export type StatSection = {
-    sidebarTitle: string;
-    cards: {
-        cardsPerRow: number;
-        cardsPerPage: number;
-        isCarouselActive: boolean;
-        cardStatsList: StatCardData[];
-    };
-    lists: {
-        asGraph: boolean;
-        listsPerRow: number;
-        dataList: StatListData[];
-    };
-    statuses?: {
-        count: number;
-        status: string;
-    }[];
-}
+import {UserStatsRepository, UserStatsService, UserUpdatesRepository} from "@/lib/server/domain/user";
 
 
 export type DeltaStats = {

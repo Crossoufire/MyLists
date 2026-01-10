@@ -1,7 +1,6 @@
 import {z} from "zod";
 import {serverEnv} from "@/env/server";
 import {auth} from "@/lib/server/core/auth";
-import {redirect} from "@tanstack/react-router";
 import {createServerFn} from "@tanstack/react-start";
 import {runTask} from "@/lib/server/tasks/task-runner";
 import {FormattedError} from "@/lib/utils/error-classes";
@@ -42,14 +41,6 @@ export const adminAuth = createServerFn({ method: "POST" })
 
         await setAdminCookie(currentUser.id);
         return { success: true };
-    });
-
-
-export const adminLogout = createServerFn({ method: "POST" })
-    .middleware([managerAuthMiddleware])
-    .handler(async () => {
-        deleteCookie(ADMIN_COOKIE_NAME);
-        throw redirect({ to: "/" });
     });
 
 
@@ -208,7 +199,7 @@ export const postImpersonateUser = createServerFn({ method: "POST" })
             sessionData: `${prePrefix}${prefix}.session_data`,
             sessionToken: `${prePrefix}${prefix}.session_token`,
         };
-        
+
         const targetUser = await ctx.internalAdapter.findUserById(String(userId));
         if (!targetUser) throw new FormattedError("User not found");
 

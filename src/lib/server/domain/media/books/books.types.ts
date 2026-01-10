@@ -1,5 +1,4 @@
 import {books, booksList} from "@/lib/server/database/schema";
-import {AdvancedMediaStats, TopMetricStats} from "@/lib/types/base.types";
 import {booksAchievements} from "@/lib/server/domain/media/books/achievements.seed";
 
 
@@ -27,10 +26,3 @@ export type UpdateBooksWithDetails = {
     genresData?: { name: string }[],
     authorsData?: { name: string }[],
 };
-
-
-export type BooksAdvancedStats = AdvancedMediaStats & {
-    langsStats: TopMetricStats;
-    authorsStats: TopMetricStats;
-    publishersStats: TopMetricStats;
-}

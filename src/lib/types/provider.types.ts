@@ -503,11 +503,6 @@ export interface GBooksDetails extends Omit<GBooksSearchDetails, "volumeInfo"> {
 
 // --- HLTB  Games Time Provider ------------------------------------------
 
-export type SearchInfo = {
-    apiKey: string | undefined;
-    searchUrl: string | undefined;
-}
-
 export type HltbApiResponse = {
     data: {
         game_name?: string;

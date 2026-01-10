@@ -25,7 +25,7 @@ const sign = async (value: string) => {
 };
 
 
-export const verifyAdminToken = async (token: string, currentUserId: number) => {
+const verifyAdminToken = async (token: string, currentUserId: number) => {
     const dotIdx = token.lastIndexOf(".");
     if (dotIdx < 1) return false;
 

@@ -1,0 +1,29 @@
+{
+    "$schema": "https://unpkg.com/knip@5/schema.json",
+    "ignoreExportsUsedInFile": {
+        "interface": true,
+        "type": true
+    },
+    "tags": [
+        "-lintignore"
+    ],
+    "entry": [
+        "src/client.tsx",
+        "src/router.ts",
+        "src/routeTree.gen.ts",
+        "src/start.ts",
+        "src/styles.css",
+        "src/routes/**/*.tsx"
+    ],
+    "project": [
+        "src/**/*.{ts,tsx}"
+    ],
+    "vite": {
+        "config": "vite.config.ts"
+    },
+    "ignore": [
+        ".output/**",
+        "dist/**",
+        "src/lib/client/components/ui/**"
+    ]
+}

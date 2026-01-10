@@ -1,4 +1,3 @@
-import {AdvancedMediaStats, TopMetricStats} from "@/lib/types/base.types";
 import {anime, animeList, series, seriesList} from "@/lib/server/database/schema";
 import {animeAchievements} from "@/lib/server/domain/media/tv/anime/achievements.seed";
 import {seriesAchievements} from "@/lib/server/domain/media/tv/series/achievements.seed";
@@ -15,11 +14,6 @@ export type TvList = SeriesList | AnimeList;
 
 export type TvAchCodeName = typeof animeAchievements[number]["codeName"] | typeof seriesAchievements[number]["codeName"];
 
-export type TvTopMetricStats = {
-    actorsStats: TopMetricStats;
-    networksStats: TopMetricStats;
-    countriesStats: TopMetricStats;
-};
 
 export type UpsertTvWithDetails = {
     mediaData: typeof series.$inferInsert | typeof anime.$inferInsert,
@@ -28,10 +22,3 @@ export type UpsertTvWithDetails = {
     genresData?: { name: string }[] | null,
     seasonsData?: { season: number, episodes: number }[],
 };
-
-export type TvAdvancedStats = AdvancedMediaStats & {
-    actorsStats: TopMetricStats;
-    networksStats: TopMetricStats;
-    countriesStats: TopMetricStats;
-    totalSeasons: number | null | undefined;
-}

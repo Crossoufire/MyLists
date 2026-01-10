@@ -7,7 +7,7 @@ export const RoleType = {
 } as const;
 export type RoleType = (typeof RoleType)[keyof typeof RoleType];
 
-export const RoleWeight: Record<RoleType, number> = {
+const RoleWeight: Record<RoleType, number> = {
     [RoleType.USER]: 10,
     [RoleType.MANAGER]: 20,
     [RoleType.ADMIN]: 30,

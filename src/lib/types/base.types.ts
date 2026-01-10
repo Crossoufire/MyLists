@@ -116,11 +116,6 @@ export type ExpandedListFilters = {
     platforms?: { name: GamesPlatformsEnum }[];
 };
 
-export type TopMetricStats = {
-    topRated: NameValuePair[];
-    topValues: NameValuePair[];
-    topFavorited: NameValuePair[];
-};
 
 export type UserMediaWithLabels<TList> = TList & {
     labels: NameObj[],
@@ -154,13 +149,6 @@ export type MediaListData<TList> = {
         totalItems: number;
         availableSorting: string[];
     };
-}
-
-export type MediaAndUserDetails<TMedia, TList> = {
-    similarMedia: SimpleMedia[];
-    media: TMedia & AddedMediaDetails;
-    followsData: UserFollowsMediaData<TList>[];
-    userMedia: UserMediaWithLabels<TList> | null;
 }
 
 export type UpdateUserMediaDetails<TMedia, TList> = {
@@ -206,18 +194,7 @@ export type FilterDefinition = {
 
 export type FilterDefinitions = Partial<Record<keyof MediaListArgs, FilterDefinition>>;
 
-export type NameValuePair = { name: string | number, value: number | string };
-
 export type EpsPerSeasonType = { season: number, episodes: number };
-
-export type AdvancedMediaStats = {
-    totalLabels: number,
-    ratings: NameValuePair[],
-    avgDuration: number | null;
-    genresStats: TopMetricStats,
-    releaseDates: NameValuePair[],
-    durationDistrib: NameValuePair[];
-}
 
 export type LogPayload = { oldValue: any; newValue: any } | null;
 

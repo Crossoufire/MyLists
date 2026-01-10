@@ -11,7 +11,7 @@ const parseDate = (input: string | number) => {
     return new Date(input.includes("T") ? input : `${input.replace(" ", "T")}Z`);
 };
 
-export const withFallback = <T>(value: T | null | undefined, formatter: (v: T) => string, fallback = "-") => {
+const withFallback = <T>(value: T | null | undefined, formatter: (v: T) => string, fallback = "-") => {
     return value === null || value === undefined || value === "" ? fallback : formatter(value);
 };
 
@@ -90,7 +90,7 @@ export const formatHtmlText = (input: string) => {
 
 export const formatCurrency = (value: number | null, options: Intl.NumberFormatOptions = {}) => {
     if (value === null || value === 0) return "$ -";
-    
+
     return withFallback(value, (val) =>
         new Intl.NumberFormat("en", {
             currency: "USD",

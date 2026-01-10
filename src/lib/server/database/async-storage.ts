@@ -7,7 +7,7 @@ import {ExtractTablesWithRelations} from "drizzle-orm";
 
 export type TransactionClient = LibSQLTransaction<typeof schema, ExtractTablesWithRelations<typeof schema>>;
 
-export const dbTransactionLocalStorage = new AsyncLocalStorage<TransactionClient>();
+const dbTransactionLocalStorage = new AsyncLocalStorage<TransactionClient>();
 
 
 export const getDbClient = () => {

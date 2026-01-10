@@ -1,5 +1,4 @@
 import {games, gamesList} from "@/lib/server/database/schema";
-import {AdvancedMediaStats, TopMetricStats} from "@/lib/types/base.types";
 import {gamesAchievements} from "@/lib/server/domain/media/games/achievements.seed";
 
 
@@ -18,13 +17,3 @@ export type UpsertGameWithDetails = {
     platformsData?: { name: string }[],
     companiesData?: { name: string, developer: boolean, publisher: boolean }[],
 };
-
-
-export type GamesAdvancedStats = AdvancedMediaStats & {
-    enginesStats: TopMetricStats;
-    platformsStats: TopMetricStats;
-    developersStats: TopMetricStats;
-    publishersStats: TopMetricStats;
-    perspectivesStats: TopMetricStats;
-    gameModes: { topValues: TopMetricStats["topValues"] };
-}

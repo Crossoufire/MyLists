@@ -1,5 +1,5 @@
 import {MediaType} from "@/lib/utils/enums";
-import {adminArchivedTasksOptions, adminOverviewOptions} from "@/lib/client/react-query/query-options/admin-options";
+import {adminOverviewOptions} from "@/lib/client/react-query/query-options/admin-options";
 import {
     achievementOptions,
     hallOfFameOptions,
@@ -7,11 +7,8 @@ import {
     listFiltersOptions,
     mediaDetailsOptions,
     mediaListOptions,
-    platformStatsOptions,
     profileOptions,
-    trendsOptions,
     upcomingOptions,
-    userStatsOptions,
 } from "@/lib/client/react-query/query-options/query-options";
 
 
@@ -25,12 +22,8 @@ export type AchCard = Awaited<ReturnType<NonNullable<ReturnType<typeof achieveme
 export type AchSummary = Awaited<ReturnType<NonNullable<ReturnType<typeof achievementOptions>["queryFn"]>>>["summary"][MediaType];
 export type HofUserData = Awaited<ReturnType<NonNullable<ReturnType<typeof hallOfFameOptions>["queryFn"]>>>["items"][number];
 export type HofUserRank = Awaited<ReturnType<NonNullable<ReturnType<typeof hallOfFameOptions>["queryFn"]>>>["userRanks"];
-export type TrendItemType = Awaited<ReturnType<NonNullable<typeof trendsOptions.queryFn>>>["seriesTrends"][number];
 export type ComingNextItem = Awaited<ReturnType<NonNullable<typeof upcomingOptions.queryFn>>>[number]["items"][number];
 export type AdminUserOverview = Awaited<ReturnType<NonNullable<typeof adminOverviewOptions.queryFn>>>["recentUsers"];
-export type UserStats = Awaited<ReturnType<NonNullable<ReturnType<typeof userStatsOptions>["queryFn"]>>>;
-export type PlatformStats = Awaited<ReturnType<NonNullable<ReturnType<typeof platformStatsOptions>["queryFn"]>>>;
-export type TaskType = Awaited<ReturnType<NonNullable<typeof adminArchivedTasksOptions.queryFn>>>[number];
 
 
 // --- User Media Details Types ----------------------------------------------------

@@ -26,7 +26,7 @@ export type AchievementTier = z.infer<typeof tierAchievementSchema>;
 export type UpdateUserMedia = z.infer<typeof updateUserMediaSchema>;
 
 
-export const hofSortingSchema = z.enum(["normalized", "profile", ...Object.values(MediaType)]).optional().catch(undefined);
+const hofSortingSchema = z.enum(["normalized", "profile", ...Object.values(MediaType)]).optional().catch(undefined);
 
 export const searchTypeSchema = z.object({
     search: z.string().optional().catch(undefined),
@@ -73,7 +73,7 @@ export const jobDetailsSchema = z.object({
     mediaType: z.enum(MediaType),
 });
 
-export const mediaListArgsSchema = z.object({
+const mediaListArgsSchema = z.object({
     page: z.coerce.number().int().positive().optional().catch(undefined),
     perPage: z.coerce.number().int().positive().optional().catch(undefined),
     search: z.string().optional().catch(undefined),
@@ -130,7 +130,7 @@ export const navbarSearchSchema = z.object({
     page: z.coerce.number().int().positive(),
 });
 
-export const labelSchema = z.object({
+const labelSchema = z.object({
     name: z.string(),
     oldName: z.string().optional(),
 });
