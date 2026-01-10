@@ -49,7 +49,7 @@ export const MediaFavoritesGrid = ({ favorites, title, linkProps }: FavoritesGri
                     />
                     :
                     favoritesToDisplay.map((fav) =>
-                        <MediaCard item={fav} mediaType={fav.mediaType}>
+                        <MediaCard key={`${fav.mediaId}-${fav.mediaType}`} item={fav} mediaType={fav.mediaType}>
                             <div className="absolute bottom-0 w-full rounded-b-sm p-3 pb-2">
                                 <h3 className="text-[10px] font-bold text-primary line-clamp-2" title={fav.mediaName}>
                                     {fav.mediaName}

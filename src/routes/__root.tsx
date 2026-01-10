@@ -10,6 +10,7 @@ import {useNProgress} from "@/lib/client/hooks/use-nprogress";
 import {Footer} from "@/lib/client/components/general/Footer";
 import {ReactQueryDevtoolsPanel} from "@tanstack/react-query-devtools";
 import {TanStackRouterDevtoolsPanel} from "@tanstack/react-router-devtools";
+import {PostHogAuthSync} from "@/lib/client/components/general/PostHogAuthSync";
 import {authOptions} from "@/lib/client/react-query/query-options/query-options";
 import {createRootRouteWithContext, HeadContent, Outlet, Scripts} from "@tanstack/react-router";
 
@@ -43,6 +44,8 @@ function RootComponent() {
             <HeadContent/>
         </head>
         <body>
+
+        <PostHogAuthSync/>
 
         <Toaster/>
         <Navbar/>
