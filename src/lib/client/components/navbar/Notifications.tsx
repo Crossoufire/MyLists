@@ -33,11 +33,11 @@ export const Notifications = () => {
     return (
         <Popover modal={isBelowLg} open={isOpen} onOpenChange={setIsOpen}>
             <PopoverTrigger asChild>
-                <div className="relative flex items-center">
+                <div className="relative flex items-center mr-2">
                     <Button variant="ghost" size="sm" onClick={handleOnClickOpen} className="rounded-full h-10">
                         <Bell className="size-5"/>
-                        {notifCount > 0 &&
-                            <span className="absolute top-2.5 right-2.5 size-1 bg-red-500 rounded-full animate-pulse"/>
+                        {notifCount === 0 &&
+                            <span className="absolute top-2 right-2 size-1.5 bg-red-500 rounded-full animate-pulse"/>
                         }
                     </Button>
                 </div>
