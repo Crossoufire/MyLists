@@ -1,13 +1,13 @@
 import {z} from "zod";
 import {RoleType} from "@/lib/utils/enums";
 import {auth} from "@/lib/server/core/auth";
-import {getContainer} from "@/lib/server/core/container";
+import {UserWithRole} from "better-auth/plugins";
 import {defineTask} from "@/lib/server/tasks/define-task";
 
 
 export const createUserTask = defineTask({
     visibility: "admin",
-    name: "create-user-task" as const,
+    name: "create-user" as const,
     description: "Create a new user account",
     inputSchema: z.object({
         email: z.email().describe("Email address"),
@@ -16,23 +16,41 @@ export const createUserTask = defineTask({
         role: z.enum(RoleType).default(RoleType.USER).describe("User role"),
     }),
     handler: async (ctx, input) => {
-        const container = await getContainer();
-        const userRepository = container.repositories.user;
+        const authCtx = await auth.$context;
 
         await ctx.step("create-and-verify-user", async () => {
-            const { user } = await auth.api.signUpEmail({
-                body: {
-                    email: input.email,
-                    name: input.username,
-                    password: input.password,
-                },
+            const email = input.email.toLowerCase();
+            const isValidEmail = z.email().safeParse(email);
+            if (!isValidEmail.success) {
+                throw new Error(`Invalid email address: ${email}`);
+            }
+
+            const existUser = await authCtx.internalAdapter.findUserByEmail(email);
+            if (existUser) {
+                throw new Error(`User with email ${email} already exists.`);
+            }
+
+            const user = await authCtx.internalAdapter.createUser<UserWithRole>({
+                email,
+                role: input.role,
+                emailVerified: true,
+                name: input.username,
+            });
+            if (!user) {
+                throw new Error("Failed to create user.");
+            }
+
+            const hashedPassword = await authCtx.password.hash(input.password);
+            await authCtx.internalAdapter.linkAccount({
+                userId: user.id,
+                accountId: user.id,
+                providerId: "credential",
+                password: hashedPassword,
             });
 
-            const userId = Number(user.id);
-            await userRepository.adminUpdateUser(userId, { emailVerified: true, role: input.role });
-
-            ctx.metric("userId", userId);
+            ctx.metric("userId", user.id);
             ctx.metric("role", input.role);
+            ctx.metric("username", user.name);
             ctx.info(`Account ${input.email} created and verified.`);
         });
     },
