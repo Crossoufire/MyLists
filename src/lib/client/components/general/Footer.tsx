@@ -1,70 +1,90 @@
+import {FaGithub} from "react-icons/fa";
 import {mail} from "@/lib/utils/helpers";
-import {Coffee, Mail} from "lucide-react";
 import {Link} from "@tanstack/react-router";
 import {Button} from "@/lib/client/components/ui/button";
 import {Separator} from "@/lib/client/components/ui/separator";
+import {Activity, Coffee, ExternalLink, Mail} from "lucide-react";
 
 
 export const Footer = () => {
     const currentYear = new Date().getFullYear();
 
     return (
-        <footer className="w-full p-3 pb-3 border-t border-t-neutral-700 bg-background mt-16">
-            <div className="grid md:grid-cols-12 mx-auto gap-4 md:max-w-7xl text-center md:text-left mb-4">
-                <div className="md:col-span-6 flex flex-col gap-y-1">
-                    <div className="text-lg flex gap-x-2 font-bold items-center justify-center md:justify-start">
-                        <img
-                            width={14}
-                            alt="favicon"
-                            className="mt-0.5"
-                            src="/favicon.ico"
-                        />
-                        MyLists.info
+        <footer className="w-full border-t border-t-neutral-700 bg-background mt-20">
+            <div className="mx-auto max-w-7xl px-4 py-6">
+                <div className="grid grid-cols-12 gap-12 max-sm:grid-cols-1 max-sm:gap-8 max-sm:mb-8">
+                    <div className="md:col-span-6 flex flex-col gap-4">
+                        <div className="flex items-center gap-2 text-xl font-bold">
+                            <img width={20} alt="MyLists logo" src="/favicon.ico"/>
+                            <span>MyLists.info</span>
+                        </div>
+                        <p className="text-muted-foreground text-sm max-w-md leading-relaxed">
+                            A personal project to track your media journey.
+                            Organize TV shows, movies, games, books and manga, in one place,
+                            compare progress with friends, and climb the Hall of Fame.
+                        </p>
+                        <div className="flex flex-wrap items-center gap-3 mt-2">
+                            <a href={`mailto:${mail}`}>
+                                <Button variant="outline" size="sm" className="gap-2">
+                                    <Mail className="size-4"/> Contact Me
+                                </Button>
+                            </a>
+                            <a target="_blank" rel="noopener noreferrer" href="https://www.buymeacoffee.com/crossoufire">
+                                <Button variant="default" size="sm" className="gap-2 bg-orange-400 hover:bg-orange-500">
+                                    <Coffee className="size-4"/> Buy Me A Coffee
+                                </Button>
+                            </a>
+                        </div>
                     </div>
-                    <p className="md:w-[85%] text-muted-foreground text-sm">
-                        Create your media lists, see how much time you spent, follow your friends and compare with them.
-                        Add favorites, comments, re-watch and gain levels to get to the top of the Hall of Fame.
-                    </p>
-                    <div className="flex items-center gap-3 mt-1.5 max-sm:justify-center">
-                        <a href={`mailto:${mail}`}>
-                            <Button variant="outline" size="xs">
-                                <Mail/> Contact us
-                            </Button>
-                        </a>
-                        <a href="https://www.buymeacoffee.com/crossoufire" rel="noreferrer" target="_blank">
-                            <Button variant="default" size="xs">
-                                <Coffee/> Buy Me A Coffee
-                            </Button>
-                        </a>
+                    <div className="md:col-span-3">
+                        <h4 className="font-semibold mb-4 text-sm uppercase tracking-wider">
+                            Resources
+                        </h4>
+                        <ul className="space-y-3 text-sm text-muted-foreground">
+                            <li>
+                                <a href="https://github.com/Crossoufire/MyLists" className="flex items-center gap-2">
+                                    <FaGithub className="size-4"/> GitHub
+                                </a>
+                            </li>
+                            <li>
+                                <a href="https://github.com/Crossoufire/MyLists/releases" className="flex items-center gap-2">
+                                    <ExternalLink className="size-4"/> Changelog
+                                </a>
+                            </li>
+                            <li>
+                                <Link to="/features" className="flex items-center gap-2">
+                                    <Activity className="size-4"/> News & Features
+                                </Link>
+                            </li>
+                        </ul>
                     </div>
+                    <div className="md:col-span-3">
+                        <h4 className="font-semibold mb-4 text-sm uppercase tracking-wider">
+                            Information
+                        </h4>
+                        <ul className="space-y-3 text-sm text-muted-foreground">
+                            <li>
+                                <Link to="/about">
+                                    About the Project
+                                </Link>
+                            </li>
+                            <li>
+                                <Link to="/privacy-policy">
+                                    Privacy Policy
+                                </Link>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
 
+                <Separator className="my-4 opacity-50"/>
+
+                <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-muted-foreground">
+                    <p>© 2019-{currentYear} — MyLists.info</p>
+                    <p className="flex items-center gap-1 italic">
+                        Made with ❤️ in France
+                    </p>
                 </div>
-                <div className="md:col-span-3 flex flex-col gap-y-1">
-                    <div className="font-bold text-lg">Powered by</div>
-                    <ul className="text-sm">
-                        <li><a href="https://tanstack.com/start/" rel="noreferrer" target="_blank">Tanstack Start</a></li>
-                        <li><a href="https://reactjs.org/" rel="noreferrer" target="_blank">React</a></li>
-                        <li><a href="https://www.themoviedb.org/" rel="noreferrer" target="_blank">TMDB</a></li>
-                        <li><a href="https://www.igdb.com/" rel="noreferrer" target="_blank">IGDB</a></li>
-                        <li><a href="https://books.google.com/" rel="noreferrer" target="_blank">Google Books</a></li>
-                    </ul>
-                </div>
-                <div className="md:col-span-3 flex flex-col gap-y-1">
-                    <div className="font-bold text-lg">
-                        Information
-                    </div>
-                    <ul className="text-sm">
-                        <li><a href="https://github.com/Crossoufire/MyLists" rel="noreferrer" target="_blank">GitHub</a></li>
-                        <li><a href="https://github.com/Crossoufire/MyLists/releases" rel="noreferrer" target="_blank">Changelog</a></li>
-                        <li><Link to="/about">About</Link></li>
-                        <li><Link to="/privacy-policy">Privacy Policy</Link></li>
-                        <li><Link to="/features">News & Features</Link></li>
-                    </ul>
-                </div>
-            </div>
-            <Separator className="my-3"/>
-            <div className="text-center tracking-wide font-medium">
-                © 2019-{currentYear} - MyLists.info
             </div>
         </footer>
     );
