@@ -73,6 +73,8 @@ export const animeConfig: AnimeSchemaConfig = {
     },
     apiProvider: {
         maxGenres: 5,
+        name: "TMDB",
+        mediaUrl: "https://www.themoviedb.org/tv/",
     },
     editableFields: [
         "name", "originalName", "releaseDate", "lastAirDate", "homepage",

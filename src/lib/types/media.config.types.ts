@@ -90,7 +90,9 @@ export interface MediaSchemaConfig<
         baseSelection: BaseSelection<TListTable, TMediaTable>;
     }
     apiProvider: {
-        maxGenres: number;
+        name: string,
+        maxGenres: number,
+        mediaUrl: string | null,
     }
     achievements: readonly AchievementSeedData[];
     jobDefinitions: Partial<Record<JobType, JobDefinition>>;

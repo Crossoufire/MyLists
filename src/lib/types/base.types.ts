@@ -104,6 +104,7 @@ export type AddedMediaDetails = {
     networks?: IdNamePair[];
     platforms?: IdNamePair[];
     epsPerSeason?: EpsPerSeasonType[];
+    providerData: { name: string, url: string };
     collection?: { mediaId: number, mediaName: string, mediaCover: string }[];
     companies?: { id: number, name: string, developer: boolean, publisher: boolean }[];
 };

@@ -57,6 +57,8 @@ export const gamesConfig: GamesSchemaConfig = {
     },
     apiProvider: {
         maxGenres: 5,
+        name: "IGDB",
+        mediaUrl: null, // in db igdbUrl
     },
     editableFields: [
         "name", "gameEngine", "gameModes", "playerPerspective", "releaseDate", "synopsis",

@@ -57,6 +57,8 @@ export const booksConfig: MangaSchemaConfig = {
     },
     apiProvider: {
         maxGenres: 5,
+        name: "GoogleBooks",
+        mediaUrl: "https://books.google.com/books?id=",
     },
     editableFields: ["name", "releaseDate", "pages", "language", "publishers", "synopsis", "lockStatus"],
     jobDefinitions: {

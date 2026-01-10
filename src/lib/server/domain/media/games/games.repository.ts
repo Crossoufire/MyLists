@@ -248,6 +248,8 @@ export class GamesRepository extends BaseRepository<GamesSchemaConfig> {
     }
 
     async findAllAssociatedDetails(mediaId: number) {
+        const { apiProvider } = this.config;
+
         const details = await getDbClient()
             .select({
                 ...getTableColumns(games),
@@ -267,6 +269,10 @@ export class GamesRepository extends BaseRepository<GamesSchemaConfig> {
 
         const result: Game & AddedMediaDetails = {
             ...details,
+            providerData: {
+                name: apiProvider.name,
+                url: details.igdbUrl ?? "#",
+            },
             genres: details.genres || [],
             companies: details.companies || [],
             platforms: details.platforms || [],

@@ -246,6 +246,8 @@ export class MoviesRepository extends BaseRepository<MovieSchemaConfig> {
     }
 
     async findAllAssociatedDetails(mediaId: number) {
+        const { apiProvider } = this.config;
+
         const details = await getDbClient()
             .select({
                 ...getTableColumns(movies),
@@ -290,6 +292,10 @@ export class MoviesRepository extends BaseRepository<MovieSchemaConfig> {
 
         const result: Movie & AddedMediaDetails = {
             ...details,
+            providerData: {
+                name: apiProvider.name,
+                url: `${apiProvider.mediaUrl}${details.apiId}`,
+            },
             actors: details.actors || [],
             genres: details.genres || [],
             collection: collection || [],

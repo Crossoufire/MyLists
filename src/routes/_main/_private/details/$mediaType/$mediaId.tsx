@@ -1,4 +1,4 @@
-import {Plus} from "lucide-react";
+import {ExternalLink, Plus} from "lucide-react";
 import {capitalize} from "@/lib/utils/formating";
 import {useAuth} from "@/lib/client/hooks/use-auth";
 import {Card} from "@/lib/client/components/ui/card";
@@ -102,6 +102,13 @@ function MediaDetailsPage() {
                                     lastUpdate={apiData.media.lastApiUpdate}
                                 />
                             }
+
+                            <Button variant="outline" className="w-full gap-2" asChild>
+                                <a href={media.providerData.url} target="_blank" rel="noopener noreferrer">
+                                    <ExternalLink className="size-4"/>
+                                    View on {media.providerData.name}
+                                </a>
+                            </Button>
 
                             <MediaComponent
                                 media={media}

@@ -61,6 +61,8 @@ export const moviesConfig: MovieSchemaConfig = {
     },
     apiProvider: {
         maxGenres: 5,
+        name: "TMDB",
+        mediaUrl: "https://www.themoviedb.org/movie/",
     },
     editableFields: [
         "originalName", "name", "directorName", "releaseDate", "duration", "synopsis",

@@ -57,6 +57,8 @@ export const mangaConfig: MangaSchemaConfig = {
     },
     apiProvider: {
         maxGenres: 5,
+        name: "MyAnimeList",
+        mediaUrl: "https://myanimelist.net/manga/",
     },
     editableFields: ["name", "releaseDate", "chapters", "publishers", "synopsis", "lockStatus"],
     jobDefinitions: {

@@ -272,7 +272,7 @@ export class TvRepository extends BaseRepository<AnimeSchemaConfig | SeriesSchem
     }
 
     async findAllAssociatedDetails(mediaId: number) {
-        const { mediaTable, actorTable, genreTable, epsPerSeasonTable, networkTable } = this.config;
+        const { apiProvider, mediaTable, actorTable, genreTable, epsPerSeasonTable, networkTable } = this.config;
 
         const details = await getDbClient()
             .select({
@@ -294,6 +294,10 @@ export class TvRepository extends BaseRepository<AnimeSchemaConfig | SeriesSchem
 
         const result: TvType & AddedMediaDetails = {
             ...details,
+            providerData: {
+                name: apiProvider.name,
+                url: `${apiProvider.mediaUrl}${details.apiId}`,
+            },
             genres: details.genres || [],
             actors: details.actors || [],
             networks: details.networks || [],

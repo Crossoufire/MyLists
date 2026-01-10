@@ -187,6 +187,8 @@ export class MangaRepository extends BaseRepository<MangaSchemaConfig> {
     }
 
     async findAllAssociatedDetails(mediaId: number) {
+        const { apiProvider } = this.config;
+
         const details = await getDbClient()
             .select({
                 ...getTableColumns(manga),
@@ -203,6 +205,10 @@ export class MangaRepository extends BaseRepository<MangaSchemaConfig> {
 
         const result: Manga & AddedMediaDetails = {
             ...details,
+            providerData: {
+                name: apiProvider.name,
+                url: `${apiProvider.mediaUrl}${details.apiId}`,
+            },
             genres: details.genres || [],
             authors: details.authors || [],
         };
