@@ -203,8 +203,12 @@ export const postImpersonateUser = createServerFn({ method: "POST" })
     .handler(async ({ data: { userId } }) => {
         const ctx = await auth.$context;
         const prefix = ctx.options?.advanced?.cookiePrefix ?? "better-auth";
-        const cookies = { sessionData: `${prefix}.session_data`, sessionToken: `${prefix}.session_token` };
-
+        const prePrefix = (process.env.NODE_ENV === "production") ? "__Secure-" : "";
+        const cookies = {
+            sessionData: `${prePrefix}${prefix}.session_data`,
+            sessionToken: `${prePrefix}${prefix}.session_token`,
+        };
+        
         const targetUser = await ctx.internalAdapter.findUserById(String(userId));
         if (!targetUser) throw new FormattedError("User not found");
 

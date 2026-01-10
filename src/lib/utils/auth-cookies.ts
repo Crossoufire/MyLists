@@ -1,4 +1,4 @@
-import {getCookie, setCookie} from "@tanstack/react-start/server";
+import {setCookie} from "@tanstack/react-start/server";
 
 
 const algorithm = { name: "HMAC", hash: "SHA-256" };
@@ -17,21 +17,6 @@ const sign = async (value: string, secret: string) => {
         new TextEncoder().encode(value)
     );
     return btoa(String.fromCharCode(...new Uint8Array(sig)));
-};
-
-
-export const getSignedCookie = async (name: string, secret: string) => {
-    const raw = getCookie(name);
-    if (!raw) return null;
-
-    const decoded = decodeURIComponent(raw);
-    const dotIdx = decoded.lastIndexOf(".");
-    if (dotIdx < 1) return null;
-
-    const value = decoded.slice(0, dotIdx);
-    const sig = decoded.slice(dotIdx + 1);
-
-    return sig === (await sign(value, secret)) ? value : null;
 };
 
 
