@@ -58,7 +58,7 @@ export const mangaConfig: MangaSchemaConfig = {
     apiProvider: {
         maxGenres: 5,
     },
-    editableFields: ["name", "releaseDate", "chapters", "publishers", "synopsis"],
+    editableFields: ["name", "releaseDate", "chapters", "publishers", "synopsis", "lockStatus"],
     jobDefinitions: {
         [JobType.CREATOR]: {
             sourceTable: mangaAuthors,

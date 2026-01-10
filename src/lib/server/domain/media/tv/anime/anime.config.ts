@@ -76,7 +76,7 @@ export const animeConfig: AnimeSchemaConfig = {
     },
     editableFields: [
         "name", "originalName", "releaseDate", "lastAirDate", "homepage",
-        "createdBy", "duration", "originCountry", "prodStatus", "synopsis"
+        "createdBy", "duration", "originCountry", "prodStatus", "synopsis", "lockStatus"
     ],
     jobDefinitions: {
         [JobType.ACTOR]: {

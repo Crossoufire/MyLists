@@ -60,7 +60,7 @@ export const gamesConfig: GamesSchemaConfig = {
     },
     editableFields: [
         "name", "gameEngine", "gameModes", "playerPerspective", "releaseDate", "synopsis",
-        "hltbMainTime", "hltbMainAndExtraTime", "hltbTotalCompleteTime"
+        "hltbMainTime", "hltbMainAndExtraTime", "hltbTotalCompleteTime", "lockStatus",
     ],
     jobDefinitions: {
         [JobType.CREATOR]: {

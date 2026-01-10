@@ -99,7 +99,6 @@ function MediaDetailsPage() {
                                     mediaType={mediaType}
                                     mediaId={apiData.media.id}
                                     apiId={apiData.media.apiId}
-                                    lockStatus={apiData.media.lockStatus}
                                     lastUpdate={apiData.media.lastApiUpdate}
                                 />
                             }

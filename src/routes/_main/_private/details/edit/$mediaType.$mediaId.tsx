@@ -1,17 +1,17 @@
 import {toast} from "sonner";
 import {useForm} from "react-hook-form";
 import {MediaType} from "@/lib/utils/enums";
+import {capitalize} from "@/lib/utils/formating";
 import {Input} from "@/lib/client/components/ui/input";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {Button} from "@/lib/client/components/ui/button";
+import {splitIntoColumns} from "@/lib/utils/split-columns";
 import {Textarea} from "@/lib/client/components/ui/textarea";
 import {createFileRoute, useRouter} from "@tanstack/react-router";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
 import {editMediaDetailsOptions} from "@/lib/client/react-query/query-options/query-options";
 import {useEditMediaMutation} from "@/lib/client/react-query/query-mutations/media.mutations";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/lib/client/components/ui/form";
-import {capitalize} from "@/lib/utils/formating";
-import {splitIntoColumns} from "@/lib/utils/split-columns";
 
 
 export const Route = createFileRoute("/_main/_private/details/edit/$mediaType/$mediaId")({
@@ -70,6 +70,13 @@ function MediaEditPage() {
     const parts = splitIntoColumns(Object.entries(apiData.fields), 3);
 
     const onSubmit = (submittedData: Record<string, any>) => {
+        if (submittedData?.lockStatus === "false") {
+            submittedData.lockStatus = false;
+        }
+        else if (submittedData?.lockStatus === "true") {
+            submittedData.lockStatus = true;
+        }
+
         editMediaMutation.mutate({ data: { mediaType, mediaId, payload: submittedData } }, {
             onError: () => toast.error("An error occurred while updating the media"),
             onSuccess: async () => {
