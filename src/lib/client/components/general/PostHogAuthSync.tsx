@@ -11,7 +11,6 @@ export function PostHogAuthSync() {
 
         if (currentUser && currentUser.id) {
             posthog.identify(String(currentUser.id), {
-                email: currentUser.email,
                 username: currentUser.name,
             });
         }

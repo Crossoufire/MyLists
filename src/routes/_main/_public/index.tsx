@@ -14,8 +14,7 @@ const features = [
     {
         icon: <Monitor className="size-6"/>,
         title: "Fully Responsive",
-        description:
-            "Perfect experience across all devices - desktop, tablet, mobile, and even TV interfaces.",
+        description: "Perfect experience across all devices - desktop, tablet, mobile, and even TV interfaces.",
     },
     {
         icon: <Code className="size-6"/>,

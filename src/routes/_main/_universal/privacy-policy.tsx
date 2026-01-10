@@ -30,6 +30,14 @@ function PrivacyPolicyPage() {
                 By using our website, you hereby consent to our Privacy Policy and agree to its terms.
             </p>
 
+            <h5 className="text-lg mt-5 font-semibold">Analytics & Data Processing</h5>
+            <p>
+                We use <strong>PostHog</strong> to analyze user behavior and enhance MyLists.info.
+                Data processing occurs within the European Union (PostHog Cloud EU).
+                The only identifiers shared with this service are your <code>userId</code> and <code>username</code>,
+                which are used exclusively to provide insights for service improvements.
+            </p>
+
             <h5 className="text-lg mt-5 font-semibold">Information we collect</h5>
             <p>
                 The personal information that you are asked to provide, and the reasons why you are asked to provide

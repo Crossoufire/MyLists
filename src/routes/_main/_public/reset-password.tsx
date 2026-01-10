@@ -1,8 +1,8 @@
 import {toast} from "sonner";
 import {useForm} from "react-hook-form";
 import {LoaderCircle} from "lucide-react";
-import {Input} from "@/lib/client/components/ui/input";
 import authClient from "@/lib/utils/auth-client";
+import {Input} from "@/lib/client/components/ui/input";
 import {Button} from "@/lib/client/components/ui/button";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
 import {createFileRoute, useNavigate} from "@tanstack/react-router";
@@ -52,7 +52,7 @@ function ResetPasswordPage() {
 
     return (
         <PageTitle title="Reset Your Password" subtitle="You can now change your password to a new one">
-            <div className="mt-4 w-[300px] max-sm:w-full">
+            <div className="mt-4 w-75 max-sm:w-full">
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                         <fieldset disabled={form.formState.isSubmitting}>

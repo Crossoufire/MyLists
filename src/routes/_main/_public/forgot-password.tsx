@@ -2,8 +2,8 @@ import {toast} from "sonner";
 import {useState} from "react";
 import {useForm} from "react-hook-form";
 import {LoaderCircle} from "lucide-react";
-import {Input} from "@/lib/client/components/ui/input";
 import authClient from "@/lib/utils/auth-client";
+import {Input} from "@/lib/client/components/ui/input";
 import {Button} from "@/lib/client/components/ui/button";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
 import {createFileRoute, useNavigate} from "@tanstack/react-router";
@@ -44,7 +44,7 @@ function ForgotPasswordPage() {
 
     return (
         <PageTitle title="Forgot password" subtitle="Enter the email associated with your account to reset your password">
-            <div className="mt-4 max-w-[300px]">
+            <div className="mt-4 max-w-75">
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                         <FormField
