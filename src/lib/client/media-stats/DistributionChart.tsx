@@ -129,7 +129,7 @@ export const CustomTooltip = (props: any) => {
 
     if (active && payload && payload.length) {
         return (
-            <div className="bg-gray-800 px-4 py-2 rounded-md">
+            <div className="bg-gray-800 px-4 py-2 rounded-md capitalize">
                 <p>Label: {label}</p>
                 <p>Value: {`${formatNumber(payload[0].value)}`}</p>
             </div>
