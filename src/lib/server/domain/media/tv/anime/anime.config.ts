@@ -1,4 +1,4 @@
-import {asc, desc, getTableColumns} from "drizzle-orm";
+import {asc, desc, getTableColumns, sql} from "drizzle-orm";
 import {JobType, MediaType, Status} from "@/lib/utils/enums";
 import {TvSchemaConfig} from "@/lib/types/media.config.types";
 import {createArrayFilterDef} from "@/lib/server/domain/media/base/base.repository";
@@ -30,6 +30,15 @@ export const animeConfig: AnimeSchemaConfig = {
         baseSelection: {
             mediaName: anime.name,
             imageCover: anime.imageCover,
+            epsPerSeason: sql<{ season: number; episodes: number }[]>`(
+                SELECT 
+                    json_group_array(json_object(
+                        'season', ${animeEpisodesPerSeason.season}, 
+                        'episodes', ${animeEpisodesPerSeason.episodes}
+                    ))
+                FROM ${animeEpisodesPerSeason} 
+                WHERE ${animeEpisodesPerSeason.mediaId} = ${anime.id}
+            )`.mapWith(JSON.parse),
             ...getTableColumns(animeList),
         },
         filterDefinitions: {
