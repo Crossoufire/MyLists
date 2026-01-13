@@ -1,0 +1,146 @@
+import dedent from "dedent";
+import {Card} from "@/lib/client/components/ui/card";
+import {useSuspenseQuery} from "@tanstack/react-query";
+import {Button} from "@/lib/client/components/ui/button";
+import {createFileRoute, Link} from "@tanstack/react-router";
+import {MediaType, RatingSystemType, Status} from "@/lib/utils/enums";
+import {UserMediaDetails} from "@/lib/client/components/media/base/UserMediaDetails";
+import {mediaDetailsOptions} from "@/lib/client/react-query/query-options/query-options";
+import {ExternalLink, Heart, List, MessageCircle, Plus, RotateCcw, Star, Tags} from "lucide-react";
+import {
+    OnboardingContainer,
+    OnboardingDemoBox,
+    OnboardingFeatureCard,
+    OnboardingGrid,
+    OnboardingNote,
+    OnboardingSection,
+    OnboardingSubSection
+} from "@/lib/client/components/onboarding/OnBoardingShared";
+
+
+const mediaId = 110; // Edge of Tomorrow
+
+
+export const Route = createFileRoute("/_main/_private/walkthrough/_layout/add-media")({
+    loader: async ({ context: { queryClient } }) => {
+        return queryClient.ensureQueryData(mediaDetailsOptions(MediaType.MOVIES, mediaId, false));
+    },
+    component: RouteComponent,
+});
+
+
+function RouteComponent() {
+    const apiData = useSuspenseQuery(mediaDetailsOptions(MediaType.MOVIES, mediaId, false)).data;
+    const { media, userMedia } = apiData;
+
+    return (
+        <OnboardingContainer>
+            <OnboardingSection
+                icon={List}
+                title="The Details Page"
+                description={
+                    "Once you've found something you like, you'll land on its details page. " +
+                    "This is where you can see details about the media and track your progress."
+                }
+            />
+
+            <OnboardingSubSection
+                title="1. Add Media To Your List"
+                description="Add the media to your list by clicking the button on the details page."
+            >
+                <OnboardingDemoBox>
+                    <div className="flex flex-col items-center w-full max-w-md shadow-sm">
+                        <div className="space-y-6 max-lg:mb-0">
+                            <Button variant="outline" className="w-full gap-2" asChild>
+                                <a href={media.providerData.url} target="_blank" rel="noopener noreferrer">
+                                    <ExternalLink className="size-4"/>
+                                    View on {media.providerData.name}
+                                </a>
+                            </Button>
+                            <Card>
+                                <div className="text-center space-y-2">
+                                    <h3 className="text-lg font-semibold text-slate-200">
+                                        Are you interested in this?
+                                    </h3>
+                                    <p className="text-sm text-muted-foreground">
+                                        Add this {MediaType.MOVIES} to your list to track your progress.
+                                    </p>
+                                </div>
+                                <Button className="w-full mt-2">
+                                    <Plus className="size-4"/> Add to List
+                                </Button>
+                            </Card>
+                        </div>
+                    </div>
+                </OnboardingDemoBox>
+            </OnboardingSubSection>
+
+            <OnboardingSubSection
+                title="2. Manage The Media"
+                description="After adding the media to your list, you can manage it from this page."
+            >
+                <OnboardingDemoBox>
+                    {!!userMedia &&
+                        <UserMediaDetails
+                            userMedia={userMedia}
+                            mediaType={MediaType.MOVIES}
+                            queryOption={mediaDetailsOptions(MediaType.MOVIES, mediaId, false)}
+                        />
+                    }
+                </OnboardingDemoBox>
+
+                <OnboardingGrid>
+                    <OnboardingFeatureCard
+                        icon={Plus}
+                        title="Status"
+                        description={dedent`
+                            Set the current status of the media. 
+                            For example for movies the options are '${Status.COMPLETED}' or '${Status.PLAN_TO_WATCH}'
+                        `}
+                    />
+                    <OnboardingFeatureCard
+                        icon={Star}
+                        title={`Rating: ${RatingSystemType.FEELING} or ${RatingSystemType.SCORE}`}
+                        description={
+                            <div>
+                                Give either a score (0-10) or a feeling (6 emoticons system).
+                                Default to score, can be changed on the {" "}
+                                <Link to="/settings" className="text-app-accent flex items-center gap-1 font-bold">
+                                    settings <ExternalLink className="size-3"/>.
+                                </Link>
+                            </div>
+                        }
+                    />
+                    <OnboardingFeatureCard
+                        icon={Heart}
+                        title="Favorites"
+                        description="Hearting a media adds it to your 'Favorites' section on your profile and for filtering in your list."
+                    />
+                    <OnboardingFeatureCard
+                        icon={RotateCcw}
+                        title="Re-watched"
+                        description="Add a re-watch on media. The added time is used in your statistics recap."
+                    />
+                    <OnboardingFeatureCard
+                        title="Comment"
+                        icon={MessageCircle}
+                        description="Add a comment for this media. This can be use for filtering in your list."
+                    />
+                    <OnboardingFeatureCard
+                        icon={Tags}
+                        title="Labels"
+                        description={`
+                            Create or Add labels to a media to personalize and organization your list. 
+                            For example creating the 'Top SF' label and adding it to all the media that you want to 
+                            retrieve these media more easily in your list using the filtering system.
+                        `}
+                    />
+                </OnboardingGrid>
+
+                <OnboardingNote title="Info">
+                    Some options only appear for specific media types to keep the experience relevant.
+                </OnboardingNote>
+            </OnboardingSubSection>
+        </OnboardingContainer>
+    );
+}

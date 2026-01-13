@@ -16,7 +16,7 @@ interface ErrorComponentProps {
 
 export const ErrorComponent = ({ title, icon, text, footerText }: ErrorComponentProps) => {
     return (
-        <div className="flex items-center justify-center p-4 mt-12">
+        <div className="flex items-center justify-center p-4 mt-12 h-[calc(100vh-400px)]">
             <Card className="w-full max-w-md">
                 <CardContent>
                     <div className="text-center space-y-6">
@@ -46,10 +46,12 @@ export const ErrorComponent = ({ title, icon, text, footerText }: ErrorComponent
                                 </Button>
                             </div>
                         </div>
-                        <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
-                            <p className="text-sm text-gray-400 dark:text-gray-400">
+                        <div className="pt-3 border-t">
+                            <p className="text-sm text-destructive-foreground">
                                 {footerText}{" "}
-                                <a href={`mailto:${mail}`} className="text-primary hover:underline">Contact us</a>
+                                <a href={`mailto:${mail}`} className="font-semibold">
+                                    Contact Me
+                                </a>
                             </p>
                         </div>
                     </div>

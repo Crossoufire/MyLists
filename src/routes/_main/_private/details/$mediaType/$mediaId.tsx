@@ -103,18 +103,18 @@ function MediaDetailsPage() {
                                 />
                             }
 
+                            <MediaComponent
+                                media={media}
+                                name="upComingAlert"
+                                mediaType={mediaType}
+                            />
+
                             <Button variant="outline" className="w-full gap-2" asChild>
                                 <a href={media.providerData.url} target="_blank" rel="noopener noreferrer">
                                     <ExternalLink className="size-4"/>
                                     View on {media.providerData.name}
                                 </a>
                             </Button>
-
-                            <MediaComponent
-                                media={media}
-                                name="upComingAlert"
-                                mediaType={mediaType}
-                            />
 
                             {userMedia ?
                                 <UserMediaDetails

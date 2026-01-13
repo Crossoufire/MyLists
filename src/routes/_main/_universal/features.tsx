@@ -1,7 +1,7 @@
 import {JSX} from "react";
 import {mail} from "@/lib/utils/helpers";
 import {ApiProviderType} from "@/lib/utils/enums";
-import {createFileRoute} from "@tanstack/react-router";
+import {createFileRoute, Link} from "@tanstack/react-router";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
 import {Popover, PopoverContent, PopoverTrigger} from "@/lib/client/components/ui/popover";
 import {
@@ -14,9 +14,11 @@ import {
     Code2,
     Crop,
     Edit3,
+    ExternalLink,
     FileSpreadsheet,
     Filter,
     Gamepad2,
+    GraduationCap,
     LayoutList,
     LineChart,
     LucideIcon,
@@ -48,13 +50,26 @@ type FeatureData = {
 
 const FEATURES_DATA: FeatureData[] = [
     {
+        icon: GraduationCap,
+        category: "New",
+        name: "New Walkthrough Tutorial",
+        description: (
+            <span>
+                New here? Follow this walkthrough to learn how to use MyLists.info, add media, and get the most out it {" "}
+                <Link to="/walkthrough/profile" className="inline-flex gap-1 items-center text-app-accent font-medium hover:text-app-accent/80">
+                    here <ExternalLink className="size-3"/>
+                </Link>.
+            </span>
+        )
+    },
+    {
         icon: Code2,
         category: "New",
         name: "New Backend Language",
         description: (
             <span>
                 MyLists is now powered by TypeScript. While this improves long-term stability, bugs are expected during the transition. If you spot one, please <a
-                className="text-app-accent hover:underline font-medium hover:text-app-accent/30 transition-colors" href={`mailto:${mail}`}>contact me</a>.
+                className="text-app-accent font-medium hover:text-app-accent/80" href={`mailto:${mail}`}>contact me</a>.
             </span>
         )
     },
@@ -164,8 +179,8 @@ const FEATURES_DATA: FeatureData[] = [
     },
     {
         icon: Crop,
-        category: "New",
         name: "Image Cropping",
+        category: "Personalization",
         description: "No more stretched images. Crop your profile picture and back cover directly during upload."
     },
     {
@@ -207,7 +222,7 @@ const FEATURES_DATA: FeatureData[] = [
     {
         icon: Tag,
         name: "Custom Labels",
-        category: "Management",
+        category: "Personalization",
         description: "Create and apply custom tags to organize your media your way."
     },
     {
@@ -242,8 +257,8 @@ const FEATURES_DATA: FeatureData[] = [
     },
     {
         icon: Shield,
-        category: "Social",
         name: "Privacy Mode",
+        category: "Personalization",
         description: "Fine-tune visibility for your profile, lists, stats, and updates."
     },
     {

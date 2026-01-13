@@ -62,7 +62,7 @@ export const RegisterForm = ({ open, onOpenChange }: RegisterFormProps) => {
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-sm:w-full w-[350px] bg-neutral-950">
+            <DialogContent className="max-sm:w-full w-87 bg-neutral-950">
                 <DialogHeader>
                     <DialogTitle>Register to Mylists</DialogTitle>
                     <DialogDescription></DialogDescription>

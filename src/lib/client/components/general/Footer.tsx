@@ -30,7 +30,7 @@ export const Footer = () => {
                                 </Button>
                             </a>
                             <a target="_blank" rel="noopener noreferrer" href="https://www.buymeacoffee.com/crossoufire">
-                                <Button variant="default" size="sm" className="gap-2 bg-orange-400 hover:bg-orange-500">
+                                <Button variant="emeraldy" size="sm">
                                     <Coffee className="size-4"/> Buy Me A Coffee
                                 </Button>
                             </a>

@@ -6,6 +6,7 @@ import {Sidebar, SidebarItem} from "@/lib/client/components/general/Sidebar";
 import {GeneralForm} from "@/lib/client/components/user-settings/GeneralForm";
 import {PasswordForm} from "@/lib/client/components/user-settings/PasswordForm";
 import {MediaListForm} from "@/lib/client/components/user-settings/MediaListForm";
+import {FeaturesWalkthrough} from "@/lib/client/components/user-settings/FeaturesWalkthrough";
 
 
 export const Route = createFileRoute("/_main/_private/settings/")({
@@ -17,6 +18,7 @@ const tabConfig = [
     { sidebarTitle: "General", component: <GeneralForm/> },
     { sidebarTitle: "Content & Lists", component: <MediaListForm/> },
     { sidebarTitle: "Password", component: <PasswordForm/> },
+    { sidebarTitle: "Features Walkthrough", component: <FeaturesWalkthrough/> },
     { sidebarTitle: "Danger", component: <DangerForm/> },
 ] as const;
 type TabTitles = typeof tabConfig[number]["sidebarTitle"];

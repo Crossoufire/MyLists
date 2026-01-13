@@ -55,6 +55,7 @@ function ProfileMain() {
                     settings={apiData.userData.userMediaSettings}
                 />
                 <UserUpdates
+                    username={username}
                     updates={apiData.userUpdates}
                 />
                 <ProfileFollows
@@ -96,6 +97,7 @@ function ProfileMain() {
                         />
                     </div>
                     <FollowsUpdates
+                        username={username}
                         updates={apiData.followsUpdates}
                     />
                 </div>

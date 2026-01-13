@@ -30,7 +30,6 @@ export const SearchBar = ({ setMobileMenu }: SearchBarProps) => {
     const { data: searchResults, isFetching, error } = useQuery(navSearchOptions(debouncedSearch, page, selectDrop));
 
     useEffect(() => {
-        // eslint-disable-next-line react-hooks/set-state-in-effect - When user change `searchSelector` in settings
         setSelectDrop(currentUser?.searchSelector || ApiProviderType.TMDB);
     }, [currentUser?.searchSelector]);
 

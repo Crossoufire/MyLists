@@ -1,8 +1,7 @@
 import {Button} from "@/lib/client/components/ui/button";
 import {createFileRoute, Link} from "@tanstack/react-router";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
-import {Card, CardContent, CardHeader, CardTitle} from "@/lib/client/components/ui/card";
-import {ArrowRight, Bug, Clock, Code, Heart, Monitor, Play, Shield, Sprout, Users,} from "lucide-react";
+import {ArrowRight, Bug, Code, Gamepad2, Heart, Layout, Monitor, Shield, Sparkles, Sprout, Trophy, Users} from "lucide-react";
 
 
 export const Route = createFileRoute("/_main/_public/")({
@@ -74,77 +73,152 @@ function HomePage() {
                 </div>
             </section>
 
-            <section className="container mx-auto px-6 py-12">
-                <div className="text-center mb-16">
-                    <h2 className="text-3xl md:text-4xl font-bold mb-4 text-balance">
-                        Everything You Need
-                    </h2>
-                    <p className="text-xl text-muted-foreground max-w-2xl mx-auto text-balance">
-                        Powerful features designed for media enthusiasts who want to track, organize, and share their journey
-                    </p>
+            <div className="flex flex-col gap-24 py-24 container mx-auto px-6">
+
+                {/* Section 1: All in One */}
+                <div className="grid md:grid-cols-2 gap-12 items-center">
+                    <div className="order-2 md:order-1 space-y-6">
+                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium">
+                            <Layout className="size-4"/>
+                            <span>Unified Library</span>
+                        </div>
+                        <h2 className="text-3xl md:text-4xl font-bold">All Your Media in One Place</h2>
+                        <p className="text-lg text-muted-foreground leading-relaxed">
+                            Stop switching between different apps. Track your Movies, TV Shows, Games, Books, and Manga all in one beautiful, organized dashboard.
+                        </p>
+                        <ul className="space-y-3">
+                            {['Comprehensive Database', 'Custom Lists', 'Advanced Filtering'].map((item) => (
+                                <li key={item} className="flex items-center gap-2">
+                                    <div className="size-1.5 rounded-full bg-primary"/>
+                                    {item}
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                    <div className="order-1 md:order-2 bg-muted/30 rounded-2xl p-2 border border-border/50">
+                        <img
+                            src="https://placehold.co/800x600/1a1a1a/666666?text=Unified+Dashboard+Preview"
+                            alt="Dashboard Preview"
+                            className="rounded-xl w-full h-auto shadow-2xl"
+                        />
+                    </div>
                 </div>
 
-                <div className="grid md:grid-cols-3 gap-8">
-                    <Card className="group hover:shadow-2xl hover:shadow-primary/10 transition-all duration-300 border-border/50 hover:border-primary/30">
-                        <CardHeader className="text-center pb-4">
-                            <div className="size-15 bg-accent rounded-xl flex items-center justify-center mx-auto mb-4 transition-transform">
-                                <Play className="size-8 text-primary"/>
+                {/* Section 2: Gamification */}
+                <div className="grid md:grid-cols-2 gap-12 items-center">
+                    <div className="order-1 bg-muted/30 rounded-2xl p-2 border border-border/50">
+                        <img
+                            src="https://placehold.co/800x600/1a1a1a/666666?text=Profile+Stats+%26+Levels"
+                            alt="Gamification Preview"
+                            className="rounded-xl w-full h-auto shadow-2xl"
+                        />
+                    </div>
+                    <div className="order-2 space-y-6">
+                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-yellow-500/10 text-yellow-500 text-sm font-medium">
+                            <Trophy className="size-4"/>
+                            <span>Gamification</span>
+                        </div>
+                        <h2 className="text-3xl md:text-4xl font-bold">Level Up Your Passion</h2>
+                        <p className="text-lg text-muted-foreground leading-relaxed">
+                            Earn XP for every episode watched or chapter read. Unlock achievements, level up your profile, and compete with the community on the global Hall of
+                            Fame.
+                        </p>
+                        <ul className="space-y-3">
+                            {['XP System', 'Unique Achievements', 'Global Leaderboards'].map((item) => (
+                                <li key={item} className="flex items-center gap-2">
+                                    <div className="size-1.5 rounded-full bg-yellow-500"/>
+                                    {item}
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                </div>
+
+                {/* Section 3: Moviedle */}
+                <div className="grid md:grid-cols-2 gap-12 items-center">
+                    <div className="order-2 md:order-1 space-y-6">
+                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/10 text-purple-500 text-sm font-medium">
+                            <Gamepad2 className="size-4"/>
+                            <span>Daily Challenge</span>
+                        </div>
+                        <h2 className="text-3xl md:text-4xl font-bold">Daily Movie Challenge</h2>
+                        <p className="text-lg text-muted-foreground leading-relaxed">
+                            Think you know movies? Test your knowledge with "Moviedle", our daily pixelated cover challenge. Guess the movie, keep your streak alive, and share your
+                            score!
+                        </p>
+                        <Button variant="outline" className="gap-2">
+                            <Sparkles className="size-4"/> Play Now
+                        </Button>
+                    </div>
+                    <div className="order-1 md:order-2 bg-muted/30 rounded-2xl p-2 border border-border/50">
+                        <img
+                            src="https://placehold.co/800x600/1a1a1a/666666?text=Moviedle+Game+Preview"
+                            alt="Moviedle Preview"
+                            className="rounded-xl w-full h-auto shadow-2xl"
+                        />
+                    </div>
+                </div>
+
+                {/* Section 4: Social */}
+                <div className="grid md:grid-cols-2 gap-12 items-center">
+                    <div className="order-1 bg-muted/30 rounded-2xl p-2 border border-border/50">
+                        <img
+                            src="https://placehold.co/800x600/1a1a1a/666666?text=Social+Feed+Preview"
+                            alt="Social Features Preview"
+                            className="rounded-xl w-full h-auto shadow-2xl"
+                        />
+                    </div>
+                    <div className="order-2 space-y-6">
+                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 text-blue-500 text-sm font-medium">
+                            <Users className="size-4"/>
+                            <span>Community</span>
+                        </div>
+                        <h2 className="text-3xl md:text-4xl font-bold">Connect with Friends</h2>
+                        <p className="text-lg text-muted-foreground leading-relaxed">
+                            See what your friends are watching, playing, or reading. Share your lists, compare stats, and discover new favorites based on your network's activity.
+                        </p>
+                    </div>
+                </div>
+
+            </div>
+
+            <section className="bg-muted/10 py-24 border-y border-border/50">
+                <div className="container mx-auto px-6">
+                    <div className="text-center mb-16">
+                        <h2 className="text-3xl md:text-4xl font-bold mb-4 text-balance">Why Choose MyLists?</h2>
+                        <p className="text-xl text-muted-foreground max-w-2xl mx-auto text-balance">
+                            Built with modern technology and user experience in mind
+                        </p>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-8">
+                        {features.map((feature, idx) =>
+                            <div key={idx} className="flex items-start gap-4 p-6 rounded-xl hover:bg-card transition-colors">
+                                <div className="size-12 bg-primary/10 rounded-lg flex items-center justify-center shrink-0">
+                                    {feature.icon}
+                                </div>
+                                <div>
+                                    <h3 className="font-semibold text-lg mb-2">{feature.title}</h3>
+                                    <p className="text-muted-foreground leading-relaxed">
+                                        {feature.description}
+                                    </p>
+                                </div>
                             </div>
-                            <CardTitle className="text-xl">Manage Your Lists</CardTitle>
-                        </CardHeader>
-                        <CardContent className="text-center leading-relaxed">
-                            Support for TV shows, Anime, Movies, Games, Books, and Manga. Get a comprehensive overview of all your
-                            media in one organized place.
-                        </CardContent>
-                    </Card>
-                    <Card className="group hover:shadow-2xl hover:shadow-primary/10 transition-all duration-300 border-border/50 hover:border-primary/30">
-                        <CardHeader className="text-center pb-4">
-                            <div className="size-15 bg-accent rounded-xl flex items-center justify-center mx-auto mb-4 transition-transform">
-                                <Clock className="size-8 text-primary"/>
-                            </div>
-                            <CardTitle className="text-xl">Track Your Time</CardTitle>
-                        </CardHeader>
-                        <CardContent className="text-center leading-relaxed">
-                            Monitor time spent, level up your profile, rate content, and climb the Hall of Fame leaderboard with
-                            detailed analytics.
-                        </CardContent>
-                    </Card>
-                    <Card className="group hover:shadow-2xl hover:shadow-primary/10 transition-all duration-300 border-border/50 hover:border-primary/30">
-                        <CardHeader className="text-center pb-4">
-                            <div className="size-15 bg-accent rounded-xl flex items-center justify-center mx-auto mb-4 transition-transform">
-                                <Users className="size-8 text-primary"/>
-                            </div>
-                            <CardTitle className="text-xl">Connect & Follow</CardTitle>
-                        </CardHeader>
-                        <CardContent className="text-center leading-relaxed">
-                            Follow friends, discover what they're watching, get personalized recommendations, and stay updated with
-                            their activity.
-                        </CardContent>
-                    </Card>
+                        )}
+                    </div>
                 </div>
             </section>
 
-            <section className="container mx-auto px-6">
-                <div className="text-center mb-16">
-                    <h2 className="text-3xl md:text-4xl font-bold mb-4 text-balance">Why Choose MyLists?</h2>
-                    <p className="text-xl text-muted-foreground max-w-2xl mx-auto text-balance">
-                        Built with modern technology and user experience in mind
+            <section className="py-24 px-6 text-center">
+                <div className="max-w-3xl mx-auto space-y-8">
+                    <h2 className="text-4xl md:text-5xl font-bold">Ready to start your collection?</h2>
+                    <p className="text-xl text-muted-foreground">
+                        Join thousands of other media enthusiasts today. It's free and open source.
                     </p>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-8">
-                    {features.map((feature, idx) =>
-                        <div key={idx} className="flex items-start gap-4 p-6 rounded-xl hover:bg-card transition-colors">
-                            <div className="size-12 bg-primary/10 rounded-lg flex items-center justify-center shrink-0">
-                                {feature.icon}
-                            </div>
-                            <div>
-                                <h3 className="font-semibold text-lg mb-2">{feature.title}</h3>
-                                <p className="text-muted-foreground leading-relaxed">
-                                    {feature.description}
-                                </p>
-                            </div>
-                        </div>
-                    )}
+                    <Link to="/profile/$username" params={{ username: "DemoProfile" }}>
+                        <Button size="lg" className="gap-2 px-8 h-12 text-lg" variant="default">
+                            Get Started Now <ArrowRight/>
+                        </Button>
+                    </Link>
                 </div>
             </section>
         </PageTitle>

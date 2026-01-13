@@ -1,8 +1,8 @@
 import {useState} from "react";
 import {Activity} from "lucide-react";
 import {cn} from "@/lib/utils/helpers";
+import {Link} from "@tanstack/react-router";
 import {useAuth} from "@/lib/client/hooks/use-auth";
-import {Link, useParams} from "@tanstack/react-router";
 import {Button} from "@/lib/client/components/ui/button";
 import {UserUpdateType} from "@/lib/types/query.options.types";
 import {UserUpdate} from "@/lib/client/components/general/UserUpdate";
@@ -12,15 +12,15 @@ import {useDeleteProfileUpdateMutation} from "@/lib/client/react-query/query-mut
 
 
 interface UserUpdatesProps {
+    username: string;
     updates: (UserUpdateType & { username?: string | null })[];
 }
 
 
-export const UserUpdates = ({ updates }: UserUpdatesProps) => {
+export const UserUpdates = ({ username, updates }: UserUpdatesProps) => {
     const { currentUser } = useAuth();
-    const [mediaIdBeingDeleted, setMediaIdBeingDeleted] = useState<undefined | number>();
-    const { username } = useParams({ from: "/_main/_private/profile/$username/_header" });
     const deleteUpdatesMutation = useDeleteProfileUpdateMutation(username);
+    const [mediaIdBeingDeleted, setMediaIdBeingDeleted] = useState<undefined | number>();
 
     const deleteUpdate = (updateId: number) => {
         setMediaIdBeingDeleted(updateId);
@@ -68,7 +68,7 @@ export const UserUpdates = ({ updates }: UserUpdatesProps) => {
 };
 
 
-export const FollowsUpdates = ({ updates }: UserUpdatesProps) => {
+export const FollowsUpdates = ({ username: _username, updates }: UserUpdatesProps) => {
     return (
         <Card className={cn("h-120", updates.length === 0 && "h-fit")}>
             <CardHeader>
