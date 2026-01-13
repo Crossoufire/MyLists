@@ -36,8 +36,8 @@ export class UserService {
     }
 
     async updateUserForAdmin(userId: number | undefined, payload: AdminUpdatePayload) {
-        if (!userId && payload.showUpdateModal) {
-            return this.repository.adminUpdateFeaturesFlag(payload.showUpdateModal);
+        if (!userId && (payload.showUpdateModal !== undefined || payload.showOnboarding !== undefined)) {
+            return this.repository.adminUpdateGlobalFlag(payload);
         }
 
         if (!userId) return;
@@ -46,9 +46,8 @@ export class UserService {
             return this.deleteUserAccount(userId);
         }
 
-        const allowedKeys = new Set<keyof AdminUpdatePayload>(["emailVerified", "role", "privacy"]);
-        const isValidPayload = Object.keys(payload).every((k) =>
-            allowedKeys.has(k as keyof AdminUpdatePayload) || ["deleteUser", "showUpdateModal"].includes(k));
+        const allowedKeys = new Set<keyof AdminUpdatePayload>(["emailVerified", "role", "privacy", "showOnboarding", "showUpdateModal"]);
+        const isValidPayload = Object.keys(payload).every((k) => allowedKeys.has(k as keyof AdminUpdatePayload) || k === "deleteUser");
 
         if (!isValidPayload) {
             throw new FormattedError("Invalid payload");
@@ -91,6 +90,10 @@ export class UserService {
         await this.repository.updateShowOnboarding(userId);
     }
 
+    async updateFeatureFlag(userId: number) {
+        return this.repository.updateFeatureFlag(userId);
+    }
+
     async hasActiveMediaType(userId: number, mediaType: MediaType) {
         return this.repository.hasActiveMediaType(userId, mediaType);
     }
@@ -108,10 +111,6 @@ export class UserService {
         if (isUsernameTaken) {
             throw new FormattedError("Invalid username. Please select another one.");
         }
-    }
-
-    async updateFeatureFlag(userId: number) {
-        return this.repository.updateFeatureFlag(userId);
     }
 
     async updateFollowStatus(userId: number, followedId: number) {

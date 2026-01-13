@@ -239,6 +239,7 @@ const adminUpdatePayloadSchema = z.object({
     deleteUser: z.boolean().optional(),
     emailVerified: z.boolean().optional(),
     privacy: z.enum(PrivacyType).optional(),
+    showOnboarding: z.boolean().optional(),
     showUpdateModal: z.boolean().optional(),
 });
 

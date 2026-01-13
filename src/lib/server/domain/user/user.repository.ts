@@ -187,10 +187,22 @@ export class UserRepository {
             .where(eq(user.id, userId));
     }
 
-    static async adminUpdateFeaturesFlag(showUpdateModal: boolean) {
+    static async adminUpdateGlobalFlag(payload: AdminUpdatePayload) {
+        const updateData: typeof user.$inferInsert = {} as typeof user.$inferInsert;
+
+        if (payload.showUpdateModal !== undefined) {
+            updateData.showUpdateModal = payload.showUpdateModal;
+        }
+        
+        if (payload.showOnboarding !== undefined) {
+            updateData.showOnboarding = payload.showOnboarding;
+        }
+
+        if (Object.keys(updateData).length === 0) return;
+
         await getDbClient()
             .update(user)
-            .set({ showUpdateModal });
+            .set(updateData);
     }
 
     static async findByUsername(username: string) {

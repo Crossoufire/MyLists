@@ -19,9 +19,15 @@ export const useAdminUpdateUserMutation = (filters: SearchTypeAdmin) => {
         mutationFn: postAdminUpdateUser,
         onError: (error) => toast.error(error.message),
         onSuccess: async (_data, variables) => {
-            if (variables.data.userId && variables.data.payload.deleteUser) {
-                toast.success("User deleted successfully");
+            if (variables.data.userId) {
+                variables.data.payload.deleteUser
+                    ? toast.success("User deleted successfully")
+                    : toast.success("User updated successfully");
             }
+            else {
+                toast.success("Global flag updated successfully");
+            }
+
             return queryClient.invalidateQueries({ queryKey: userAdminOptions(filters).queryKey })
         },
     });

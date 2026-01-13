@@ -87,7 +87,7 @@ function UserManagementPage() {
             header: ({ column }) => {
                 return (
                     <Button variant="invisible" size="xs" onClick={() => column.toggleSorting()}>
-                        Id <ChevronsUpDown className="ml-1 size-4"/>
+                        Id <ChevronsUpDown className="size-3 text-muted-foreground"/>
                     </Button>
                 );
             },
@@ -98,7 +98,7 @@ function UserManagementPage() {
             header: ({ column }) => {
                 return (
                     <Button variant="invisible" size="xs" onClick={() => column.toggleSorting()}>
-                        Username <ChevronsUpDown className="ml-1 size-4"/>
+                        Username <ChevronsUpDown className="size-3 text-muted-foreground"/>
                     </Button>
                 )
             },
@@ -133,7 +133,7 @@ function UserManagementPage() {
             header: ({ column }) => {
                 return (
                     <Button variant="invisible" size="xs" onClick={() => column.toggleSorting()}>
-                        Registered <ChevronsUpDown className="ml-1 size-4"/>
+                        Registered <ChevronsUpDown className="size-3 text-muted-foreground"/>
                     </Button>
                 )
             },
@@ -146,7 +146,7 @@ function UserManagementPage() {
             header: ({ column }) => {
                 return (
                     <Button variant="invisible" size="xs" onClick={() => column.toggleSorting()}>
-                        Last Seen <ChevronsUpDown className="ml-1 size-4"/>
+                        Last Seen <ChevronsUpDown className="size-3 text-muted-foreground"/>
                     </Button>
                 )
             },
@@ -159,7 +159,7 @@ function UserManagementPage() {
             header: ({ column }) => {
                 return (
                     <Button variant="invisible" size="xs" onClick={() => column.toggleSorting()}>
-                        Privacy <ChevronsUpDown className="ml-1 size-4"/>
+                        Privacy <ChevronsUpDown className="size-3 text-muted-foreground"/>
                     </Button>
                 )
             },
@@ -179,15 +179,43 @@ function UserManagementPage() {
             header: ({ column }) => {
                 return (
                     <Button variant="invisible" size="xs" onClick={() => column.toggleSorting()}>
-                        Features <ChevronsUpDown className="ml-1 size-4"/>
+                        Flags <ChevronsUpDown className="size-3 text-muted-foreground"/>
                     </Button>
                 )
             },
             cell: ({ row: { original } }) => {
-                return original.showUpdateModal ?
-                    <Badge variant="outline" className="text-green-600">Enabled</Badge>
-                    :
-                    <Badge variant="outline" className="text-red-500">Disabled</Badge>
+                return (
+                    <div className="flex flex-col gap-1">
+                        <div className="flex items-center gap-2">
+                            <span className="text-[10px] uppercase font-bold text-muted-foreground w-12">
+                                News:
+                            </span>
+                            {original.showUpdateModal ?
+                                <Badge variant="outline" className="text-green-600 py-0 h-4 text-[10px]">
+                                    Enabled
+                                </Badge>
+                                :
+                                <Badge variant="outline" className="text-red-500 py-0 h-4 text-[10px]">
+                                    Disabled
+                                </Badge>
+                            }
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <span className="text-[10px] uppercase font-bold text-muted-foreground w-12">
+                                Tuto:
+                            </span>
+                            {original.showOnboarding ?
+                                <Badge variant="outline" className="text-green-600 py-0 h-4 text-[10px]">
+                                    Enabled
+                                </Badge>
+                                :
+                                <Badge variant="outline" className="text-red-500 py-0 h-4 text-[10px]">
+                                    Disabled
+                                </Badge>
+                            }
+                        </div>
+                    </div>
+                );
             },
         },
         {
@@ -195,7 +223,7 @@ function UserManagementPage() {
             header: ({ column }) => {
                 return (
                     <Button variant="invisible" size="xs" onClick={() => column.toggleSorting()}>
-                        Role <ChevronsUpDown className="ml-1 size-4"/>
+                        Role <ChevronsUpDown className="size-3 text-muted-foreground"/>
                     </Button>
                 )
             },
@@ -216,7 +244,7 @@ function UserManagementPage() {
             header: ({ column }) => {
                 return (
                     <Button variant="invisible" size="xs" onClick={() => column.toggleSorting()}>
-                        Active <ChevronsUpDown className="ml-1 size-4"/>
+                        Active <ChevronsUpDown className="size-3 text-muted-foreground"/>
                     </Button>
                 )
             },
@@ -229,7 +257,7 @@ function UserManagementPage() {
         },
         {
             id: "actions",
-            header: "Actions",
+            header: () => <span className="text-xs">Actions</span>,
             enableSorting: false,
             cell: ({ row: { original } }) => (
                 <DropdownMenu>
@@ -262,6 +290,20 @@ function UserManagementPage() {
                                 </>
                             }
                         </DropdownMenuItem>
+                        <DropdownMenuSeparator/>
+                        <DropdownMenuLabel>Features Settings</DropdownMenuLabel>
+                        <DropdownMenuCheckboxItem
+                            checked={original.showUpdateModal}
+                            onCheckedChange={() => updateUser(original.id, { showUpdateModal: !original.showUpdateModal })}
+                        >
+                            Update Modal
+                        </DropdownMenuCheckboxItem>
+                        <DropdownMenuCheckboxItem
+                            checked={original.showOnboarding}
+                            onCheckedChange={() => updateUser(original.id, { showOnboarding: !original.showOnboarding })}
+                        >
+                            Onboarding
+                        </DropdownMenuCheckboxItem>
                         <DropdownMenuSeparator/>
                         <DropdownMenuLabel>Privacy Settings</DropdownMenuLabel>
                         <DropdownMenuCheckboxItem
@@ -335,9 +377,14 @@ function UserManagementPage() {
                     onChange={handleInputChange}
                     placeholder="Search users..."
                 />
-                <Button variant="outline" onClick={() => updateUser(undefined, { showUpdateModal: true })}>
-                    <CheckCircle className="size-4"/> Activate Features Flag
-                </Button>
+                <div className="flex gap-2">
+                    <Button variant="outline" onClick={() => updateUser(undefined, { showUpdateModal: true })}>
+                        <CheckCircle className="size-4"/> Activate Update Modal
+                    </Button>
+                    <Button variant="outline" onClick={() => updateUser(undefined, { showOnboarding: true })}>
+                        <CheckCircle className="size-4"/> Activate Onboarding
+                    </Button>
+                </div>
             </div>
             <div className="rounded-md border p-3 pt-0 overflow-x-auto">
                 <Table>
