@@ -89,13 +89,10 @@ export const SearchBar = ({ setMobileMenu }: SearchBarProps) => {
                     focus:border-none focus-visible:border-none focus-visible:ring-0 dark:bg-background"
                 />
                 <div className="px-3 text-muted-foreground">
-                    {(isFetching && debouncedSearch) ?
-                        <Loader2 className="size-4 animate-spin text-app-accent"/>
+                    {isOpen ?
+                        <X className="size-4 cursor-pointer" onClick={reset}/>
                         :
-                        isOpen ?
-                            <X className="size-4 cursor-pointer" onClick={reset}/>
-                            :
-                            <Search className="size-4"/>
+                        <Search className="size-4"/>
                     }
                 </div>
             </div>
