@@ -18,7 +18,8 @@ import {
 } from "@/lib/client/components/onboarding/OnBoardingShared";
 
 
-const mediaId = 110; // Edge of Tomorrow
+// Edge of Tomorrow
+const mediaId = 110;
 
 
 export const Route = createFileRoute("/_main/_private/walkthrough/_layout/add-media")({

@@ -14,17 +14,19 @@ import {Activity, ArrowBigUpDash, ArrowUp10, Award, ChartNoAxesColumn, LayoutGri
 import {OnboardingContainer, OnboardingDemoBox, OnboardingNote, OnboardingSection, OnboardingSubSection} from "@/lib/client/components/onboarding/OnBoardingShared";
 
 
+const username = "DemoProfile";
+
+
 export const Route = createFileRoute("/_main/_private/walkthrough/_layout/profile")({
     loader: async ({ context: { queryClient } }) => {
-        return queryClient.ensureQueryData(profileOptions("DemoProfile"));
+        return queryClient.ensureQueryData(profileOptions(username));
     },
     component: ProfileOnboarding,
 });
 
 
 function ProfileOnboarding() {
-    const username = "DemoProfile";
-    const apiData = useSuspenseQuery(profileOptions("DemoProfile")).data;
+    const apiData = useSuspenseQuery(profileOptions(username)).data;
     const [activeTab, setActiveTab] = useState<MediaType | "overview">("overview");
     const activeMediaTypes = apiData.userData.userMediaSettings.filter((s) => s.active).map((s) => s.mediaType);
 
