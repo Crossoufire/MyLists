@@ -169,30 +169,17 @@ export const OnboardingNav = ({ username, items, position }: OnboardingNavProps)
             : "flex flex-col sm:flex-row items-center justify-between gap-4 pt-5 mt-10 border-t"
         )}>
             <div className="flex items-center gap-3 order-2 sm:order-1">
-                <Button
-                    size="sm"
-                    variant="outline"
-                    disabled={!prevStep}
-                    onClick={() => handleNavigate(prevStep?.to)}
-                >
+                <Button size="sm" variant="outline" disabled={!prevStep} onClick={() => handleNavigate(prevStep?.to)}>
                     <ChevronLeft/> Prev
                 </Button>
 
                 {nextStep ?
-                    <Button
-                        size="sm"
-                        variant="default"
-                        onClick={() => handleNavigate(nextStep?.to)}
-                    >
+                    <Button size="sm" variant="default" onClick={() => handleNavigate(nextStep?.to)}>
                         Next <ChevronRight/>
                     </Button>
                     :
-                    <Button
-                        size="sm"
-                        variant="emeraldy"
-                        onClick={handleSkip}
-                    >
-                        Finish Onboarding
+                    <Button size="sm" variant="emeraldy" onClick={handleSkip}>
+                        Finish Walkthrough
                     </Button>
                 }
             </div>
@@ -202,7 +189,7 @@ export const OnboardingNav = ({ username, items, position }: OnboardingNavProps)
                 onClick={handleSkip}
                 className="text-muted-foreground order-1 sm:order-2"
             >
-                <X className="mr-1 size-4"/> Skip and go to Profile
+                <X className="size-4"/> Skip Walkthrough
             </Button>
         </div>
     );

@@ -3,7 +3,6 @@ import {MediaType} from "@/lib/utils/enums";
 import {createFileRoute} from "@tanstack/react-router";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {MainThemeIcon} from "@/lib/client/components/general/MainIcons";
-import {Activity, ArrowBigUpDash, ArrowUp10, Award, ChartNoAxesColumn, LayoutGrid, User} from "lucide-react";
 import {OverviewTab} from "@/lib/client/components/user-profile/OverviewTab";
 import {MediaLevels} from "@/lib/client/components/user-profile/MediaLevels";
 import {TabHeader, TabItem} from "@/lib/client/components/general/TabHeader";
@@ -11,6 +10,7 @@ import {MediaStatsTab} from "@/lib/client/components/user-profile/MediaStatsTab"
 import {profileOptions} from "@/lib/client/react-query/query-options/query-options";
 import {AchievementsCard} from "@/lib/client/components/user-profile/AchievementCard";
 import {FollowsUpdates, UserUpdates} from "@/lib/client/components/user-profile/UserUpdates";
+import {Activity, ArrowBigUpDash, ArrowUp10, Award, ChartNoAxesColumn, LayoutGrid, User} from "lucide-react";
 import {OnboardingContainer, OnboardingDemoBox, OnboardingNote, OnboardingSection, OnboardingSubSection} from "@/lib/client/components/onboarding/OnBoardingShared";
 
 
@@ -145,9 +145,9 @@ function ProfileOnboarding() {
                 icon={Award}
                 title="Last Achievements"
                 description={
-                    "Track your progress and showcase your latest badges. " +
+                    "Track your progress and showcase your latest achievements. " +
                     "Every achievement features four tiers: Bronze, Silver, Gold, and Platinum, earned through " +
-                    "total time spent, genre mastery, or 'devotion' (e.g. completing multiple media from the same creator)."
+                    "total time spent, genre mastery, 'devotion' (e.g. completing multiple media from the same creator), etc..."
                 }
             >
                 <OnboardingDemoBox>
@@ -159,7 +159,6 @@ function ProfileOnboarding() {
                     </div>
                 </OnboardingDemoBox>
             </OnboardingSubSection>
-
         </OnboardingContainer>
     );
 }
