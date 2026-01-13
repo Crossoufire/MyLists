@@ -172,7 +172,7 @@ export abstract class BaseService<
 
         let internalMediaId = media?.id;
         if (external && !internalMediaId) {
-            internalMediaId = await providerService.fetchAndStoreMediaDetails(Number(mediaId));
+            internalMediaId = await providerService.fetchAndStoreMediaDetails(mediaId);
         }
 
         if (internalMediaId) {
