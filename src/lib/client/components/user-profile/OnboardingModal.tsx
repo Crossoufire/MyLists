@@ -25,7 +25,7 @@ export const OnboardingModal = () => {
     return (
         <Dialog open={open} onOpenChange={() => {
         }}>
-            <DialogContent className="sm:max-w-125 gap-0 p-0 overflow-hidden" hideClose>
+            <DialogContent className="sm:max-w-110 gap-0 p-0 overflow-hidden" hideClose>
                 <div className="p-8">
                     <DialogHeader className="mb-8">
                         <DialogTitle className="text-2xl font-bold tracking-tight">

@@ -1,7 +1,7 @@
 import {Button} from "@/lib/client/components/ui/button";
 import {createFileRoute, Link} from "@tanstack/react-router";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
-import {ArrowRight, Bug, Code, Gamepad2, Heart, Layout, Monitor, Shield, Sparkles, Sprout, Trophy, Users} from "lucide-react";
+import {ArrowRight, Bug, Code, Heart, LayoutGrid, Monitor, Popcorn, Shield, Sprout, Trophy, Users} from "lucide-react";
 
 
 export const Route = createFileRoute("/_main/_public/")({
@@ -13,7 +13,7 @@ const features = [
     {
         icon: <Monitor className="size-6"/>,
         title: "Fully Responsive",
-        description: "Perfect experience across all devices - desktop, tablet, mobile, and even TV interfaces.",
+        description: "Perfect experience across all devices: desktop, tablet, and mobile.",
     },
     {
         icon: <Code className="size-6"/>,
@@ -31,7 +31,7 @@ const features = [
         description: "Found an issue? Have suggestions? We're here to help and constantly improving based on feedback.",
     },
     {
-        icon: <Heart className="size-6 text-red-600"/>,
+        icon: <Heart className="size-6"/>,
         title: "Passion Project",
         description: "Made by one person, I hope you will like it. If you have any suggestions, do not hesitate to contact me.",
     },
@@ -61,12 +61,15 @@ function HomePage() {
                     </div>
                 </div>
                 <div className="flex flex-col items-center gap-2 relative z-10 text-center space-y-8 px-4">
-                    <h1 className="text-4xl md:text-6xl font-bold text-balance">Welcome to MyLists</h1>
+                    <h1 className="text-4xl md:text-6xl font-bold text-balance">
+                        Welcome to MyLists
+                    </h1>
                     <p className="text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto text-balance">
-                        Manage lists, track time spent, and follow other enthusiasts in one beautiful platform
+                        Track all your media in one place, manage your lists, track time spent,
+                        and follow other enthusiasts in one beautiful platform
                     </p>
                     <Link to="/profile/$username" params={{ username: "DemoProfile" }}>
-                        <Button size="lg" className="gap-2" variant="emeraldy">
+                        <Button variant="emeraldy" size="lg" className="gap-2">
                             Demo Profile <ArrowRight/>
                         </Button>
                     </Link>
@@ -75,58 +78,44 @@ function HomePage() {
 
             <div className="flex flex-col gap-24 py-24 container mx-auto px-6">
 
-                {/* Section 1: All in One */}
                 <div className="grid md:grid-cols-2 gap-12 items-center">
                     <div className="order-2 md:order-1 space-y-6">
                         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium">
-                            <Layout className="size-4"/>
+                            <LayoutGrid className="size-4"/>
                             <span>Unified Library</span>
                         </div>
-                        <h2 className="text-3xl md:text-4xl font-bold">All Your Media in One Place</h2>
+                        <h2 className="text-3xl md:text-4xl font-bold">
+                            All Your Media in One Place
+                        </h2>
                         <p className="text-lg text-muted-foreground leading-relaxed">
-                            Stop switching between different apps. Track your Movies, TV Shows, Games, Books, and Manga all in one beautiful, organized dashboard.
+                            Stop switching between different apps. Track your Movies, Series, Anime, Games, Books, and Manga
+                            all in one beautiful, organized dashboard.
                         </p>
                         <ul className="space-y-3">
-                            {['Comprehensive Database', 'Custom Lists', 'Advanced Filtering'].map((item) => (
-                                <li key={item} className="flex items-center gap-2">
+                            {["List Per Media", "Advanced Statistics", "Advanced Filtering"].map((item) => (
+                                <li key={item} className="font-medium flex items-center gap-2">
                                     <div className="size-1.5 rounded-full bg-primary"/>
                                     {item}
                                 </li>
                             ))}
                         </ul>
                     </div>
-                    <div className="order-1 md:order-2 bg-muted/30 rounded-2xl p-2 border border-border/50">
-                        <img
-                            src="https://placehold.co/800x600/1a1a1a/666666?text=Unified+Dashboard+Preview"
-                            alt="Dashboard Preview"
-                            className="rounded-xl w-full h-auto shadow-2xl"
-                        />
-                    </div>
-                </div>
-
-                {/* Section 2: Gamification */}
-                <div className="grid md:grid-cols-2 gap-12 items-center">
-                    <div className="order-1 bg-muted/30 rounded-2xl p-2 border border-border/50">
-                        <img
-                            src="https://placehold.co/800x600/1a1a1a/666666?text=Profile+Stats+%26+Levels"
-                            alt="Gamification Preview"
-                            className="rounded-xl w-full h-auto shadow-2xl"
-                        />
-                    </div>
                     <div className="order-2 space-y-6">
-                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-yellow-500/10 text-yellow-500 text-sm font-medium">
+                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-app-accent/50 text-sm font-medium">
                             <Trophy className="size-4"/>
                             <span>Gamification</span>
                         </div>
-                        <h2 className="text-3xl md:text-4xl font-bold">Level Up Your Passion</h2>
+                        <h2 className="text-3xl md:text-4xl font-bold">
+                            Level Up Your Passion
+                        </h2>
                         <p className="text-lg text-muted-foreground leading-relaxed">
-                            Earn XP for every episode watched or chapter read. Unlock achievements, level up your profile, and compete with the community on the global Hall of
-                            Fame.
+                            Earn XP for every episode watched or chapter read. Unlock achievements, level up your profile,
+                            and compete with the community on the global Hall of Fame.
                         </p>
                         <ul className="space-y-3">
-                            {['XP System', 'Unique Achievements', 'Global Leaderboards'].map((item) => (
-                                <li key={item} className="flex items-center gap-2">
-                                    <div className="size-1.5 rounded-full bg-yellow-500"/>
+                            {["Level System", "Unique Achievements", "Global Leaderboards"].map((item) => (
+                                <li key={item} className="font-medium flex items-center gap-2">
+                                    <div className="size-1.5 rounded-full bg-app-accent"/>
                                     {item}
                                 </li>
                             ))}
@@ -134,42 +123,9 @@ function HomePage() {
                     </div>
                 </div>
 
-                {/* Section 3: Moviedle */}
                 <div className="grid md:grid-cols-2 gap-12 items-center">
-                    <div className="order-2 md:order-1 space-y-6">
-                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/10 text-purple-500 text-sm font-medium">
-                            <Gamepad2 className="size-4"/>
-                            <span>Daily Challenge</span>
-                        </div>
-                        <h2 className="text-3xl md:text-4xl font-bold">Daily Movie Challenge</h2>
-                        <p className="text-lg text-muted-foreground leading-relaxed">
-                            Think you know movies? Test your knowledge with "Moviedle", our daily pixelated cover challenge. Guess the movie, keep your streak alive, and share your
-                            score!
-                        </p>
-                        <Button variant="outline" className="gap-2">
-                            <Sparkles className="size-4"/> Play Now
-                        </Button>
-                    </div>
-                    <div className="order-1 md:order-2 bg-muted/30 rounded-2xl p-2 border border-border/50">
-                        <img
-                            src="https://placehold.co/800x600/1a1a1a/666666?text=Moviedle+Game+Preview"
-                            alt="Moviedle Preview"
-                            className="rounded-xl w-full h-auto shadow-2xl"
-                        />
-                    </div>
-                </div>
-
-                {/* Section 4: Social */}
-                <div className="grid md:grid-cols-2 gap-12 items-center">
-                    <div className="order-1 bg-muted/30 rounded-2xl p-2 border border-border/50">
-                        <img
-                            src="https://placehold.co/800x600/1a1a1a/666666?text=Social+Feed+Preview"
-                            alt="Social Features Preview"
-                            className="rounded-xl w-full h-auto shadow-2xl"
-                        />
-                    </div>
-                    <div className="order-2 space-y-6">
-                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 text-blue-500 text-sm font-medium">
+                    <div className="order-1 space-y-6">
+                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/30 text-sm font-medium">
                             <Users className="size-4"/>
                             <span>Community</span>
                         </div>
@@ -178,14 +134,28 @@ function HomePage() {
                             See what your friends are watching, playing, or reading. Share your lists, compare stats, and discover new favorites based on your network's activity.
                         </p>
                     </div>
+                    <div className="order-2 md:order-1 space-y-6">
+                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-movies/70 text-sm font-medium">
+                            <Popcorn className="size-4"/>
+                            <span>Daily Challenge</span>
+                        </div>
+                        <h2 className="text-3xl md:text-4xl font-bold">
+                            Daily Movie Challenge
+                        </h2>
+                        <p className="text-lg text-muted-foreground leading-relaxed">
+                            Think you know movies? Test your knowledge with "Moviedle", our daily pixelated cover challenge.
+                            Guess the movie, keep your streak alive!
+                        </p>
+                    </div>
                 </div>
-
             </div>
 
-            <section className="bg-muted/10 py-24 border-y border-border/50">
+            <section className="bg-muted/10 py-12 border-y border-border/50">
                 <div className="container mx-auto px-6">
                     <div className="text-center mb-16">
-                        <h2 className="text-3xl md:text-4xl font-bold mb-4 text-balance">Why Choose MyLists?</h2>
+                        <h2 className="text-3xl md:text-4xl font-bold mb-4 text-balance">
+                            Why Choose MyLists?
+                        </h2>
                         <p className="text-xl text-muted-foreground max-w-2xl mx-auto text-balance">
                             Built with modern technology and user experience in mind
                         </p>
@@ -193,11 +163,13 @@ function HomePage() {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-8">
                         {features.map((feature, idx) =>
                             <div key={idx} className="flex items-start gap-4 p-6 rounded-xl hover:bg-card transition-colors">
-                                <div className="size-12 bg-primary/10 rounded-lg flex items-center justify-center shrink-0">
+                                <div className="size-12 bg-app-accent/30 rounded-lg flex items-center justify-center shrink-0">
                                     {feature.icon}
                                 </div>
                                 <div>
-                                    <h3 className="font-semibold text-lg mb-2">{feature.title}</h3>
+                                    <h3 className="font-semibold text-lg mb-2">
+                                        {feature.title}
+                                    </h3>
                                     <p className="text-muted-foreground leading-relaxed">
                                         {feature.description}
                                     </p>
@@ -208,17 +180,15 @@ function HomePage() {
                 </div>
             </section>
 
-            <section className="py-24 px-6 text-center">
+            <section className="pt-24 pb-12 px-6 text-center">
                 <div className="max-w-3xl mx-auto space-y-8">
-                    <h2 className="text-4xl md:text-5xl font-bold">Ready to start your collection?</h2>
+                    <h2 className="text-4xl md:text-5xl font-bold">
+                        Ready to start your collection?
+                    </h2>
                     <p className="text-xl text-muted-foreground">
-                        Join thousands of other media enthusiasts today. It's free and open source.
+                        Join thousands of other media enthusiasts today.
+                        It's free and open source.
                     </p>
-                    <Link to="/profile/$username" params={{ username: "DemoProfile" }}>
-                        <Button size="lg" className="gap-2 px-8 h-12 text-lg" variant="default">
-                            Get Started Now <ArrowRight/>
-                        </Button>
-                    </Link>
                 </div>
             </section>
         </PageTitle>
