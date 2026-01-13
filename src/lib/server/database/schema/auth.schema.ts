@@ -16,6 +16,7 @@ export const user = sqliteTable("user", {
     emailVerified: integer("email_verified", { mode: "boolean" }).notNull(),
     privacy: text("privacy").$type<PrivacyType>().default(PrivacyType.RESTRICTED).notNull(),
     gridListView: integer("grid_list_view", { mode: "boolean" }).default(true).notNull(),
+    showOnboarding: integer("show_onboarding", { mode: "boolean" }).default(true).notNull(),
     showUpdateModal: integer("show_update_modal", { mode: "boolean" }).default(true).notNull(),
     ratingSystem: text("rating_system").$type<RatingSystemType>().default(RatingSystemType.SCORE).notNull(),
     searchSelector: text("search_selector").$type<ApiProviderType>().default(ApiProviderType.TMDB).notNull(),

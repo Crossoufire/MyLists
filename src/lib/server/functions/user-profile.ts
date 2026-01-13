@@ -78,6 +78,15 @@ export const postUpdateFollowStatus = createServerFn({ method: "POST" })
     });
 
 
+export const postUpdateShowOnboarding = createServerFn({ method: "POST" })
+    .middleware([authMiddleware])
+    .handler(async ({ context: { currentUser } }) => {
+        const container = await getContainer();
+        const userService = container.services.user;
+        await userService.updateShowOnboarding(currentUser.id);
+    });
+
+
 export const getUsersFollowers = createServerFn({ method: "GET" })
     .middleware([authorizationMiddleware])
     .handler(async ({ context: { user, currentUser } }) => {

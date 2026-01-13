@@ -210,6 +210,13 @@ export class UserRepository {
             .where(eq(user.id, userId));
     }
 
+    static async updateShowOnboarding(userId: number) {
+        await getDbClient()
+            .update(user)
+            .set({ showOnboarding: false })
+            .where(eq(user.id, userId));
+    }
+
     static async findById(userId: number) {
         return getDbClient().query.user.findFirst({
             where: eq(user.id, userId),

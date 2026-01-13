@@ -1,5 +1,6 @@
 import {useState} from "react";
 import {MediaType} from "@/lib/utils/enums";
+import {useAuth} from "@/lib/client/hooks/use-auth";
 import {createFileRoute} from "@tanstack/react-router";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {MainThemeIcon} from "@/lib/client/components/general/MainIcons";
@@ -9,6 +10,7 @@ import {TabHeader, TabItem} from "@/lib/client/components/general/TabHeader";
 import {MediaStatsTab} from "@/lib/client/components/user-profile/MediaStatsTab";
 import {ProfileFollows} from "@/lib/client/components/user-profile/ProfileFollows";
 import {profileOptions} from "@/lib/client/react-query/query-options/query-options";
+import {OnboardingModal} from "@/lib/client/components/user-profile/OnboardingModal";
 import {AchievementsCard} from "@/lib/client/components/user-profile/AchievementCard";
 import {FollowsUpdates, UserUpdates} from "@/lib/client/components/user-profile/UserUpdates";
 
@@ -19,6 +21,7 @@ export const Route = createFileRoute("/_main/_private/profile/$username/_header/
 
 
 function ProfileMain() {
+    const { currentUser } = useAuth();
     const { username } = Route.useParams();
     const apiData = useSuspenseQuery(profileOptions(username)).data;
     const [activeTab, setActiveTab] = useState<MediaType | "overview">("overview");
@@ -42,6 +45,10 @@ function ProfileMain() {
 
     return (
         <div className="grid grid-cols-[0.26fr_0.74fr] gap-6 pt-2 max-lg:grid-cols-5 max-sm:grid-cols-1">
+            {currentUser && currentUser.showOnboarding &&
+                <OnboardingModal/>
+            }
+
             <div className="space-y-4 max-lg:col-span-2 max-sm:space-y-6">
                 <MediaLevels
                     username={username}

@@ -116,6 +116,12 @@ const getAuthConfig = createServerOnlyFn(() => betterAuth({
                 returned: true,
                 input: false,
             },
+            showOnboarding: {
+                type: "boolean",
+                defaultValue: true,
+                returned: true,
+                input: false,
+            },
         },
     },
     session: {

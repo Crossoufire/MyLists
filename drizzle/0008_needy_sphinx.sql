@@ -1,0 +1,1 @@
+ALTER TABLE `user` ADD `show_onboarding` integer DEFAULT true NOT NULL;

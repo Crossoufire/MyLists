@@ -1,7 +1,8 @@
+import {toast} from "sonner";
 import {useAuth} from "@/lib/client/hooks/use-auth";
 import {ListSettings} from "@/lib/types/zod.schema.types";
 import {useMutation, useQueryClient} from "@tanstack/react-query";
-import {postUpdateFollowStatus} from "@/lib/server/functions/user-profile";
+import {postUpdateFollowStatus, postUpdateShowOnboarding} from "@/lib/server/functions/user-profile";
 import {followersOptions, followsOptions, profileOptions} from "@/lib/client/react-query/query-options/query-options";
 import {
     getDownloadListAsCSV,
@@ -121,6 +122,17 @@ export const useFeatureFlagMutation = () => {
 
     return useMutation({
         mutationFn: () => postUpdateFeatureFlag(),
+        onSuccess: () => setCurrentUser(),
+    });
+};
+
+
+export const useUpdateOnboardingMutation = () => {
+    const { setCurrentUser } = useAuth();
+
+    return useMutation({
+        mutationFn: () => postUpdateShowOnboarding(),
+        onError: (error) => toast.error(error.message ?? "Can't update your onboarding status."),
         onSuccess: () => setCurrentUser(),
     });
 };

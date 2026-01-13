@@ -57,6 +57,13 @@
       "when": 1765892060097,
       "tag": "0007_aberrant_ultimates",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1768309627659,
+      "tag": "0008_needy_sphinx",
+      "breakpoints": true
     }
   ]
 }
