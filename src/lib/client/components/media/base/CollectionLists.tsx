@@ -72,7 +72,7 @@ export const CollectionLists = ({ queryOption, mediaType, mediaId, collections }
                             search={{ collections: [col.name] }}
                             params={{ mediaType, username: currentUser!.name }}
                         >
-                            <Badge key={col.name} variant="collection" className="max-w-50">
+                            <Badge key={col.name} variant="emerald" className="max-w-50">
                                 <div className="flex justify-between gap-2">
                                     {col.name}
                                 </div>

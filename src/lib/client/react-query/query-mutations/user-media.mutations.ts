@@ -177,12 +177,12 @@ export const useEditCollectionMutation = (mediaType: MediaType, mediaId?: number
             await queryClient.invalidateQueries({ queryKey: collectionsViewOptions(mediaType, currentUser!.name).queryKey });
 
             queryClient.setQueryData(collectionNamesOptions(mediaType, false).queryKey, (oldData) => {
-                if (!oldData || !data) return;
+                if (!oldData) return;
 
-                if (variables.action === "add") {
+                if (variables.action === "add" && data) {
                     return oldData.map((c) => c?.name).includes(data?.name ?? "") ? oldData : [...oldData, data];
                 }
-                else if (variables.action === "rename") {
+                else if (variables.action === "rename" && data) {
                     return oldData.map((c) => c?.name === variables.collection.oldName ? data : c);
                 }
                 else if (variables.action === "deleteAll") {

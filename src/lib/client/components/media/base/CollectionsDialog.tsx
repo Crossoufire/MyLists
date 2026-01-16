@@ -178,7 +178,7 @@ export const CollectionsDialog = ({ mediaType, mediaId, collections, updateColle
                                 />
                                 :
                                 collections.map((col) =>
-                                    <Badge key={col.name} variant="collection">
+                                    <Badge key={col.name} variant="emerald">
                                         {col.name}
                                         <div role="button" className="ml-2 hover:opacity-60" onClick={() => removeFromMedia(col)}>
                                             <X className="size-4"/>
@@ -221,7 +221,7 @@ export const CollectionsDialog = ({ mediaType, mediaId, collections, updateColle
                                                 />
                                                 :
                                                 <Badge variant={collections.map((c) => c.name).includes(col.name)
-                                                    ? "collection" : "collectionToAdd"
+                                                    ? "emerald" : "collectionToAdd"
                                                 }>
                                                     {col.name}
                                                 </Badge>
