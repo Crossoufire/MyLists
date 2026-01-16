@@ -1,5 +1,6 @@
 import {notFound} from "@tanstack/react-router";
 import {statusUtils} from "@/lib/utils/mapping";
+import {TopAffinityConfig} from "@/lib/types/stats.types";
 import {Achievement} from "@/lib/types/achievements.types";
 import {MediaListArgs} from "@/lib/types/zod.schema.types";
 import {getDbClient} from "@/lib/server/database/async-storage";
@@ -16,11 +17,11 @@ import {
     ListFilterDefinition,
     MediaListData,
     UpComingMedia,
+    UserCollection,
     UserFollowsMediaData,
     UserMediaStats,
     UserMediaWithCollections,
 } from "@/lib/types/base.types";
-import {TopAffinityConfig} from "@/lib/types/stats.types";
 
 
 const DEFAULT_PER_PAGE = 25;
@@ -463,19 +464,8 @@ export abstract class BaseRepository<TConfig extends MediaSchemaConfig<MediaTabl
         };
     }
 
-    async getCollectionsView(userId: number) {
+    async getCollectionsView(userId: number): Promise<UserCollection[]> {
         const { listTable, mediaTable, collectionTable } = this.config;
-
-        type UserCollection = {
-            totalCount: number;
-            collectionId: number;
-            collectionName: string;
-            medias: {
-                mediaId: number;
-                mediaName: string;
-                mediaCover: string;
-            }[];
-        }
 
         const rankedSq = getDbClient()
             .$with("ranked_data")
@@ -525,7 +515,7 @@ export abstract class BaseRepository<TConfig extends MediaSchemaConfig<MediaTabl
             .from(rankedSq)
             .where(lte(rankedSq.rowNumber, 3))
             .groupBy(sql`${rankedSq.collectionName}`)
-            .orderBy(desc(rankedSq.collectionLastActivity)) as unknown as UserCollection[];
+            .orderBy(desc(rankedSq.collectionLastActivity));
     }
 
     async getUpcomingMedia(userId?: number, maxAWeek?: boolean): Promise<UpComingMedia[]> {

@@ -225,3 +225,14 @@ type NotificationPayload = {
     episode?: number | null;
     release_date: string | null;
 };
+
+export type UserCollection = {
+    totalCount: number;
+    collectionId: number;
+    collectionName: string;
+    medias: {
+        mediaId: number;
+        mediaName: string;
+        mediaCover: string;
+    }[];
+}
