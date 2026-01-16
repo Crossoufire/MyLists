@@ -66,8 +66,8 @@ export abstract class BaseService<
         return this.repository.computeTotalCollections(userId);
     }
 
-    async getUserMediaCollections(userId: number) {
-        return await this.repository.getUserMediaCollections(userId);
+    async getCollectionNames(userId: number) {
+        return await this.repository.getCollectionNames(userId);
     }
 
     async findById(mediaId: number) {
@@ -102,16 +102,16 @@ export abstract class BaseService<
         return this.repository.getMediaJobDetails(userId, job, name, offset, perPage);
     }
 
-    async editUserCollection(userId: number, collection: Collection, mediaId: number, action: CollectionAction) {
-        return this.repository.editUserCollection(userId, collection, mediaId, action);
+    async editUserCollection(userId: number, collection: Collection, action: CollectionAction, mediaId?: number) {
+        return this.repository.editUserCollection(userId, collection, action, mediaId);
     }
 
     async getMediaList(currentUserId: number | undefined, userId: number, args: MediaListArgs) {
         return this.repository.getMediaList(currentUserId, userId, args);
     }
 
-    async getUserCollections(userId: number) {
-        return this.repository.getUserCollections(userId);
+    async getCollectionsView(userId: number) {
+        return this.repository.getCollectionsView(userId);
     }
 
     async addMediaToUserList(userId: number, mediaId: number, status?: Status) {

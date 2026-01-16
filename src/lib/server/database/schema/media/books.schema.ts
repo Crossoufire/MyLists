@@ -2,7 +2,7 @@ import {MediaType} from "@/lib/utils/enums";
 import {relations} from "drizzle-orm/relations";
 import {user} from "@/lib/server/database/schema/auth.schema";
 import {integer, sqliteTable, text} from "drizzle-orm/sqlite-core";
-import {communGenericCols, communMediaCollectionsCols, communMediaCols, communMediaListCols} from "@/lib/server/database/schema/media/_helper";
+import {commonGenericCols, commonMediaCollectionsCols, commonMediaCols, commonMediaListCols} from "@/lib/server/database/schema/media/_helper";
 
 
 export const books = sqliteTable("books", {
@@ -10,7 +10,7 @@ export const books = sqliteTable("books", {
     language: text(),
     publishers: text(),
     apiId: text().unique().notNull(),
-    ...communMediaCols(MediaType.BOOKS),
+    ...commonMediaCols(MediaType.BOOKS),
 });
 
 
@@ -18,22 +18,22 @@ export const booksList = sqliteTable("books_list", {
     actualPage: integer(),
     redo: integer().default(0).notNull(),
     total: integer("total").default(0).notNull(),
-    ...communMediaListCols(books.id),
+    ...commonMediaListCols(books.id),
 });
 
 
 export const booksGenre = sqliteTable("books_genre", {
-    ...communGenericCols(books.id),
+    ...commonGenericCols(books.id),
 });
 
 
 export const booksAuthors = sqliteTable("books_authors", {
-    ...communGenericCols(books.id),
+    ...commonGenericCols(books.id),
 });
 
 
 export const booksCollections = sqliteTable("books_collections", {
-    ...communMediaCollectionsCols(books.id),
+    ...commonMediaCollectionsCols(books.id),
 });
 
 

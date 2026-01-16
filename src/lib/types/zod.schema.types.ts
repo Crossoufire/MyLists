@@ -178,15 +178,15 @@ export const deleteUserUpdatesSchema = z.object({
     updateIds: z.array(z.number().int().positive()),
 });
 
-export const userMediaCollectionsSchema = z.object({
+export const userCollectionNamesSchema = z.object({
     mediaType: z.enum(MediaType),
 });
 
-export const editUserCollectionsSchema = z.object({
+export const editUserCollectionSchema = z.object({
     collection: collectionSchema,
     mediaType: z.enum(MediaType),
     action: z.enum(CollectionAction),
-    mediaId: z.coerce.number().int().positive(),
+    mediaId: z.coerce.number().int().positive().optional(),
 });
 
 export const baseUsernameSchema = z.looseObject({

@@ -10,11 +10,11 @@ import {getPlatformStats} from "@/lib/server/functions/platform-stats";
 import {getUserAchievements} from "@/lib/server/functions/user-achievements";
 import {MediaListArgs, SearchType, SearchTypeHoF} from "@/lib/types/zod.schema.types";
 import {getDailyMediadle, getMediadleSuggestions} from "@/lib/server/functions/moviedle";
-import {getUserMediaCollections, getUserMediaHistory} from "@/lib/server/functions/user-media";
+import {getUserCollectionNames, getUserMediaHistory} from "@/lib/server/functions/user-media";
 import {getNotifications, getNotificationsCount} from "@/lib/server/functions/notifications";
 import {getJobDetails, getMediaDetails, getMediaDetailsToEdit} from "@/lib/server/functions/media-details";
 import {getAllUpdatesHistory, getUserProfile, getUsersFollowers, getUsersFollows} from "@/lib/server/functions/user-profile";
-import {getCollectionsAndMediaFn, getMediaListFilters, getMediaListSearchFilters, getMediaListServerFunction, getUserListHeaderSF} from "@/lib/server/functions/media-lists";
+import {getCollectionsViewFn, getMediaListFilters, getMediaListSearchFilters, getMediaListSF, getUserListHeaderSF} from "@/lib/server/functions/media-lists";
 
 
 export const authOptions = queryOptions({
@@ -82,7 +82,7 @@ export const mediaDetailsOptions = (mediaType: MediaType, mediaId: number | stri
 
 export const mediaListOptions = (mediaType: MediaType, username: string, search: MediaListArgs) => queryOptions({
     queryKey: ["userList", mediaType, username, search] as const,
-    queryFn: () => getMediaListServerFunction({ data: { mediaType, username, args: search } }),
+    queryFn: () => getMediaListSF({ data: { mediaType, username, args: search } }),
 });
 
 
@@ -92,9 +92,9 @@ export const userListHeaderOption = (mediaType: MediaType, username: string) => 
 });
 
 
-export const userCollectionsAndMediaOptions = (mediaType: MediaType, username: string) => queryOptions({
-    queryKey: ["userCollections", mediaType, username] as const,
-    queryFn: () => getCollectionsAndMediaFn({ data: { mediaType, username } }),
+export const collectionsViewOptions = (mediaType: MediaType, username: string) => queryOptions({
+    queryKey: ["collectionsView", mediaType, username] as const,
+    queryFn: () => getCollectionsViewFn({ data: { mediaType, username } }),
 })
 
 
@@ -165,9 +165,9 @@ export const userStatsOptions = (username: string, search: { mediaType?: MediaTy
 });
 
 
-export const userCollectionsOptions = (mediaType: MediaType, isOpen: boolean) => queryOptions({
-    queryKey: ["collections", mediaType] as const,
-    queryFn: () => getUserMediaCollections({ data: { mediaType } }),
+export const collectionNamesOptions = (mediaType: MediaType, isOpen: boolean) => queryOptions({
+    queryKey: ["collectionNames", mediaType] as const,
+    queryFn: () => getUserCollectionNames({ data: { mediaType } }),
     enabled: isOpen,
 });
 

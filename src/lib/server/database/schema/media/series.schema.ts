@@ -4,7 +4,7 @@ import {relations} from "drizzle-orm/relations";
 import {user} from "@/lib/server/database/schema/auth.schema";
 import {customJson} from "@/lib/server/database/custom-types";
 import {integer, real, sqliteTable, text} from "drizzle-orm/sqlite-core";
-import {communGenericCols, communMediaCols, communMediaEpsCols, communMediaCollectionsCols, communMediaListCols} from "@/lib/server/database/schema/media/_helper";
+import {commMediaEpsCols, commonGenericCols, commonMediaCollectionsCols, commonMediaCols, commonMediaListCols} from "@/lib/server/database/schema/media/_helper";
 
 
 export const series = sqliteTable("series", {
@@ -24,7 +24,7 @@ export const series = sqliteTable("series", {
     episodeToAir: integer(),
     seasonToAir: integer(),
     nextEpisodeToAir: text(),
-    ...communMediaCols(MediaType.SERIES),
+    ...commonMediaCols(MediaType.SERIES),
 });
 
 
@@ -34,32 +34,32 @@ export const seriesList = sqliteTable("series_list", {
     redo: integer().default(0).notNull(),
     total: integer("total").default(0).notNull(),
     redo2: customJson<number[]>("redo2").default(sql`'[]'`).notNull(),
-    ...communMediaListCols(series.id),
+    ...commonMediaListCols(series.id),
 });
 
 
 export const seriesGenre = sqliteTable("series_genre", {
-    ...communGenericCols(series.id),
+    ...commonGenericCols(series.id),
 });
 
 
 export const seriesActors = sqliteTable("series_actors", {
-    ...communGenericCols(series.id),
+    ...commonGenericCols(series.id),
 });
 
 
 export const seriesNetwork = sqliteTable("series_network", {
-    ...communGenericCols(series.id),
+    ...commonGenericCols(series.id),
 });
 
 
 export const seriesEpisodesPerSeason = sqliteTable("series_episodes_per_season", {
-    ...communMediaEpsCols(series.id),
+    ...commMediaEpsCols(series.id),
 });
 
 
 export const seriesCollections = sqliteTable("series_collections", {
-    ...communMediaCollectionsCols(series.id),
+    ...commonMediaCollectionsCols(series.id),
 });
 
 

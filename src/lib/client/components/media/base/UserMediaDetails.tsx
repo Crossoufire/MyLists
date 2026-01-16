@@ -76,7 +76,7 @@ export const UserMediaDetails = ({ userMedia, mediaType, queryOption }: UserMedi
                         mediaType={mediaType}
                         queryOption={queryOption}
                         mediaId={userMedia.mediaId}
-                        mediaCollections={userMedia?.collections ?? []}
+                        collections={userMedia?.collections ?? []}
                     />
                 </div>
                 :

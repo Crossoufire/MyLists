@@ -2,7 +2,7 @@ import {MediaType} from "@/lib/utils/enums";
 import {relations} from "drizzle-orm/relations";
 import {user} from "@/lib/server/database/schema/auth.schema";
 import {integer, real, sqliteTable, text} from "drizzle-orm/sqlite-core";
-import {communGenericCols, communMediaCollectionsCols, communMediaCols, communMediaListCols} from "@/lib/server/database/schema/media/_helper";
+import {commonGenericCols, commonMediaCollectionsCols, commonMediaCols, commonMediaListCols} from "@/lib/server/database/schema/media/_helper";
 
 
 export const manga = sqliteTable("manga", {
@@ -17,7 +17,7 @@ export const manga = sqliteTable("manga", {
     popularity: real(),
     publishers: text(),
     apiId: integer().unique().notNull(),
-    ...communMediaCols(MediaType.MANGA),
+    ...commonMediaCols(MediaType.MANGA),
 });
 
 
@@ -25,22 +25,22 @@ export const mangaList = sqliteTable("manga_list", {
     currentChapter: integer().notNull(),
     redo: integer().default(0).notNull(),
     total: integer("total").default(0).notNull(),
-    ...communMediaListCols(manga.id),
+    ...commonMediaListCols(manga.id),
 });
 
 
 export const mangaGenre = sqliteTable("manga_genre", {
-    ...communGenericCols(manga.id),
+    ...commonGenericCols(manga.id),
 });
 
 
 export const mangaAuthors = sqliteTable("manga_authors", {
-    ...communGenericCols(manga.id),
+    ...commonGenericCols(manga.id),
 });
 
 
 export const mangaCollections = sqliteTable("manga_collections", {
-    ...communMediaCollectionsCols(manga.id),
+    ...commonMediaCollectionsCols(manga.id),
 });
 
 

@@ -2,7 +2,7 @@ import {relations} from "drizzle-orm/relations";
 import {user} from "@/lib/server/database/schema/auth.schema";
 import {GamesPlatformsEnum, MediaType} from "@/lib/utils/enums";
 import {integer, real, sqliteTable, text} from "drizzle-orm/sqlite-core";
-import {communGenericCols, communMediaCollectionsCols, communMediaCols, communMediaListCols} from "@/lib/server/database/schema/media/_helper";
+import {commonGenericCols, commonMediaCollectionsCols, commonMediaCols, commonMediaListCols} from "@/lib/server/database/schema/media/_helper";
 
 
 export const games = sqliteTable("games", {
@@ -16,36 +16,36 @@ export const games = sqliteTable("games", {
     hltbMainAndExtraTime: real(),
     hltbTotalCompleteTime: real(),
     apiId: integer().unique().notNull(),
-    ...communMediaCols(MediaType.GAMES),
+    ...commonMediaCols(MediaType.GAMES),
 });
 
 
 export const gamesList = sqliteTable("games_list", {
     playtime: integer().default(0),
     platform: text().$type<GamesPlatformsEnum>(),
-    ...communMediaListCols(games.id),
+    ...commonMediaListCols(games.id),
 });
 
 
 export const gamesGenre = sqliteTable("games_genre", {
-    ...communGenericCols(games.id),
+    ...commonGenericCols(games.id),
 });
 
 
 export const gamesPlatforms = sqliteTable("games_platforms", {
-    ...communGenericCols(games.id),
+    ...commonGenericCols(games.id),
 });
 
 
 export const gamesCompanies = sqliteTable("games_companies", {
-    ...communGenericCols(games.id),
+    ...commonGenericCols(games.id),
     publisher: integer({ mode: "boolean" }),
     developer: integer({ mode: "boolean" }),
 });
 
 
 export const gamesCollections = sqliteTable("games_collections", {
-    ...communMediaCollectionsCols(games.id),
+    ...commonMediaCollectionsCols(games.id),
 });
 
 

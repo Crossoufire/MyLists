@@ -12,16 +12,16 @@ import {UserMediaQueryOption} from "@/lib/client/react-query/query-mutations/use
 interface CollectionListsProps {
     mediaId: number;
     mediaType: MediaType;
-    mediaCollections: Collection[];
+    collections: Collection[];
     queryOption: UserMediaQueryOption;
 }
 
 
-export const CollectionLists = ({ queryOption, mediaType, mediaId, mediaCollections }: CollectionListsProps) => {
+export const CollectionLists = ({ queryOption, mediaType, mediaId, collections }: CollectionListsProps) => {
     const { currentUser } = useAuth();
     const queryClient = useQueryClient();
 
-    const updateUserCollections = (newCollectionsList: (Collection | undefined)[]) => {
+    const updateCollectionNames = (newCollectionsList: (Collection | undefined)[]) => {
         if (queryOption.queryKey[0] === "details") {
             queryClient.setQueryData(queryOption.queryKey, (oldData) => {
                 if (!oldData) return;
@@ -54,25 +54,25 @@ export const CollectionLists = ({ queryOption, mediaType, mediaId, mediaCollecti
                 <CollectionsDialog
                     mediaId={mediaId}
                     mediaType={mediaType}
-                    collections={mediaCollections}
-                    updateUserCollections={updateUserCollections}
+                    collections={collections}
+                    updateCollection={updateCollectionNames}
                 />
             </h4>
             <Separator className="-mt-1 mb-1"/>
             <div className="flex flex-wrap gap-2">
-                {mediaCollections.length === 0 ?
+                {collections.length === 0 ?
                     <div className="text-muted-foreground text-sm">
-                        No collections added yet.
+                        Not in a collection yet.
                     </div>
                     :
-                    mediaCollections.map((col) =>
+                    collections.map((col) =>
                         <Link
                             key={col.name}
                             to="/list/$mediaType/$username"
                             search={{ collections: [col.name] }}
                             params={{ mediaType, username: currentUser!.name }}
                         >
-                            <Badge variant="collection" key={col.name}>
+                            <Badge key={col.name} variant="collection" className="max-w-50">
                                 <div className="flex justify-between gap-2">
                                     {col.name}
                                 </div>

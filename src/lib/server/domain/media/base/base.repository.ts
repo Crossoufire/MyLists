@@ -102,7 +102,7 @@ export abstract class BaseRepository<TConfig extends MediaSchemaConfig<MediaTabl
         return mediaToDelete.map((media) => media.id);
     }
 
-    async getUserMediaCollections(userId: number) {
+    async getCollectionNames(userId: number) {
         const { collectionTable } = this.config;
 
         return getDbClient()
@@ -218,28 +218,34 @@ export abstract class BaseRepository<TConfig extends MediaSchemaConfig<MediaTabl
             .limit(limit)
     }
 
-    async editUserCollection(userId: number, collection: Collection, mediaId: number, action: CollectionAction) {
-        const collectionTable = this.config.collectionTable;
+    async editUserCollection(userId: number, collection: Collection, action: CollectionAction, mediaId?: number) {
+        const { collectionTable } = this.config;
 
         if (action === CollectionAction.ADD) {
             const [collectionData] = await getDbClient()
                 .insert(collectionTable)
                 .values({ userId, name: collection.name, mediaId })
                 .returning({ name: collectionTable.name })
-            return collectionData as Collection;
+            return collectionData satisfies Collection;
         }
         else if (action === CollectionAction.RENAME) {
             const [collectionData] = await getDbClient()
                 .update(collectionTable)
                 .set({ name: collection.name })
-                .where(and(eq(collectionTable.userId, userId), eq(collectionTable.name, collection?.oldName)))
-                .returning({ name: collectionTable.name })
-            return collectionData as Collection;
+                .where(and(
+                    eq(collectionTable.userId, userId),
+                    eq(collectionTable.name, collection?.oldName)
+                )).returning({ name: collectionTable.name })
+            return collectionData satisfies Collection;
         }
         else if (action === CollectionAction.DELETE_ONE) {
             await getDbClient()
                 .delete(collectionTable)
-                .where(and(eq(collectionTable.userId, userId), eq(collectionTable.name, collection.name), eq(collectionTable.mediaId, mediaId)));
+                .where(and(
+                    eq(collectionTable.userId, userId),
+                    eq(collectionTable.name, collection.name),
+                    eq(collectionTable.mediaId, mediaId),
+                ));
         }
         else if (action === CollectionAction.DELETE_ALL) {
             await getDbClient()
@@ -457,7 +463,7 @@ export abstract class BaseRepository<TConfig extends MediaSchemaConfig<MediaTabl
         };
     }
 
-    async getUserCollections(userId: number) {
+    async getCollectionsView(userId: number) {
         const { listTable, mediaTable, collectionTable } = this.config;
 
         type UserCollection = {
@@ -484,7 +490,7 @@ export abstract class BaseRepository<TConfig extends MediaSchemaConfig<MediaTabl
                         partition by ${collectionTable.name} 
                         order by ${listTable.lastUpdated} desc
                     )`.as("row_number"),
-                    totalCount: sql<number>`count(*) over (
+                    totalCount: sql<number>`count(${collectionTable.mediaId}) over (
                         partition by ${collectionTable.name}
                     )`.as("total_count"),
                     collectionLastActivity: sql<number>`max(${listTable.lastUpdated}) over (
@@ -492,8 +498,8 @@ export abstract class BaseRepository<TConfig extends MediaSchemaConfig<MediaTabl
                     )`.as("collection_last_activity"),
                 })
                 .from(collectionTable)
-                .innerJoin(mediaTable, eq(collectionTable.mediaId, mediaTable.id))
-                .innerJoin(listTable, and(eq(collectionTable.mediaId, listTable.mediaId), eq(listTable.userId, userId)))
+                .leftJoin(mediaTable, eq(collectionTable.mediaId, mediaTable.id))
+                .leftJoin(listTable, and(eq(collectionTable.mediaId, listTable.mediaId), eq(listTable.userId, userId)))
                 .where(eq(collectionTable.userId, userId))
             );
 
@@ -510,7 +516,7 @@ export abstract class BaseRepository<TConfig extends MediaSchemaConfig<MediaTabl
                         'mediaCover', ${rankedSq.mediaCover}
                     ))`.mapWith((rawString) => {
                     const parsedArray = JSON.parse(rawString);
-                    return parsedArray.map((item: any) => ({
+                    return parsedArray.filter((item: any) => item.mediaId !== null).map((item: any) => ({
                         ...item,
                         mediaCover: mediaTable.imageCover.mapFromDriverValue(item.mediaCover),
                     }))

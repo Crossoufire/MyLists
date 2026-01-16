@@ -5,12 +5,14 @@ import {useMutation, useQueryClient} from "@tanstack/react-query";
 import {postAddMediaToList, postDeleteUserUpdates, postEditUserCollection, postRemoveMediaFromList, postUpdateUserMedia} from "@/lib/server/functions/user-media";
 import {
     allUpdatesOptions,
+    collectionNamesOptions,
+    collectionsViewOptions,
     historyOptions,
     mediaDetailsOptions,
     mediaListOptions,
-    profileOptions,
-    userCollectionsOptions
+    profileOptions
 } from "@/lib/client/react-query/query-options/query-options";
+import {useAuth} from "@/lib/client/hooks/use-auth";
 
 
 export type UserMediaQueryOption = ReturnType<typeof mediaDetailsOptions> | ReturnType<typeof mediaListOptions>;
@@ -162,26 +164,29 @@ export const useUpdateUserMediaMutation = (mediaType: MediaType, mediaId: number
 };
 
 
-export const useEditUserCollectionMutation = (mediaType: MediaType, mediaId: number) => {
+export const useEditCollectionMutation = (mediaType: MediaType, mediaId?: number) => {
+    const { currentUser } = useAuth();
     const queryClient = useQueryClient();
 
     return useMutation({
         mutationFn: ({ collection, action }: { collection: Collection, action: CollectionAction }) => {
             return postEditUserCollection({ data: { mediaType, mediaId, collection, action } });
         },
-        meta: { errorMessage: "Failed to edit this collection" },
-        onSuccess: (data, variables) => {
-            queryClient.setQueryData(userCollectionsOptions(mediaType, false).queryKey, (oldData) => {
+        meta: { errorMessage: "Failed to edit the collection" },
+        onSuccess: async (data, variables) => {
+            await queryClient.invalidateQueries({ queryKey: collectionsViewOptions(mediaType, currentUser!.name).queryKey });
+
+            queryClient.setQueryData(collectionNamesOptions(mediaType, false).queryKey, (oldData) => {
                 if (!oldData || !data) return;
 
                 if (variables.action === "add") {
-                    return oldData.map(l => l?.name).includes(data?.name ?? "") ? oldData : [...oldData, data];
+                    return oldData.map((c) => c?.name).includes(data?.name ?? "") ? oldData : [...oldData, data];
                 }
                 else if (variables.action === "rename") {
-                    return oldData.map(l => l?.name === variables.collection.oldName ? data : l);
+                    return oldData.map((c) => c?.name === variables.collection.oldName ? data : c);
                 }
                 else if (variables.action === "deleteAll") {
-                    return oldData.filter(l => l?.name !== variables.collection.name);
+                    return oldData.filter((c) => c?.name !== variables.collection.name);
                 }
             });
         }

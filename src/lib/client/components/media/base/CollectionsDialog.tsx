@@ -7,8 +7,8 @@ import {Input} from "@/lib/client/components/ui/input";
 import {Button} from "@/lib/client/components/ui/button";
 import {CollectionAction, MediaType} from "@/lib/utils/enums";
 import {EmptyState} from "@/lib/client/components/general/EmptyState";
-import {userCollectionsOptions} from "@/lib/client/react-query/query-options/query-options";
-import {useEditUserCollectionMutation} from "@/lib/client/react-query/query-mutations/user-media.mutations";
+import {collectionNamesOptions} from "@/lib/client/react-query/query-options/query-options";
+import {useEditCollectionMutation} from "@/lib/client/react-query/query-mutations/user-media.mutations";
 import {CircleCheck, CirclePlus, Layers, LoaderCircle, Pen, Plus, Trash2, TriangleAlert, X} from "lucide-react";
 import {Credenza, CredenzaContent, CredenzaDescription, CredenzaHeader, CredenzaTitle, CredenzaTrigger} from "@/lib/client/components/ui/credenza";
 
@@ -20,11 +20,11 @@ interface CollectionsDialogProps {
     mediaId: number;
     mediaType: MediaType;
     collections: Collection[];
-    updateUserCollections: (collections: (Collection | undefined)[]) => void;
+    updateCollection: (collections: (Collection | undefined)[]) => void;
 }
 
 
-export const CollectionsDialog = ({ mediaType, mediaId, collections, updateUserCollections }: CollectionsDialogProps) => {
+export const CollectionsDialog = ({ mediaType, mediaId, collections, updateCollection }: CollectionsDialogProps) => {
     const [isOpen, setIsOpen] = useState(false);
     const inputRef = useRef<HTMLInputElement>(null);
     const [isEditing, setIsEditing] = useState(false);
@@ -32,8 +32,8 @@ export const CollectionsDialog = ({ mediaType, mediaId, collections, updateUserC
     const [oldCollectionName, setOldCollectionName] = useState("");
     const [editingCollectionName, setEditingCollectionName] = useState("");
     const [inputAddNewCollection, setInputAddNewCollection] = useState("");
-    const editUserCollectionMutation = useEditUserCollectionMutation(mediaType, mediaId);
-    const { data: allCollections = [], error, isLoading } = useQuery(userCollectionsOptions(mediaType, isOpen));
+    const editUserCollectionMutation = useEditCollectionMutation(mediaType, mediaId);
+    const { data: allCollections = [], error, isLoading } = useQuery(collectionNamesOptions(mediaType, isOpen));
 
     useEffect(() => {
         if (error) showToast("An unexpected error occurred. Please try again later.", "error");
@@ -54,7 +54,7 @@ export const CollectionsDialog = ({ mediaType, mediaId, collections, updateUserC
 
         editUserCollectionMutation.mutate({ collection: { name: name }, action: CollectionAction.ADD }, {
             onError: () => showToast("An unexpected error occurred", "error"),
-            onSuccess: (data: Collection | undefined) => updateUserCollections([...collections, data]),
+            onSuccess: (data: Collection | undefined) => updateCollection([...collections, data]),
             onSettled: () => setInputAddNewCollection(""),
         });
     };
@@ -62,7 +62,7 @@ export const CollectionsDialog = ({ mediaType, mediaId, collections, updateUserC
     const removeFromMedia = (collection: Collection) => {
         editUserCollectionMutation.mutate({ collection, action: CollectionAction.DELETE_ONE }, {
             onError: () => showToast("An unexpected error occurred", "error"),
-            onSuccess: () => updateUserCollections(collections.filter((c) => c.name !== collection.name)),
+            onSuccess: () => updateCollection(collections.filter((c) => c.name !== collection.name)),
         });
     };
 
@@ -86,7 +86,7 @@ export const CollectionsDialog = ({ mediaType, mediaId, collections, updateUserC
             onError: () => showToast("An unexpected error occurred", "error"),
             onSuccess: () => {
                 if (collections.map((c) => c.name).includes(oldCollection.name)) {
-                    updateUserCollections(collections.map((c) => c.name === oldCollection.name ? newCollection : c));
+                    updateCollection(collections.map((c) => c.name === oldCollection.name ? newCollection : c));
                 }
             },
             onSettled: () => {
@@ -101,7 +101,7 @@ export const CollectionsDialog = ({ mediaType, mediaId, collections, updateUserC
         if (collections.map((c) => c.name).includes(collection.name)) return;
         editUserCollectionMutation.mutate({ collection, action: CollectionAction.ADD }, {
             onError: () => showToast("An unexpected error occurred", "error"),
-            onSuccess: () => updateUserCollections([...collections, collection]),
+            onSuccess: () => updateCollection([...collections, collection]),
         });
     };
 
@@ -118,7 +118,7 @@ export const CollectionsDialog = ({ mediaType, mediaId, collections, updateUserC
             onError: () => showToast("An unexpected error occurred", "error"),
             onSuccess: () => {
                 showToast("Collection successfully deleted", "success");
-                updateUserCollections([...collections.filter((c) => c.name !== collection.name)]);
+                updateCollection([...collections.filter((c) => c.name !== collection.name)]);
             },
         });
     };
@@ -167,14 +167,14 @@ export const CollectionsDialog = ({ mediaType, mediaId, collections, updateUserC
                     </div>
                     <div className="space-y-2">
                         <h4 className="font-medium">
-                            Current Collections
+                            In Collections
                         </h4>
                         <div className="flex flex-wrap items-center gap-2">
                             {collections.length === 0 ?
                                 <EmptyState
                                     icon={Layers}
-                                    iconSize={22}
-                                    message="No collections added yet."
+                                    iconSize={20}
+                                    message="Not in a collection yet."
                                 />
                                 :
                                 collections.map((col) =>
@@ -199,7 +199,7 @@ export const CollectionsDialog = ({ mediaType, mediaId, collections, updateUserC
                                 allCollections.length === 0 ?
                                     <EmptyState
                                         icon={X}
-                                        iconSize={25}
+                                        iconSize={20}
                                         message="No collections created yet."
                                     />
                                     :

@@ -65,7 +65,7 @@ export const AppliedFilters = ({ mediaType, filters, totalItems, onFilterRemove 
                                         <Badge
                                             variant="secondary"
                                             className="h-8 px-3 text-sm gap-1 rounded-full border border-border/50
-                                                bg-secondary hover:bg-secondary/90 transition"
+                                            bg-secondary hover:bg-secondary/90 transition max-w-50"
                                         >
                                             {key === "langs" ? formatLocaleName(
                                                     item,

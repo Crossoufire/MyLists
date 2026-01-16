@@ -2,7 +2,7 @@ import {relations} from "drizzle-orm/relations";
 import {MediaType} from "@/lib/utils/enums";
 import {user} from "@/lib/server/database/schema/auth.schema";
 import {integer, real, sqliteTable, text} from "drizzle-orm/sqlite-core";
-import {communGenericCols, communMediaCollectionsCols, communMediaCols, communMediaListCols} from "@/lib/server/database/schema/media/_helper";
+import {commonGenericCols, commonMediaCollectionsCols, commonMediaCols, commonMediaListCols} from "@/lib/server/database/schema/media/_helper";
 
 
 export const movies = sqliteTable("movies", {
@@ -20,29 +20,29 @@ export const movies = sqliteTable("movies", {
     collectionId: integer(),
     directorName: text(),
     compositorName: text(),
-    ...communMediaCols(MediaType.MOVIES),
+    ...commonMediaCols(MediaType.MOVIES),
 });
 
 
 export const moviesList = sqliteTable("movies_list", {
     redo: integer().default(0).notNull(),
     total: integer("total").default(0).notNull(),
-    ...communMediaListCols(movies.id),
+    ...commonMediaListCols(movies.id),
 });
 
 
 export const moviesGenre = sqliteTable("movies_genre", {
-    ...communGenericCols(movies.id),
+    ...commonGenericCols(movies.id),
 });
 
 
 export const moviesActors = sqliteTable("movies_actors", {
-    ...communGenericCols(movies.id),
+    ...commonGenericCols(movies.id),
 });
 
 
 export const moviesCollections = sqliteTable("movies_collections", {
-    ...communMediaCollectionsCols(movies.id),
+    ...commonMediaCollectionsCols(movies.id),
 });
 
 

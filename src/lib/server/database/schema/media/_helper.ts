@@ -5,7 +5,7 @@ import {imageUrl} from "@/lib/server/database/custom-types";
 import {integer, real, SQLiteColumn, text} from "drizzle-orm/sqlite-core";
 
 
-export const communMediaCols = (mediaTypeName: MediaType) => {
+export const commonMediaCols = (mediaTypeName: MediaType) => {
     return {
         id: integer("id").primaryKey().notNull(),
         name: text("name").notNull(),
@@ -19,7 +19,7 @@ export const communMediaCols = (mediaTypeName: MediaType) => {
 };
 
 
-export const communMediaListCols = (modelMediaId: SQLiteColumn) => {
+export const commonMediaListCols = (modelMediaId: SQLiteColumn) => {
     return {
         id: integer("id").primaryKey().notNull(),
         userId: integer("user_id").notNull().references(() => user.id, { onDelete: "cascade" }),
@@ -34,7 +34,7 @@ export const communMediaListCols = (modelMediaId: SQLiteColumn) => {
 };
 
 
-export const communGenericCols = (modelMediaId: SQLiteColumn) => {
+export const commonGenericCols = (modelMediaId: SQLiteColumn) => {
     return {
         id: integer().primaryKey().notNull(),
         mediaId: integer().notNull().references(() => modelMediaId),
@@ -43,15 +43,17 @@ export const communGenericCols = (modelMediaId: SQLiteColumn) => {
 };
 
 
-export const communMediaCollectionsCols = (modelMediaId: SQLiteColumn) => {
+export const commonMediaCollectionsCols = (modelMediaId: SQLiteColumn) => {
     return {
+        id: integer().primaryKey().notNull(),
         userId: integer().notNull().references(() => user.id, { onDelete: "cascade" }),
-        ...communGenericCols(modelMediaId),
+        mediaId: integer().references(() => modelMediaId),
+        name: text("name").notNull(),
     };
 };
 
 
-export const communMediaEpsCols = (modelMediaId: SQLiteColumn) => {
+export const commMediaEpsCols = (modelMediaId: SQLiteColumn) => {
     return {
         id: integer().primaryKey().notNull(),
         mediaId: integer().notNull().references(() => modelMediaId),

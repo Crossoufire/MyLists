@@ -6,10 +6,10 @@ import {transactionMiddleware} from "@/lib/server/middlewares/transaction";
 import {
     addMediaToListSchema,
     deleteUserUpdatesSchema,
-    editUserCollectionsSchema,
+    editUserCollectionSchema,
     mediaActionSchema,
     updateUserMediaSchema,
-    userMediaCollectionsSchema
+    userCollectionNamesSchema
 } from "@/lib/types/zod.schema.types";
 
 
@@ -101,21 +101,22 @@ export const postDeleteUserUpdates = createServerFn({ method: "POST" })
     });
 
 
-export const getUserMediaCollections = createServerFn({ method: "GET" })
+export const getUserCollectionNames = createServerFn({ method: "GET" })
     .middleware([authMiddleware])
-    .inputValidator(userMediaCollectionsSchema)
+    .inputValidator(userCollectionNamesSchema)
     .handler(async ({ data: { mediaType }, context: { currentUser } }) => {
         const container = await getContainer();
         const mediaService = container.registries.mediaService.getService(mediaType);
-        return mediaService.getUserMediaCollections(currentUser.id);
+        return mediaService.getCollectionNames(currentUser.id);
     });
 
 
 export const postEditUserCollection = createServerFn({ method: "POST" })
     .middleware([authMiddleware, transactionMiddleware])
-    .inputValidator(editUserCollectionsSchema)
+    .inputValidator(editUserCollectionSchema)
     .handler(async ({ data: { mediaType, mediaId, collection, action }, context: { currentUser } }) => {
         const container = await getContainer();
         const mediaService = container.registries.mediaService.getService(mediaType);
-        return mediaService.editUserCollection(currentUser.id, collection, mediaId, action);
+
+        return mediaService.editUserCollection(currentUser.id, collection, action, mediaId);
     });

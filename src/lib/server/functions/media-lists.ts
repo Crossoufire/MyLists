@@ -31,7 +31,7 @@ export const getUserListHeaderSF = createServerFn({ method: "GET" })
     })
 
 
-export const getMediaListServerFunction = createServerFn({ method: "GET" })
+export const getMediaListSF = createServerFn({ method: "GET" })
     .middleware([authorizationMiddleware])
     .inputValidator(tryNotFound(mediaListSchema))
     .handler(async ({ data, context: { currentUser, user } }) => {
@@ -42,13 +42,9 @@ export const getMediaListServerFunction = createServerFn({ method: "GET" })
         const userService = container.services.user;
         const currentUserId = currentUser?.id ? currentUser.id : undefined;
 
-        const userHasMediaTypeActive = await userService.hasActiveMediaType(user.id, data.mediaType);
+        const userHasMediaTypeActive = await userService.hasActiveMediaType(targetUserId, data.mediaType);
         if (!userHasMediaTypeActive) {
             throw new FormattedError("MediaType not-activated");
-        }
-
-        if (currentUser && currentUser.id !== targetUserId) {
-            await userService.incrementMediaTypeView(targetUserId, mediaType);
         }
 
         const mediaService = container.registries.mediaService.getService(mediaType);
@@ -58,13 +54,15 @@ export const getMediaListServerFunction = createServerFn({ method: "GET" })
     });
 
 
-export const getCollectionsAndMediaFn = createServerFn({ method: "GET" })
+export const getCollectionsViewFn = createServerFn({ method: "GET" })
     .middleware([authorizationMiddleware])
     .inputValidator(z.object({ username: z.string(), mediaType: z.enum(MediaType) }))
     .handler(async ({ data: { mediaType }, context: { user } }) => {
-        const mediaServiceRegistry = await getContainer().then((c) => c.registries.mediaService);
-        const mediaService = mediaServiceRegistry.getService(mediaType);
-        return mediaService.getUserCollections(user.id);
+        const targetUserId = user.id;
+        const container = await getContainer();
+        const mediaService = container.registries.mediaService.getService(mediaType);
+
+        return mediaService.getCollectionsView(targetUserId);
     });
 
 
