@@ -172,22 +172,12 @@ export const useEditCollectionMutation = (mediaType: MediaType, mediaId?: number
         mutationFn: ({ collection, action }: { collection: Collection, action: CollectionAction }) => {
             return postEditUserCollection({ data: { mediaType, mediaId, collection, action } });
         },
-        meta: { errorMessage: "Failed to edit the collection" },
-        onSuccess: async (data, variables) => {
+        onSuccess: async (data) => {
             await queryClient.invalidateQueries({ queryKey: collectionsViewOptions(mediaType, currentUser!.name).queryKey });
 
             queryClient.setQueryData(collectionNamesOptions(mediaType, false).queryKey, (oldData) => {
-                if (!oldData) return;
-
-                if (variables.action === "add" && data) {
-                    return oldData.map((c) => c?.name).includes(data?.name ?? "") ? oldData : [...oldData, data];
-                }
-                else if (variables.action === "rename" && data) {
-                    return oldData.map((c) => c?.name === variables.collection.oldName ? data : c);
-                }
-                else if (variables.action === "deleteAll") {
-                    return oldData.filter((c) => c?.name !== variables.collection.name);
-                }
+                if (!oldData || !data) return;
+                return oldData.map((c) => c?.name).includes(data?.name ?? "") ? oldData : [...oldData, data];
             });
         }
     })

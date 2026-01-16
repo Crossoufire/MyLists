@@ -1,15 +1,18 @@
+import {useState} from "react";
 import {cn} from "@/lib/utils/helpers";
+import {Link} from "@tanstack/react-router";
 import {useQuery} from "@tanstack/react-query";
-import {useEffect, useRef, useState} from "react";
+import {capitalize} from "@/lib/utils/formating";
 import {Collection} from "@/lib/types/base.types";
+import {useAuth} from "@/lib/client/hooks/use-auth";
 import {Badge} from "@/lib/client/components/ui/badge";
 import {Input} from "@/lib/client/components/ui/input";
 import {Button} from "@/lib/client/components/ui/button";
 import {CollectionAction, MediaType} from "@/lib/utils/enums";
 import {EmptyState} from "@/lib/client/components/general/EmptyState";
 import {collectionNamesOptions} from "@/lib/client/react-query/query-options/query-options";
+import {CircleCheck, CirclePlus, Layers, LoaderCircle, Plus, TriangleAlert, X} from "lucide-react";
 import {useEditCollectionMutation} from "@/lib/client/react-query/query-mutations/user-media.mutations";
-import {CircleCheck, CirclePlus, Layers, LoaderCircle, Pen, Plus, Trash2, TriangleAlert, X} from "lucide-react";
 import {Credenza, CredenzaContent, CredenzaDescription, CredenzaHeader, CredenzaTitle, CredenzaTrigger} from "@/lib/client/components/ui/credenza";
 
 
@@ -25,37 +28,30 @@ interface CollectionsDialogProps {
 
 
 export const CollectionsDialog = ({ mediaType, mediaId, collections, updateCollection }: CollectionsDialogProps) => {
+    const { currentUser } = useAuth();
     const [isOpen, setIsOpen] = useState(false);
-    const inputRef = useRef<HTMLInputElement>(null);
-    const [isEditing, setIsEditing] = useState(false);
+    const [newCollection, setNewCollection] = useState("");
     const [toast, setToast] = useState<ToastType | null>(null);
-    const [oldCollectionName, setOldCollectionName] = useState("");
-    const [editingCollectionName, setEditingCollectionName] = useState("");
-    const [inputAddNewCollection, setInputAddNewCollection] = useState("");
     const editUserCollectionMutation = useEditCollectionMutation(mediaType, mediaId);
-    const { data: allCollections = [], error, isLoading } = useQuery(collectionNamesOptions(mediaType, isOpen));
-
-    useEffect(() => {
-        if (error) showToast("An unexpected error occurred. Please try again later.", "error");
-    }, [error]);
+    const { data: allCollections = [], isLoading } = useQuery(collectionNamesOptions(mediaType, isOpen));
 
     const showToast = (message: string, type: "error" | "success") => {
         setToast({ message, type });
     };
 
-    const isCollectionUnique = (name: string) => {
-        return allCollections.filter((col) => col.name === name).length === 0;
-    };
+    const createNew = (name: string) => {
+        const trimmed = name.trim();
+        if (!trimmed) return;
 
-    const createNewCollection = (name: string) => {
-        if (!isCollectionUnique(name)) {
+        const isUnique = allCollections.filter((col) => col.name === trimmed).length === 0;
+        if (!isUnique) {
             return showToast("This collection name already exists", "error");
         }
 
-        editUserCollectionMutation.mutate({ collection: { name: name }, action: CollectionAction.ADD }, {
+        editUserCollectionMutation.mutate({ collection: { name: trimmed }, action: CollectionAction.ADD }, {
             onError: () => showToast("An unexpected error occurred", "error"),
-            onSuccess: (data: Collection | undefined) => updateCollection([...collections, data]),
-            onSettled: () => setInputAddNewCollection(""),
+            onSuccess: (data) => updateCollection([...collections, data]),
+            onSettled: () => setNewCollection(""),
         });
     };
 
@@ -66,60 +62,11 @@ export const CollectionsDialog = ({ mediaType, mediaId, collections, updateColle
         });
     };
 
-    const renameMediaCollection = (newCollectionName: string, oldCollection: Collection) => {
-        if (!newCollectionName.trim() || newCollectionName === oldCollection.name) {
-            return setIsEditing(false);
-        }
-
-        const editedNewCollectionName = newCollectionName.trim();
-        if (!isCollectionUnique(editedNewCollectionName)) {
-            setIsEditing(false);
-            return showToast("This collection name already exists", "error");
-        }
-
-        const newCollection = { name: editedNewCollectionName };
-
-        editUserCollectionMutation.mutate({
-            collection: { oldName: oldCollection.name, name: editedNewCollectionName },
-            action: CollectionAction.RENAME,
-        }, {
-            onError: () => showToast("An unexpected error occurred", "error"),
-            onSuccess: () => {
-                if (collections.map((c) => c.name).includes(oldCollection.name)) {
-                    updateCollection(collections.map((c) => c.name === oldCollection.name ? newCollection : c));
-                }
-            },
-            onSettled: () => {
-                setIsEditing(false);
-                setOldCollectionName("");
-                setEditingCollectionName("");
-            },
-        });
-    };
-
-    const addCollectionToMedia = (collection: Collection) => {
+    const addToMedia = (collection: Collection) => {
         if (collections.map((c) => c.name).includes(collection.name)) return;
         editUserCollectionMutation.mutate({ collection, action: CollectionAction.ADD }, {
             onError: () => showToast("An unexpected error occurred", "error"),
             onSuccess: () => updateCollection([...collections, collection]),
-        });
-    };
-
-    const startEditingCollection = (collection: Collection) => {
-        setIsEditing(!isEditing);
-        setOldCollectionName(collection.name);
-        setEditingCollectionName(collection.name);
-    };
-
-    const deleteCollectionTotally = (collection: Collection) => {
-        if (!window.confirm("Do you really want to delete this collection?")) return;
-
-        editUserCollectionMutation.mutate({ collection, action: CollectionAction.DELETE_ALL }, {
-            onError: () => showToast("An unexpected error occurred", "error"),
-            onSuccess: () => {
-                showToast("Collection successfully deleted", "success");
-                updateCollection([...collections.filter((c) => c.name !== collection.name)]);
-            },
         });
     };
 
@@ -132,8 +79,12 @@ export const CollectionsDialog = ({ mediaType, mediaId, collections, updateColle
             </CredenzaTrigger>
             <CredenzaContent className="w-100 max-sm:w-full">
                 <CredenzaHeader>
-                    <CredenzaTitle>Manage Collections</CredenzaTitle>
-                    <CredenzaDescription>Here you can manage your collections.</CredenzaDescription>
+                    <CredenzaTitle>
+                        Your {capitalize(mediaType)} Collections
+                    </CredenzaTitle>
+                    <CredenzaDescription>
+                        You can include this {mediaType} in collections or create new ones.
+                    </CredenzaDescription>
                 </CredenzaHeader>
                 {toast &&
                     <Toast
@@ -143,24 +94,27 @@ export const CollectionsDialog = ({ mediaType, mediaId, collections, updateColle
                     />
                 }
                 <div className="space-y-8 mt-8 max-sm:mt-4 max-sm:p-6">
+                    <div>
+                        <Link to="/list/$mediaType/$username/collections" params={{ mediaType, username: currentUser!.name }}>
+                            <Button variant="ghost" size="sm" className="h-8 gap-2 px-3 text-xs">
+                                <Layers className="size-3.5"/>
+                                View all collections
+                            </Button>
+                        </Link>
+                    </div>
                     <div className="flex items-center gap-3">
                         <Input
                             autoFocus={true}
-                            value={inputAddNewCollection}
-                            placeholder={"Create a new collection"}
+                            value={newCollection}
+                            placeholder={"Create a collection..."}
                             disabled={editUserCollectionMutation.isPending}
-                            onChange={(ev) => setInputAddNewCollection(ev.target.value)}
-                            onKeyDown={(ev) => {
-                                if (ev.key === "Enter") {
-                                    const value = ev.currentTarget.value.trim();
-                                    if (value) createNewCollection(value);
-                                }
-                            }}
+                            onChange={(ev) => setNewCollection(ev.target.value)}
+                            onKeyDown={(ev) => ev.key === "Enter" && createNew(ev.currentTarget.value)}
                         />
                         <Button
                             size="sm"
                             disabled={editUserCollectionMutation.isPending}
-                            onClick={() => createNewCollection(inputAddNewCollection)}
+                            onClick={() => createNew(newCollection)}
                         >
                             <Plus className="size-4"/> Create
                         </Button>
@@ -205,44 +159,22 @@ export const CollectionsDialog = ({ mediaType, mediaId, collections, updateColle
                                     :
                                     allCollections.map((col) =>
                                         <li key={col.name} className="flex items-center justify-between text-sm">
-                                            {(oldCollectionName === col.name && isEditing) ?
-                                                <Input
-                                                    ref={inputRef}
-                                                    className={"mr-2 w-52"}
-                                                    value={editingCollectionName}
-                                                    disabled={editUserCollectionMutation.isPending}
-                                                    onChange={(ev) => setEditingCollectionName(ev.target.value)}
-                                                    onBlur={() => renameMediaCollection(editingCollectionName, col)}
-                                                    onKeyDown={(ev) => {
-                                                        if (ev.key === "Enter") {
-                                                            renameMediaCollection(editingCollectionName, col);
-                                                        }
-                                                    }}
-                                                />
-                                                :
-                                                <Badge variant={collections.map((c) => c.name).includes(col.name)
-                                                    ? "emerald" : "collectionToAdd"
-                                                }>
-                                                    {col.name}
-                                                </Badge>
-                                            }
+                                            <Badge
+                                                variant={collections.map((c) => c.name).includes(col.name) ? "emerald" : "collectionToAdd"}
+                                            >
+                                                {col.name}
+                                            </Badge>
                                             <div>
                                                 {!collections.map((c) => c.name).includes(col.name) &&
                                                     <Button
                                                         size="icon"
                                                         variant="ghost"
-                                                        onClick={() => addCollectionToMedia(col)}
+                                                        onClick={() => addToMedia(col)}
                                                         disabled={editUserCollectionMutation.isPending}
                                                     >
                                                         <CirclePlus className="size-4"/>
                                                     </Button>
                                                 }
-                                                <Button variant="ghost" size="icon" onClick={() => startEditingCollection(col)}>
-                                                    <Pen className="size-4"/>
-                                                </Button>
-                                                <Button variant="ghost" size="icon" onClick={() => deleteCollectionTotally(col)}>
-                                                    <Trash2 className="size-4"/>
-                                                </Button>
                                             </div>
                                         </li>
                                     )}
