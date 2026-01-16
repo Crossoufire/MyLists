@@ -103,9 +103,11 @@ export const Navbar = () => {
                             className="size-5"
                             src="/logo192.png"
                         />
-                        <span className="text-xl font-bold text-primary block tracking-tight max-sm:hidden">
-                            MyLists
-                        </span>
+                        <Link to="/profile/$username" params={{ username: currentUser.name }}>
+                            <span className="text-xl font-bold text-primary block tracking-tight max-sm:hidden">
+                                MyLists
+                            </span>
+                        </Link>
                     </div>
 
                     <div className="flex-1 max-w-md z-50 block max-lg:hidden">

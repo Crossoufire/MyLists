@@ -16,6 +16,7 @@ import {
     OnboardingSection,
     OnboardingSubSection
 } from "@/lib/client/components/onboarding/OnBoardingShared";
+import {statusUtils} from "@/lib/utils/mapping";
 
 
 export const Route = createFileRoute("/_main/_private/walkthrough/_layout/manage-lists")({
@@ -47,14 +48,15 @@ function CollectionOnboarding() {
             >
                 <OnboardingDemoBox>
                     <Header
+                        filters={{}}
                         isGrid={true}
-                        username={"DemoProfile"}
-                        userData={apiData.userData}
-                        mediaType={MediaType.MOVIES}
                         pagination={apiData.results.pagination}
                         onGridClick={() => undefined}
                         onSortChange={() => undefined}
                         onFilterClick={() => undefined}
+                        onSearchChange={() => undefined}
+                        onStatusChange={() => undefined}
+                        allStatuses={statusUtils.byMediaType(MediaType.MOVIES)}
                     />
                 </OnboardingDemoBox>
 
@@ -76,8 +78,8 @@ function CollectionOnboarding() {
                     />
                     <OnboardingFeatureCard
                         icon={Bookmark}
-                        title="Custom Labels"
-                        description="Filter by your personal tags (like 'Watched in 2024') to view curated subsets of your collection."
+                        title="Custom Collections"
+                        description="Filter by your personal collections (like 'Watched in 2024') to view curated subsets of your lists."
                     />
                 </OnboardingGrid>
 

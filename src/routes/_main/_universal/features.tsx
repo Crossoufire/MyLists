@@ -19,6 +19,7 @@ import {
     Filter,
     Gamepad2,
     GraduationCap,
+    Layers,
     LayoutList,
     LineChart,
     LucideIcon,
@@ -27,7 +28,6 @@ import {
     Search,
     Share2,
     Shield,
-    Tag,
     Trash2,
     Trophy,
     Users
@@ -220,10 +220,10 @@ const FEATURES_DATA: FeatureData[] = [
         description: "Switch between Grid view and a data-dense Table layout for your lists."
     },
     {
-        icon: Tag,
-        name: "Custom Labels",
+        icon: Layers,
+        name: "Custom Collections",
         category: "Personalization",
-        description: "Create and apply custom tags to organize your media your way."
+        description: "Create and apply custom collections to organize your media list your way."
     },
     {
         name: "CSV Export",

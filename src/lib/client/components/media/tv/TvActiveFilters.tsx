@@ -12,7 +12,7 @@ export const getTvActiveFilters = (): SheetFilterObject[] => {
         {
             key: "langs", title: "Countries", type: "checkbox",
             getItems: (data) => data.langs,
-            renderLabel: (name) => formatLocaleName(name, "region"),
+            render: (name) => formatLocaleName(name, "region"),
         },
     ];
 }

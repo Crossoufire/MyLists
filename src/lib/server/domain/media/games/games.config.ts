@@ -3,14 +3,14 @@ import {MediaSchemaConfig} from "@/lib/types/media.config.types";
 import {and, asc, desc, eq, getTableColumns, like} from "drizzle-orm";
 import {createArrayFilterDef} from "@/lib/server/domain/media/base/base.repository";
 import {gamesAchievements} from "@/lib/server/domain/media/games/achievements.seed";
-import {games, gamesCompanies, gamesGenre, gamesLabels, gamesList, gamesPlatforms} from "@/lib/server/database/schema/media/games.schema";
+import {games, gamesCollections, gamesCompanies, gamesGenre, gamesList, gamesPlatforms} from "@/lib/server/database/schema/media/games.schema";
 
 
 export type GamesSchemaConfig = MediaSchemaConfig<
     typeof games,
     typeof gamesList,
     typeof gamesGenre,
-    typeof gamesLabels
+    typeof gamesCollections
 >;
 
 
@@ -18,7 +18,7 @@ export const gamesConfig: GamesSchemaConfig = {
     mediaTable: games,
     listTable: gamesList,
     genreTable: gamesGenre,
-    labelTable: gamesLabels,
+    collectionTable: gamesCollections,
     mediaType: MediaType.GAMES,
     mediaList: {
         baseSelection: {
@@ -72,6 +72,6 @@ export const gamesConfig: GamesSchemaConfig = {
             getFilter: (name) => and(like(gamesCompanies.name, `%${name}%`), eq(gamesCompanies.developer, true))
         }
     },
-    tablesForDeletion: [gamesCompanies, gamesPlatforms, gamesGenre, gamesLabels],
+    tablesForDeletion: [gamesCompanies, gamesPlatforms, gamesGenre, gamesCollections],
     achievements: gamesAchievements,
 };

@@ -12,7 +12,7 @@ export const getMoviesActiveFilters = (): SheetFilterObject[] => {
         {
             key: "langs", title: "Languages", type: "checkbox",
             getItems: (data) => data.langs,
-            renderLabel: (name) => formatLocaleName(name, "language"),
+            render: (name) => formatLocaleName(name, "language"),
         },
     ];
 }

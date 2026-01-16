@@ -9,13 +9,13 @@ import {capitalize, formatLocaleName} from "@/lib/utils/formating";
 interface AppliedFiltersProps {
     totalItems: number;
     mediaType: MediaType;
-    filters: MediaListArgs;
+    filters: MediaListArgs & { view?: "grid" | "list" };
     onFilterRemove: (filters: Partial<MediaListArgs>) => void;
 }
 
 
 export const AppliedFilters = ({ mediaType, filters, totalItems, onFilterRemove }: AppliedFiltersProps) => {
-    const { page: _page, sort: _sort, status: _status, search: _search, ...rawFilters } = filters;
+    const { page: _page, sort: _sort, status: _status, search: _search, view: _view, ...rawFilters } = filters;
 
     const booleanKeys = ["favorite", "comment", "hideCommon"];
     const localFilters = rawFilters as Partial<MediaListArgs>;
@@ -43,7 +43,7 @@ export const AppliedFilters = ({ mediaType, filters, totalItems, onFilterRemove 
     };
 
     return (
-        <div className="flex flex-wrap items-center gap-2 min-h-10.5">
+        <div className="flex flex-wrap items-center gap-2 min-h-10.5 my-4">
             <div className="text-muted-foreground">
                 {totalItems} {capitalize(mediaType)}
             </div>
@@ -117,7 +117,7 @@ export const AppliedFilters = ({ mediaType, filters, totalItems, onFilterRemove 
                             {miscFilters.map(([key, value]) => {
                                 if (value !== true) return null;
 
-                                const label = key === "favorite" ? "Favorites" : key === "comment" ? "Commented"
+                                const keyName = key === "favorite" ? "Favorites" : key === "comment" ? "Commented"
                                     : key === "hideCommon" ? "No Common" : String(value);
 
                                 return (
@@ -127,7 +127,7 @@ export const AppliedFilters = ({ mediaType, filters, totalItems, onFilterRemove 
                                         className="h-8 px-3 text-sm gap-1 rounded-full border border-border/50 bg-secondary
                                         hover:bg-secondary/90 transition"
                                     >
-                                        {label}
+                                        {keyName}
                                         <div
                                             role="button"
                                             className="hover:opacity-80 -mr-1"

@@ -8,7 +8,7 @@ import {BaseService} from "@/lib/server/domain/media/base/base.service";
 import {MovieSchemaConfig} from "@/lib/server/domain/media/movies/movies.config";
 import {MoviesRepository} from "@/lib/server/domain/media/movies/movies.repository";
 import {Movie, MoviesAchCodeName, MoviesList} from "@/lib/server/domain/media/movies/movies.types";
-import {LogPayload, RedoPayload, StatsCTE, StatusPayload, UserMediaWithLabels} from "@/lib/types/base.types";
+import {LogPayload, RedoPayload, StatsCTE, StatusPayload, UserMediaWithCollections} from "@/lib/types/base.types";
 
 
 export class MoviesService extends BaseService<MovieSchemaConfig, MoviesRepository> {
@@ -52,7 +52,7 @@ export class MoviesService extends BaseService<MovieSchemaConfig, MoviesReposito
     async calculateAdvancedMediaStats(mediaAvgRating: number | null, userId?: number) {
         // If userId not provided, calculations are platform-wide
 
-        const { ratings, genresStats, totalLabels, releaseDates } = await super.calculateAdvancedMediaStats(mediaAvgRating, userId);
+        const { ratings, genresStats, totalCollections, releaseDates } = await super.calculateAdvancedMediaStats(mediaAvgRating, userId);
 
         // Specific stats
         const avgDuration = await this.repository.avgMovieDuration(userId);
@@ -62,7 +62,7 @@ export class MoviesService extends BaseService<MovieSchemaConfig, MoviesReposito
 
         return {
             ratings,
-            totalLabels,
+            totalCollections,
             genresStats,
             releaseDates,
             totalBudget,
@@ -117,7 +117,7 @@ export class MoviesService extends BaseService<MovieSchemaConfig, MoviesReposito
         await this.repository.updateMediaWithDetails({ mediaData: fields });
     }
 
-    calculateDeltaStats(oldState: UserMediaWithLabels<MoviesList> | null, newState: MoviesList | null, media: Movie) {
+    calculateDeltaStats(oldState: UserMediaWithCollections<MoviesList> | null, newState: MoviesList | null, media: Movie) {
         const delta: DeltaStats = {};
         const statusCounts: Partial<Record<Status, number>> = {};
 

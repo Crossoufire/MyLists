@@ -1,9 +1,9 @@
+import {formatAvgRating} from "@/lib/utils/ratings";
 import {ExtractStatsByType} from "@/lib/types/stats.types";
 import {StatCard} from "@/lib/client/media-stats/StatCard";
 import {DistributionChart} from "@/lib/client/media-stats/DistributionChart";
 import {formatHours, formatNumber, formatPercent} from "@/lib/utils/formating";
-import {ChartColumn, Clock, Heart, MessageSquare, RefreshCw, Star, Tag, TrendingUp, Trophy, User} from "lucide-react";
-import {formatAvgRating} from "@/lib/utils/ratings";
+import {ChartColumn, Clock, Heart, Layers, MessageSquare, RefreshCw, Star, TrendingUp, Trophy, User} from "lucide-react";
 
 
 interface OverviewDashboardProps {
@@ -75,10 +75,10 @@ export function OverviewDashboard({ stats }: OverviewDashboardProps) {
                     subtitle={`Avg: ${stats.updatesPerMonth.avgUpdates?.toFixed(2) ?? "-"}`}
                 />
                 <StatCard
-                    title="Total Labels"
-                    icon={<Tag className="size-4"/>}
+                    title="Total Collections"
                     subtitle="All media type included"
-                    value={formatNumber(stats.totalLabels)}
+                    icon={<Layers className="size-4"/>}
+                    value={formatNumber(stats.totalCollections)}
                 />
             </div>
 

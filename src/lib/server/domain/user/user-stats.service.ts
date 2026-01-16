@@ -139,16 +139,16 @@ export class UserStatsService {
         const platinumAchievements = await this.achievementsRepository.countPlatinumAchievements(userId);
         const mediaUpdatesPerMonth = await this.userUpdatesRepository.mediaUpdatesStatsPerMonth({ userId });
 
-        const labelCountPromises = userPreComputedStats.mediaTypes.map((mediaType) => {
+        const collectionCountPromises = userPreComputedStats.mediaTypes.map((mediaType) => {
             const mediaService = this.mediaServiceRegistry.getService(mediaType);
-            return mediaService.computeTotalMediaLabel(userId);
+            return mediaService.computeTotalCollections(userId);
         });
-        const labelCounts = await Promise.all(labelCountPromises);
-        const totalLabels = labelCounts.reduce((sum, count) => sum + count, 0);
+        const collectionCounts = await Promise.all(collectionCountPromises);
+        const totalCollections = collectionCounts.reduce((sum, count) => sum + count, 0);
 
         return {
             ...userPreComputedStats,
-            totalLabels,
+            totalCollections,
             platinumAchievements,
             updatesPerMonth: mediaUpdatesPerMonth,
         };
@@ -175,16 +175,16 @@ export class UserStatsService {
         const platinumAchievements = await this.achievementsRepository.countPlatinumAchievements();
         const mediaUpdatesPerMonth = await this.userUpdatesRepository.mediaUpdatesStatsPerMonth({});
 
-        const labelCountPromises = platformPreComputedStats.mediaTypes.map((mediaType) => {
+        const collectionCountPromises = platformPreComputedStats.mediaTypes.map((mediaType) => {
             const mediaService = this.mediaServiceRegistry.getService(mediaType);
-            return mediaService.computeTotalMediaLabel();
+            return mediaService.computeTotalCollections();
         });
-        const labelCounts = await Promise.all(labelCountPromises);
-        const totalLabels = labelCounts.reduce((sum, count) => sum + count, 0);
+        const collectionCounts = await Promise.all(collectionCountPromises);
+        const totalCollections = collectionCounts.reduce((sum, count) => sum + count, 0);
 
         return {
             ...platformPreComputedStats,
-            totalLabels,
+            totalCollections,
             platinumAchievements,
             updatesPerMonth: mediaUpdatesPerMonth,
         };

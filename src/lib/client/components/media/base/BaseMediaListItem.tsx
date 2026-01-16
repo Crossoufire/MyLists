@@ -40,7 +40,7 @@ export const BaseMediaListItem = (props: BaseMediaListItemProps) => {
                         </div>
                     }
                     {!isCurrent && !userMedia.common && isConnected &&
-                        <div className="absolute -right-0.5 -top-0.5 z-10">
+                        <div className="absolute right-0 -top-0.5 z-10">
                             <QuickAddMedia
                                 mediaType={mediaType}
                                 queryOption={queryOption}
@@ -50,7 +50,7 @@ export const BaseMediaListItem = (props: BaseMediaListItemProps) => {
                         </div>
                     }
                 </div>
-                <div className="absolute left-2 top-2 z-10 rounded-md bg-neutral-950 px-3 text-primary/95">
+                <div className="absolute left-2 top-2 z-10 rounded-md bg-neutral-950 px-2 text-primary/95">
                     {mediaDetailsDisplay}
                 </div>
                 {isConnected &&

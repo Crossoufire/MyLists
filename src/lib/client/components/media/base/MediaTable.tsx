@@ -1,6 +1,5 @@
 import {useMemo, useState} from "react";
 import {MediaType} from "@/lib/utils/enums";
-import {useSearch} from "@tanstack/react-router";
 import {useAuth} from "@/lib/client/hooks/use-auth";
 import {MediaListArgs} from "@/lib/types/zod.schema.types";
 import {mediaConfig} from "@/lib/client/components/media/media-config";
@@ -15,6 +14,7 @@ import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/l
 interface MediaTableProps {
     isCurrent: boolean;
     mediaType: MediaType;
+    filters: MediaListArgs;
     queryOption: ReturnType<typeof mediaListOptions>;
     onChangePage: (filters: Partial<MediaListArgs>) => void;
     results: {
@@ -24,12 +24,11 @@ interface MediaTableProps {
 }
 
 
-export const MediaTable = ({ isCurrent, mediaType, results, queryOption, onChangePage }: MediaTableProps) => {
+export const MediaTable = ({ filters, isCurrent, mediaType, results, queryOption, onChangePage }: MediaTableProps) => {
     const { currentUser } = useAuth();
     const isConnected = !!currentUser;
     const [dialogOpen, setDialogOpen] = useState(false);
     const [editingId, setEditingId] = useState<number | null>(null);
-    const filters = useSearch({ from: "/_main/_private/list/$mediaType/$username" });
     const paginationState = { pageIndex: filters?.page ? (filters.page - 1) : 0, pageSize: 25 };
 
     const onPaginationChange: OnChangeFn<PaginationState> = (updaterOrValue) => {
@@ -98,9 +97,8 @@ export const MediaTable = ({ isCurrent, mediaType, results, queryOption, onChang
                         }
                     </TableBody>
                 </Table>
-
             </div>
-            <div className="mt-3 max-w-screen-lg mx-auto">
+            <div className="mt-3">
                 <TablePagination
                     table={table}
                     withSelection={false}

@@ -5,7 +5,7 @@ import {capitalize} from "@/lib/utils/formating";
 import {Card} from "@/lib/client/components/ui/card";
 import {Button} from "@/lib/client/components/ui/button";
 import {useQuery, useQueryClient} from "@tanstack/react-query";
-import {LabelLists} from "@/lib/client/components/media/base/LabelLists";
+import {CollectionLists} from "@/lib/client/components/media/base/CollectionLists";
 import {UserMedia, UserMediaItem} from "@/lib/types/query.options.types";
 import {TabHeader, TabItem} from "@/lib/client/components/general/TabHeader";
 import {UpdateComment} from "@/lib/client/components/media/base/UpdateComment";
@@ -72,11 +72,11 @@ export const UserMediaDetails = ({ userMedia, mediaType, queryOption }: UserMedi
                         content={userMedia.comment}
                         updateComment={updateUserMediaMutation}
                     />
-                    <LabelLists
+                    <CollectionLists
                         mediaType={mediaType}
                         queryOption={queryOption}
                         mediaId={userMedia.mediaId}
-                        mediaLabels={userMedia?.labels ?? []}
+                        mediaCollections={userMedia?.collections ?? []}
                     />
                 </div>
                 :

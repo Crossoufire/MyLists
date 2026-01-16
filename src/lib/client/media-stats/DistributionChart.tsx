@@ -1,6 +1,5 @@
 import {SVGProps, useMemo} from "react";
 import {MediaType} from "@/lib/utils/enums";
-import {useSearch} from "@tanstack/react-router";
 import {NamedValue} from "@/lib/types/stats.types";
 import {getThemeColor} from "@/lib/utils/colors-and-icons";
 import {capitalize, formatNumber} from "@/lib/utils/formating";
@@ -13,13 +12,12 @@ interface DistributionChartProps {
     unit?: string;
     height?: number;
     data: NamedValue[];
+    mediaType?: MediaType;
     enableBinning?: boolean;
 }
 
 
-export function DistributionChart({ title, data, unit, enableBinning = false, height = 250 }: DistributionChartProps) {
-    const { mediaType } = useSearch({ strict: false });
-
+export function DistributionChart({ title, mediaType, data, unit, enableBinning = false, height = 250 }: DistributionChartProps) {
     const chartData = data.map((datum, idx) => {
         const value = datum.value;
         let displayName = String(datum.name);

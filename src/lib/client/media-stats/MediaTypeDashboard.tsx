@@ -1,15 +1,15 @@
 import {MediaType} from "@/lib/utils/enums";
+import {formatAvgRating} from "@/lib/utils/ratings";
 import {ExtractStatsByType} from "@/lib/types/stats.types";
 import {StatCard} from "@/lib/client/media-stats/StatCard";
 import {RatingsChart} from "@/lib/client/media-stats/RatingsChart";
 import {getMediaNaming} from "@/lib/client/media-stats/stats-utils";
-import {ChartColumn, Clock, Heart, Play, Star, Tag} from "lucide-react";
+import {MainThemeIcon} from "@/lib/client/components/general/MainIcons";
 import {TopAffinityCard} from "@/lib/client/media-stats/TopAffinityCard";
+import {ChartColumn, Clock, Heart, Layers, Play, Star} from "lucide-react";
 import {DistributionChart} from "@/lib/client/media-stats/DistributionChart";
 import {StatusDistribution} from "@/lib/client/media-stats/StatusDistribution";
-import {MainThemeIcon} from "@/lib/client/components/general/MainIcons";
 import {capitalize, formatCurrency, formatHours, formatNumber} from "@/lib/utils/formating";
-import {formatAvgRating} from "@/lib/utils/ratings";
 
 
 interface MediaTypeDashboardProps {
@@ -65,9 +65,9 @@ export function MediaTypeDashboard({ stats }: MediaTypeDashboardProps) {
                     value={formatNumber(stats.totalFavorites)}
                 />
                 <StatCard
-                    title="Total Labels"
-                    icon={<Tag className="size-4"/>}
-                    value={formatNumber(specificMediaStats.totalLabels)}
+                    title="Total Collections"
+                    value={formatNumber(specificMediaStats.totalCollections)}
+                    icon={<Layers className="size-4"/>}
                 />
             </div>
 
@@ -80,6 +80,7 @@ export function MediaTypeDashboard({ stats }: MediaTypeDashboardProps) {
                 <DistributionChart
                     height={300}
                     enableBinning={true}
+                    mediaType={mediaType}
                     data={stats.specificMediaStats.durationDistrib}
                     title={getMediaNaming(mediaType).durationDistribution}
                     unit={getMediaNaming(mediaType).durationDistributionUnit}
@@ -87,6 +88,7 @@ export function MediaTypeDashboard({ stats }: MediaTypeDashboardProps) {
                 <DistributionChart
                     height={300}
                     enableBinning={true}
+                    mediaType={mediaType}
                     title="Release Dates Distribution"
                     data={stats.specificMediaStats.releaseDates}
                 />
@@ -98,6 +100,7 @@ export function MediaTypeDashboard({ stats }: MediaTypeDashboardProps) {
                 />
                 <DistributionChart
                     height={300}
+                    mediaType={mediaType}
                     title="Updates per Month"
                     data={stats.updatesDistribution}
                 />

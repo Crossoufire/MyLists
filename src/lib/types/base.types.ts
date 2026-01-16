@@ -111,14 +111,14 @@ export type AddedMediaDetails = {
 
 export type ExpandedListFilters = {
     genres: NameObj[];
-    labels: NameObj[];
+    collections: NameObj[];
     langs?: NameObj[];
     platforms?: { name: GamesPlatformsEnum }[];
 };
 
 
-export type UserMediaWithLabels<TList> = TList & {
-    labels: NameObj[],
+export type UserMediaWithCollections<TList> = TList & {
+    collections: NameObj[],
     ratingSystem: RatingSystemType,
 };
 
@@ -137,7 +137,7 @@ export type MediaListData<TList> = {
         mediaName: string;
         chapters?: number;
         imageCover: string;
-        labels: IdNamePair[];
+        collections: IdNamePair[];
         ratingSystem: RatingSystemType;
         epsPerSeason?: EpsPerSeasonType[];
     })[];
@@ -166,14 +166,14 @@ export type SimpleMedia = {
 
 export type LogPayloadDb = { old_value: any; new_value: any };
 
-export type Label = { oldName?: string, name: string };
+export type Collection = { oldName?: string, name: string };
 
 export type SheetFilterObject = {
     job?: JobType;
     title: string;
     key: keyof MediaListArgs;
     type: "checkbox" | "search";
-    renderLabel?: (name: string, mediaType: MediaType) => string;
+    render?: (name: string, mediaType: MediaType) => string;
     getItems?: (data: ListFiltersOptionsType) => { name: string }[] | undefined;
 };
 

@@ -257,7 +257,7 @@ export class BooksRepository extends BaseRepository<MangaSchemaConfig> {
     }
 
     async getListFilters(userId: number) {
-        const { genres, labels } = await super.getCommonListFilters(userId);
+        const { genres, collections } = await super.getCommonListFilters(userId);
 
         const langs = await getDbClient()
             .selectDistinct({ name: sql<string>`${books.language}` })
@@ -265,6 +265,6 @@ export class BooksRepository extends BaseRepository<MangaSchemaConfig> {
             .innerJoin(booksList, eq(booksList.mediaId, books.id))
             .where(and(eq(booksList.userId, userId), isNotNull(books.language)));
 
-        return { langs, genres, labels };
+        return { langs, genres, collections };
     }
 }

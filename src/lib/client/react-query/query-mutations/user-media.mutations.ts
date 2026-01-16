@@ -1,15 +1,15 @@
 import {SearchType} from "@/lib/types/zod.schema.types";
-import {LabelAction, MediaType} from "@/lib/utils/enums";
-import {Label, UpdatePayload} from "@/lib/types/base.types";
+import {CollectionAction, MediaType} from "@/lib/utils/enums";
+import {Collection, UpdatePayload} from "@/lib/types/base.types";
 import {useMutation, useQueryClient} from "@tanstack/react-query";
-import {postAddMediaToList, postDeleteUserUpdates, postEditUserLabel, postRemoveMediaFromList, postUpdateUserMedia} from "@/lib/server/functions/user-media";
+import {postAddMediaToList, postDeleteUserUpdates, postEditUserCollection, postRemoveMediaFromList, postUpdateUserMedia} from "@/lib/server/functions/user-media";
 import {
     allUpdatesOptions,
     historyOptions,
     mediaDetailsOptions,
     mediaListOptions,
     profileOptions,
-    userMediaLabelsOptions
+    userCollectionsOptions
 } from "@/lib/client/react-query/query-options/query-options";
 
 
@@ -162,26 +162,26 @@ export const useUpdateUserMediaMutation = (mediaType: MediaType, mediaId: number
 };
 
 
-export const useEditUserLabelMutation = (mediaType: MediaType, mediaId: number) => {
+export const useEditUserCollectionMutation = (mediaType: MediaType, mediaId: number) => {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: ({ label, action }: { label: Label, action: LabelAction }) => {
-            return postEditUserLabel({ data: { mediaType, mediaId, label, action } });
+        mutationFn: ({ collection, action }: { collection: Collection, action: CollectionAction }) => {
+            return postEditUserCollection({ data: { mediaType, mediaId, collection, action } });
         },
-        meta: { errorMessage: "Failed to edit this label" },
+        meta: { errorMessage: "Failed to edit this collection" },
         onSuccess: (data, variables) => {
-            queryClient.setQueryData(userMediaLabelsOptions(mediaType, false).queryKey, (oldData) => {
+            queryClient.setQueryData(userCollectionsOptions(mediaType, false).queryKey, (oldData) => {
                 if (!oldData || !data) return;
 
                 if (variables.action === "add") {
                     return oldData.map(l => l?.name).includes(data?.name ?? "") ? oldData : [...oldData, data];
                 }
                 else if (variables.action === "rename") {
-                    return oldData.map(l => l?.name === variables.label.oldName ? data : l);
+                    return oldData.map(l => l?.name === variables.collection.oldName ? data : l);
                 }
                 else if (variables.action === "deleteAll") {
-                    return oldData.filter(l => l?.name !== variables.label.name);
+                    return oldData.filter(l => l?.name !== variables.collection.name);
                 }
             });
         }

@@ -1,7 +1,6 @@
 import {useState} from "react";
 import {statusUtils} from "@/lib/utils/mapping";
 import {capitalize} from "@/lib/utils/formating";
-import {MediaType, Status} from "@/lib/utils/enums";
 import {useAuth} from "@/lib/client/hooks/use-auth";
 import {createFileRoute} from "@tanstack/react-router";
 import {useSuspenseQuery} from "@tanstack/react-query";
@@ -11,20 +10,13 @@ import {PageTitle} from "@/lib/client/components/general/PageTitle";
 import {Pagination} from "@/lib/client/components/general/Pagination";
 import {MediaGrid} from "@/lib/client/components/media/base/MediaGrid";
 import {MediaTable} from "@/lib/client/components/media/base/MediaTable";
-import {TabHeader, TabItem} from "@/lib/client/components/general/TabHeader";
 import {AppliedFilters} from "@/lib/client/components/media/base/AppliedFilters";
 import {FiltersSideSheet} from "@/lib/client/components/media/base/FiltersSideSheet";
 import {mediaListOptions} from "@/lib/client/react-query/query-options/query-options";
 
 
-export const Route = createFileRoute("/_main/_private/list/$mediaType/$username")({
-    params: {
-        parse: (params) => ({
-            username: params.username,
-            mediaType: params.mediaType as MediaType,
-        })
-    },
-    validateSearch: (search) => search as MediaListArgs,
+export const Route = createFileRoute("/_main/_private/list/$mediaType/$username/_header/")({
+    validateSearch: (search) => search as MediaListArgs & { view?: "grid" | "list" },
     loaderDeps: ({ search }) => ({ search }),
     loader: async ({ context: { queryClient }, params: { mediaType, username }, deps: { search } }) => {
         return queryClient.ensureQueryData(mediaListOptions(mediaType, username, search));
@@ -39,11 +31,18 @@ function MediaList() {
     const navigate = Route.useNavigate();
     const { username, mediaType } = Route.useParams();
     const allStatuses = statusUtils.byMediaType(mediaType);
-    const [isGrid, setIsGrid] = useState(currentUser?.gridListView ?? true);
     const [filtersPanelOpen, setFiltersPanelOpen] = useState(false);
     const apiData = useSuspenseQuery(mediaListOptions(mediaType, username, filters)).data;
 
     const isCurrent = (currentUser?.id === apiData.userData.id);
+    const isGrid = filters.view ? filters.view === "grid" : (currentUser?.gridListView ?? true);
+
+    const handleGridToggle = () => {
+        void navigate({
+            search: (prev) => ({ ...prev, view: isGrid ? "list" : "grid" }),
+            replace: true,
+        });
+    };
 
     const handleFilterChange = (newFilters: Partial<MediaListArgs>) => {
         const page = newFilters.page || 1;
@@ -78,32 +77,22 @@ function MediaList() {
 
                 return { ...updatedSearch, page };
             },
+            resetScroll: false,
         });
     };
 
-    const statusTabs: TabItem<Status | "all">[] = [
-        {
-            id: "all",
-            label: "All",
-            isAccent: true,
-        },
-        ...allStatuses.map((status) => ({
-            id: status,
-            label: status,
-        }))
-    ];
-
     return (
-        <PageTitle title={`${username} ${capitalize(mediaType)} Collection`} onlyHelmet>
+        <PageTitle title={`${username} ${capitalize(mediaType)} List`} onlyHelmet>
             <Header
                 isGrid={isGrid}
-                username={username}
-                mediaType={mediaType}
-                userData={apiData.userData}
+                filters={filters}
+                allStatuses={allStatuses}
+                onGridClick={handleGridToggle}
                 pagination={apiData.results.pagination}
-                onGridClick={() => setIsGrid(!isGrid)}
                 onFilterClick={() => setFiltersPanelOpen(true)}
                 onSortChange={({ sort }) => handleFilterChange({ sort })}
+                onSearchChange={({ search }) => handleFilterChange({ search })}
+                onStatusChange={({ status }) => handleFilterChange({ status })}
             />
             <AppliedFilters
                 filters={filters}
@@ -111,42 +100,41 @@ function MediaList() {
                 totalItems={apiData.results.pagination.totalItems}
                 onFilterRemove={(filters) => handleFilterChange(filters)}
             />
-            <div className="mt-2 mb-6">
-                <TabHeader
-                    tabs={statusTabs}
-                    activeTab={filters?.status?.[0] ?? "all"}
-                    setActiveTab={(status) => {
-                        // @ts-expect-error - Can be "all"
-                        handleFilterChange({ status: [...(filters.status || []), status] });
-                    }}
-                />
+            <div className="animate-in fade-in duration-500 mt-2">
+                {isGrid ?
+                    <MediaGrid
+                        isCurrent={isCurrent}
+                        mediaType={mediaType}
+                        mediaItems={apiData.results.items}
+                        queryOption={mediaListOptions(mediaType, username, filters)}
+                    />
+                    :
+                    <MediaTable
+                        filters={filters}
+                        mediaType={mediaType}
+                        isCurrent={isCurrent}
+                        results={apiData.results}
+                        queryOption={mediaListOptions(mediaType, username, filters)}
+                        onChangePage={(filters) => handleFilterChange(filters)}
+                    />
+                }
             </div>
 
-            {isGrid ?
-                <MediaGrid
-                    isCurrent={isCurrent}
-                    mediaType={mediaType}
-                    mediaItems={apiData.results.items}
-                    queryOption={mediaListOptions(mediaType, username, filters)}
-                />
-                :
-                <MediaTable
-                    mediaType={mediaType}
-                    isCurrent={isCurrent}
-                    results={apiData.results}
-                    queryOption={mediaListOptions(mediaType, username, filters)}
-                    onChangePage={(filters) => handleFilterChange(filters)}
-                />
-            }
             {isGrid &&
-                <Pagination
-                    currentPage={apiData.results.pagination.page}
-                    totalPages={apiData.results.pagination.totalPages}
-                    onChangePage={(page) => handleFilterChange({ page })}
-                />
+                <div className="mt-8">
+                    <Pagination
+                        currentPage={apiData.results.pagination.page}
+                        totalPages={apiData.results.pagination.totalPages}
+                        onChangePage={(page) => handleFilterChange({ page })}
+                    />
+                </div>
             }
+
             {filtersPanelOpen &&
                 <FiltersSideSheet
+                    filters={filters}
+                    username={username}
+                    mediaType={mediaType}
                     isCurrent={isCurrent}
                     onClose={() => setFiltersPanelOpen(false)}
                     onFilterApply={(filters) => handleFilterChange(filters)}

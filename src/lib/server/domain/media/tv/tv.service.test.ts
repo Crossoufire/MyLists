@@ -1,5 +1,5 @@
 import {getContainer} from "@/lib/server/core/container";
-import type {UserMediaWithLabels} from "@/lib/types/base.types";
+import type {UserMediaWithCollections} from "@/lib/types/base.types";
 import {MediaType, RatingSystemType, Status} from "@/lib/utils/enums";
 import {afterEach, beforeEach, describe, expect, it, vi} from "vitest";
 import type {TvList, TvType} from "@/lib/server/domain/media/tv/tv.types";
@@ -73,9 +73,9 @@ describe("TvService", () => {
                 ...overrides,
             });
 
-            const makeUserState = (overrides: Partial<UserMediaWithLabels<TvList>>): UserMediaWithLabels<TvList> => ({
+            const makeUserState = (overrides: Partial<UserMediaWithCollections<TvList>>): UserMediaWithCollections<TvList> => ({
                 ...makeState(overrides),
-                labels: [],
+                collections: [],
                 ratingSystem: RatingSystemType.SCORE,
             });
 

@@ -6,7 +6,7 @@ import {createFileRoute, Link} from "@tanstack/react-router";
 import {MediaType, RatingSystemType, Status} from "@/lib/utils/enums";
 import {UserMediaDetails} from "@/lib/client/components/media/base/UserMediaDetails";
 import {mediaDetailsOptions} from "@/lib/client/react-query/query-options/query-options";
-import {ExternalLink, Heart, List, MessageCircle, Plus, RotateCcw, Star, Tags} from "lucide-react";
+import {ExternalLink, Heart, Layers, List, MessageCircle, Plus, RotateCcw, Star} from "lucide-react";
 import {
     OnboardingContainer,
     OnboardingDemoBox,
@@ -128,11 +128,11 @@ function RouteComponent() {
                         description="Add a comment for this media. This can be use for filtering in your list."
                     />
                     <OnboardingFeatureCard
-                        icon={Tags}
-                        title="Labels"
+                        icon={Layers}
+                        title="Collections"
                         description={`
-                            Create or Add labels to a media to personalize and organization your list. 
-                            For example creating the 'Top SF' label and adding it to all the media that you want to 
+                            Create/Add a media to a collections to personalize and organize your list. 
+                            For example creating the 'Top SF' collection and adding it to all the media that you want to 
                             retrieve these media more easily in your list using the filtering system.
                         `}
                     />

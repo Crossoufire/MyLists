@@ -4,7 +4,7 @@ import {relations} from "drizzle-orm/relations";
 import {user} from "@/lib/server/database/schema/auth.schema";
 import {customJson} from "@/lib/server/database/custom-types";
 import {integer, real, sqliteTable, text} from "drizzle-orm/sqlite-core";
-import {communGenericCols, communMediaCols, communMediaEpsCols, communMediaLabelsCols, communMediaListCols} from "@/lib/server/database/schema/media/_helper";
+import {communGenericCols, communMediaCollectionsCols, communMediaCols, communMediaEpsCols, communMediaListCols} from "@/lib/server/database/schema/media/_helper";
 
 
 export const anime = sqliteTable("anime", {
@@ -58,8 +58,8 @@ export const animeEpisodesPerSeason = sqliteTable("anime_episodes_per_season", {
 });
 
 
-export const animeLabels = sqliteTable("anime_labels", {
-    ...communMediaLabelsCols(anime.id),
+export const animeCollections = sqliteTable("anime_collections", {
+    ...communMediaCollectionsCols(anime.id),
 });
 
 
@@ -74,7 +74,7 @@ export const animeEpisodesPerSeasonRelations = relations(animeEpisodesPerSeason,
 export const animeRelations = relations(anime, ({ many }) => ({
     animeEpisodesPerSeasons: many(animeEpisodesPerSeason),
     animeGenres: many(animeGenre),
-    animeLabels: many(animeLabels),
+    animeCollections: many(animeCollections),
     animeNetworks: many(animeNetwork),
     animeLists: many(animeList),
 }));
@@ -108,13 +108,13 @@ export const animeNetworkRelations = relations(animeNetwork, ({ one }) => ({
 }));
 
 
-export const animeLabelsRelations = relations(animeLabels, ({ one }) => ({
+export const animeCollectionsRelations = relations(animeCollections, ({ one }) => ({
     user: one(user, {
-        fields: [animeLabels.userId],
+        fields: [animeCollections.userId],
         references: [user.id]
     }),
     anime: one(anime, {
-        fields: [animeLabels.mediaId],
+        fields: [animeCollections.mediaId],
         references: [anime.id]
     }),
 }));

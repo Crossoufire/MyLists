@@ -8,7 +8,7 @@ import {Button} from "@/lib/client/components/ui/button";
 import {ListSettings} from "@/lib/types/zod.schema.types";
 import {Separator} from "@/lib/client/components/ui/separator";
 import {CircleHelp, Download, TriangleAlert} from "lucide-react";
-import {saveAsFile, convertToCsv} from "@/lib/utils/blob-download";
+import {convertToCsv, saveAsFile} from "@/lib/utils/blob-download";
 import {ApiProviderType, MediaType, RatingSystemType} from "@/lib/utils/enums";
 import {MainThemeIcon} from "@/lib/client/components/general/MainIcons";
 import {Popover, PopoverContent, PopoverTrigger} from "@/lib/client/components/ui/popover";
@@ -213,7 +213,7 @@ export const MediaListForm = () => {
                             control={form.control}
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>List View Mode</FormLabel>
+                                    <FormLabel>Default List View Mode</FormLabel>
                                     <Select onValueChange={(v) => field.onChange(v === "grid")} value={field.value ? "grid" : "table"}>
                                         <FormControl>
                                             <SelectTrigger className="w-full">

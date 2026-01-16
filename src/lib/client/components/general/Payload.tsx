@@ -37,13 +37,13 @@ export const Payload = ({ update, username }: PayloadProps) => {
             );
 
         case UpdateType.REDO: {
-            const label = mediaType === MediaType.BOOKS ? "Re-read" : "Re-watched";
+            const name = mediaType === MediaType.BOOKS ? "Re-read" : "Re-watched";
             const suffix = mediaType === MediaType.SERIES || mediaType === MediaType.ANIME ? "x S." : "x";
             return (
                 <PayloadLayout
                     username={username}
                     newVal={`${newValue}${suffix}`}
-                    oldVal={`${label} ${oldValue}${suffix}`}
+                    oldVal={`${name} ${oldValue}${suffix}`}
                 />
             );
         }

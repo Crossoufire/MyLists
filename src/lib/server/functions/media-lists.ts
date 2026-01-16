@@ -1,10 +1,34 @@
+import {z} from "zod";
+import {MediaType} from "@/lib/utils/enums";
 import {createServerFn} from "@tanstack/react-start";
-import {getContainer} from "@/lib/server/core/container";
 import {tryNotFound} from "@/lib/utils/try-not-found";
+import {getContainer} from "@/lib/server/core/container";
 import {FormattedError} from "@/lib/utils/error-classes";
 import {authorizationMiddleware} from "@/lib/server/middlewares/authorization";
 import {MediaListDataByType} from "@/lib/server/domain/media/base/base.repository";
 import {mediaListFiltersSchema, mediaListSchema, mediaListSearchFiltersSchema} from "@/lib/types/zod.schema.types";
+
+
+export const getUserListHeaderSF = createServerFn({ method: "GET" })
+    .middleware([authorizationMiddleware])
+    .inputValidator(z.object({ username: z.string(), mediaType: z.enum(MediaType) }))
+    .handler(async ({ data: { mediaType }, context: { currentUser, user } }) => {
+        const container = await getContainer();
+
+        const targetUserId = user.id;
+        const userService = container.services.user;
+
+        const userHasMediaTypeActive = await userService.hasActiveMediaType(targetUserId, mediaType);
+        if (!userHasMediaTypeActive) {
+            throw new FormattedError("MediaType not-activated");
+        }
+
+        if (currentUser && currentUser.id !== targetUserId) {
+            await userService.incrementMediaTypeView(targetUserId, mediaType);
+        }
+
+        return { userData: user, mediaType };
+    })
 
 
 export const getMediaListServerFunction = createServerFn({ method: "GET" })
@@ -31,6 +55,16 @@ export const getMediaListServerFunction = createServerFn({ method: "GET" })
         const results = await mediaService.getMediaList(currentUserId, targetUserId, args) as MediaListDataByType[typeof mediaType];
 
         return { userData: user, mediaType, results };
+    });
+
+
+export const getCollectionsAndMediaFn = createServerFn({ method: "GET" })
+    .middleware([authorizationMiddleware])
+    .inputValidator(z.object({ username: z.string(), mediaType: z.enum(MediaType) }))
+    .handler(async ({ data: { mediaType }, context: { user } }) => {
+        const mediaServiceRegistry = await getContainer().then((c) => c.registries.mediaService);
+        const mediaService = mediaServiceRegistry.getService(mediaType);
+        return mediaService.getUserCollections(user.id);
     });
 
 

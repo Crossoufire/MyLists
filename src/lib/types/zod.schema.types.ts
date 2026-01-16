@@ -2,9 +2,9 @@ import * as z from "zod";
 import {
     AchievementDifficulty,
     ApiProviderType,
+    CollectionAction,
     GamesPlatformsEnum,
     JobType,
-    LabelAction,
     MediaType,
     PrivacyType,
     RatingSystemType,
@@ -86,7 +86,7 @@ const mediaListArgsSchema = z.object({
     hideCommon: z.coerce.boolean().optional().catch(undefined),
     status: z.array(z.enum(Status)).optional().catch(undefined),
     genres: z.array(z.string()).optional().catch(undefined),
-    labels: z.array(z.string()).optional().catch(undefined),
+    collections: z.array(z.string()).optional().catch(undefined),
     langs: z.array(z.string()).optional().catch(undefined),
     directors: z.array(z.string()).optional().catch(undefined),
     publishers: z.array(z.string()).optional().catch(undefined),
@@ -130,7 +130,7 @@ export const navbarSearchSchema = z.object({
     page: z.coerce.number().int().positive(),
 });
 
-const labelSchema = z.object({
+const collectionSchema = z.object({
     name: z.string(),
     oldName: z.string().optional(),
 });
@@ -178,14 +178,14 @@ export const deleteUserUpdatesSchema = z.object({
     updateIds: z.array(z.number().int().positive()),
 });
 
-export const userMediaLabelsSchema = z.object({
+export const userMediaCollectionsSchema = z.object({
     mediaType: z.enum(MediaType),
 });
 
-export const editUserLabelSchema = z.object({
-    label: labelSchema,
-    action: z.enum(LabelAction),
+export const editUserCollectionsSchema = z.object({
+    collection: collectionSchema,
     mediaType: z.enum(MediaType),
+    action: z.enum(CollectionAction),
     mediaId: z.coerce.number().int().positive(),
 });
 

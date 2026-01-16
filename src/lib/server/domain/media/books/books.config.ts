@@ -3,14 +3,14 @@ import {JobType, MediaType, Status} from "@/lib/utils/enums";
 import {MediaSchemaConfig} from "@/lib/types/media.config.types";
 import {createArrayFilterDef} from "@/lib/server/domain/media/base/base.repository";
 import {booksAchievements} from "@/lib/server/domain/media/books/achievements.seed";
-import {books, booksAuthors, booksGenre, booksLabels, booksList} from "@/lib/server/database/schema/media/books.schema";
+import {books, booksAuthors, booksCollections, booksGenre, booksList} from "@/lib/server/database/schema/media/books.schema";
 
 
 export type MangaSchemaConfig = MediaSchemaConfig<
     typeof books,
     typeof booksList,
     typeof booksGenre,
-    typeof booksLabels
+    typeof booksCollections
 >;
 
 
@@ -18,7 +18,7 @@ export const booksConfig: MangaSchemaConfig = {
     mediaTable: books,
     listTable: booksList,
     genreTable: booksGenre,
-    labelTable: booksLabels,
+    collectionTable: booksCollections,
     mediaType: MediaType.BOOKS,
     mediaList: {
         baseSelection: {
@@ -68,6 +68,6 @@ export const booksConfig: MangaSchemaConfig = {
             mediaIdColumn: booksAuthors.mediaId,
         },
     },
-    tablesForDeletion: [booksAuthors, booksGenre, booksLabels],
+    tablesForDeletion: [booksAuthors, booksGenre, booksCollections],
     achievements: booksAchievements,
 };

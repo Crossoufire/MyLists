@@ -3,15 +3,14 @@ import {useQuery} from "@tanstack/react-query";
 import {Badge} from "@/lib/client/components/ui/badge";
 import {Button} from "@/lib/client/components/ui/button";
 import {MediaListArgs} from "@/lib/types/zod.schema.types";
-import {useParams, useSearch} from "@tanstack/react-router";
 import {Checkbox} from "@/lib/client/components/ui/checkbox";
 import {EmptyState} from "@/lib/client/components/general/EmptyState";
-import {GamesPlatformsEnum, JobType, Status} from "@/lib/utils/enums";
 import {mediaConfig} from "@/lib/client/components/media/media-config";
 import {ProfileIcon} from "@/lib/client/components/general/ProfileIcon";
 import {SearchInput} from "@/lib/client/components/general/SearchInput";
 import {useSearchContainer} from "@/lib/client/hooks/use-search-container";
 import {SearchContainer} from "@/lib/client/components/general/SearchContainer";
+import {GamesPlatformsEnum, JobType, MediaType, Status} from "@/lib/utils/enums";
 import {ChevronDown, ChevronUp, CircleHelp, LoaderCircle, X} from "lucide-react";
 import {Popover, PopoverContent, PopoverTrigger} from "@/lib/client/components/ui/popover";
 import {filterSearchOptions, listFiltersOptions} from "@/lib/client/react-query/query-options/query-options";
@@ -19,16 +18,17 @@ import {Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTi
 
 
 interface FiltersSideSheetProps {
+    username: string;
     isCurrent: boolean;
     onClose: () => void;
+    mediaType: MediaType;
+    filters: MediaListArgs;
     onFilterApply: (filters: Partial<MediaListArgs>) => void;
 }
 
 
-export const FiltersSideSheet = ({ isCurrent, onClose, onFilterApply }: FiltersSideSheetProps) => {
+export const FiltersSideSheet = ({ filters, username, mediaType, isCurrent, onClose, onFilterApply }: FiltersSideSheetProps) => {
     const localFiltersRef = useRef<Partial<MediaListArgs>>({});
-    const search = useSearch({ from: "/_main/_private/list/$mediaType/$username" });
-    const { username, mediaType } = useParams({ from: "/_main/_private/list/$mediaType/$username" });
     const { data: listFilters, isPending, error } = useQuery(listFiltersOptions(mediaType, username));
 
     const activeFiltersConfig = mediaConfig[mediaType].sheetFilters();
@@ -103,7 +103,7 @@ export const FiltersSideSheet = ({ isCurrent, onClose, onFilterApply }: FiltersS
                                         title="Genres"
                                         items={listFilters?.genres ?? []}
                                         onChange={(genre) => handleRegisterChange("genres", [genre])}
-                                        defaultChecked={(genre) => search.genres?.includes(genre) ?? false}
+                                        defaultChecked={(genre) => filters.genres?.includes(genre) ?? false}
                                     />
                                     {activeFiltersConfig.map((filter) => {
                                         if (filter.type === "checkbox" && filter.getItems) {
@@ -115,8 +115,8 @@ export const FiltersSideSheet = ({ isCurrent, onClose, onFilterApply }: FiltersS
                                                         items={items}
                                                         title={filter.title}
                                                         onChange={(val) => handleRegisterChange(filter.key, [val])}
-                                                        defaultChecked={(val) => (search as any)?.[filter.key]?.includes(val) ?? false}
-                                                        renderLabel={(name) => filter.renderLabel ? filter.renderLabel(name, mediaType) : name}
+                                                        render={(name) => filter.render ? filter.render(name, mediaType) : name}
+                                                        defaultChecked={(val) => (filters as any)?.[filter.key]?.includes(val) ?? false}
                                                     />
                                                 </React.Fragment>
                                             );
@@ -126,9 +126,11 @@ export const FiltersSideSheet = ({ isCurrent, onClose, onFilterApply }: FiltersS
                                                 <div key={filter.key} className="mb-4">
                                                     <SearchFilter
                                                         job={filter.job!}
+                                                        username={username}
                                                         title={filter.title}
+                                                        mediaType={mediaType}
                                                         filterKey={filter.key}
-                                                        dataList={(search as any)?.[filter.key] ?? []}
+                                                        dataList={(filters as any)?.[filter.key] ?? []}
                                                         registerChange={(key, val) => handleRegisterChange(key, val)}
                                                     />
                                                 </div>
@@ -144,7 +146,7 @@ export const FiltersSideSheet = ({ isCurrent, onClose, onFilterApply }: FiltersS
                                             <div className="flex items-center space-x-2">
                                                 <Checkbox
                                                     id="favoriteCheck"
-                                                    defaultChecked={search.favorite}
+                                                    defaultChecked={filters.favorite}
                                                     onCheckedChange={(checked) => handleRegisterChange("favorite", !!checked)}
                                                 />
                                                 <label htmlFor="favoriteCheck" className="text-sm cursor-pointer">
@@ -154,7 +156,7 @@ export const FiltersSideSheet = ({ isCurrent, onClose, onFilterApply }: FiltersS
                                             <div className="flex items-center space-x-2">
                                                 <Checkbox
                                                     id="commentCheck"
-                                                    defaultChecked={search.comment}
+                                                    defaultChecked={filters.comment}
                                                     onCheckedChange={(checked) => handleRegisterChange("comment", !!checked)}
                                                 />
                                                 <label htmlFor="commentCheck" className="text-sm cursor-pointer">
@@ -165,7 +167,7 @@ export const FiltersSideSheet = ({ isCurrent, onClose, onFilterApply }: FiltersS
                                                 <div className="flex items-center space-x-2">
                                                     <Checkbox
                                                         id="commonCheck"
-                                                        defaultChecked={search?.hideCommon ?? false}
+                                                        defaultChecked={filters?.hideCommon ?? false}
                                                         onCheckedChange={(checked) => handleRegisterChange("hideCommon", !!checked)}
                                                     />
                                                     <label htmlFor="commonCheck" className="text-sm cursor-pointer">
@@ -176,10 +178,10 @@ export const FiltersSideSheet = ({ isCurrent, onClose, onFilterApply }: FiltersS
                                         </div>
                                     </div>
                                     <CheckboxGroup
-                                        title="Labels"
-                                        items={listFilters?.labels ?? []}
-                                        defaultChecked={(label) => search.labels?.includes(label) ?? false}
-                                        onChange={(label) => handleRegisterChange("labels", [label])}
+                                        title="Collections"
+                                        items={listFilters?.collections ?? []}
+                                        onChange={(col) => handleRegisterChange("collections", [col])}
+                                        defaultChecked={(col) => filters.collections?.includes(col) ?? false}
                                     />
                                 </div>
                         }
@@ -198,14 +200,14 @@ export const FiltersSideSheet = ({ isCurrent, onClose, onFilterApply }: FiltersS
 
 interface CheckboxGroupProps {
     title: string;
-    renderLabel?: (name: string) => string;
+    render?: (name: string) => string;
     items: { name: string }[] | { name: GamesPlatformsEnum }[];
     onChange: (v: string | Status | GamesPlatformsEnum) => void;
     defaultChecked: (v: string | Status | GamesPlatformsEnum) => boolean;
 }
 
 
-const CheckboxGroup = ({ title, items, onChange, defaultChecked, renderLabel }: CheckboxGroupProps) => {
+const CheckboxGroup = ({ title, items, onChange, defaultChecked, render }: CheckboxGroupProps) => {
     const initVisibleItems = 14;
     const [showAll, setShowAll] = useState(false);
     const visibleItems = showAll ? items : items.slice(0, initVisibleItems);
@@ -234,7 +236,7 @@ const CheckboxGroup = ({ title, items, onChange, defaultChecked, renderLabel }: 
                                 onCheckedChange={() => onChange(item.name)}
                             />
                             <label htmlFor={item.name + "-id"} className="text-sm cursor-pointer line-clamp-1">
-                                {renderLabel ? renderLabel(item.name) : item.name}
+                                {render ? render(item.name) : item.name}
                             </label>
                         </div>
                     )
@@ -292,15 +294,16 @@ const FilterInfoPopover = () => (
 interface SearchFilterProps {
     job: JobType;
     title: string;
+    username: string;
     dataList: string[];
+    mediaType: MediaType;
     filterKey: keyof MediaListArgs;
     registerChange: (filterType: keyof MediaListArgs, value: string[]) => void;
 }
 
 
-const SearchFilter = ({ filterKey, job, title, dataList, registerChange }: SearchFilterProps) => {
+const SearchFilter = ({ mediaType, username, filterKey, job, title, dataList, registerChange }: SearchFilterProps) => {
     const [selectedData, setSelectedData] = useState(dataList ?? []);
-    const { mediaType, username } = useParams({ from: "/_main/_private/list/$mediaType/$username" });
     const { search, setSearch, debouncedSearch, isOpen, reset, containerRef } = useSearchContainer();
     const { data: filterResults, isPending, error } = useQuery(filterSearchOptions(mediaType, username, debouncedSearch, job));
 

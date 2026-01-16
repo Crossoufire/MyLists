@@ -346,13 +346,13 @@ export class GamesRepository extends BaseRepository<GamesSchemaConfig> {
     }
 
     async getListFilters(userId: number) {
-        const { genres, labels } = await super.getCommonListFilters(userId);
+        const { genres, collections } = await super.getCommonListFilters(userId);
 
         const platforms = await getDbClient()
             .selectDistinct({ name: sql<GamesPlatformsEnum>`${gamesList.platform}` })
             .from(gamesList)
             .where(and(eq(gamesList.userId, userId), isNotNull(gamesList.platform)));
 
-        return { platforms, genres, labels };
+        return { platforms, genres, collections };
     }
 }

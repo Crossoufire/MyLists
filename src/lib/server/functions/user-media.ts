@@ -3,7 +3,14 @@ import {createServerFn} from "@tanstack/react-start";
 import {getContainer} from "@/lib/server/core/container";
 import {authMiddleware} from "@/lib/server/middlewares/authentication";
 import {transactionMiddleware} from "@/lib/server/middlewares/transaction";
-import {addMediaToListSchema, deleteUserUpdatesSchema, editUserLabelSchema, mediaActionSchema, updateUserMediaSchema, userMediaLabelsSchema} from "@/lib/types/zod.schema.types";
+import {
+    addMediaToListSchema,
+    deleteUserUpdatesSchema,
+    editUserCollectionsSchema,
+    mediaActionSchema,
+    updateUserMediaSchema,
+    userMediaCollectionsSchema
+} from "@/lib/types/zod.schema.types";
 
 
 export const getUserMediaHistory = createServerFn({ method: "GET" })
@@ -94,21 +101,21 @@ export const postDeleteUserUpdates = createServerFn({ method: "POST" })
     });
 
 
-export const getUserMediaLabels = createServerFn({ method: "GET" })
+export const getUserMediaCollections = createServerFn({ method: "GET" })
     .middleware([authMiddleware])
-    .inputValidator(userMediaLabelsSchema)
+    .inputValidator(userMediaCollectionsSchema)
     .handler(async ({ data: { mediaType }, context: { currentUser } }) => {
         const container = await getContainer();
         const mediaService = container.registries.mediaService.getService(mediaType);
-        return mediaService.getUserMediaLabels(currentUser.id);
+        return mediaService.getUserMediaCollections(currentUser.id);
     });
 
 
-export const postEditUserLabel = createServerFn({ method: "POST" })
+export const postEditUserCollection = createServerFn({ method: "POST" })
     .middleware([authMiddleware, transactionMiddleware])
-    .inputValidator(editUserLabelSchema)
-    .handler(async ({ data: { mediaType, mediaId, label, action }, context: { currentUser } }) => {
+    .inputValidator(editUserCollectionsSchema)
+    .handler(async ({ data: { mediaType, mediaId, collection, action }, context: { currentUser } }) => {
         const container = await getContainer();
         const mediaService = container.registries.mediaService.getService(mediaType);
-        return mediaService.editUserLabel(currentUser.id, label, mediaId, action);
+        return mediaService.editUserCollection(currentUser.id, collection, mediaId, action);
     });

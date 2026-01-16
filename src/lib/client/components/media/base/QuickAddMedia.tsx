@@ -24,7 +24,7 @@ export const QuickAddMedia = ({ mediaType, mediaId, allStatuses, queryOption }: 
     return (
         <Popover>
             <PopoverTrigger className="opacity-70 hover:opacity-90 transition-opacity">
-                <CirclePlus className="size-5"/>
+                <CirclePlus className="size-4"/>
             </PopoverTrigger>
             <PopoverContent align="end" className="w-40 py-2 px-2 text-sm">
                 <div className="text-[10px] uppercase tracking-wide text-muted-foreground px-3 mb-2">

@@ -2,16 +2,16 @@ import {notFound} from "@tanstack/react-router";
 import {DeltaStats} from "@/lib/types/stats.types";
 import {FormattedError} from "@/lib/utils/error-classes";
 import {Achievement} from "@/lib/types/achievements.types";
-import {JobType, LabelAction, Status, UpdateType} from "@/lib/utils/enums";
+import {CollectionAction, JobType, Status, UpdateType} from "@/lib/utils/enums";
 import {BaseRepository} from "@/lib/server/domain/media/base/base.repository";
 import {BaseProviderService} from "@/lib/server/domain/media/base/provider.service";
 import {MediaListArgs, SearchType, UpdateUserMedia} from "@/lib/types/zod.schema.types";
-import {GenreTable, LabelTable, ListTable, MediaSchemaConfig, MediaTable} from "@/lib/types/media.config.types";
-import {Label, StatsCTE, UpdateHandlerFn, UpdateUserMediaDetails, UserMediaWithLabels} from "@/lib/types/base.types";
+import {CollectionTable, GenreTable, ListTable, MediaSchemaConfig, MediaTable} from "@/lib/types/media.config.types";
+import {Collection, StatsCTE, UpdateHandlerFn, UpdateUserMediaDetails, UserMediaWithCollections} from "@/lib/types/base.types";
 
 
 export abstract class BaseService<
-    TConfig extends MediaSchemaConfig<MediaTable, ListTable, GenreTable, LabelTable>,
+    TConfig extends MediaSchemaConfig<MediaTable, ListTable, GenreTable, CollectionTable>,
     R extends BaseRepository<TConfig>
 > {
     protected repository: R;
@@ -62,12 +62,12 @@ export abstract class BaseService<
         return this.repository.getListFilters(userId);
     }
 
-    async computeTotalMediaLabel(userId?: number) {
-        return this.repository.computeTotalMediaLabel(userId);
+    async computeTotalCollections(userId?: number) {
+        return this.repository.computeTotalCollections(userId);
     }
 
-    async getUserMediaLabels(userId: number) {
-        return await this.repository.getUserMediaLabels(userId);
+    async getUserMediaCollections(userId: number) {
+        return await this.repository.getUserMediaCollections(userId);
     }
 
     async findById(mediaId: number) {
@@ -83,11 +83,11 @@ export abstract class BaseService<
 
         // Specific media stats but calculation common
         const ratings = await this.repository.computeRatingStats(userId);
-        const totalLabels = await this.repository.computeTotalMediaLabel(userId);
+        const totalCollections = await this.repository.computeTotalCollections(userId);
         const releaseDates = await this.repository.computeReleaseDateStats(userId);
         const genresStats = await this.repository.computeTopGenresStats(mediaAvgRating, userId);
 
-        return { ratings, genresStats, totalLabels, releaseDates };
+        return { ratings, genresStats, totalCollections, releaseDates };
     }
 
     async getSearchListFilters(userId: number, query: string, job: JobType) {
@@ -102,12 +102,16 @@ export abstract class BaseService<
         return this.repository.getMediaJobDetails(userId, job, name, offset, perPage);
     }
 
-    async editUserLabel(userId: number, label: Label, mediaId: number, action: LabelAction) {
-        return this.repository.editUserLabel(userId, label, mediaId, action);
+    async editUserCollection(userId: number, collection: Collection, mediaId: number, action: CollectionAction) {
+        return this.repository.editUserCollection(userId, collection, mediaId, action);
     }
 
     async getMediaList(currentUserId: number | undefined, userId: number, args: MediaListArgs) {
         return this.repository.getMediaList(currentUserId, userId, args);
+    }
+
+    async getUserCollections(userId: number) {
+        return this.repository.getUserCollections(userId);
     }
 
     async addMediaToUserList(userId: number, mediaId: number, status?: Status) {
@@ -227,5 +231,5 @@ export abstract class BaseService<
 
     abstract updateMediaEditableFields(mediaId: number, payload: Record<string, any>): Promise<void>;
 
-    abstract calculateDeltaStats(oldState: UserMediaWithLabels<any>, newState: any, media: any): DeltaStats;
+    abstract calculateDeltaStats(oldState: UserMediaWithCollections<any>, newState: any, media: any): DeltaStats;
 }
