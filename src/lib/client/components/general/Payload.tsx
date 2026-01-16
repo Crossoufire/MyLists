@@ -1,5 +1,6 @@
 import {MoveRight} from "lucide-react";
 import {Link} from "@tanstack/react-router";
+import {zeroPad} from "@/lib/utils/formating";
 import {MediaType, UpdateType} from "@/lib/utils/enums";
 import {UserUpdateType} from "@/lib/types/query.options.types";
 
@@ -31,8 +32,8 @@ export const Payload = ({ update, username }: PayloadProps) => {
             return (
                 <PayloadLayout
                     username={username}
-                    oldVal={`S${newValue[0]}.E${oldValue[1]}`}
-                    newVal={`S${newValue[0]}.E${newValue[1]}`}
+                    oldVal={`S${zeroPad(newValue[0])}.E${zeroPad(oldValue[1])}`}
+                    newVal={`S${zeroPad(newValue[0])}.E${zeroPad(newValue[1])}`}
                 />
             );
 
