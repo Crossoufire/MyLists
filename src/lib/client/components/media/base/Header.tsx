@@ -36,43 +36,63 @@ export const Header = (props: HeaderProps) => {
 
     return (
         <div className="flex flex-wrap items-center gap-3">
-            <StatusComponent
-                filters={filters}
-                allStatuses={allStatuses}
-                onStatusChange={({ status }) => onStatusChange({ status })}
-            />
-            <div className="flex-1 min-w-50">
+            <div className="order-1 w-full md:order-2 md:flex-1 md:min-w-50">
                 <SearchInput
                     value={localSearch}
                     onChange={handleInputChange}
                     placeholder={`Search in ${filters.status ?? "All Media"}...`}
                 />
             </div>
-            <Button variant="outline" onClick={onFilterClick} title="Advanced Filters">
-                <Filter className="size-4"/> Filters
-            </Button>
-            <SortComponent
-                applySorting={onSortChange}
-                sorting={pagination.sorting}
-                allSorting={pagination.availableSorting}
-            />
-            <div className="flex items-center h-9 px-1 bg-input/30 border rounded-md">
-                <button
-                    onClick={onGridClick}
-                    className={cn("p-1.5 rounded-sm transition-all",
-                        isGrid ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
-                    )}
+            <div className="order-2 md:order-1">
+                <StatusComponent
+                    filters={filters}
+                    allStatuses={allStatuses}
+                    onStatusChange={({ status }) => onStatusChange({ status })}
+                />
+            </div>
+            <div className="order-2 md:order-3 flex-1 md:flex-0">
+                <Button
+                    variant="outline"
+                    onClick={onFilterClick}
+                    title="Advanced Filters"
+                    className="w-full md:w-auto"
                 >
-                    <Grid2X2 className="size-4"/>
-                </button>
-                <button
-                    onClick={onGridClick}
-                    className={cn("p-1.5 rounded-sm transition-all",
-                        isGrid ? "text-muted-foreground hover:text-foreground" : "bg-background shadow-sm text-foreground"
-                    )}
-                >
-                    <List className="size-4"/>
-                </button>
+                    <Filter className="size-4"/> Filters
+                </Button>
+            </div>
+
+            {/* 4. Sorting & Grid Toggle - Order 3 and Full Width on mobile */}
+            <div className="order-3 flex w-full items-center gap-3 md:order-4 md:w-auto">
+                <SortComponent
+                    applySorting={onSortChange}
+                    sorting={pagination.sorting}
+                    allSorting={pagination.availableSorting}
+                />
+
+                <div className="ml-auto flex h-9 items-center rounded-md border bg-input/30 px-1 md:ml-0">
+                    <button
+                        onClick={onGridClick}
+                        className={cn(
+                            "p-1.5 rounded-sm transition-all",
+                            isGrid
+                                ? "bg-background shadow-sm text-foreground"
+                                : "text-muted-foreground hover:text-foreground",
+                        )}
+                    >
+                        <Grid2X2 className="size-4"/>
+                    </button>
+                    <button
+                        onClick={onGridClick}
+                        className={cn(
+                            "p-1.5 rounded-sm transition-all",
+                            isGrid
+                                ? "text-muted-foreground hover:text-foreground"
+                                : "bg-background shadow-sm text-foreground",
+                        )}
+                    >
+                        <List className="size-4"/>
+                    </button>
+                </div>
             </div>
         </div>
     );

@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import {useState} from "react";
 import {capitalize} from "@/lib/utils/formating";
 import {useAuth} from "@/lib/client/hooks/use-auth";
 import {UserCollection} from "@/lib/types/base.types";
@@ -13,6 +13,7 @@ import {Layers, MoreVertical, Pen, Plus, Trash2, X} from "lucide-react";
 import {collectionsViewOptions} from "@/lib/client/react-query/query-options/query-options";
 import {useEditCollectionMutation} from "@/lib/client/react-query/query-mutations/user-media.mutations";
 import {DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger} from "@/lib/client/components/ui/dropdown-menu";
+import {EmptyState} from "@/lib/client/components/general/EmptyState";
 
 
 export const Route = createFileRoute("/_main/_private/list/$mediaType/$username/_header/collections")({
@@ -51,7 +52,7 @@ function CollectionsView() {
     return (
         <PageTitle title={`${username} ${capitalize(mediaType)} Collections`} onlyHelmet>
             <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                         <h2 className="text-xl font-semibold tracking-tight">
                             {isOwner ? "Your" : `${username}`} Collections
@@ -61,16 +62,16 @@ function CollectionsView() {
                         </p>
                     </div>
 
-                    {isOwner &&
-                        <div className="flex items-center gap-2">
+                    {isOwner && (
+                        <div className="flex items-center gap-2 w-full sm:w-auto">
                             {editLocation === "header" ?
-                                <div className="flex items-center gap-2 animate-in fade-in slide-in-from-right-2">
+                                <div className="flex items-center gap-2 w-full animate-in fade-in slide-in-from-right-2 sm:justify-end">
                                     <Input
                                         autoFocus
                                         size={30}
                                         data-bwignore
                                         value={newName}
-                                        className="h-8 w-48"
+                                        className="h-8 flex-1 sm:w-48 sm:flex-none"
                                         placeholder="New collection..."
                                         onChange={(ev) => setNewName(ev.target.value)}
                                         onKeyDown={(ev) => {
@@ -81,23 +82,44 @@ function CollectionsView() {
                                             }
                                         }}
                                     />
-                                    <Button size="sm" onClick={handleCreate} disabled={editMutation.isPending}>
+                                    <Button
+                                        size="sm"
+                                        onClick={handleCreate}
+                                        disabled={editMutation.isPending}
+                                    >
                                         Save
                                     </Button>
-                                    <Button size="sm" variant="ghost" onClick={() => setEditLocation(null)}>
+                                    <Button
+                                        size="sm"
+                                        variant="ghost"
+                                        className="shrink-0"
+                                        onClick={() => setEditLocation(null)}
+                                    >
                                         <X className="size-4"/>
                                     </Button>
                                 </div>
                                 :
-                                <Button variant="outline" size="sm" onClick={() => setEditLocation("header")}>
+                                <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="mx-auto w-[80%] sm:w-auto"
+                                    onClick={() => setEditLocation("header")}
+                                >
                                     <Plus className="size-4"/> New Collection
                                 </Button>
                             }
                         </div>
-                    }
+                    )}
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mt-6">
+                    {collections.length === 0 &&
+                        <EmptyState
+                            icon={Layers}
+                            className="col-span-4 py-20"
+                            message="No collections created yet."
+                        />
+                    }
                     {collections.map((col) =>
                         <CollectionCard
                             collection={col}
