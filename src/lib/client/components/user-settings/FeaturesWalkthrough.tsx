@@ -17,7 +17,7 @@ export const FeaturesWalkthrough = () => {
             </div>
 
             <Button variant="default" className="w-fit mx-auto" asChild>
-                <Link to="/walkthrough/profile">
+                <Link to="/walkthrough/search-media">
                     Start Tutorial
                 </Link>
             </Button>

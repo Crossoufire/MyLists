@@ -12,11 +12,6 @@ export const Route = createFileRoute("/_main/_private/walkthrough/_layout")({
 
 const sidebarItems: LinkSidebarItem[] = [
     {
-        id: "profile",
-        to: "/walkthrough/profile",
-        label: "Profile & Social",
-    },
-    {
         id: "search",
         to: "/walkthrough/search-media",
         label: "Search For A Media",
@@ -32,14 +27,19 @@ const sidebarItems: LinkSidebarItem[] = [
         label: "Activate More Lists Type",
     },
     {
+        id: "manageLists",
+        label: "Managing The Lists",
+        to: "/walkthrough/manage-lists",
+    },
+    {
         id: "comingNext",
         label: "Coming Next Media",
         to: "/walkthrough/coming-next",
     },
     {
-        id: "manageLists",
-        label: "Managing The Lists",
-        to: "/walkthrough/manage-lists",
+        id: "profile",
+        to: "/walkthrough/profile",
+        label: "Profile & Social",
     },
     {
         id: "and-more",

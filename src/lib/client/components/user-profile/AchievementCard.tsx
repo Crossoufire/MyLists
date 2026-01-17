@@ -20,7 +20,7 @@ export const AchievementsCard = ({ username, achievements }: AchievementsProps) 
         <Card className={cn("h-fit", achievements.details.length === 0 && "h-fit")}>
             <CardHeader>
                 <CardTitle>
-                    Last Achievements
+                    Recent Achievements
                 </CardTitle>
             </CardHeader>
             <CardContent>

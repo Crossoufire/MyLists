@@ -1,4 +1,4 @@
-import {useState} from "react";
+import {useMemo, useState} from "react";
 import {capitalize} from "@/lib/utils/formating";
 import {useAuth} from "@/lib/client/hooks/use-auth";
 import {UserCollection} from "@/lib/types/base.types";
@@ -8,12 +8,12 @@ import {Button} from "@/lib/client/components/ui/button";
 import {DropdownMenu} from "@radix-ui/react-dropdown-menu";
 import {createFileRoute, Link} from "@tanstack/react-router";
 import {CollectionAction, MediaType} from "@/lib/utils/enums";
+import {Layers, MoreVertical, Pen, Trash2} from "lucide-react";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
-import {Layers, MoreVertical, Pen, Plus, Trash2, X} from "lucide-react";
+import {EmptyState} from "@/lib/client/components/general/EmptyState";
 import {collectionsViewOptions} from "@/lib/client/react-query/query-options/query-options";
 import {useEditCollectionMutation} from "@/lib/client/react-query/query-mutations/user-media.mutations";
 import {DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger} from "@/lib/client/components/ui/dropdown-menu";
-import {EmptyState} from "@/lib/client/components/general/EmptyState";
 
 
 export const Route = createFileRoute("/_main/_private/list/$mediaType/$username/_header/collections")({
@@ -27,25 +27,24 @@ export const Route = createFileRoute("/_main/_private/list/$mediaType/$username/
 function CollectionsView() {
     const { currentUser } = useAuth();
     const { username, mediaType } = Route.useParams();
-    const [newName, setNewName] = useState("");
     const editMutation = useEditCollectionMutation(mediaType);
+    const [searchQuery, setSearchQuery] = useState("");
     const isOwner = !!currentUser && currentUser?.name === username;
-    const collections = useSuspenseQuery(collectionsViewOptions(mediaType, username)).data;
-    const [editLocation, setEditLocation] = useState<"header" | "grid" | null>(null);
+    const { data: collections } = useSuspenseQuery(collectionsViewOptions(mediaType, username),);
+
+    const filteredCollections = useMemo(() => {
+        return collections.filter((c) => c.collectionName.toLowerCase().includes(searchQuery.toLowerCase()));
+    }, [collections, searchQuery]);
+
+    const showCreateButton = isOwner && searchQuery.trim().length > 0
+        && !collections.some((c) => c.collectionName.toLowerCase() === searchQuery.trim().toLowerCase(),);
 
     const handleCreate = () => {
-        const trimmed = newName.trim();
+        const trimmed = searchQuery.trim();
         if (!trimmed || editMutation.isPending) return;
 
-        if (collections.some((c) => c.collectionName === trimmed)) {
-            return alert("This collection name already exists");
-        }
-
         editMutation.mutate({ collection: { name: trimmed }, action: CollectionAction.ADD }, {
-            onSuccess: () => {
-                setNewName("");
-                setEditLocation(null);
-            },
+            onSuccess: () => setSearchQuery(""),
         });
     };
 
@@ -62,85 +61,70 @@ function CollectionsView() {
                         </p>
                     </div>
 
-                    {isOwner && (
-                        <div className="flex items-center gap-2 w-full sm:w-auto">
-                            {editLocation === "header" ?
-                                <div className="flex items-center gap-2 w-full animate-in fade-in slide-in-from-right-2 sm:justify-end">
-                                    <Input
-                                        autoFocus
-                                        size={30}
-                                        data-bwignore
-                                        value={newName}
-                                        className="h-8 flex-1 sm:w-48 sm:flex-none"
-                                        placeholder="New collection..."
-                                        onChange={(ev) => setNewName(ev.target.value)}
-                                        onKeyDown={(ev) => {
-                                            if (ev.key === "Enter") return handleCreate();
-                                            if (ev.key === "Escape") {
-                                                setNewName("");
-                                                setEditLocation(null);
-                                            }
-                                        }}
-                                    />
-                                    <Button
-                                        size="sm"
-                                        onClick={handleCreate}
-                                        disabled={editMutation.isPending}
-                                    >
-                                        Save
-                                    </Button>
-                                    <Button
-                                        size="sm"
-                                        variant="ghost"
-                                        className="shrink-0"
-                                        onClick={() => setEditLocation(null)}
-                                    >
-                                        <X className="size-4"/>
-                                    </Button>
-                                </div>
-                                :
+                    <div className="relative w-72 max-sm:w-full">
+                        <Input
+                            value={searchQuery}
+                            className="h-10 bg-popover/50"
+                            placeholder="Find or create collection..."
+                            onChange={(ev) => setSearchQuery(ev.target.value)}
+                            onKeyDown={(ev) => {
+                                if (ev.key === "Enter" && showCreateButton) handleCreate();
+                                if (ev.key === "Escape") setSearchQuery("");
+                            }}
+                        />
+                        <div className="absolute right-1.5 top-1/2 -translate-y-1/2 h-8 flex items-center">
+                            {showCreateButton ?
                                 <Button
                                     size="sm"
-                                    variant="outline"
-                                    className="mx-auto w-[80%] sm:w-auto"
-                                    onClick={() => setEditLocation("header")}
+                                    onClick={handleCreate}
+                                    disabled={editMutation.isPending}
+                                    className="h-7 bg-app-accent/80 hover:bg-app-accent text-[10px] font-bold px-2.5
+                                    rounded shadow-sm transition-all text-primary/90"
                                 >
-                                    <Plus className="size-4"/> New Collection
+                                    {editMutation.isPending ? "..." : "CREATE"}
                                 </Button>
+                                :
+                                <div className="px-2 py-1 rounded bg-popover/50 border text-[10px] text-muted-foreground font-mono tracking-tighter">
+                                    ESC
+                                </div>
                             }
                         </div>
-                    )}
+                    </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mt-6">
-                    {collections.length === 0 &&
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mt-8">
+                    {filteredCollections.length === 0 ?
                         <EmptyState
                             icon={Layers}
-                            className="col-span-4 py-20"
-                            message="No collections created yet."
+                            className="col-span-full py-20"
+                            message={searchQuery
+                                ? `No collections found matching "${searchQuery}". Create it?`
+                                : "No collections created yet."
+                            }
                         />
+                        :
+                        filteredCollections.map((col) =>
+                            <CollectionCard
+                                collection={col}
+                                isOwner={isOwner}
+                                username={username}
+                                mediaType={mediaType}
+                                key={col.collectionId}
+                                onDelete={(name) => {
+                                    editMutation.mutate({
+                                        collection: { name },
+                                        action: CollectionAction.DELETE_ALL,
+                                    });
+                                }}
+                                onRename={(oldName, newName) => {
+                                    editMutation.mutate({
+                                        action: CollectionAction.RENAME,
+                                        collection: { name: newName, oldName },
+                                    });
+                                }}
+                            />
+                        )
                     }
-                    {collections.map((col) =>
-                        <CollectionCard
-                            collection={col}
-                            isOwner={isOwner}
-                            username={username}
-                            mediaType={mediaType}
-                            key={col.collectionId}
-                            onDelete={(name) => {
-                                editMutation.mutate({
-                                    collection: { name },
-                                    action: CollectionAction.DELETE_ALL,
-                                });
-                            }}
-                            onRename={(oldName, newName) => {
-                                editMutation.mutate({
-                                    action: CollectionAction.RENAME,
-                                    collection: { name: newName, oldName },
-                                });
-                            }}
-                        />
-                    )}
                 </div>
             </div>
         </PageTitle>

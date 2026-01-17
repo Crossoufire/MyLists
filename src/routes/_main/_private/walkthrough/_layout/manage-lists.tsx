@@ -1,5 +1,6 @@
 import React from "react";
 import {MediaType} from "@/lib/utils/enums";
+import {statusUtils} from "@/lib/utils/mapping";
 import {createFileRoute} from "@tanstack/react-router";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {Header} from "@/lib/client/components/media/base/Header";
@@ -16,7 +17,6 @@ import {
     OnboardingSection,
     OnboardingSubSection
 } from "@/lib/client/components/onboarding/OnBoardingShared";
-import {statusUtils} from "@/lib/utils/mapping";
 
 
 export const Route = createFileRoute("/_main/_private/walkthrough/_layout/manage-lists")({
@@ -34,16 +34,17 @@ function CollectionOnboarding() {
         <OnboardingContainer>
             <OnboardingSection
                 icon={Grid2X2}
-                title="Your Collection"
-                description="This is your personal library. Whether it's 10 items or 1,000, these tools help you keep everything organized and accessible."
+                title="Your Lists"
+                description="These are your personal lists. Whether it's 10 items or 1,000, these tools should help you to
+                keep everything organized and accessible."
             />
 
             <OnboardingSubSection
                 icon={Search}
                 title="Finding & Filtering"
                 description={
-                    "Use the header tools to drill down into your collection. You can search by name, " +
-                    "sort by date/rating, or use the advanced filter panel for specific genres and years."
+                    "Use the header tools to drill down into your list. You can search by name, " +
+                    "sort by date/rating/name/etc..., or use the advanced filter panel for specific options."
                 }
             >
                 <OnboardingDemoBox>
@@ -79,13 +80,13 @@ function CollectionOnboarding() {
                     <OnboardingFeatureCard
                         icon={Bookmark}
                         title="Custom Collections"
-                        description="Filter by your personal collections (like 'Watched in 2024') to view curated subsets of your lists."
+                        description="Filter by your custom collections (like 'Top Sci-Fi') to view curated subsets of your lists."
                     />
                 </OnboardingGrid>
 
                 <OnboardingNote title="Note">
-                    You can combine filters! For example, selecting <strong>Genre: Sci-Fi</strong> and{" "}
-                    <strong>Misc: Favorites</strong> will show only your favorite science fiction titles.
+                    You can combine filters! For example, selecting <strong>Sci-Fi</strong> and{" "}
+                    <strong>Favorites</strong> will show only your favorite science fiction titles.
                 </OnboardingNote>
             </OnboardingSubSection>
 

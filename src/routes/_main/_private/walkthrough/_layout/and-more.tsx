@@ -1,5 +1,5 @@
 import {createFileRoute} from "@tanstack/react-router";
-import {Award, CircleEllipsis, Popcorn, TrendingUp, Trophy} from "lucide-react";
+import {Award, LayoutGrid, Popcorn, TrendingUp, Trophy} from "lucide-react";
 import {OnboardingContainer, OnboardingFeatureCard, OnboardingGrid, OnboardingNote, OnboardingSection} from "@/lib/client/components/onboarding/OnBoardingShared";
 
 
@@ -12,7 +12,7 @@ function AndMoreOnboarding() {
     return (
         <OnboardingContainer>
             <OnboardingSection
-                icon={CircleEllipsis}
+                icon={LayoutGrid}
                 title="And More..."
                 description={
                     "MyLists.info is more than just a tracking tool. Explore our community features " +

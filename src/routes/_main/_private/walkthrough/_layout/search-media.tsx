@@ -25,16 +25,12 @@ function SearchMediaOnboarding() {
             </OnboardingSection>
 
             <OnboardingSubSection
-                title="1. Select the Provider"
+                title="1. Select the Search Type"
                 description={
                     "Click the left dropdown to choose what kind of media you are looking for. " +
                     "It defaults to Media (Series, Movies, and Anime)."
                 }
             >
-                <OnboardingNote title="Note" icon={TriangleAlert} variant="warning">
-                    The Anime list is not activated by default. See "Activate More Lists Type", on the left sidebar.
-                </OnboardingNote>
-
                 <OnboardingDemoBox>
                     <div className="flex items-center w-full max-w-md shadow-sm opacity-70">
                         <SearchBar/>
@@ -45,8 +41,13 @@ function SearchMediaOnboarding() {
                     </div>
                 </OnboardingDemoBox>
 
+                <OnboardingNote title="Note" icon={TriangleAlert} variant="warning">
+                    The <b>Anime list</b> is not activated by default.
+                    See 'Activate More Lists Type', on the left sidebar.
+                </OnboardingNote>
+
                 <OnboardingNote title="Info">
-                    You can search for <strong>Users</strong> too! Switch the provider to "Users" to
+                    You can search for <strong>Users</strong> too! Switch the type to 'Users' to
                     find your friends and see their profile and lists.
                 </OnboardingNote>
             </OnboardingSubSection>
@@ -57,7 +58,7 @@ function SearchMediaOnboarding() {
             >
                 <OnboardingNote title="Caveat" icon={TriangleAlert} variant="warning">
                     The quality of the search is tied to the API used by MyLists under the hood. Sometimes results are
-                    not what you would expect (looking at you IGDB (Games)).
+                    not what you would expect (looking at you Games!).
                 </OnboardingNote>
             </OnboardingSubSection>
         </OnboardingContainer>

@@ -78,7 +78,7 @@ function RouteComponent() {
 
             <OnboardingSubSection
                 title="2. Manage The Media"
-                description="After adding the media to your list, you can manage it from this page."
+                description="After adding the media to your list, you will be able to manage it from this same page."
             >
                 <OnboardingDemoBox>
                     {!!userMedia &&
@@ -119,8 +119,8 @@ function RouteComponent() {
                     />
                     <OnboardingFeatureCard
                         icon={RotateCcw}
-                        title="Re-watched"
-                        description="Add a re-watch on media. The added time is used in your statistics recap."
+                        title="Re-watched/Re-Read"
+                        description="Add a re-watch/re-read on media. The added time is accounted for in your time stats."
                     />
                     <OnboardingFeatureCard
                         title="Comment"
@@ -131,15 +131,15 @@ function RouteComponent() {
                         icon={Layers}
                         title="Collections"
                         description={`
-                            Create/Add a media to a collections to personalize and organize your list. 
-                            For example creating the 'Top SF' collection and adding it to all the media that you want to 
-                            retrieve these media more easily in your list using the filtering system.
+                            Organize your lists by grouping media into custom collections. 
+                            Create categories like 'Top Sci-Fi' to quickly filter your list 
+                            and find exactly what you are looking for.
                         `}
                     />
                 </OnboardingGrid>
 
                 <OnboardingNote title="Info">
-                    Some options only appear for specific media types to keep the experience relevant.
+                    Some options (Like Episodes and Seasons, or Platform) only appear for specific media types to keep the experience relevant.
                 </OnboardingNote>
             </OnboardingSubSection>
         </OnboardingContainer>

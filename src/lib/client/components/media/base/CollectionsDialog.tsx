@@ -50,12 +50,26 @@ export const CollectionsDialog = ({ mediaType, mediaId, collections, updateColle
         });
     };
 
+    const onSearchKeyDown = (ev: React.KeyboardEvent<HTMLInputElement>) => {
+        if (ev.key === "Enter" && showCreateButton) {
+            handleAction({ name: searchQuery.trim() }, CollectionAction.ADD);
+        }
+    }
+
     return (
         <Credenza open={isOpen} onOpenChange={setIsOpen}>
             <CredenzaTrigger className="text-muted-foreground text-sm -mb-1">
                 Manage
             </CredenzaTrigger>
-            <CredenzaContent className="w-100 p-0 overflow-hidden bg-popover shadow-2xl max-sm:w-full">
+            <CredenzaContent
+                className="w-100 p-0 overflow-hidden bg-popover shadow-2xl max-sm:w-full"
+                onEscapeKeyDown={(ev) => {
+                    if (searchQuery.length > 0) {
+                        ev.preventDefault();
+                        setSearchQuery("");
+                    }
+                }}
+            >
                 <div className="p-6 pb-4">
                     <CredenzaHeader className="p-0 mb-6 mt-2">
                         <CredenzaTitle>
@@ -71,16 +85,11 @@ export const CollectionsDialog = ({ mediaType, mediaId, collections, updateColle
                             autoFocus
                             value={searchQuery}
                             disabled={isLoading}
+                            onKeyDown={onSearchKeyDown}
                             className="h-11 bg-popover/50"
                             placeholder="Find or create a collection..."
                             onChange={(ev) => setSearchQuery(ev.target.value)}
-                            onKeyDown={(ev) => {
-                                if (ev.key === "Enter" && showCreateButton) {
-                                    handleAction({ name: searchQuery.trim() }, CollectionAction.ADD);
-                                }
-                            }}
                         />
-
                         <div className="absolute right-1.5 top-1/2 -translate-y-1/2 h-8 flex items-center">
                             {showCreateButton ?
                                 <Button
@@ -89,7 +98,7 @@ export const CollectionsDialog = ({ mediaType, mediaId, collections, updateColle
                                     font-bold px-2.5 rounded shadow-sm transition-all text-primary/90"
                                     onClick={() => handleAction({ name: searchQuery.trim() }, CollectionAction.ADD)}
                                 >
-                                    CREATE
+                                    {mutation.isPending ? "..." : "CREATE"}
                                 </Button>
                                 :
                                 <div className="px-2 py-1 rounded bg-popover/50 border text-[10px] text-muted-foreground font-mono tracking-tighter">

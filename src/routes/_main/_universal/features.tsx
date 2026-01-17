@@ -50,13 +50,25 @@ type FeatureData = {
 
 const FEATURES_DATA: FeatureData[] = [
     {
+        icon: Layers,
+        category: "New",
+        name: "Labels become Collections",
+        description: (
+            <span>
+                Labels have a fresh new look and are now called 'collections'.
+                Check out the new design on your lists page.
+                The collection management modal has also been updated.
+            </span>
+        )
+    },
+    {
         icon: GraduationCap,
         category: "New",
         name: "New Walkthrough Tutorial",
         description: (
             <span>
                 New here? Follow this walkthrough to learn how to use MyLists.info, add media, and get the most out it {" "}
-                <Link to="/walkthrough/profile" className="inline-flex gap-1 items-center text-app-accent font-medium hover:text-app-accent/80">
+                <Link to="/walkthrough/search-media" className="inline-flex gap-1 items-center text-app-accent font-medium hover:text-app-accent/80">
                     here <ExternalLink className="size-3"/>
                 </Link>.
             </span>

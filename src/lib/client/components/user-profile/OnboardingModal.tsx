@@ -14,7 +14,7 @@ export const OnboardingModal = () => {
     const handleStartTour = async () => {
         mutation.mutate();
         setOpen(false);
-        await navigate({ to: "/walkthrough/profile" });
+        await navigate({ to: "/walkthrough/search-media" });
     };
 
     const handleNoThanks = async () => {

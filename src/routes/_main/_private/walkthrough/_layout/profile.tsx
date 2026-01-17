@@ -62,7 +62,7 @@ function ProfileOnboarding() {
             <OnboardingSubSection
                 icon={ArrowUp10}
                 title="Leveling System"
-                description="Every minute you spend watching, playing, or reading earns you XP. Your levels are broken down per activated media."
+                description="Every minute you spend watching, playing, or reading earns you 'Experience (XP)'. Your levels are broken down per activated media."
             >
                 <OnboardingDemoBox>
                     <div className="w-xs">
@@ -79,7 +79,7 @@ function ProfileOnboarding() {
                 title="Recent Activity: You & Your Follows"
                 description={
                     "Track your progress and never miss an update from the people you follow. " +
-                    "You can even remove individual items from your history at any time."
+                    "You can even remove individual items from your own history at any time."
                 }
             >
                 <OnboardingDemoBox className="gap-8 max-sm:grid max-sm:grid-cols-1">
@@ -94,7 +94,7 @@ function ProfileOnboarding() {
                 </OnboardingDemoBox>
 
                 <OnboardingNote title="Note: Follows System">
-                    Hit the follows button on the profile page to see their recent activities on your own profile page.
+                    Hit the follows button on the profile page of another person to see their recent activities on your own profile page.
                 </OnboardingNote>
             </OnboardingSubSection>
 
@@ -139,13 +139,13 @@ function ProfileOnboarding() {
 
                 <OnboardingNote title="Advanced Stats" icon={ChartNoAxesColumn}>
                     Want to see your progress in numbers? The <b>Advanced Stats</b> dashboard offers a high-level summary
-                    of your data, plus media-type data tailored to your active lists (Movies, Books, Games, etc.).
+                    of your data, plus media-type data tailored to your lists (Movies, Books, Games, etc.).
                 </OnboardingNote>
             </OnboardingSubSection>
 
             <OnboardingSubSection
                 icon={Award}
-                title="Last Achievements"
+                title="Recent Achievements"
                 description={
                     "Track your progress and showcase your latest achievements. " +
                     "Every achievement features four tiers: Bronze, Silver, Gold, and Platinum, earned through " +

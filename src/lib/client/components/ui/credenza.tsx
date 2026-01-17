@@ -20,6 +20,7 @@ interface CredenzaProps extends BaseProps {
     asChild?: true;
     className?: string;
     onClick?: () => void;
+    onEscapeKeyDown?: (ev: any) => void;
 }
 
 
