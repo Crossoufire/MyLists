@@ -187,7 +187,7 @@ const StatusComponent = ({ filters, allStatuses, onStatusChange, className }: St
                     <ChevronDown className="size-4 opacity-50"/>
                 </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-45">
+            <DropdownMenuContent align="start" className="min-w-40 max-w-45">
                 {allStatusesWithAll.map((s) =>
                     <DropdownMenuCheckboxItem
                         key={s}
@@ -227,7 +227,7 @@ export const SortComponent = ({ sorting, allSorting, applySorting, className }: 
                     <ChevronDown className="size-4 opacity-50"/>
                 </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-45">
+            <DropdownMenuContent align="start" className="min-w-40 max-w-45">
                 <DropdownMenuRadioGroup value={sorting} onValueChange={handleSortChange}>
                     {allSorting.map((sort) =>
                         <DropdownMenuRadioItem key={sort} value={sort}>
