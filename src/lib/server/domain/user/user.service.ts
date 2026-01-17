@@ -140,4 +140,14 @@ export class UserService {
     async searchUsers(query: string, page: number = 1) {
         return this.repository.searchUsers(query, page);
     }
+
+    async getProfileImageFilenames() {
+        const results = await this.repository.getProfileImageFilenames();
+        return results.map(({ image }) => image?.split("/").pop() as string);
+    }
+
+    async getBackgroundImageFilenames() {
+        const results = await this.repository.getBackgroundImageFilenames();
+        return results.map(({ backgroundImage }) => backgroundImage.split("/").pop() as string);
+    }
 }

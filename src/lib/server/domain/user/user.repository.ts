@@ -1,7 +1,7 @@
 import {alias} from "drizzle-orm/sqlite-core";
 import {getDbClient} from "@/lib/server/database/async-storage";
-import {and, asc, count, desc, eq, like, sql} from "drizzle-orm";
 import {ApiProviderType, MediaType, PrivacyType} from "@/lib/utils/enums";
+import {and, asc, count, desc, eq, isNotNull, like, sql} from "drizzle-orm";
 import {followers, user, userMediaSettings} from "@/lib/server/database/schema";
 import {AdminUpdatePayload, SearchTypeAdmin} from "@/lib/types/zod.schema.types";
 import {ProviderSearchResult, ProviderSearchResults} from "@/lib/types/provider.types";
@@ -193,7 +193,7 @@ export class UserRepository {
         if (payload.showUpdateModal !== undefined) {
             updateData.showUpdateModal = payload.showUpdateModal;
         }
-        
+
         if (payload.showOnboarding !== undefined) {
             updateData.showOnboarding = payload.showOnboarding;
         }
@@ -377,5 +377,19 @@ export class UserRepository {
         const users = dbUsers.map((user) => ({ ...user, itemType: ApiProviderType.USERS }) as ProviderSearchResult);
 
         return { data: users, hasNextPage: usersCount > page * 20 };
+    }
+
+    static async getProfileImageFilenames() {
+        return getDbClient()
+            .select({ image: user.image })
+            .from(user)
+            .where(isNotNull(user.image));
+    }
+
+    static async getBackgroundImageFilenames() {
+        return getDbClient()
+            .select({ backgroundImage: user.backgroundImage })
+            .from(user)
+            .where(isNotNull(user.backgroundImage));
     }
 }

@@ -10,6 +10,7 @@ import {addMediaNotificationsTask} from "@/lib/server/tasks/definitions/add-medi
 import {addGenresToBooksUsingLlmTask} from "@/lib/server/tasks/definitions/add-books-genres-llm.task";
 import {removeUnusedMediaCoversTask} from "@/lib/server/tasks/definitions/remove-unused-media-covers.task";
 import {deleteNonActivatedUsersTask} from "@/lib/server/tasks/definitions/delete-non-activated-users.task";
+import {removeUnusedProfileImagesTask} from "@/lib/server/tasks/definitions/remove-unused-profile-images.task";
 
 
 export const maintenanceTask = defineTask({
@@ -21,6 +22,7 @@ export const maintenanceTask = defineTask({
         await ctx.step(deleteNonActivatedUsersTask.name, () => deleteNonActivatedUsersTask.handler(ctx, input));
         await ctx.step(removeNonListMediaTask.name, () => removeNonListMediaTask.handler(ctx, input));
         await ctx.step(removeUnusedMediaCoversTask.name, () => removeUnusedMediaCoversTask.handler(ctx, input));
+        await ctx.step(removeUnusedProfileImagesTask.name, () => removeUnusedProfileImagesTask.handler(ctx, input));
         await ctx.step(bulkMediaRefreshTask.name, () => bulkMediaRefreshTask.handler(ctx, input));
         await ctx.step(addMediaNotificationsTask.name, () => addMediaNotificationsTask.handler(ctx, input));
         await ctx.step(lockOldMoviesTask.name, () => lockOldMoviesTask.handler(ctx, input));

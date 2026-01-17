@@ -15,6 +15,7 @@ import {addGenresToBooksUsingLlmTask} from "@/lib/server/tasks/definitions/add-b
 import {addMediaNotificationsTask} from "@/lib/server/tasks/definitions/add-media-notifications.task";
 import {deleteNonActivatedUsersTask} from "@/lib/server/tasks/definitions/delete-non-activated-users.task";
 import {removeUnusedMediaCoversTask} from "@/lib/server/tasks/definitions/remove-unused-media-covers.task";
+import {removeUnusedProfileImagesTask} from "@/lib/server/tasks/definitions/remove-unused-profile-images.task";
 
 
 export const taskRegistry = {
@@ -33,6 +34,7 @@ export const taskRegistry = {
     [deleteNonActivatedUsersTask.name]: deleteNonActivatedUsersTask,
     [removeUnusedMediaCoversTask.name]: removeUnusedMediaCoversTask,
     [addGenresToBooksUsingLlmTask.name]: addGenresToBooksUsingLlmTask,
+    [removeUnusedProfileImagesTask.name]: removeUnusedProfileImagesTask,
 };
 
 
