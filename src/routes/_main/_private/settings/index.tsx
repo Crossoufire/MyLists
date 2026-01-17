@@ -38,7 +38,7 @@ function SettingsPage() {
 
     return (
         <PageTitle title="Settings" subtitle="Customize Your Profile: Manage Your Preferences and Account Settings">
-            <div className="grid md:grid-cols-[180px_1fr] lg:grid-cols-[250px_1fr] gap-10 mt-8">
+            <div className="grid md:grid-cols-[180px_1fr] lg:grid-cols-[250px_1fr] gap-10 mt-6">
                 <Sidebar
                     items={sidebarItems}
                 />
