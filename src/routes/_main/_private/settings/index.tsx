@@ -4,9 +4,9 @@ import {PageTitle} from "@/lib/client/components/general/PageTitle";
 import {DangerForm} from "@/lib/client/components/user-settings/DangerForm";
 import {Sidebar, SidebarItem} from "@/lib/client/components/general/Sidebar";
 import {GeneralForm} from "@/lib/client/components/user-settings/GeneralForm";
-import {PasswordForm} from "@/lib/client/components/user-settings/PasswordForm";
 import {MediaListForm} from "@/lib/client/components/user-settings/MediaListForm";
 import {FeaturesWalkthrough} from "@/lib/client/components/user-settings/FeaturesWalkthrough";
+import {EmailAndPasswordForm} from "@/lib/client/components/user-settings/EmailAndPasswordForm";
 
 
 export const Route = createFileRoute("/_main/_private/settings/")({
@@ -17,7 +17,7 @@ export const Route = createFileRoute("/_main/_private/settings/")({
 const tabConfig = [
     { sidebarTitle: "General", component: <GeneralForm/> },
     { sidebarTitle: "Content & Lists", component: <MediaListForm/> },
-    { sidebarTitle: "Password", component: <PasswordForm/> },
+    { sidebarTitle: "Email & Password", component: <EmailAndPasswordForm/> },
     { sidebarTitle: "Features Walkthrough", component: <FeaturesWalkthrough/> },
     { sidebarTitle: "Danger", component: <DangerForm/> },
 ] as const;

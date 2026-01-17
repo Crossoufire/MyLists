@@ -123,6 +123,9 @@ const getAuthConfig = createServerOnlyFn(() => betterAuth({
                 input: false,
             },
         },
+        changeEmail: {
+            enabled: true,
+        },
     },
     session: {
         cookieCache: {
@@ -167,7 +170,7 @@ const getAuthConfig = createServerOnlyFn(() => betterAuth({
         sendOnSignIn: true,
         autoSignInAfterVerification: true,
         sendVerificationEmail: async ({ user, url }) => {
-            await sendEmail({
+            void sendEmail({
                 to: user.email,
                 username: user.name,
                 template: "register",
