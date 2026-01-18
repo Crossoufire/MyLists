@@ -4,8 +4,8 @@ import {TopAffinityConfig} from "@/lib/types/stats.types";
 import {Achievement} from "@/lib/types/achievements.types";
 import {MediaListArgs} from "@/lib/types/zod.schema.types";
 import {getDbClient} from "@/lib/server/database/async-storage";
+import {MediaSchemaConfig} from "@/lib/types/media.config.types";
 import {CollectionAction, JobType, MediaType, Status} from "@/lib/utils/enums";
-import {CollectionTable, GenreTable, ListTable, MediaSchemaConfig, MediaTable} from "@/lib/types/media.config.types";
 import {animeList, booksList, followers, gamesList, mangaList, moviesList, seriesList, user} from "@/lib/server/database/schema";
 import {and, asc, count, countDistinct, desc, eq, getTableColumns, gte, inArray, isNotNull, isNull, like, lt, lte, ne, notInArray, or, SQL, sql} from "drizzle-orm";
 import {
@@ -28,7 +28,7 @@ const DEFAULT_PER_PAGE = 25;
 const SIMILAR_MAX_GENRES = 10;
 
 
-export abstract class BaseRepository<TConfig extends MediaSchemaConfig<MediaTable, ListTable, GenreTable, CollectionTable>> {
+export abstract class BaseRepository<TConfig extends MediaSchemaConfig> {
     readonly config: TConfig;
     protected readonly baseFilterDefs: FilterDefinitions;
 

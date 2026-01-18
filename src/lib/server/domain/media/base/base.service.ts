@@ -2,18 +2,15 @@ import {notFound} from "@tanstack/react-router";
 import {DeltaStats} from "@/lib/types/stats.types";
 import {FormattedError} from "@/lib/utils/error-classes";
 import {Achievement} from "@/lib/types/achievements.types";
-import {CollectionAction, JobType, Status, UpdateType} from "@/lib/utils/enums";
+import {MediaSchemaConfig} from "@/lib/types/media.config.types";
 import {BaseRepository} from "@/lib/server/domain/media/base/base.repository";
+import {CollectionAction, JobType, Status, UpdateType} from "@/lib/utils/enums";
 import {BaseProviderService} from "@/lib/server/domain/media/base/provider.service";
 import {MediaListArgs, SearchType, UpdateUserMedia} from "@/lib/types/zod.schema.types";
-import {CollectionTable, GenreTable, ListTable, MediaSchemaConfig, MediaTable} from "@/lib/types/media.config.types";
 import {Collection, StatsCTE, UpdateHandlerFn, UpdateUserMediaDetails, UserMediaWithCollections} from "@/lib/types/base.types";
 
 
-export abstract class BaseService<
-    TConfig extends MediaSchemaConfig<MediaTable, ListTable, GenreTable, CollectionTable>,
-    R extends BaseRepository<TConfig>
-> {
+export abstract class BaseService<TConfig extends MediaSchemaConfig, R extends BaseRepository<TConfig>> {
     protected repository: R;
     protected abstract readonly achievementHandlers: Record<string, (achievement: Achievement, userId?: number) => StatsCTE>;
     protected updateHandlers: Partial<Record<UpdateType, UpdateHandlerFn<TConfig["listTable"]["$inferSelect"], any, TConfig["mediaTable"]["$inferSelect"]>>>;

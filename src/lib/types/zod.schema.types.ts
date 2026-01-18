@@ -97,6 +97,7 @@ const mediaListArgsSchema = z.object({
     creators: z.array(z.string()).optional().catch(undefined),
     platforms: z.array(z.enum(GamesPlatformsEnum)).optional().catch(undefined),
 })
+
 export const mediaListSchema = z.object({
     mediaType: z.enum(MediaType),
     args: mediaListArgsSchema,

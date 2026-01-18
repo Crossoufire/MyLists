@@ -72,10 +72,10 @@ export type CollectionTable = Table & CollectionTableColumns;
 
 
 export interface MediaSchemaConfig<
-    TMediaTable extends MediaTable,
-    TListTable extends ListTable,
-    TGenreTable extends GenreTable,
-    TColTable extends CollectionTable
+    TMediaTable extends MediaTable = MediaTable,
+    TListTable extends ListTable = ListTable,
+    TGenreTable extends GenreTable = GenreTable,
+    TColTable extends CollectionTable = CollectionTable,
 > {
     mediaTable: TMediaTable,
     listTable: TListTable,
