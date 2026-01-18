@@ -194,15 +194,19 @@ function MediaSpecificTopStats({ stats }: { stats: ExtractStatsByType<MediaType>
     const { mediaType } = stats;
 
     if (mediaType === MediaType.SERIES || mediaType === MediaType.ANIME) {
-        const { networksStats, actorsStats, countriesStats } = stats.specificMediaStats;
+        const { networksStats, actorsStats, countriesStats, genresStats } = stats.specificMediaStats;
 
         return (
-            <div className="grid grid-cols-3 gap-4 max-lg:grid-cols-2 max-sm:grid-cols-1">
+            <div className="grid grid-cols-4 gap-4 max-lg:grid-cols-2 max-sm:grid-cols-1">
                 <TopAffinityCard
                     job="platform"
                     title="Networks"
                     mediaType={mediaType}
                     topAffinity={networksStats}
+                />
+                <TopAffinityCard
+                    title="Genres"
+                    topAffinity={genresStats}
                 />
                 <TopAffinityCard
                     job="actor"
@@ -248,7 +252,10 @@ function MediaSpecificTopStats({ stats }: { stats: ExtractStatsByType<MediaType>
     }
 
     if (mediaType === MediaType.GAMES) {
-        const { developersStats, publishersStats, platformsStats, enginesStats, perspectivesStats } = stats.specificMediaStats;
+        const {
+            developersStats, publishersStats, platformsStats,
+            enginesStats, perspectivesStats, genresStats,
+        } = stats.specificMediaStats;
 
         return (
             <div className="grid grid-cols-3 gap-4 max-lg:grid-cols-2 max-sm:grid-cols-1">
@@ -261,6 +268,10 @@ function MediaSpecificTopStats({ stats }: { stats: ExtractStatsByType<MediaType>
                 <TopAffinityCard
                     title="Platforms"
                     topAffinity={platformsStats}
+                />
+                <TopAffinityCard
+                    title="Genres"
+                    topAffinity={genresStats}
                 />
                 <TopAffinityCard
                     title="Publishers"
@@ -279,15 +290,19 @@ function MediaSpecificTopStats({ stats }: { stats: ExtractStatsByType<MediaType>
     }
 
     if (mediaType === MediaType.BOOKS) {
-        const { publishersStats, authorsStats, langsStats } = stats.specificMediaStats;
+        const { publishersStats, authorsStats, langsStats, genresStats } = stats.specificMediaStats;
 
         return (
-            <div className="grid grid-cols-3 gap-4 max-lg:grid-cols-2 max-sm:grid-cols-1">
+            <div className="grid grid-cols-4 gap-4 max-lg:grid-cols-2 max-sm:grid-cols-1">
                 <TopAffinityCard
                     job="creator"
                     title="Authors"
                     mediaType={mediaType}
                     topAffinity={authorsStats}
+                />
+                <TopAffinityCard
+                    title="Genres"
+                    topAffinity={genresStats}
                 />
                 <TopAffinityCard
                     title="Publishers"
@@ -302,7 +317,7 @@ function MediaSpecificTopStats({ stats }: { stats: ExtractStatsByType<MediaType>
     }
 
     if (mediaType === MediaType.MANGA) {
-        const { publishersStats, authorsStats } = stats.specificMediaStats;
+        const { publishersStats, authorsStats, genresStats } = stats.specificMediaStats;
 
         return (
             <div className="grid grid-cols-3 gap-4 max-lg:grid-cols-2 max-sm:grid-cols-1">
@@ -311,6 +326,10 @@ function MediaSpecificTopStats({ stats }: { stats: ExtractStatsByType<MediaType>
                     title="Authors"
                     mediaType={mediaType}
                     topAffinity={authorsStats}
+                />
+                <TopAffinityCard
+                    title="Genres"
+                    topAffinity={genresStats}
                 />
                 <TopAffinityCard
                     job="publisher"
