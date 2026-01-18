@@ -1,9 +1,9 @@
 import {MediaType} from "@/lib/utils/enums";
 import {getImageUrl} from "@/lib/utils/image-url";
 import {books} from "@/lib/server/database/schema";
+import {formatHtmlText} from "@/lib/utils/formating";
 import {saveImageFromUrl} from "@/lib/utils/image-saver";
 import {GBooksDetails, GBooksSearchResults, ProviderSearchResult, ProviderSearchResults, SearchData} from "@/lib/types/provider.types";
-import {formatHtmlText} from "@/lib/utils/formating";
 
 
 type InsertBook = typeof books.$inferInsert;
@@ -18,8 +18,8 @@ export class GBooksTransformer {
             return {
                 id: item.id,
                 itemType: MediaType.BOOKS,
-                name: item.volumeInfo.title,
-                date: item.volumeInfo.publishedDate,
+                date: item.volumeInfo?.publishedDate ?? 1900,
+                name: item.volumeInfo?.title ?? "No Title Found",
                 image: item.volumeInfo?.imageLinks?.thumbnail ?? getImageUrl("books-covers"),
             };
         });
@@ -30,11 +30,11 @@ export class GBooksTransformer {
     async transformBooksDetailsResults(rawData: GBooksDetails) {
         const mediaData: InsertBook = {
             apiId: rawData.id,
-            name: rawData.volumeInfo.title,
             language: rawData.volumeInfo.language,
             publishers: rawData.volumeInfo.publisher,
             pages: rawData.volumeInfo.pageCount ?? 50,
-            synopsis: formatHtmlText(rawData.volumeInfo.description),
+            name: rawData.volumeInfo.title ?? "No Title Found",
+            synopsis: formatHtmlText(rawData.volumeInfo.description ?? "No Description Found"),
             releaseDate: rawData.volumeInfo.publishedDate ? new Date(rawData.volumeInfo.publishedDate).toISOString() : null,
             imageCover: await saveImageFromUrl({
                 dirSaveName: "books-covers",
@@ -43,7 +43,7 @@ export class GBooksTransformer {
             }),
         }
 
-        const authorsData = rawData?.volumeInfo.authors.map((name) => ({ name }));
+        const authorsData = rawData.volumeInfo?.authors?.map((name) => ({ name }));
 
         return { mediaData, authorsData };
     }
