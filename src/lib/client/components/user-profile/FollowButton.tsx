@@ -1,36 +1,93 @@
 import {toast} from "sonner";
-import {UserMinus, UserPlus} from "lucide-react";
+import {cn} from "@/lib/utils/helpers";
+import {SocialState} from "@/lib/utils/enums";
 import {Button} from "@/lib/client/components/ui/button";
-import {useFollowMutation} from "@/lib/client/react-query/query-mutations/user.mutations";
+import {Clock, Loader2, UserCheck, UserPlus, UserX} from "lucide-react";
+import {ProfileHeaderOptionsType} from "@/lib/types/query.options.types";
+import {useFollowMutation, useUnfollowMutation} from "@/lib/client/react-query/query-mutations/user.mutations";
 
 
 interface FollowButtonProps {
-    followId: number;
-    followStatus: boolean;
-    ownerUsername: string;
+    profileUsername: string;
+    social: ProfileHeaderOptionsType["social"];
 }
 
 
-export const FollowButton = ({ ownerUsername, followStatus, followId }: FollowButtonProps) => {
-    const updateFollowMutation = useFollowMutation(ownerUsername);
+type FollowAction = "follow" | "unfollow";
 
-    const handleFollow = () => {
-        updateFollowMutation.mutate({ data: { followId, followStatus: !followStatus } }, {
-            onError: () => toast.error("An error occurred while updating the follow status"),
+
+const getButtonConfig = (status?: SocialState) => {
+    switch (status) {
+        case SocialState.ACCEPTED:
+            return {
+                Icon: UserCheck,
+                HoverIcon: UserX,
+                label: "Following",
+                hoverLabel: "Unfollow",
+                variant: "emeraldy" as const,
+                action: "unfollow" as FollowAction,
+                className: "hover:bg-destructive/40 hover:text-primary hover:border-destructive/50",
+            };
+        case SocialState.REQUESTED:
+            return {
+                Icon: Clock,
+                HoverIcon: UserX,
+                label: "Requested",
+                hoverLabel: "Cancel",
+                variant: "secondary" as const,
+                action: "unfollow" as FollowAction,
+                className: "hover:bg-destructive/40 hover:text-primary hover:border-destructive/50",
+            };
+        default:
+            return {
+                className: "",
+                Icon: UserPlus,
+                HoverIcon: null,
+                label: "Follow",
+                hoverLabel: null,
+                variant: "outline" as const,
+                action: "follow" as FollowAction,
+            };
+    }
+};
+
+
+export const FollowButton = ({ profileUsername, social }: FollowButtonProps) => {
+    const followMutation = useFollowMutation(profileUsername);
+    const config = getButtonConfig(social.followStatus?.status);
+    const unfollowMutation = useUnfollowMutation(profileUsername);
+    const isPending = followMutation.isPending || unfollowMutation.isPending;
+
+    const handleClick = () => {
+        const mutation = (config.action === "follow") ? followMutation : unfollowMutation;
+
+        mutation.mutate({ data: { targetUserId: social.followId } }, {
+            onError: (error) => toast.error(error.message || "An unexpected error occurred."),
         });
     };
 
     return (
         <Button
-            size="sm"
-            onClick={handleFollow}
-            disabled={updateFollowMutation.isPending}
-            variant={followStatus ? "destructive" : "outline"}
+            disabled={isPending}
+            onClick={handleClick}
+            variant={config.variant}
+            className={cn("group w-30 font-bold transition-all", config.className)}
         >
-            {followStatus ?
-                <><UserMinus className="mr-1 size-4"/>Unfollow</>
+            {isPending ?
+                <Loader2 className="size-3.5 animate-spin"/>
                 :
-                <><UserPlus className="mr-1 size-4"/>Follow</>
+                <>
+                    <span className={cn("flex items-center gap-2", config.hoverLabel && "group-hover:hidden")}>
+                        <config.Icon className="size-3.5"/>
+                        {config.label}
+                    </span>
+                    {config.hoverLabel &&
+                        <span className="hidden items-center gap-2 group-hover:flex">
+                            {config.HoverIcon && <config.HoverIcon className="size-3.5"/>}
+                            {config.hoverLabel}
+                        </span>
+                    }
+                </>
             }
         </Button>
     );

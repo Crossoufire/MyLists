@@ -81,11 +81,6 @@ const getAuthConfig = createServerOnlyFn(() => betterAuth({
                 returned: true,
                 input: false,
             },
-            lastNotifReadTime: {
-                type: "date",
-                returned: true,
-                input: false,
-            },
             showUpdateModal: {
                 type: "boolean",
                 defaultValue: true,

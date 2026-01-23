@@ -9,7 +9,7 @@ import {Card, CardContent} from "@/lib/client/components/ui/card";
 interface ErrorComponentProps {
     text: string;
     title: string;
-    footerText: string;
+    footerText?: string;
     icon?: React.ReactNode;
 }
 

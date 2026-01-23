@@ -13,8 +13,9 @@ import {getDailyMediadle, getMediadleSuggestions} from "@/lib/server/functions/m
 import {getUserCollectionNames, getUserMediaHistory} from "@/lib/server/functions/user-media";
 import {getNotifications, getNotificationsCount} from "@/lib/server/functions/notifications";
 import {getJobDetails, getMediaDetails, getMediaDetailsToEdit} from "@/lib/server/functions/media-details";
-import {getAllUpdatesHistory, getUserProfile, getUsersFollowers, getUsersFollows} from "@/lib/server/functions/user-profile";
+import {getAllUpdatesHistory, getUserProfile, getUserProfileHeader, getUsersFollowers, getUsersFollows} from "@/lib/server/functions/user-profile";
 import {getCollectionsViewFn, getMediaListFilters, getMediaListSearchFilters, getMediaListSF, getUserListHeaderSF} from "@/lib/server/functions/media-lists";
+import {NotifTab} from "@/lib/types/base.types";
 
 
 export const authOptions = queryOptions({
@@ -31,24 +32,24 @@ export const upcomingOptions = queryOptions({
 
 
 export const dailyMediadleOptions = queryOptions({
-    queryKey: ["dailyMediadle"],
+    queryKey: ["daily-mediadle"],
     queryFn: () => getDailyMediadle(),
 });
 
 
 export const notificationsCountOptions = queryOptions({
-    queryKey: ["notificationCount"],
+    queryKey: ["notification-counts"],
     queryFn: getNotificationsCount,
-    meta: { errorMessage: "An error occurred fetching your notifications count" },
+    refetchInterval: 30 * 60 * 1000,
+    meta: { errorMessage: "An error occurred getting your notifications count" },
 });
 
 
-export const notificationsOptions = queryOptions({
-    queryKey: ["notifications"],
-    queryFn: () => getNotifications(),
+export const notificationsOptions = (open: boolean, activeTab: NotifTab) => queryOptions({
+    queryKey: ["notifications", activeTab],
+    queryFn: () => getNotifications({ data: { type: activeTab } }),
     meta: { errorMessage: "An error occurred fetching the notifications" },
-    refetchInterval: 30 * 60 * 1000,
-    enabled: false,
+    enabled: open,
 });
 
 
@@ -56,6 +57,12 @@ export const trendsOptions = queryOptions({
     queryKey: ["trends"],
     queryFn: () => getTrendsMedia(),
     meta: { errorMessage: "An error occurred fetching the trends. Please try again later." },
+});
+
+
+export const profileHeaderOptions = (username: string) => queryOptions({
+    queryKey: ["profile", "header", username],
+    queryFn: () => getUserProfileHeader({ data: { username } }),
 });
 
 

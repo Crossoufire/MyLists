@@ -6,7 +6,7 @@ import {bulkMediaRefreshTask} from "@/lib/server/tasks/definitions/bulk-media-re
 import {removeNonListMediaTask} from "@/lib/server/tasks/definitions/remove-non-list-media.task";
 import {computeAllUsersStatsTask} from "@/lib/server/tasks/definitions/compute-all-users-stats.task";
 import {calculateAchievementsTask} from "@/lib/server/tasks/definitions/calculate-achievements.task";
-import {addMediaNotificationsTask} from "@/lib/server/tasks/definitions/add-media-notifications.task";
+import {createMediaNotificationsTask} from "@/lib/server/tasks/definitions/create-media-notifications.task";
 import {addGenresToBooksUsingLlmTask} from "@/lib/server/tasks/definitions/add-books-genres-llm.task";
 import {removeUnusedMediaCoversTask} from "@/lib/server/tasks/definitions/remove-unused-media-covers.task";
 import {deleteNonActivatedUsersTask} from "@/lib/server/tasks/definitions/delete-non-activated-users.task";
@@ -24,7 +24,7 @@ export const maintenanceTask = defineTask({
         await ctx.step(removeUnusedMediaCoversTask.name, () => removeUnusedMediaCoversTask.handler(ctx, input));
         await ctx.step(removeUnusedProfileImagesTask.name, () => removeUnusedProfileImagesTask.handler(ctx, input));
         await ctx.step(bulkMediaRefreshTask.name, () => bulkMediaRefreshTask.handler(ctx, input));
-        await ctx.step(addMediaNotificationsTask.name, () => addMediaNotificationsTask.handler(ctx, input));
+        await ctx.step(createMediaNotificationsTask.name, () => createMediaNotificationsTask.handler(ctx, input));
         await ctx.step(lockOldMoviesTask.name, () => lockOldMoviesTask.handler(ctx, input));
         await ctx.step(computeAllUsersStatsTask.name, () => computeAllUsersStatsTask.handler(ctx, input));
         await ctx.step(calculateAchievementsTask.name, () => calculateAchievementsTask.handler(ctx, input));

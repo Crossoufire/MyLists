@@ -539,10 +539,16 @@ export abstract class BaseRepository<TConfig extends MediaSchemaConfig> {
             .where(and(
                 notInArray(listTable.status, [Status.DROPPED]),
                 userId ? eq(listTable.userId, userId) : undefined,
-                or(isNull(mediaTable.releaseDate), and(
-                    gte(mediaTable.releaseDate, sql`datetime('now')`),
-                    maxAWeek ? lte(mediaTable.releaseDate, sql`datetime('now', '+7 days')`) : undefined,
-                )),
+                maxAWeek ?
+                    and(
+                        gte(mediaTable.releaseDate, sql`datetime('now')`),
+                        lte(mediaTable.releaseDate, sql`datetime('now', '+7 days')`),
+                    )
+                    :
+                    or(
+                        isNull(mediaTable.releaseDate),
+                        gte(mediaTable.releaseDate, sql`datetime('now')`),
+                    )
             ))
             .orderBy(asc(mediaTable.releaseDate));
     }

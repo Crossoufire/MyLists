@@ -2,8 +2,8 @@ import {sql} from "drizzle-orm";
 import {relations} from "drizzle-orm/relations";
 import {customJson} from "@/lib/server/database/custom-types";
 import {taskHistory} from "@/lib/server/database/schema/admin.schema";
+import {MediaType, SocialState, Status, UpdateType} from "@/lib/utils/enums";
 import {index, integer, real, sqliteTable, text} from "drizzle-orm/sqlite-core";
-import {MediaType, NotificationType, Status, UpdateType} from "@/lib/utils/enums";
 import {
     animeCollections,
     animeList,
@@ -18,6 +18,7 @@ import {
     moviesList,
     seriesCollections,
     seriesList,
+    socialNotifications,
     user,
     userAchievement,
     userMediadleProgress
@@ -25,20 +26,10 @@ import {
 
 
 export const followers = sqliteTable("followers", {
-    followerId: integer().references(() => user.id, { onDelete: "cascade" }),
-    followedId: integer().references(() => user.id, { onDelete: "cascade" }),
+    followerId: integer().references(() => user.id, { onDelete: "cascade" }).notNull(),
+    followedId: integer().references(() => user.id, { onDelete: "cascade" }).notNull(),
+    status: text().$type<SocialState>().default(SocialState.ACCEPTED).notNull(),
 });
-
-
-export const notifications = sqliteTable("notifications", {
-    id: integer().primaryKey().notNull(),
-    userId: integer().references(() => user.id, { onDelete: "cascade" }),
-    mediaId: integer(),
-    mediaType: text().$type<MediaType>(),
-    notificationType: text().$type<NotificationType>(),
-    timestamp: text().default(sql`(CURRENT_TIMESTAMP)`).notNull(),
-    payload: customJson<Record<string, any>>("payload").notNull(),
-}, (table) => [index("ix_notifications_timestamp").on(table.timestamp)]);
 
 
 export const userMediaUpdate = sqliteTable("user_media_update", {
@@ -113,13 +104,13 @@ export const userRelations = relations(user, ({ many }) => ({
     taskHistory: many(taskHistory),
     seriesLists: many(seriesList),
     moviesLists: many(moviesList),
+    notifications: many(socialNotifications),
     animeCollections: many(animeCollections),
     gamesCollections: many(gamesCollections),
     booksCollections: many(booksCollections),
     mangaCollections: many(mangaCollections),
     moviesCollections: many(moviesCollections),
     seriesCollections: many(seriesCollections),
-    notifications: many(notifications),
     mediadleStats: many(mediadleStats),
     userMediaUpdates: many(userMediaUpdate),
     userAchievements: many(userAchievement),
@@ -151,14 +142,6 @@ export const followersRelations = relations(followers, ({ one }) => ({
 export const userMediaUpdateRelations = relations(userMediaUpdate, ({ one }) => ({
     user: one(user, {
         fields: [userMediaUpdate.userId],
-        references: [user.id]
-    }),
-}));
-
-
-export const notificationsRelations = relations(notifications, ({ one }) => ({
-    user: one(user, {
-        fields: [notifications.userId],
         references: [user.id]
     }),
 }));

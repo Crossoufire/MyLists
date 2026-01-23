@@ -1,6 +1,6 @@
-import {MediaType} from "@/lib/utils/enums";
 import {user} from "@/lib/server/database/schema";
 import {FormattedError} from "@/lib/utils/error-classes";
+import {MediaType, SocialState} from "@/lib/utils/enums";
 import {CacheManager} from "@/lib/server/core/cache-manager";
 import {UserRepository} from "@/lib/server/domain/user/user.repository";
 import {AdminUpdatePayload, SearchTypeAdmin} from "@/lib/types/zod.schema.types";
@@ -56,6 +56,52 @@ export class UserService {
         await this.repository.adminUpdateUser(userId, payload);
     }
 
+    // --- Follower/Follows functions ---------------------------------
+
+    async follow(followerId: number, followedId: number, isPrivate: boolean) {
+        const status = isPrivate ? SocialState.REQUESTED : SocialState.ACCEPTED;
+        await this.repository.follow(followerId, followedId, status);
+    }
+
+    async unfollow(followerId: number, followedId: number) {
+        await this.repository.unfollow(followerId, followedId);
+    }
+
+    async acceptFollowRequest(followerId: number, followedId: number) {
+        const result = await this.repository.acceptFollowRequest(followerId, followedId);
+        if (result.rowsAffected === 0) {
+            throw new FormattedError("This follow request was canceled.");
+        }
+    }
+
+    async declineFollowRequest(followerId: number, followedId: number) {
+        const result = await this.repository.declineFollowRequest(followerId, followedId);
+        if (result.rowsAffected === 0) {
+            throw new FormattedError("This follow request was canceled.");
+        }
+    }
+
+    async removeFollower(followerId: number, followedId: number) {
+        await this.unfollow(followerId, followedId);
+    }
+
+    async getFollowingStatus(userId: number, followedId: number) {
+        if (userId === followedId) return undefined;
+        return this.repository.getFollowingStatus(userId, followedId);
+    }
+
+    async getUserFollowers(currentUserId: number | undefined, userId: number, limit = 8) {
+        return this.repository.getUserFollowers(currentUserId, userId, limit);
+    }
+
+    async getUserFollows(currentUserId: number | undefined, userId: number, limit = 8) {
+        return this.repository.getUserFollows(currentUserId, userId, limit);
+    }
+
+    async getFollowCount(userId: number) {
+        return this.repository.getFollowCount(userId);
+    }
+
     // ----------------------------------------------------------------
 
     async updateUserLastSeen(cacheManager: CacheManager, userId: number) {
@@ -75,15 +121,6 @@ export class UserService {
 
     async updateUserSettings(userId: number, payload: Partial<typeof user.$inferInsert>) {
         await this.repository.updateUserSettings(userId, payload);
-    }
-
-    async isFollowing(userId: number, followedId: number) {
-        if (userId === followedId) return false;
-        return this.repository.isFollowing(userId, followedId);
-    }
-
-    async updateNotificationsReadTime(userId: number) {
-        await this.repository.updateNotificationsReadTime(userId);
     }
 
     async updateShowOnboarding(userId: number) {
@@ -113,28 +150,12 @@ export class UserService {
         }
     }
 
-    async updateFollowStatus(userId: number, followedId: number) {
-        return this.repository.updateFollowStatus(userId, followedId);
-    }
-
     async incrementProfileView(userId: number) {
         return this.repository.incrementProfileView(userId);
     }
 
     async incrementMediaTypeView(userId: number, mediaType: MediaType) {
         return this.repository.incrementMediaTypeView(userId, mediaType);
-    }
-
-    async getUserFollowers(currentUserId: number | undefined, userId: number, limit = 8) {
-        return this.repository.getUserFollowers(currentUserId, userId, limit);
-    }
-
-    async getUserFollows(currentUserId: number | undefined, userId: number, limit = 8) {
-        return this.repository.getUserFollows(currentUserId, userId, limit);
-    }
-
-    async getFollowCount(userId: number) {
-        return this.repository.getFollowCount(userId);
     }
 
     async searchUsers(query: string, page: number = 1) {

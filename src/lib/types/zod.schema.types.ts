@@ -198,9 +198,10 @@ export const allUpdatesHistorySchema = searchTypeSchema.extend({
     username: z.string(),
 });
 
-export const updateFollowStatusSchema = z.object({
-    followStatus: z.boolean(),
-    followId: z.coerce.number().int(),
+
+export const respondToFollowRequest = z.object({
+    action: z.enum(["accept", "decline"]),
+    followerId: z.coerce.number().int().positive(),
 });
 
 export const generalSettingsSchema = z.object({

@@ -21,10 +21,7 @@ export const authMiddleware = createMiddleware({ type: "function" }).server(asyn
 
     return next({
         context: {
-            currentUser: {
-                ...session.user,
-                id: Number(session.user.id),
-            }
+            currentUser: { ...session.user, id: Number(session.user.id) },
         }
     });
 });

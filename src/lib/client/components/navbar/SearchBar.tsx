@@ -186,8 +186,8 @@ const SearchComponent = ({ item, resetSearch, setMobileMenu }: SearchComponentPr
                     <div className="relative shrink-0">
                         {item.itemType === ApiProviderType.USERS ?
                             <ProfileIcon
-                                fallbackSize="text-2xl"
-                                className="size-16 border-2"
+                                fallbackSize="text-lg"
+                                className="size-14 border-2"
                                 user={{ name: item.name, image: item.image }}
                             />
                             :

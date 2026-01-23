@@ -11,7 +11,7 @@ import {SearchBar} from "@/lib/client/components/navbar/SearchBar";
 import {Link, useNavigate, useRouter} from "@tanstack/react-router";
 import {RegisterForm} from "@/lib/client/components/auth/RegisterForm";
 import {ProfileIcon} from "@/lib/client/components/general/ProfileIcon";
-import {MainThemeIcon} from "@/lib/client/components/general/MainIcons";
+import {MainThemeIcon, PrivacyIcon} from "@/lib/client/components/general/MainIcons";
 import {Notifications} from "@/lib/client/components/navbar/Notifications";
 import {authOptions} from "@/lib/client/react-query/query-options/query-options";
 import {useFeatureFlagMutation} from "@/lib/client/react-query/query-mutations/user.mutations";
@@ -97,19 +97,18 @@ export const Navbar = () => {
         <nav className="sticky top-0 z-50 w-full bg-background border-b">
             <div className="max-w-7xl mx-auto px-4 md:px-8">
                 <div className="flex items-center justify-between h-16 gap-4">
-                    <div className="flex shrink-0 items-center gap-2">
-                        <img
-                            alt="MyLists logo"
-                            className="size-5"
-                            src="/logo192.png"
-                        />
-                        <Link to="/profile/$username" params={{ username: currentUser.name }}>
+                    <Link to="/profile/$username" params={{ username: currentUser.name }}>
+                        <div className="flex shrink-0 items-center gap-2">
+                            <img
+                                alt="MyLists logo"
+                                className="size-5"
+                                src="/logo192.png"
+                            />
                             <span className="text-xl font-bold text-primary block tracking-tight max-sm:hidden">
                                 MyLists
                             </span>
-                        </Link>
-                    </div>
-
+                        </div>
+                    </Link>
                     <div className="flex-1 max-w-md z-50 block max-lg:hidden">
                         <SearchBar/>
                     </div>
@@ -188,9 +187,14 @@ export const Navbar = () => {
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="w-56">
                                 <DropdownMenuItem className="block focus:bg-transparent cursor-default">
-                                    <p className="text-sm font-medium text-primary">
-                                        {currentUser?.name}
-                                    </p>
+                                    <div className="flex items-center justify-between gap-2">
+                                        <p className="text-sm font-medium text-primary">
+                                            {currentUser?.name}
+                                        </p>
+                                        <p className="text-sm font-medium text-primary" title={`${capitalize(currentUser.privacy)} account`}>
+                                            <PrivacyIcon type={currentUser.privacy}/>
+                                        </p>
+                                    </div>
                                     <p className="text-xs text-muted-foreground truncate">
                                         {currentUser?.email}
                                     </p>

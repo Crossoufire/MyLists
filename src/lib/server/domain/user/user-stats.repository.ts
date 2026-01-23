@@ -225,12 +225,16 @@ export class UserStatsRepository {
             .from(userMediaSettings)
             .where(inArray(userMediaSettings.userId, userIds));
 
-        const userSettingsMap = new Map<number, (typeof userMediaSettings.$inferSelect)[]>();
+        const userSettingsMap = new Map<number, { mediaType: MediaType, active: boolean, timeSpent: number }[]>();
         for (const setting of allSettings) {
             if (!userSettingsMap.has(setting.userId)) {
                 userSettingsMap.set(setting.userId, []);
             }
-            userSettingsMap.get(setting.userId)!.push(setting);
+            userSettingsMap.get(setting.userId)!.push({
+                active: setting.active,
+                mediaType: setting.mediaType,
+                timeSpent: setting.timeSpent,
+            });
         }
 
         // Get Media Type Counts

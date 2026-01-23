@@ -12,7 +12,7 @@ import {removeNonListMediaTask} from "@/lib/server/tasks/definitions/remove-non-
 import {calculateAchievementsTask} from "@/lib/server/tasks/definitions/calculate-achievements.task";
 import {computeAllUsersStatsTask} from "@/lib/server/tasks/definitions/compute-all-users-stats.task";
 import {addGenresToBooksUsingLlmTask} from "@/lib/server/tasks/definitions/add-books-genres-llm.task";
-import {addMediaNotificationsTask} from "@/lib/server/tasks/definitions/add-media-notifications.task";
+import {createMediaNotificationsTask} from "@/lib/server/tasks/definitions/create-media-notifications.task";
 import {deleteNonActivatedUsersTask} from "@/lib/server/tasks/definitions/delete-non-activated-users.task";
 import {removeUnusedMediaCoversTask} from "@/lib/server/tasks/definitions/remove-unused-media-covers.task";
 import {removeUnusedProfileImagesTask} from "@/lib/server/tasks/definitions/remove-unused-profile-images.task";
@@ -29,10 +29,10 @@ export const taskRegistry = {
     [seedAchievementsTask.name]: seedAchievementsTask,
     [removeNonListMediaTask.name]: removeNonListMediaTask,
     [computeAllUsersStatsTask.name]: computeAllUsersStatsTask,
-    [addMediaNotificationsTask.name]: addMediaNotificationsTask,
     [calculateAchievementsTask.name]: calculateAchievementsTask,
     [deleteNonActivatedUsersTask.name]: deleteNonActivatedUsersTask,
     [removeUnusedMediaCoversTask.name]: removeUnusedMediaCoversTask,
+    [createMediaNotificationsTask.name]: createMediaNotificationsTask,
     [addGenresToBooksUsingLlmTask.name]: addGenresToBooksUsingLlmTask,
     [removeUnusedProfileImagesTask.name]: removeUnusedProfileImagesTask,
 };

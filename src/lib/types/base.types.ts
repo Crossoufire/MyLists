@@ -4,7 +4,7 @@ import {MediaTable} from "@/lib/types/media.config.types";
 import {MediaListArgs} from "@/lib/types/zod.schema.types";
 import {SQLiteColumn, SQLiteTable} from "drizzle-orm/sqlite-core";
 import {ListFiltersOptionsType} from "@/lib/types/query.options.types";
-import {GamesPlatformsEnum, JobType, MediaType, NotificationType, RatingSystemType, Status, UpdateType} from "@/lib/utils/enums";
+import {GamesPlatformsEnum, JobType, MediaType, RatingSystemType, Status, UpdateType} from "@/lib/utils/enums";
 
 
 export type CoverType = "series-covers" | "anime-covers" | "movies-covers" | "games-covers" | "books-covers" | "manga-covers" |
@@ -87,14 +87,6 @@ export type UpComingMedia = {
     lastEpisode?: number | null;
     seasonToAir?: number | null;
     episodeToAir?: number | null;
-};
-
-export type UpdateMediaNotification = {
-    userId: number,
-    mediaId: number,
-    mediaType: MediaType,
-    payload: NotificationPayload,
-    notificationType: NotificationType,
 };
 
 export type AddedMediaDetails = {
@@ -216,16 +208,6 @@ export type StatsCTE = any;
 
 export type NameObj = { name: string };
 
-type IdNamePair = { id: number, name: string };
-
-type NotificationPayload = {
-    name: string;
-    final?: boolean;
-    season?: number | null;
-    episode?: number | null;
-    release_date: string | null;
-};
-
 export type UserCollection = {
     totalCount: number;
     collectionId: number;
@@ -236,3 +218,7 @@ export type UserCollection = {
         mediaCover: string;
     }[];
 }
+
+export type NotifTab = "social" | "media";
+
+type IdNamePair = { id: number, name: string };

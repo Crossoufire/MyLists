@@ -4,7 +4,6 @@ import {ApiProviderType, MediaType} from "@/lib/utils/enums";
 export interface ProviderSearchResults {
     hasNextPage: boolean,
     data: ProviderSearchResult[],
-
 }
 
 

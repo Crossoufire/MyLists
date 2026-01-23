@@ -27,7 +27,7 @@ export const removeNonListMediaTask = defineTask({
 
                     // Remove in other services
                     await userUpdatesService.deleteMediaUpdates(mediaType, mediaIds);
-                    await notificationsService.deleteNotifications(mediaType, mediaIds);
+                    await notificationsService.deleteMediaNotifications(mediaType, mediaIds);
 
                     // Remove main media and associated tables: actors, genres, companies, authors...
                     await mediaService.removeMediaByIds(mediaIds);

@@ -1,29 +1,27 @@
 import {Link} from "@tanstack/react-router";
 import {CalendarDays, Users} from "lucide-react";
 import {useAuth} from "@/lib/client/hooks/use-auth";
-import {formatDateTime} from "@/lib/utils/formating";
 import {computeLevel} from "@/lib/utils/compute-level";
-import {UserDataType} from "@/lib/types/query.options.types";
 import {useBreakpoint} from "@/lib/client/hooks/use-breakpoint";
+import {capitalize, formatDateTime} from "@/lib/utils/formating";
+import {PrivacyIcon} from "@/lib/client/components/general/MainIcons";
 import {ProfileIcon} from "@/lib/client/components/general/ProfileIcon";
 import {FollowButton} from "@/lib/client/components/user-profile/FollowButton";
+import {ProfileHeaderOptionsType, UserDataType} from "@/lib/types/query.options.types";
 
 
 interface ProfileHeaderProps {
-    followId: number;
-    user: UserDataType;
-    followsCount: number;
-    followStatus: boolean;
-    followersCount: number;
+    profileUser: UserDataType;
+    social: ProfileHeaderOptionsType["social"];
 }
 
 
-export const ProfileHeader = ({ user, followStatus, followId, followsCount, followersCount }: ProfileHeaderProps) => {
+export const ProfileHeader = ({ profileUser, social }: ProfileHeaderProps) => {
     const { currentUser } = useAuth();
     const isConnected = (!!currentUser);
     const isBelowSm = useBreakpoint("sm");
-    const isCurrent = (currentUser?.id === user.id);
-    const userLevel = computeLevel(user.userMediaSettings
+    const isCurrent = (currentUser?.id === profileUser.id);
+    const profileLevel = computeLevel(profileUser.userMediaSettings
         .reduce((acc, cur) => cur.active ? acc + cur.timeSpent : acc, 0)
     );
 
@@ -33,7 +31,7 @@ export const ProfileHeader = ({ user, followStatus, followId, followsCount, foll
                 <div className="absolute inset-0 bg-linear-to-t from-neutral-950 to-transparent opacity-20 z-10"/>
                 <img
                     alt="Cover"
-                    src={user.backgroundImage}
+                    src={profileUser.backgroundImage}
                     className="w-full h-full object-cover opacity-80"
                 />
             </div>
@@ -44,43 +42,47 @@ export const ProfileHeader = ({ user, followStatus, followId, followsCount, foll
                         <ProfileIcon
                             fallbackSize="text-4xl"
                             className="w-full h-full size-26"
-                            user={{ name: user.name, image: user.image }}
+                            user={{ name: profileUser.name, image: profileUser.image }}
                         />
                         <div className="absolute -bottom-2 left-12 w-18 h-7 z-20 flex items-center justify-center
                     rounded-full font-bold text-xs bg-app-accent/70 border-4 border-background shadow-lg">
-                            Lvl. {userLevel.toFixed(0)}
+                            Lvl. {profileLevel.toFixed(0)}
                         </div>
                     </div>
                     <div className="flex flex-col mb-1 px-4">
-                        <h1 className="text-3xl font-bold mb-1 max-sm:text-2xl max-sm:wrap-break-word">
-                            <Link to="/profile/$username" params={{ username: user.name }}>
-                                {user.name}
+                        <div className="flex items-baseline gap-3">
+                            <Link to="/profile/$username" params={{ username: profileUser.name }}>
+                                <h1 className="text-3xl font-bold mb-1 max-sm:text-2xl max-sm:wrap-break-word">
+                                    {profileUser.name}
+                                </h1>
                             </Link>
-                        </h1>
+                            <p title={`${capitalize(profileUser.privacy)} account`}>
+                                <PrivacyIcon type={profileUser.privacy} className="size-3.5"/>
+                            </p>
+                        </div>
                         <div className="flex flex-wrap items-center justify-start text-sm gap-x-4 gap-y-1 text-muted-foreground">
                             <span className="flex items-center gap-1">
                                 <CalendarDays className="size-4"/>{" "}
-                                Joined {formatDateTime(user.createdAt, { noTime: true })}
+                                Joined {formatDateTime(profileUser.createdAt, { noTime: true })}
                             </span>
-                            <Link to="/profile/$username/follows" params={{ username: user.name }}>
+                            <Link to="/profile/$username/follows" params={{ username: profileUser.name }}>
                                 <span className="flex items-center gap-1">
                                     <Users className="size-4"/>{" "}
-                                    {followsCount} Follows
+                                    {social.followsCount} Follows
                                 </span>
                             </Link>
-                            <Link to="/profile/$username/followers" params={{ username: user.name }}>
+                            <Link to="/profile/$username/followers" params={{ username: profileUser.name }}>
                                 <span className="flex items-center gap-1">
                                     <Users className="size-4"/>{" "}
-                                    {followersCount} Followers
+                                    {social.followersCount} Followers
                                 </span>
                             </Link>
                         </div>
                     </div>
                     {(!isCurrent && isConnected) &&
                         <FollowButton
-                            followId={followId}
-                            ownerUsername={user.name}
-                            followStatus={followStatus}
+                            social={social}
+                            profileUsername={profileUser.name}
                         />
                     }
                 </div>
@@ -91,35 +93,40 @@ export const ProfileHeader = ({ user, followStatus, followId, followsCount, foll
                             <ProfileIcon
                                 fallbackSize="text-4xl"
                                 className="w-full h-full size-32"
-                                user={{ name: user.name, image: user.image }}
+                                user={{ name: profileUser.name, image: profileUser.image }}
                             />
                             <div className="absolute -bottom-2 -right-2 w-18 h-7 z-20 flex items-center justify-center
                             rounded-full font-bold text-xs bg-app-accent text-black border-4 border-background shadow-lg">
-                                Lvl. {userLevel.toFixed(0)}
+                                Lvl. {profileLevel.toFixed(0)}
                             </div>
                         </div>
 
                         <div className="flex-1 mb-1">
-                            <h1 className="text-3xl font-bold mb-1">
-                                <Link to="/profile/$username" params={{ username: user.name }}>
-                                    {user.name}
+                            <div className="flex items-baseline gap-3">
+                                <Link to="/profile/$username" params={{ username: profileUser.name }}>
+                                    <h1 className="text-3xl font-bold mb-1">
+                                        {profileUser.name}
+                                    </h1>
                                 </Link>
-                            </h1>
+                                <p title={`${capitalize(profileUser.privacy)} account`}>
+                                    <PrivacyIcon type={profileUser.privacy} className="size-4"/>
+                                </p>
+                            </div>
                             <div className="text-sm flex flex-wrap items-center justify-start gap-4 text-muted-foreground">
                                 <span className="flex items-center gap-1">
                                     <CalendarDays className="size-4"/>{" "}
-                                    Joined {formatDateTime(user.createdAt, { noTime: true })}
+                                    Joined {formatDateTime(profileUser.createdAt, { noTime: true })}
                                 </span>
-                                <Link to="/profile/$username/follows" params={{ username: user.name }}>
+                                <Link to="/profile/$username/follows" params={{ username: profileUser.name }}>
                                     <span className="flex items-center gap-1">
                                         <Users className="size-4"/>{" "}
-                                        {followsCount} Follows
+                                        {social.followsCount} Follows
                                     </span>
                                 </Link>
-                                <Link to="/profile/$username/followers" params={{ username: user.name }}>
+                                <Link to="/profile/$username/followers" params={{ username: profileUser.name }}>
                                     <span className="flex items-center gap-1">
                                         <Users className="size-4"/>{" "}
-                                        {followersCount} Followers
+                                        {social.followersCount} Followers
                                     </span>
                                 </Link>
                             </div>
@@ -127,9 +134,8 @@ export const ProfileHeader = ({ user, followStatus, followId, followsCount, foll
                         <div className="mb-5 px-8">
                             {(!isCurrent && isConnected) &&
                                 <FollowButton
-                                    followId={followId}
-                                    ownerUsername={user.name}
-                                    followStatus={followStatus}
+                                    social={social}
+                                    profileUsername={profileUser.name}
                                 />
                             }
                         </div>

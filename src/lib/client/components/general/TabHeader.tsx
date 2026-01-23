@@ -4,9 +4,9 @@ import React, {ReactNode} from "react";
 
 export interface TabItem<T> {
     id: T;
-    label: string;
     isAccent?: boolean;
     icon?: React.ReactNode;
+    label: string | React.ReactNode;
 }
 
 

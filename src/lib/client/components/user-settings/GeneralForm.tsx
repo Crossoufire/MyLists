@@ -109,7 +109,7 @@ export const GeneralForm = () => {
                                     <SelectContent>
                                         <SelectItem value={PrivacyType.PUBLIC}>Public</SelectItem>
                                         <SelectItem value={PrivacyType.RESTRICTED}>Restricted</SelectItem>
-                                        <SelectItem value={PrivacyType.PRIVATE} disabled>Private</SelectItem>
+                                        <SelectItem value={PrivacyType.PRIVATE}>Private</SelectItem>
                                     </SelectContent>
                                 </Select>
                                 <FormMessage/>
@@ -191,7 +191,7 @@ const PrivacyPopover = () => {
                         {" "}Only logged-in users can see your profile, lists, stats, and media updates.
                     </li>
                     <li>
-                        <span className="font-semibold text-red-500">Private (not implemented yet):</span>
+                        <span className="font-semibold text-red-500">Private:</span>
                         {" "}Only approved followers can see your profile, lists, stats, and media updates.
                     </li>
                 </ul>

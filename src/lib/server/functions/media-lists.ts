@@ -4,13 +4,13 @@ import {createServerFn} from "@tanstack/react-start";
 import {tryNotFound} from "@/lib/utils/try-not-found";
 import {getContainer} from "@/lib/server/core/container";
 import {FormattedError} from "@/lib/utils/error-classes";
-import {authorizationMiddleware} from "@/lib/server/middlewares/authorization";
 import {MediaListDataByType} from "@/lib/server/domain/media/base/base.repository";
+import {authorizationMiddleware, headerMiddleware} from "@/lib/server/middlewares/authorization";
 import {mediaListFiltersSchema, mediaListSchema, mediaListSearchFiltersSchema} from "@/lib/types/zod.schema.types";
 
 
 export const getUserListHeaderSF = createServerFn({ method: "GET" })
-    .middleware([authorizationMiddleware])
+    .middleware([headerMiddleware])
     .inputValidator(z.object({ username: z.string(), mediaType: z.enum(MediaType) }))
     .handler(async ({ data: { mediaType }, context: { currentUser, user } }) => {
         const container = await getContainer();
@@ -27,7 +27,7 @@ export const getUserListHeaderSF = createServerFn({ method: "GET" })
             await userService.incrementMediaTypeView(targetUserId, mediaType);
         }
 
-        return { userData: user, mediaType };
+        return { timeSpent: user.userMediaSettings.find((s) => s.mediaType === mediaType)?.timeSpent ?? 0 };
     })
 
 
@@ -42,6 +42,10 @@ export const getMediaListSF = createServerFn({ method: "GET" })
         const userService = container.services.user;
         const currentUserId = currentUser?.id ? currentUser.id : undefined;
 
+        if (currentUser && currentUser.id !== targetUserId) {
+            await userService.incrementMediaTypeView(targetUserId, mediaType);
+        }
+
         const userHasMediaTypeActive = await userService.hasActiveMediaType(targetUserId, data.mediaType);
         if (!userHasMediaTypeActive) {
             throw new FormattedError("MediaType not-activated");
@@ -50,7 +54,11 @@ export const getMediaListSF = createServerFn({ method: "GET" })
         const mediaService = container.registries.mediaService.getService(mediaType);
         const results = await mediaService.getMediaList(currentUserId, targetUserId, args) as MediaListDataByType[typeof mediaType];
 
-        return { userData: user, mediaType, results };
+        return {
+            results,
+            mediaType,
+            userData: { id: user.id },
+        };
     });
 
 

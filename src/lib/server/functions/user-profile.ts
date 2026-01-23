@@ -1,80 +1,90 @@
-import {notFound} from "@tanstack/react-router";
-import {NotificationType} from "@/lib/utils/enums";
 import {createServerFn} from "@tanstack/react-start";
 import {getContainer} from "@/lib/server/core/container";
-import {FormattedError} from "@/lib/utils/error-classes";
+import {allUpdatesHistorySchema} from "@/lib/types/zod.schema.types";
 import {authMiddleware} from "@/lib/server/middlewares/authentication";
-import {authorizationMiddleware} from "@/lib/server/middlewares/authorization";
-import {allUpdatesHistorySchema, updateFollowStatusSchema} from "@/lib/types/zod.schema.types";
+import {authorizationMiddleware, headerMiddleware} from "@/lib/server/middlewares/authorization";
+
+
+export const getUserProfileHeader = createServerFn({ method: "GET" })
+    .middleware([headerMiddleware])
+    .handler(async ({ context: { currentUser, user } }) => {
+        const container = await getContainer();
+        const userService = container.services.user;
+
+        const { followersCount, followsCount } = await userService.getFollowCount(user.id);
+        const followStatus = currentUser && await userService.getFollowingStatus(currentUser.id, user.id);
+
+        return {
+            userData: {
+                id: user.id,
+                name: user.name,
+                image: user.image,
+                privacy: user.privacy,
+                createdAt: user.createdAt,
+                backgroundImage: user.backgroundImage,
+                userMediaSettings: user.userMediaSettings.map(({ timeSpent, active }) => ({
+                    timeSpent,
+                    active,
+                })),
+            },
+            social: {
+                followsCount,
+                followStatus,
+                followersCount,
+                followId: user.id,
+            }
+        };
+    });
 
 
 export const getUserProfile = createServerFn({ method: "GET" })
     .middleware([authorizationMiddleware])
     .handler(async ({ context: { currentUser, user } }) => {
-        const profileOwnerId = user.id;
+        const targetUserId = user.id;
         const container = await getContainer();
         const userService = container.services.user;
         const userStatsService = container.services.userStats;
         const userUpdatesService = container.services.userUpdates;
         const achievementsService = container.services.achievements;
 
-        if (currentUser && currentUser.id !== profileOwnerId) {
-            await userService.incrementProfileView(profileOwnerId);
+        if (currentUser && currentUser.id !== targetUserId) {
+            await userService.incrementProfileView(targetUserId);
         }
 
-        const { followersCount, followsCount } = await userService.getFollowCount(profileOwnerId);
-        const userFollows = await userService.getUserFollows(undefined, profileOwnerId);
-        const userUpdates = await userUpdatesService.getUserUpdates(profileOwnerId);
-        const followsUpdates = await userUpdatesService.getFollowsUpdates(profileOwnerId, !currentUser);
-        const isFollowing = currentUser ? await userService.isFollowing(currentUser.id, profileOwnerId) : false;
-        const preComputedStatsSummary = await userStatsService.userPreComputedStatsSummary(profileOwnerId);
-        const perMediaSummary = await userStatsService.userPerMediaSummaryStats(profileOwnerId);
+        const { followsCount } = await userService.getFollowCount(targetUserId);
+        const userFollows = await userService.getUserFollows(undefined, targetUserId);
+        const userUpdates = await userUpdatesService.getUserUpdates(targetUserId);
+        const followsUpdates = await userUpdatesService.getFollowsUpdates(targetUserId, currentUser?.id);
+        const preComputedStatsSummary = await userStatsService.userPreComputedStatsSummary(targetUserId);
+        const perMediaSummary = await userStatsService.userPerMediaSummaryStats(targetUserId);
         const achievements = {
-            summary: await achievementsService.getDifficultySummary(profileOwnerId),
-            details: await achievementsService.getAchievementsDetails(profileOwnerId),
+            summary: await achievementsService.getDifficultySummary(targetUserId),
+            details: await achievementsService.getAchievementsDetails(targetUserId),
         };
 
         return {
-            userData: user,
-            followersCount,
-            followsCount,
             userUpdates,
             userFollows,
-            followsUpdates,
-            isFollowing,
-            mediaGlobalSummary: preComputedStatsSummary,
-            perMediaSummary,
             achievements,
+            followsCount,
+            followsUpdates,
+            perMediaSummary,
+            mediaGlobalSummary: preComputedStatsSummary,
+            userData: {
+                id: user.id,
+                name: user.name,
+                image: user.image,
+                privacy: user.privacy,
+                createdAt: user.createdAt,
+                ratingSystem: user.ratingSystem,
+                backgroundImage: user.backgroundImage,
+                userMediaSettings: user.userMediaSettings.map(({ mediaType, timeSpent, active }) => ({
+                    active,
+                    mediaType,
+                    timeSpent,
+                })),
+            },
         };
-    });
-
-
-export const postUpdateFollowStatus = createServerFn({ method: "POST" })
-    .middleware([authMiddleware])
-    .inputValidator(updateFollowStatusSchema)
-    .handler(async ({ data: { followId, followStatus }, context: { currentUser } }) => {
-        const container = await getContainer();
-        const userService = container.services.user;
-        const notificationsService = container.services.notifications;
-
-        if (currentUser.id === followId) {
-            throw new FormattedError("You cannot follow yourself ;)");
-        }
-
-        const targetUser = await userService.getUserById(followId);
-        if (!targetUser) {
-            throw notFound();
-        }
-
-        await userService.updateFollowStatus(currentUser.id, targetUser.id);
-
-        if (followStatus) {
-            const payload = {
-                username: currentUser.name,
-                message: `${currentUser.name} is following you`,
-            }
-            await notificationsService.sendNotification(targetUser.id, NotificationType.FOLLOW, payload);
-        }
     });
 
 

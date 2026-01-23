@@ -31,8 +31,7 @@ function ListHeader() {
     const location = useLocation();
     const navigate = Route.useNavigate();
     const { username, mediaType } = Route.useParams();
-    const { userData } = useSuspenseQuery(userListHeaderOption(mediaType, username)).data;
-    const timeSpent = userData?.userMediaSettings.find((s) => s.mediaType === mediaType)?.timeSpent ?? 0;
+    const { timeSpent } = useSuspenseQuery(userListHeaderOption(mediaType, username)).data;
 
     const activeTab = location.pathname.endsWith("/collections")
         ? "collections" : location.pathname.endsWith("/stats")
@@ -78,7 +77,7 @@ function ListHeader() {
     ]
 
     return (
-        <PageTitle title={`${username} ${capitalize(mediaType)}`} onlyHelmet>
+        <PageTitle title={`${username} ${capitalize(mediaType)} ${capitalize(activeTab)}`} onlyHelmet>
             <div className="pt-6">
                 <div className="flex items-center gap-4">
                     <div className="relative">

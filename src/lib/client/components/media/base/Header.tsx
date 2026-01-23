@@ -58,7 +58,6 @@ export const Header = (props: HeaderProps) => {
                         sorting={pagination.sorting}
                         allSorting={pagination.availableSorting}
                     />
-
                 </div>
 
                 <div className="flex items-center justify-start gap-3">
@@ -211,7 +210,7 @@ interface SortComponentProps {
 }
 
 
-export const SortComponent = ({ sorting, allSorting, applySorting, className }: SortComponentProps) => {
+const SortComponent = ({ sorting, allSorting, applySorting, className }: SortComponentProps) => {
     const handleSortChange = (sort: string) => {
         applySorting({ sort });
     };

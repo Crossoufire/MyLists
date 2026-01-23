@@ -32,9 +32,9 @@ function MediaList() {
     const { username, mediaType } = Route.useParams();
     const allStatuses = statusUtils.byMediaType(mediaType);
     const [filtersPanelOpen, setFiltersPanelOpen] = useState(false);
-    const apiData = useSuspenseQuery(mediaListOptions(mediaType, username, filters)).data;
+    const { userData, ...apiData } = useSuspenseQuery(mediaListOptions(mediaType, username, filters)).data;
 
-    const isCurrent = (currentUser?.id === apiData.userData.id);
+    const isCurrent = (currentUser?.id === userData.id);
     const isGrid = filters.view ? filters.view === "grid" : (currentUser?.gridListView ?? true);
 
     const handleGridToggle = () => {

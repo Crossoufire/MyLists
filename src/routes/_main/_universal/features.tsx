@@ -22,6 +22,7 @@ import {
     Layers,
     LayoutList,
     LineChart,
+    Lock,
     LucideIcon,
     Monitor,
     Repeat,
@@ -49,6 +50,18 @@ type FeatureData = {
 
 
 const FEATURES_DATA: FeatureData[] = [
+    {
+        icon: Lock,
+        category: "New",
+        name: "Private Accounts",
+        description: (
+            <span>
+                Only approved followers can see your profile, lists, and updates.
+                Accept followers request in the new notifications 'Social' tab.
+                Go to the settings to update your privacy settings.
+            </span>
+        )
+    },
     {
         icon: Layers,
         category: "New",

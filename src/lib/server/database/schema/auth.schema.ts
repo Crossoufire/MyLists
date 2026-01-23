@@ -9,7 +9,6 @@ export const user = sqliteTable("user", {
     email: text("email").notNull().unique(),
     createdAt: dateAsString("created_at").notNull(),
     updatedAt: dateAsString("updated_at").notNull(),
-    lastNotifReadTime: text("last_notif_read_time"),
     image: imageUrl("image", "profile-covers"),
     profileViews: integer("profile_views").default(0).notNull(),
     role: text("role").$type<RoleType>().default(RoleType.USER).notNull(),

@@ -7,6 +7,7 @@ import {
     listFiltersOptions,
     mediaDetailsOptions,
     mediaListOptions,
+    profileHeaderOptions,
     profileOptions,
     upcomingOptions,
 } from "@/lib/client/react-query/query-options/query-options";
@@ -15,6 +16,7 @@ import {
 // --- Inferred Query Options Types -----------------------------------------------------
 export type HistoryOptionsType = Awaited<ReturnType<NonNullable<ReturnType<typeof historyOptions>["queryFn"]>>>;
 export type ProfileOptionsType = Awaited<ReturnType<NonNullable<ReturnType<typeof profileOptions>["queryFn"]>>>;
+export type ProfileHeaderOptionsType = Awaited<ReturnType<NonNullable<ReturnType<typeof profileHeaderOptions>["queryFn"]>>>;
 export type MediaListOptionsType = Awaited<ReturnType<NonNullable<ReturnType<typeof mediaListOptions>["queryFn"]>>>;
 export type ListFiltersOptionsType = Awaited<ReturnType<NonNullable<ReturnType<typeof listFiltersOptions>["queryFn"]>>>;
 export type MediaDetailsOptionsType = Awaited<ReturnType<NonNullable<ReturnType<typeof mediaDetailsOptions>["queryFn"]>>>;
@@ -63,7 +65,6 @@ export type ExtractFollowUserMediaByType<T extends MediaType> =
 
 
 // --- Media List Types -------------------------------------------------------------
-export type ListUserData = MediaListOptionsType["userData"];
 export type ListPagination = MediaListOptionsType["results"]["pagination"];
 export type UserMediaItem = MediaListOptionsType["results"]["items"][number];
 export type ExtractListByType<T extends MediaType> =
@@ -76,10 +77,9 @@ export type ExtractListByType<T extends MediaType> =
 
 
 // --- Types for ProfileOptions ------------------------------------------------------
-export type UserDataType = ProfileOptionsType["userData"];
+export type UserDataType = ProfileHeaderOptionsType["userData"];
 export type UserFollowsType = ProfileOptionsType["userFollows"];
 export type AchievementsType = ProfileOptionsType["achievements"];
 export type UserUpdateType = ProfileOptionsType["userUpdates"][number];
 export type PerMediaSummaryType = ProfileOptionsType["perMediaSummary"];
 export type MediaGlobalSummaryType = ProfileOptionsType["mediaGlobalSummary"];
-export type UserSettingsType = ProfileOptionsType["userData"]["userMediaSettings"];

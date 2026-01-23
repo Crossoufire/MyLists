@@ -32,8 +32,8 @@ export class UserUpdatesService {
         return this.repository.getUserUpdatesPaginated(userId, filters)
     }
 
-    async getFollowsUpdates(userId: number, asPublic: boolean, limit = 10) {
-        return this.repository.getFollowsUpdates(userId, asPublic, limit);
+    async getFollowsUpdates(profileOwnerId: number, visitorId?: number, limit = 10) {
+        return this.repository.getFollowsUpdates(profileOwnerId, visitorId, limit);
     }
 
     async deleteUserUpdates(userId: number, updateIds: number[], returnData: boolean) {

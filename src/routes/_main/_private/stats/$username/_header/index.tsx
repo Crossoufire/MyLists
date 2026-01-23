@@ -3,15 +3,14 @@ import {TabValue} from "@/lib/types/stats.types";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {Award, EllipsisVertical, User} from "lucide-react";
 import {createFileRoute, Link} from "@tanstack/react-router";
-import {PageTitle} from "@/lib/client/components/general/PageTitle";
 import {MainThemeIcon} from "@/lib/client/components/general/MainIcons";
 import {DashboardContent} from "@/lib/client/media-stats/DashboardContent";
 import {TabHeader, TabItem} from "@/lib/client/components/general/TabHeader";
 import {userStatsOptions} from "@/lib/client/react-query/query-options/query-options";
-import {DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem} from "@/lib/client/components/ui/dropdown-menu";
+import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger} from "@/lib/client/components/ui/dropdown-menu";
 
 
-export const Route = createFileRoute("/_main/_private/stats/$username")({
+export const Route = createFileRoute("/_main/_private/stats/$username/_header/")({
     validateSearch: (search) => search as { mediaType?: MediaType },
     loaderDeps: ({ search }) => ({ search }),
     loader: async ({ context: { queryClient }, params: { username }, deps: { search } }) => {
@@ -47,7 +46,7 @@ function UserStatsPage() {
     ];
 
     return (
-        <PageTitle title={`${username} Statistics`} subtitle="Comprehensive media tracking insights">
+        <>
             <TabHeader tabs={mediaTabs} activeTab={selectedTab} setActiveTab={handleTabChange}>
                 <QuickActions
                     username={username}
@@ -60,7 +59,7 @@ function UserStatsPage() {
                     selectedTab={selectedTab}
                 />
             </div>
-        </PageTitle>
+        </>
     );
 }
 

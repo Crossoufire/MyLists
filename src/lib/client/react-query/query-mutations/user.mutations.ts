@@ -1,9 +1,10 @@
 import {toast} from "sonner";
 import {useAuth} from "@/lib/client/hooks/use-auth";
 import {ListSettings} from "@/lib/types/zod.schema.types";
-import {useMutation, useQueryClient} from "@tanstack/react-query";
-import {postUpdateFollowStatus, postUpdateShowOnboarding} from "@/lib/server/functions/user-profile";
-import {followersOptions, followsOptions, profileOptions} from "@/lib/client/react-query/query-options/query-options";
+import {postUpdateShowOnboarding} from "@/lib/server/functions/user-profile";
+import {QueryClient, useMutation, useQueryClient} from "@tanstack/react-query";
+import {postFollow, postRemoveFollower, postRespondToFollowRequest, postUnfollow} from "@/lib/server/functions/social";
+import {followersOptions, followsOptions, notificationsCountOptions, notificationsOptions, profileHeaderOptions} from "@/lib/client/react-query/query-options/query-options";
 import {
     getDownloadListAsCSV,
     postDeleteUserAccount,
@@ -12,68 +13,83 @@ import {
     postPasswordSettings,
     postUpdateFeatureFlag
 } from "@/lib/server/functions/user-settings";
+import {markAllNotifAsRead, postDeleteSocialNotif} from "@/lib/server/functions/notifications";
 
 
-export const useFollowMutation = (ownerUsername: string, isOwnerProfilePage = true) => {
-    const { currentUser } = useAuth();
+const invalidateSocialQueries = async (queryClient: QueryClient, username: string) => {
+    await Promise.all([
+        queryClient.invalidateQueries({ queryKey: followsOptions(username).queryKey }),
+        queryClient.invalidateQueries({ queryKey: followersOptions(username).queryKey }),
+        queryClient.invalidateQueries({ queryKey: profileHeaderOptions(username).queryKey }),
+    ]);
+};
+
+
+export const useFollowMutation = (profileUsername: string) => {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: postUpdateFollowStatus,
-        onSuccess: (_data, variables) => {
-            if (isOwnerProfilePage) {
-                queryClient.setQueryData(profileOptions(ownerUsername).queryKey, (oldData) => {
-                    if (!oldData) return;
+        mutationFn: postFollow,
+        onSuccess: () => invalidateSocialQueries(queryClient, profileUsername),
+    });
+};
 
-                    return {
-                        ...oldData,
-                        isFollowing: variables.data.followStatus,
-                        followersCount: variables.data.followStatus ? oldData.followersCount + 1 : oldData.followersCount - 1
-                    };
-                });
 
-                queryClient.setQueryData(followersOptions(ownerUsername).queryKey, (oldData) => {
-                    if (!oldData) return;
+export const useUnfollowMutation = (profileUsername: string) => {
+    const queryClient = useQueryClient();
 
-                    if (variables.data.followStatus === true) {
-                        return {
-                            ...oldData, followers: [...oldData.followers, {
-                                id: currentUser!.id,
-                                isFollowedByMe: true,
-                                image: currentUser!.image!,
-                                username: currentUser!.name,
-                                privacy: currentUser!.privacy,
-                            }]
-                        };
-                    }
+    return useMutation({
+        mutationFn: postUnfollow,
+        onSuccess: () => invalidateSocialQueries(queryClient, profileUsername),
+    });
+};
 
-                    return { ...oldData, followers: oldData.followers.filter((f) => f.id !== currentUser!.id) };
-                });
-            }
-            else {
-                queryClient.setQueryData(followersOptions(ownerUsername).queryKey, (oldData) => {
-                    if (!oldData) return;
 
-                    return {
-                        ...oldData,
-                        followers: oldData.followers.map((f) =>
-                            f.id === variables.data.followId ? { ...f, isFollowedByMe: variables.data.followStatus } : f
-                        )
-                    };
-                });
+export const useRespondFollowRequest = () => {
+    const queryClient = useQueryClient();
 
-                queryClient.setQueryData(followsOptions(ownerUsername).queryKey, (oldData) => {
-                    if (!oldData) return;
+    return useMutation({
+        mutationFn: postRespondToFollowRequest,
+        onError: (error) => toast.info(error.message || "This follow request was canceled."),
+        onSuccess: async () => {
+            await queryClient.invalidateQueries({ queryKey: notificationsCountOptions.queryKey });
+            await queryClient.invalidateQueries({ queryKey: notificationsOptions(false, "social").queryKey });
+        }
+    })
+}
 
-                    return {
-                        ...oldData,
-                        follows: oldData.follows.map((f) =>
-                            f.id === variables.data.followId ? { ...f, isFollowedByMe: variables.data.followStatus } : f
-                        )
-                    };
-                });
-            }
-        },
+
+export const useDeleteSocialNotif = () => {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: postDeleteSocialNotif,
+        onError: (error) => toast.error(error.message ?? "Can't delete this notification."),
+        onSuccess: async () => {
+            await queryClient.invalidateQueries({ queryKey: notificationsOptions(false, "social").queryKey });
+        }
+    })
+}
+
+
+export const useMarkAllNotifAsRead = () => {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: markAllNotifAsRead,
+        onError: (error) => toast.error(error.message || "Failed to mark all notifications as read."),
+        onSuccess: async () => {
+            await queryClient.invalidateQueries({ queryKey: notificationsCountOptions.queryKey });
+        }
+    })
+};
+
+
+export const useRemoveFollowerMutation = (profileUsername: string) => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: postRemoveFollower,
+        onSuccess: () => invalidateSocialQueries(queryClient, profileUsername),
     });
 };
 

@@ -21,10 +21,17 @@ export const isAtLeastRole = (userRole: RoleType | undefined | null, requiredRol
 
 export const PrivacyType = {
     PUBLIC: "public",
-    RESTRICTED: "restricted",
     PRIVATE: "private",
+    RESTRICTED: "restricted",
 } as const;
 export type PrivacyType = (typeof PrivacyType)[keyof typeof PrivacyType];
+
+
+export const SocialState = {
+    ACCEPTED: "accepted",
+    REQUESTED: "requested",
+} as const;
+export type SocialState = (typeof SocialState)[keyof typeof SocialState];
 
 
 export const RatingSystemType = {
@@ -72,6 +79,7 @@ export const CollectionAction = {
     DELETE_ALL: "deleteAll",
 } as const;
 export type CollectionAction = (typeof CollectionAction)[keyof typeof CollectionAction];
+
 
 export const JobType = {
     ACTOR: "actor",
@@ -121,12 +129,13 @@ export type GamesPlatformsEnum = (typeof GamesPlatformsEnum)[keyof typeof GamesP
 
 // --- OTHER ------------------------------------------------------------------------
 
-export const NotificationType = {
-    TV: "tv",
-    MEDIA: "media",
-    FOLLOW: "follow",
+export const SocialNotifType = {
+    NEW_FOLLOWER: "follow",
+    FOLLOW_REQUESTED: "followRequested",
+    FOLLOW_ACCEPTED: "follow_accepted",
+    FOLLOW_DECLINED: "follow_declined",
 } as const;
-export type NotificationType = (typeof NotificationType)[keyof typeof NotificationType];
+export type SocialNotifType = (typeof SocialNotifType)[keyof typeof SocialNotifType];
 
 
 export const UpdateType = {

@@ -1,8 +1,7 @@
 import {useState} from "react";
 import {MediaType} from "@/lib/utils/enums";
-import {useSuspenseQuery} from "@tanstack/react-query";
 import {createFileRoute} from "@tanstack/react-router";
-import {PageTitle} from "@/lib/client/components/general/PageTitle";
+import {useSuspenseQuery} from "@tanstack/react-query";
 import {MainThemeIcon} from "@/lib/client/components/general/MainIcons";
 import {TabHeader, TabItem} from "@/lib/client/components/general/TabHeader";
 import {AchievementCard} from "@/lib/client/components/achievements/AchievementCard";
@@ -10,7 +9,7 @@ import {achievementOptions} from "@/lib/client/react-query/query-options/query-o
 import {AchievementSummary} from "@/lib/client/components/achievements/AchievementSummary";
 
 
-export const Route = createFileRoute("/_main/_private/achievements/$username")({
+export const Route = createFileRoute("/_main/_private/achievements/$username/_header/")({
     loader: async ({ context: { queryClient }, params: { username } }) => {
         return queryClient.ensureQueryData(achievementOptions(username));
     },
@@ -40,7 +39,7 @@ function AchievementPage() {
     ];
 
     return (
-        <PageTitle title={`${username} Achievements`} subtitle="View all the achievements the user gained.">
+        <>
             <div className="space-y-6">
                 <TabHeader
                     tabs={mediaTabs}
@@ -61,6 +60,6 @@ function AchievementPage() {
                     )}
                 </div>
             </div>
-        </PageTitle>
+        </>
     );
 }

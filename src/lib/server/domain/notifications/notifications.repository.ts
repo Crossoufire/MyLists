@@ -1,66 +1,119 @@
-import {notifications} from "@/lib/server/database/schema";
-import {MediaType, NotificationType} from "@/lib/utils/enums";
-import {UpdateMediaNotification} from "@/lib/types/base.types";
-import {and, count, desc, eq, inArray, sql} from "drizzle-orm";
+import {NotifTab} from "@/lib/types/base.types";
+import {and, desc, eq, inArray, sql} from "drizzle-orm";
+import {MediaType, SocialNotifType} from "@/lib/utils/enums";
 import {getDbClient} from "@/lib/server/database/async-storage";
+import {mediaNotifications, socialNotifications} from "@/lib/server/database/schema";
 
 
 export class NotificationsRepository {
-    static async sendNotification(userId: number, notificationType: NotificationType, payload: Record<string, any>) {
+
+    // --- Social Notifications ---------------------------
+
+    static async createSocialNotification(data: { userId: number; actorId: number; type: SocialNotifType }) {
         await getDbClient()
-            .insert(notifications)
-            .values({ userId, notificationType, payload });
+            .insert(socialNotifications)
+            .values(data)
+            .onConflictDoNothing();
     }
 
-    static async addNotification(updateData: UpdateMediaNotification) {
+    static async deleteSocialNotifsBetweenUsers(recipientId: number, actorId: number, types: SocialNotifType[]) {
         await getDbClient()
-            .insert(notifications)
-            .values(updateData);
+            .delete(socialNotifications)
+            .where(and(
+                eq(socialNotifications.userId, recipientId),
+                eq(socialNotifications.actorId, actorId),
+                inArray(socialNotifications.type, types),
+            ));
     }
 
-    static async searchNotification(userId: number, mediaType: MediaType, mediaId: number) {
+    static async deleteSocialNotif(userId: number, notificationId: number) {
+        await getDbClient()
+            .delete(socialNotifications)
+            .where(and(eq(socialNotifications.userId, userId), eq(socialNotifications.id, notificationId)));
+    }
+
+    // --- Media Notifications ---------------------------
+
+    static async createMediaNotification(data: typeof mediaNotifications.$inferInsert) {
+        await getDbClient()
+            .insert(mediaNotifications)
+            .values(data);
+    }
+
+    static async searchMediaNotification(userId: number, mediaType: MediaType, mediaId: number) {
         return getDbClient()
             .select()
-            .from(notifications)
-            .where(and(eq(notifications.userId, userId), eq(notifications.mediaType, mediaType), eq(notifications.mediaId, mediaId)))
-            .orderBy(desc(notifications.timestamp))
+            .from(mediaNotifications)
+            .where(and(
+                eq(mediaNotifications.userId, userId),
+                eq(mediaNotifications.mediaId, mediaId),
+                eq(mediaNotifications.mediaType, mediaType),
+            ))
+            .orderBy(desc(mediaNotifications.createdAt))
             .get();
     }
 
-    static async getLastNotifications(userId: number, limit = 8) {
-        return getDbClient()
-            .select()
-            .from(notifications)
-            .where(eq(notifications.userId, userId))
-            .orderBy(desc(notifications.timestamp))
-            .limit(limit);
-    }
-
-    static async countUnreadNotifications(userId: number, lastReadTime: Date | null) {
-        const lastNotifReadTime = lastReadTime ? lastReadTime : new Date(1900, 0, 1);
-
-        const notificationsCount = await getDbClient()
-            .select({ count: count() })
-            .from(notifications)
-            .where(and(eq(notifications.userId, userId), sql`${notifications.timestamp} >= ${lastNotifReadTime}`))
-            .get().then((res) => res?.count || 0);
-
-        return notificationsCount;
-    }
-
-    static async deleteNotifications(mediaType: MediaType, mediaIds: number[]) {
+    static async deleteMediaNotifications(mediaType: MediaType, mediaIds: number[]) {
         await getDbClient()
-            .delete(notifications)
-            .where(and(eq(notifications.mediaType, mediaType), inArray(notifications.mediaId, mediaIds)));
+            .delete(mediaNotifications)
+            .where(and(eq(mediaNotifications.mediaType, mediaType), inArray(mediaNotifications.mediaId, mediaIds)));
     }
 
     static async deleteUserMediaNotifications(userId: number, mediaType: MediaType, mediaId: number) {
         await getDbClient()
-            .delete(notifications)
+            .delete(mediaNotifications)
             .where(and(
-                eq(notifications.userId, userId),
-                eq(notifications.mediaId, mediaId),
-                eq(notifications.mediaType, mediaType),
+                eq(mediaNotifications.userId, userId),
+                eq(mediaNotifications.mediaId, mediaId),
+                eq(mediaNotifications.mediaType, mediaType),
             ));
+    }
+
+    // --- Both notifications ---------------------------
+
+    static async getLastNotifications(userId: number, type: NotifTab, limit = 8) {
+        if (type === "social") {
+            return getDbClient().query.socialNotifications.findMany({
+                where: eq(socialNotifications.userId, userId),
+                with: { actor: { columns: { id: true, name: true, image: true } } },
+                orderBy: desc(socialNotifications.createdAt),
+                limit,
+            });
+        }
+
+        return getDbClient().query.mediaNotifications.findMany({
+            where: eq(mediaNotifications.userId, userId),
+            orderBy: desc(mediaNotifications.createdAt),
+            limit,
+        });
+    }
+
+    static async countUnreadNotifications(userId: number) {
+        const [social, media] = await Promise.all([
+            getDbClient()
+                .select({ count: sql<number>`count(*)` })
+                .from(socialNotifications)
+                .where(and(eq(socialNotifications.userId, userId), eq(socialNotifications.read, false))),
+
+            getDbClient()
+                .select({ count: sql<number>`count(*)` })
+                .from(mediaNotifications)
+                .where(and(eq(mediaNotifications.userId, userId), eq(mediaNotifications.read, false))),
+        ]);
+
+        return {
+            media: media[0]?.count ?? 0,
+            social: social[0]?.count ?? 0,
+            total: (social[0]?.count ?? 0) + (media[0]?.count ?? 0),
+        };
+    }
+
+    static async markAllAsRead(userId: number, type: NotifTab) {
+        const table = type === "social" ? socialNotifications : mediaNotifications;
+
+        await getDbClient()
+            .update(table)
+            .set({ read: true })
+            .where(and(eq(table.userId, userId), eq(table.read, false)));
     }
 }

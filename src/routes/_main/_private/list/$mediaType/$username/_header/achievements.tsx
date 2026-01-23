@@ -1,7 +1,5 @@
-import {capitalize} from "@/lib/utils/formating";
 import {createFileRoute} from "@tanstack/react-router";
 import {useSuspenseQuery} from "@tanstack/react-query";
-import {PageTitle} from "@/lib/client/components/general/PageTitle";
 import {AchievementCard} from "@/lib/client/components/achievements/AchievementCard";
 import {achievementOptions} from "@/lib/client/react-query/query-options/query-options";
 import {AchievementSummary} from "@/lib/client/components/achievements/AchievementSummary";
@@ -21,7 +19,7 @@ function AchievementPage() {
     const mediaAchievements = apiData.result.filter((r) => r.mediaType === mediaType);
 
     return (
-        <PageTitle title={`${username} ${capitalize(mediaType)} Achievements`} onlyHelmet>
+        <>
             <div className="space-y-6">
                 <AchievementSummary
                     summary={apiData.summary[mediaType]}
@@ -36,6 +34,6 @@ function AchievementPage() {
                     )}
                 </div>
             </div>
-        </PageTitle>
+        </>
     );
 }

@@ -78,6 +78,20 @@
       "when": 1768575964609,
       "tag": "0010_slippery_hardball",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "6",
+      "when": 1768912527224,
+      "tag": "0011_thick_mimic",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "6",
+      "when": 1769035692677,
+      "tag": "0012_curly_chat",
+      "breakpoints": true
     }
   ]
 }

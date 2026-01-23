@@ -1,7 +1,5 @@
-import {capitalize} from "@/lib/utils/formating";
 import {createFileRoute} from "@tanstack/react-router";
 import {useSuspenseQuery} from "@tanstack/react-query";
-import {PageTitle} from "@/lib/client/components/general/PageTitle";
 import {DashboardContent} from "@/lib/client/media-stats/DashboardContent";
 import {userStatsOptions} from "@/lib/client/react-query/query-options/query-options";
 
@@ -19,12 +17,12 @@ function UserStatsPage() {
     const apiData = useSuspenseQuery(userStatsOptions(username, { mediaType })).data;
 
     return (
-        <PageTitle title={`${username} ${capitalize(mediaType)} Stats`} onlyHelmet>
+        <>
             <DashboardContent
                 // @ts-expect-error - mediaType should be MediaType | undefined but here always defined (normal)
                 data={apiData}
                 selectedTab={mediaType}
             />
-        </PageTitle>
+        </>
     );
 }

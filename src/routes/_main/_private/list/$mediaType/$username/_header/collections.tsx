@@ -1,5 +1,4 @@
 import {useMemo, useState} from "react";
-import {capitalize} from "@/lib/utils/formating";
 import {useAuth} from "@/lib/client/hooks/use-auth";
 import {UserCollection} from "@/lib/types/base.types";
 import {Input} from "@/lib/client/components/ui/input";
@@ -9,7 +8,6 @@ import {DropdownMenu} from "@radix-ui/react-dropdown-menu";
 import {createFileRoute, Link} from "@tanstack/react-router";
 import {CollectionAction, MediaType} from "@/lib/utils/enums";
 import {Layers, MoreVertical, Pen, Trash2} from "lucide-react";
-import {PageTitle} from "@/lib/client/components/general/PageTitle";
 import {EmptyState} from "@/lib/client/components/general/EmptyState";
 import {collectionsViewOptions} from "@/lib/client/react-query/query-options/query-options";
 import {useEditCollectionMutation} from "@/lib/client/react-query/query-mutations/user-media.mutations";
@@ -49,7 +47,7 @@ function CollectionsView() {
     };
 
     return (
-        <PageTitle title={`${username} ${capitalize(mediaType)} Collections`} onlyHelmet>
+        <>
             <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
@@ -127,7 +125,7 @@ function CollectionsView() {
                     }
                 </div>
             </div>
-        </PageTitle>
+        </>
     );
 }
 

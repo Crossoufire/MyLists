@@ -3,7 +3,7 @@ import {MediaType, PrivacyType} from "@/lib/utils/enums";
 import {AllUpdatesSearch} from "@/lib/types/zod.schema.types";
 import {getDbClient} from "@/lib/server/database/async-storage";
 import {followers, user, userMediaUpdate} from "@/lib/server/database/schema";
-import {and, count, desc, eq, getTableColumns, inArray, like, sql} from "drizzle-orm";
+import {and, count, desc, eq, getTableColumns, inArray, like, or, sql} from "drizzle-orm";
 
 
 export class UserUpdatesRepository {
@@ -52,33 +52,52 @@ export class UserUpdatesRepository {
             .orderBy(desc(userMediaUpdate.timestamp));
     }
 
-    static async getFollowsUpdates(userId: number, asPublic: boolean, limit = 10) {
-        let allowedUserIdsQuery;
+    static async getFollowsUpdates(profileOwnerId: number, visitorId?: number, limit = 10) {
+        // Subquery: People that Profile Owner (User B) follows
+        const followedByB = getDbClient()
+            .select({ id: followers.followedId })
+            .from(followers)
+            .where(eq(followers.followerId, profileOwnerId));
 
-        if (asPublic) {
-            allowedUserIdsQuery = getDbClient()
-                .select({ id: user.id }).from(followers)
-                .leftJoin(user, eq(followers.followedId, user.id))
-                .where(and(eq(followers.followerId, userId), eq(user.privacy, PrivacyType.PUBLIC)));
-        }
-        else {
-            allowedUserIdsQuery = getDbClient()
-                .select({ id: followers.followedId }).from(followers)
-                .where(eq(followers.followerId, userId));
+        // Subquery: People that Visitor (User A) follows (Rule 3)
+        const followedByA = visitorId
+            ? getDbClient()
+                .select({ id: followers.followedId })
+                .from(followers)
+                .where(eq(followers.followerId, visitorId))
+            : null;
+
+        // Define privacy filters based on rules
+        const privacyConditions = [eq(user.privacy, PrivacyType.PUBLIC)] as any[];
+
+        if (visitorId) {
+            // Rule: Restricted updates visible only if logged in
+            privacyConditions.push(eq(user.privacy, PrivacyType.RESTRICTED));
+
+            // Rule: User A can always see their own updates
+            privacyConditions.push(eq(user.id, visitorId));
+
+            // Rule: Private updates visible only if User A follows that person
+            if (followedByA) {
+                privacyConditions.push(and(eq(user.privacy, PrivacyType.PRIVATE), inArray(user.id, followedByA)));
+            }
         }
 
-        const followsUpdates = await getDbClient()
+        return getDbClient()
             .select({
                 username: user.name,
                 ...getTableColumns(userMediaUpdate),
             })
             .from(userMediaUpdate)
-            .leftJoin(user, eq(userMediaUpdate.userId, user.id))
-            .where(inArray(userMediaUpdate.userId, allowedUserIdsQuery))
+            .innerJoin(user, eq(userMediaUpdate.userId, user.id))
+            .where(and(
+                // Limit updates to people User B follows
+                inArray(userMediaUpdate.userId, followedByB),
+                // Apply the combined privacy rules
+                or(...privacyConditions)
+            ))
             .orderBy(desc(userMediaUpdate.timestamp))
             .limit(limit);
-
-        return followsUpdates;
     }
 
     static async mediaUpdatesStatsPerMonth({ mediaType, userId }: { mediaType?: MediaType, userId?: number }) {

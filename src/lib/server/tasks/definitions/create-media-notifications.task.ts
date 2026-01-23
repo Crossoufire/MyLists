@@ -4,10 +4,10 @@ import {getContainer} from "@/lib/server/core/container";
 import {defineTask} from "@/lib/server/tasks/define-task";
 
 
-export const addMediaNotificationsTask = defineTask({
-    name: "add-media-notifications" as const,
+export const createMediaNotificationsTask = defineTask({
+    name: "create-media-notifications" as const,
     visibility: "admin",
-    description: "Send notifications for upcoming media releases",
+    description: "Create and send notifications for upcoming media releases",
     inputSchema: z.object({}),
     handler: async (ctx) => {
         const container = await getContainer();
@@ -26,7 +26,7 @@ export const addMediaNotificationsTask = defineTask({
                     return;
                 }
 
-                await notificationsService.sendMediaNotifications(mediaType, allMediaToNotify);
+                await notificationsService.createMediaNotifications(mediaType, allMediaToNotify);
             })
         }
     },

@@ -16,6 +16,9 @@ import {FollowsUpdates, UserUpdates} from "@/lib/client/components/user-profile/
 
 
 export const Route = createFileRoute("/_main/_private/profile/$username/_header/")({
+    loader: async ({ context: { queryClient }, params: { username } }) => {
+        return queryClient.ensureQueryData(profileOptions(username));
+    },
     component: ProfileMain,
 });
 
@@ -87,7 +90,6 @@ function ProfileMain() {
                         />
                     }
                 </div>
-
                 <div className="grid grid-cols-[0.42fr_0.58fr] gap-6 pt-6 border-t-2 max-lg:grid-cols-1 max-sm:grid-cols-1">
                     <div className="max-lg:order-2">
                         <AchievementsCard
