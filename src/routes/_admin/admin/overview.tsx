@@ -1,6 +1,6 @@
 import {createFileRoute} from "@tanstack/react-router";
 import {useSuspenseQuery} from "@tanstack/react-query";
-import {Activity, Shield, UserPlus, Users} from "lucide-react";
+import {Activity, UserCheck, UserPlus, Users} from "lucide-react";
 import {UserStats} from "@/lib/client/components/admin/UserStats";
 import {RecentUsers} from "@/lib/client/components/admin/RecentUsers";
 import {DashboardShell} from "@/lib/client/components/admin/DashboardShell";
@@ -9,6 +9,7 @@ import {Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis} from "rechart
 import {adminOverviewOptions} from "@/lib/client/react-query/query-options/admin-options";
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/lib/client/components/ui/card";
 import {capitalize} from "@/lib/utils/formating";
+import {PrivacyIcon} from "@/lib/client/components/general/MainIcons";
 
 
 export const Route = createFileRoute("/_admin/admin/overview")({
@@ -28,7 +29,7 @@ function OverviewPage() {
                 description="Overview of the user statistics and growth of MyLists."
             />
             <div className="space-y-4">
-                <div className="grid gap-4 grid-cols-3 max-sm:grid-cols-2 max-sm:gap-3">
+                <div className="grid gap-4 grid-cols-4 max-sm:grid-cols-2 max-sm:gap-3">
                     <UserStats
                         icon={Users}
                         title="Total Users"
@@ -36,9 +37,9 @@ function OverviewPage() {
                         description="Users that registered"
                     />
                     <UserStats
-                        icon={UserPlus}
                         title="Interaction This Month"
                         value={apiData.visitsThisMonth}
+                        icon={<Activity className="text-app-accent"/>}
                         description="Total authed interaction this month"
                     />
                     <UserStats
@@ -48,7 +49,7 @@ function OverviewPage() {
                         description={`${newUsers ? "+" : ""}${apiData.newUsers.comparedToLastMonth} compared to last month`}
                     />
                     <UserStats
-                        icon={Activity}
+                        icon={UserCheck}
                         title="Unique Users This Month"
                         value={apiData.usersSeenThisMonth.count}
                         description="Unique users seen this month"
@@ -56,10 +57,10 @@ function OverviewPage() {
                     {apiData.usersPerPrivacy.map((privacyValue, idx) =>
                         <UserStats
                             key={idx}
-                            icon={Shield}
                             value={privacyValue.count}
                             title={capitalize(privacyValue.privacy) + " Users"}
                             description={"Users with privacy set to " + privacyValue.privacy}
+                            icon={<PrivacyIcon type={privacyValue.privacy} className="size-5"/>}
                         />
                     )}
                 </div>

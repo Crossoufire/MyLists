@@ -45,7 +45,7 @@ export class UserRepository {
     }
 
     static async getUsersPerPrivacyValueForAdmin() {
-        const implementedPrivacyValues = Object.values(PrivacyType).filter((p) => p !== PrivacyType.PRIVATE);
+        const privacyValues = Object.values(PrivacyType);
 
         const result = await getDbClient()
             .select({
@@ -55,7 +55,7 @@ export class UserRepository {
             .from(user)
             .groupBy(user.privacy);
 
-        return implementedPrivacyValues.map((privacy) => ({
+        return privacyValues.map((privacy) => ({
             privacy,
             count: result.find((r) => r.privacy === privacy)?.count ?? 0,
         }));

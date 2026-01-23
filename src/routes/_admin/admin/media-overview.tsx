@@ -1,3 +1,4 @@
+import {capitalize} from "@/lib/utils/formating";
 import {createFileRoute} from "@tanstack/react-router";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {ArrowUpFromLine, BadgePlus} from "lucide-react";
@@ -5,7 +6,6 @@ import {UserStats} from "@/lib/client/components/admin/UserStats";
 import {DashboardShell} from "@/lib/client/components/admin/DashboardShell";
 import {DashboardHeader} from "@/lib/client/components/admin/DashboardHeader";
 import {adminMediaOverviewOptions} from "@/lib/client/react-query/query-options/admin-options";
-import {capitalize} from "@/lib/utils/formating";
 
 
 export const Route = createFileRoute("/_admin/admin/media-overview")({
@@ -57,8 +57,8 @@ function MediaDashboardPage() {
                             key={added.mediaType}
                             icon={ArrowUpFromLine}
                             value={added.thisMonth}
-                            title={"Updated " + capitalize(added.mediaType)}
                             description="Updated this month"
+                            title={"Updated " + capitalize(added.mediaType)}
                         />
                     );
                 })}
