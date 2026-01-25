@@ -166,10 +166,10 @@ const getAuthConfig = createServerOnlyFn(() => betterAuth({
         autoSignInAfterVerification: true,
         sendVerificationEmail: async ({ user, url }) => {
             void sendEmail({
+                link: url,
                 to: user.email,
                 username: user.name,
                 template: "register",
-                link: url + `profile/${user.name}`,
                 subject: "MyLists - Verify your email address",
             });
         },
