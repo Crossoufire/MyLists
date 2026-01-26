@@ -14,6 +14,7 @@ export const dbMaintenanceTask = defineTask({
         await ctx.step("run-pragmas", async () => {
             await db.run("PRAGMA synchronous = NORMAL");
             await db.run("PRAGMA checkpoint(FULL)");
+            await db.run("PRAGMA busy_timeout = 10000");
         });
 
         await ctx.step("vacuum", async () => {
@@ -25,7 +26,7 @@ export const dbMaintenanceTask = defineTask({
         });
 
         await ctx.step("collect-settings", async () => {
-            const pragmas = ["journal_mode", "synchronous", "wal_autocheckpoint", "locking_mode"];
+            const pragmas = ["journal_mode", "synchronous", "wal_autocheckpoint", "locking_mode", "busy_timeout"];
             for (const name of pragmas) {
                 const result = await db.get(`PRAGMA ${name};`);
                 ctx.metric(`sqlite.${name}`, result ? Object.values(result)[0] : "unknown");
