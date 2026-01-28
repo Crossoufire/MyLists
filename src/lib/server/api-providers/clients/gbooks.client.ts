@@ -33,7 +33,7 @@ export class GBooksClient extends BaseClient {
     }
 
     async getBooksDetails(bookApiId: string): Promise<GBooksDetails> {
-        const url = `${this.baseUrl}/${bookApiId}`;
+        const url = `${this.baseUrl}/${bookApiId}?key=${serverEnv.GOOGLE_BOOKS_API_KEY}`;
         const response = await this.call(url);
         return response.json();
     }
