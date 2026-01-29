@@ -348,7 +348,7 @@ export class UserStatsRepository {
     static async getPreComputedStatsSummary({ userId }: { userId?: number }) {
         const forUser = userId ? eq(userMediaSettings.userId, userId) : undefined;
 
-        const preComputedStats = await getDbClient()
+        const preComputedStats = getDbClient()
             .select({
                 totalRedo: sum(userMediaSettings.totalRedo).mapWith(Number),
                 distinctMediaTypes: countDistinct(userMediaSettings.mediaType),
@@ -381,10 +381,10 @@ export class UserStatsRepository {
 
         let totalUsers = 0;
         if (!userId) {
-            totalUsers = await getDbClient()
+            totalUsers = getDbClient()
                 .select({ count: count() })
                 .from(user)
-                .get().then((res) => res?.count ?? 0);
+                .get()?.count ?? 0;
         }
 
         return {

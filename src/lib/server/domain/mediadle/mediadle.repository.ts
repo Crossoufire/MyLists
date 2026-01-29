@@ -13,13 +13,12 @@ export class MediadleRepository {
         const perPage = data.perPage ?? 25;
         const offset = (page - 1) * perPage;
 
-        const totalCount = await getDbClient()
+        const totalCount = getDbClient()
             .select({ count: count() })
             .from(mediadleStats)
             .innerJoin(user, eq(mediadleStats.userId, user.id))
             .where(like(user.name, `%${search}%`))
-            .get()
-            .then((res) => res?.count ?? 0);
+            .get()?.count ?? 0;
 
         const results = await getDbClient()
             .select({

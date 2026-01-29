@@ -23,11 +23,11 @@ export class UserUpdatesRepository {
         const search = filters?.search ?? "";
         const offset = (page - 1) * limit;
 
-        const totalCount = await getDbClient()
+        const totalCount = getDbClient()
             .select({ count: sql<number>`count()` })
             .from(userMediaUpdate)
             .where(and(eq(userMediaUpdate.userId, userId), like(userMediaUpdate.mediaName, `%${search}%`)))
-            .get().then((res) => res?.count ?? 0);
+            .get()?.count ?? 0;
 
         const historyResult = await getDbClient()
             .select()

@@ -5,7 +5,7 @@ import {createEnv} from "@t3-oss/env-core";
 export const serverEnv = createEnv({
     server: {
         // Database
-        DATABASE_URL: z.url().default("file:./instance/site.db"),
+        DATABASE_URL: z.string().default("./instance/site.db"),
 
         // Image/Cover Managements
         UPLOADS_DIR_NAME: z.string().default("static"),

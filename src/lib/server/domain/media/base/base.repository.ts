@@ -589,7 +589,7 @@ export abstract class BaseRepository<TConfig extends MediaSchemaConfig> {
         countQuery = countQuery.where(filterCondition);
 
         const [totalCount, results] = await Promise.all([
-            countQuery.get().then((res) => res?.value ?? 0),
+            countQuery.get()?.value ?? 0,
             dataQuery.orderBy(asc(mediaTable.releaseDate))
                 .limit(limit)
                 .offset(offset)

@@ -24,7 +24,7 @@ export class UserRepository {
         const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
         const previousMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString();
 
-        const res = await getDbClient()
+        const res = getDbClient()
             .select({
                 totalUsers: count(),
                 usersSeenThisMonth: sql<number>`SUM(CASE WHEN ${user.updatedAt} > ${currentMonthStart} THEN 1 ELSE 0 END)`,
@@ -78,7 +78,7 @@ export class UserRepository {
     }
 
     static async getCumUsersPerMonthForAdmin() {
-        const results = await getDbClient()
+        const results = getDbClient()
             .all<{ month: string, count: number }>(sql`
                 WITH monthly_buckets AS (
                     SELECT
@@ -136,7 +136,7 @@ export class UserRepository {
                 eq(followers.followerId, followerId),
                 eq(followers.followedId, followedId),
                 eq(followers.status, SocialState.REQUESTED),
-            ));
+            )).returning({ id: followers.followerId });
     }
 
     static async declineFollowRequest(followerId: number, followedId: number) {
@@ -146,7 +146,7 @@ export class UserRepository {
                 eq(followers.followerId, followerId),
                 eq(followers.followedId, followedId),
                 eq(followers.status, SocialState.REQUESTED),
-            ));
+            )).returning({ id: followers.followerId });
     }
 
     static async getUserFollowers(currentUserId: number | undefined, userId: number, limit: number = 8) {
@@ -208,23 +208,23 @@ export class UserRepository {
     }
 
     static async getFollowCount(userId: number) {
-        const followsCount = await getDbClient()
+        const followsCount = getDbClient()
             .select({ value: sql<number>`count()` })
             .from(followers)
             .where(and(eq(followers.followerId, userId), eq(followers.status, SocialState.ACCEPTED)))
-            .get().then((res) => res?.value ?? 0);
+            .get()?.value ?? 0;
 
-        const followersCount = await getDbClient()
+        const followersCount = getDbClient()
             .select({ value: sql<number>`count()` })
             .from(followers)
             .where(and(eq(followers.followedId, userId), eq(followers.status, SocialState.ACCEPTED)))
-            .get().then((res) => res?.value ?? 0);
+            .get()?.value ?? 0;
 
         return { followersCount, followsCount };
     }
 
     static async getFollowingStatus(userId: number, followedId: number) {
-        const result = await getDbClient()
+        const result = getDbClient()
             .select()
             .from(followers)
             .where(and(eq(followers.followerId, userId), eq(followers.followedId, followedId)))
@@ -265,11 +265,11 @@ export class UserRepository {
         const sorting = data.sorting ?? "updatedAt";
         const offset = (page - 1) * perPage;
 
-        const totalUsers = await getDbClient()
+        const totalUsers = getDbClient()
             .select({ count: count() })
             .from(user)
             .where(like(user.name, `%${search}%`))
-            .get().then((res) => res?.count ?? 0);
+            .get()?.count ?? 0;
 
         const users = await getDbClient()
             .select()
@@ -376,11 +376,11 @@ export class UserRepository {
     }
 
     static async searchUsers(query: string, page: number = 1): Promise<ProviderSearchResults> {
-        const usersCount = await getDbClient()
+        const usersCount = getDbClient()
             .select({ count: count() })
             .from(user)
             .where(like(user.name, `%${query}%`))
-            .get().then((res) => res?.count ?? 0);
+            .get()?.count ?? 0;
 
         const dbUsers = await getDbClient()
             .select({

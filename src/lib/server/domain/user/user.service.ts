@@ -69,14 +69,14 @@ export class UserService {
 
     async acceptFollowRequest(followerId: number, followedId: number) {
         const result = await this.repository.acceptFollowRequest(followerId, followedId);
-        if (result.rowsAffected === 0) {
+        if (result.length === 0) {
             throw new FormattedError("This follow request was canceled.");
         }
     }
 
     async declineFollowRequest(followerId: number, followedId: number) {
         const result = await this.repository.declineFollowRequest(followerId, followedId);
-        if (result.rowsAffected === 0) {
+        if (result.length === 0) {
             throw new FormattedError("This follow request was canceled.");
         }
     }

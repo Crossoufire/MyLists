@@ -1,11 +1,11 @@
 import {db} from "@/lib/server/database/db";
 import {AsyncLocalStorage} from "node:async_hooks";
-import {LibSQLTransaction} from "drizzle-orm/libsql";
 import * as schema from "@/lib/server/database/schema";
 import {ExtractTablesWithRelations} from "drizzle-orm";
+import {SQLiteBunTransaction} from "drizzle-orm/bun-sqlite";
 
 
-export type TransactionClient = LibSQLTransaction<typeof schema, ExtractTablesWithRelations<typeof schema>>;
+export type TransactionClient = SQLiteBunTransaction<typeof schema, ExtractTablesWithRelations<typeof schema>>;
 
 const dbTransactionLocalStorage = new AsyncLocalStorage<TransactionClient>();
 

@@ -22,10 +22,10 @@ export class AdminRepository {
         const perPage = data.perPage ?? 10;
         const offset = (page - 1) * perPage;
 
-        const totalLogs = await getDbClient()
+        const totalLogs = getDbClient()
             .select({ count: count() })
             .from(errorLogs)
-            .get().then((res) => res?.count ?? 0);
+            .get()?.count ?? 0;
 
         const logs = await getDbClient()
             .select()
