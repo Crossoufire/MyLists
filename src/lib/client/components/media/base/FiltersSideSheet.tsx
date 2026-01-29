@@ -67,7 +67,7 @@ export const FiltersSideSheet = ({ filters, username, mediaType, isCurrent, onCl
         localFiltersRef.current = updatedFilters;
     };
 
-    const handleOnSubmit = async (ev: React.FormEvent<HTMLFormElement>) => {
+    const handleOnSubmit = async (ev: React.SubmitEvent<HTMLFormElement>) => {
         onClose();
         ev.preventDefault();
         onFilterApply(localFiltersRef.current);

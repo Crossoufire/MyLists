@@ -151,12 +151,12 @@ export const ImageCropper = ({ aspect, fileName, sliceHeight, cropShape, onCropA
                     </div>
                     <div className="relative h-60 w-full">
                         <Cropper
+                            minZoom={1}
                             crop={state.crop}
                             cropShape={cropShape}
                             image={state.imageSrc}
                             aspect={computedAspect}
                             showGrid={!sliceHeight}
-                            minZoom={sliceHeight ? 1 : 1}
                             maxZoom={sliceHeight ? 1 : 3}
                             onCropComplete={onCropComplete}
                             zoom={sliceHeight ? 1 : state.zoom}

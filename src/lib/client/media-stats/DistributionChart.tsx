@@ -1,10 +1,10 @@
-import {SVGProps, useMemo} from "react";
+import {useMemo} from "react";
 import {MediaType} from "@/lib/utils/enums";
 import {NamedValue} from "@/lib/types/stats.types";
 import {getThemeColor} from "@/lib/utils/colors-and-icons";
 import {capitalize, formatNumber} from "@/lib/utils/formating";
 import {Card, CardContent, CardHeader, CardTitle} from "@/lib/client/components/ui/card";
-import {Bar, BarChart, Cell, LabelList, LabelProps, ResponsiveContainer, Tooltip, XAxis, YAxis} from "recharts";
+import {Bar, BarChart, LabelList, Rectangle, ResponsiveContainer, Tooltip, XAxis, YAxis} from "recharts";
 
 
 interface DistributionChartProps {
@@ -83,13 +83,17 @@ export function DistributionChart({ title, mediaType, data, unit, enableBinning 
                             content={CustomTooltip}
                             cursor={{ fill: "var(--popover)" }}
                         />
-                        <Bar dataKey="value" radius={[4, 4, 0, 0]}>
-                            {chartData.map((item, idx) =>
-                                <Cell
-                                    key={idx}
-                                    fill={getThemeColor(mediaType ?? String(item.originalName) as MediaType)}
+                        <Bar
+                            dataKey="value"
+                            radius={[4, 4, 0, 0]}
+                            shape={(props: any) =>
+                                <CustomizedBar
+                                    {...props}
+                                    mediaType={mediaType}
+                                    getThemeColor={getThemeColor}
                                 />
-                            )}
+                            }
+                        >
                             <LabelList
                                 dataKey="value"
                                 position="center"
@@ -104,7 +108,14 @@ export function DistributionChart({ title, mediaType, data, unit, enableBinning 
 }
 
 
-const customLabel = ({ x, y, width, height, value }: Omit<SVGProps<SVGTextElement>, "viewBox"> & LabelProps) => {
+const CustomizedBar = (props: any) => {
+    const { payload, mediaType, getThemeColor } = props;
+    const fillColor = getThemeColor(mediaType ?? (String(payload.originalName) as MediaType));
+    return <Rectangle {...props} fill={fillColor}/>;
+};
+
+
+const customLabel = ({ x, y, width, height, value }: any) => {
     if (!height || !width) return null;
 
     if (Number(height) < 17 || Number(width) < 28) {

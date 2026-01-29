@@ -1,5 +1,5 @@
 import {toast} from "sonner";
-import {FormEvent, useState} from "react";
+import {SubmitEvent, useState} from "react";
 import {TaskMetadata} from "@/lib/types/tasks.types";
 import {Loader2, Play, Settings2} from "lucide-react";
 import {Label} from "@/lib/client/components/ui/label";
@@ -24,7 +24,7 @@ export function TaskFormDialog({ task, isRunning, mutation }: TaskFormDialogProp
     const [errors, setErrors] = useState<{ field: string, message: string }[] | null>(null);
     const [formData, setFormData] = useState<Record<string, any>>(() => getDefaultValues(task.inputSchema!));
 
-    const handleSubmit = (ev: FormEvent) => {
+    const handleSubmit = (ev: SubmitEvent) => {
         ev.preventDefault();
 
         setErrors(null);

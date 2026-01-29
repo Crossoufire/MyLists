@@ -51,7 +51,7 @@ export class TvProviderService extends BaseTrendsProviderService<
             // Automatic refresh metadata, don't update anime genres to not erase better ones from jikan
             // If I add an automatic storing somedays this will means that no genres will ever be added in the first
             // place because this function is called on refresh and on storing.
-            // For now because storing is never with isBulk = true, this works (bandaid!)
+            // For now because storing is never with isBulk = true, this works (band-aid!)
             if (isBulk) {
                 delete details.genresData;
             }

@@ -1,11 +1,11 @@
 import {NamedValue} from "@/lib/types/stats.types";
+import {getFeelingList} from "@/lib/utils/ratings";
+import {getThemeColor} from "@/lib/utils/colors-and-icons";
 import {MediaType, RatingSystemType} from "@/lib/utils/enums";
 import {CustomTooltip} from "@/lib/client/media-stats/DistributionChart";
 import {transformRatingToFeeling} from "@/lib/client/media-stats/stats-utils";
 import {Card, CardContent, CardHeader, CardTitle} from "@/lib/client/components/ui/card";
-import {Bar, BarChart, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis} from "recharts";
-import {getThemeColor} from "@/lib/utils/colors-and-icons";
-import {getFeelingList} from "@/lib/utils/ratings";
+import {Bar, BarChart, Rectangle, ResponsiveContainer, Tooltip, XAxis, YAxis} from "recharts";
 
 
 interface RatingsChartProps {
@@ -50,13 +50,17 @@ export function RatingsChart({ height, ratings, mediaType, ratingSystem }: Ratin
                             content={CustomTooltip}
                             cursor={{ fill: "var(--popover)" }}
                         />
-                        <Bar dataKey="value" radius={[4, 4, 0, 0]}>
-                            {chartData.map((entry) =>
-                                <Cell
-                                    key={entry.name}
-                                    fill={getThemeColor(mediaType)}
+                        <Bar
+                            dataKey="value"
+                            radius={[4, 4, 0, 0]}
+                            shape={(props: any) =>
+                                <CustomizedBar
+                                    {...props}
+                                    mediaType={mediaType}
+                                    getThemeColor={getThemeColor}
                                 />
-                            )}
+                            }
+                        >
                         </Bar>
                     </BarChart>
                 </ResponsiveContainer>
@@ -64,6 +68,13 @@ export function RatingsChart({ height, ratings, mediaType, ratingSystem }: Ratin
         </Card>
     );
 }
+
+
+const CustomizedBar = (props: any) => {
+    const { mediaType, getThemeColor } = props;
+    const fillColor = getThemeColor(mediaType);
+    return <Rectangle {...props} fill={fillColor}/>;
+};
 
 
 const FeelingTickXAxis = (props: any) => {

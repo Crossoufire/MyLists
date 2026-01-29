@@ -8,7 +8,7 @@ import {DisplayComment} from "@/lib/client/components/media/base/DisplayComment"
 import {DisplayFavorite} from "@/lib/client/components/media/base/DisplayFavorite";
 
 
-interface BaseMediaFollowCardrops {
+interface BaseMediaFollowCardProps {
     followData: FollowData;
     rating: React.ReactNode;
     redoDisplay?: React.ReactNode;
@@ -16,7 +16,7 @@ interface BaseMediaFollowCardrops {
 }
 
 
-export const BaseMediaFollowCard = ({ followData, rating, redoDisplay, mediaDetailsDisplay }: BaseMediaFollowCardrops) => {
+export const BaseMediaFollowCard = ({ followData, rating, redoDisplay, mediaDetailsDisplay }: BaseMediaFollowCardProps) => {
     return (
         <div className="flex items-center space-x-3 p-3 rounded-lg hover:bg-accent/50 transition-colors">
             <div className="shrink-0">

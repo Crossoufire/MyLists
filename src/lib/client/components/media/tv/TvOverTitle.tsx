@@ -9,14 +9,14 @@ type TvDetailsProps<T extends MediaType> = Parameters<MediaConfig[T]["overTitle"
 
 
 export const TvOverTitle = ({ mediaType, media }: TvDetailsProps<typeof MediaType.SERIES | typeof MediaType.ANIME>) => {
-    const hasNextwork = (media.networks?.length ?? 0) > 0;
+    const hasNetwork = (media.networks?.length ?? 0) > 0;
 
     return (
         <>
             <Badge variant="black">
                 {media.prodStatus}
             </Badge>
-            {hasNextwork &&
+            {hasNetwork &&
                 <>
                     <span className="text-muted-foreground">•</span>
                     {media.networks?.slice(0, 2).map((net) =>
