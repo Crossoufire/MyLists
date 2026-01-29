@@ -35,13 +35,13 @@ export const DangerForm = () => {
     };
 
     return (
-        <div className="max-w-125 rounded-xl border border-red-900/30 bg-red-950/10 p-6">
+        <div className="h-fit max-w-125 rounded-xl border border-red-900/30 bg-red-950/10 p-6">
             <div className="flex flex-col gap-5">
                 <div>
                     <h3 className="text-base font-bold text-red-400">
                         Delete Account
                     </h3>
-                    <p className="text-sm text-red-200/60 mt-1 max-w-xl">
+                    <p className="text-sm text-red-200/60 mt-1">
                         Permanently remove your account and all associated data.
                         This action is not reversible, so please continue with caution.
                     </p>
