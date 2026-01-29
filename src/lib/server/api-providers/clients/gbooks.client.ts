@@ -1,8 +1,8 @@
+import {serverEnv} from "@/env/server";
 import {RateLimiterAbstract} from "rate-limiter-flexible";
 import {createRateLimiter} from "@/lib/server/core/rate-limiter";
 import {BaseClient} from "@/lib/server/api-providers/clients/base.client";
 import {GBooksDetails, GBooksSearchResults, SearchData} from "@/lib/types/provider.types";
-import {serverEnv} from "@/env/server";
 
 
 export class GBooksClient extends BaseClient {
@@ -20,11 +20,13 @@ export class GBooksClient extends BaseClient {
     }
 
     async search(query: string, page: number = 1): Promise<SearchData<GBooksSearchResults>> {
-        const offset = (page - 1) * this.resultsPerPage;
+        const params = new URLSearchParams({
+            q: query,
+            key: serverEnv.GOOGLE_BOOKS_API_KEY,
+            startIndex: ((page - 1) * this.resultsPerPage).toString(),
+        });
 
-        const url = `${this.baseUrl}?q=${query}&startIndex=${offset}&key=${serverEnv.GOOGLE_BOOKS_API_KEY}`;
-        const response = await this.call(url);
-
+        const response = await this.call(`${this.baseUrl}?${params.toString()}`);
         return {
             page,
             rawData: await response.json(),

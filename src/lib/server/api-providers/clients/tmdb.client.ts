@@ -32,8 +32,13 @@ export class TmdbClient extends BaseClient {
     }
 
     async search(query: string, page = 1): Promise<SearchData<TmdbMultiSearchResponse>> {
-        const url = `${this.baseUrl}/search/multi?api_key=${this.apiKey}&query=${query}&page=${page}`;
-        const response = await this.call(url);
+        const params = new URLSearchParams({
+            query: query,
+            api_key: this.apiKey,
+            page: page.toString(),
+        });
+
+        const response = await this.call(`${this.baseUrl}/search/multi?${params.toString()}`);
         return {
             page,
             rawData: await response.json(),
@@ -42,26 +47,22 @@ export class TmdbClient extends BaseClient {
     }
 
     async getMovieDetails(movieId: number): Promise<TmdbMovieDetails> {
-        const url = `${this.baseUrl}/movie/${movieId}?api_key=${this.apiKey}&append_to_response=credits`;
-        const response = await this.call(url);
+        const response = await this.call(`${this.baseUrl}/movie/${movieId}?api_key=${this.apiKey}&append_to_response=credits`);
         return response.json();
     }
 
     async getTvDetails(tvId: number): Promise<TmdbTvDetails> {
-        const url = `${this.baseUrl}/tv/${tvId}?api_key=${this.apiKey}&append_to_response=credits`;
-        const response = await this.call(url);
+        const response = await this.call(`${this.baseUrl}/tv/${tvId}?api_key=${this.apiKey}&append_to_response=credits`);
         return response.json();
     }
 
     async getTvTrending(): Promise<TmdbTrendingTvResponse> {
-        const url = `${this.baseUrl}/trending/tv/week?api_key=${this.apiKey}`;
-        const response = await this.call(url);
+        const response = await this.call(`${this.baseUrl}/trending/tv/week?api_key=${this.apiKey}`);
         return response.json();
     }
 
     async getMoviesTrending(): Promise<TmdbTrendingMoviesResponse> {
-        const url = `${this.baseUrl}/trending/movie/week?api_key=${this.apiKey}`;
-        const response = await this.call(url);
+        const response = await this.call(`${this.baseUrl}/trending/movie/week?api_key=${this.apiKey}`);
         return response.json();
     }
 

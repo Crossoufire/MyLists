@@ -25,8 +25,12 @@ export class JikanClient extends BaseClient {
     }
 
     async search(query: string, page: number = 1): Promise<SearchData<JikanMangaSearchResponse>> {
-        const url = `${this.mangaUrl}?q=${query}&page=${page}`;
-        const response = await this.call(url);
+        const params = new URLSearchParams({
+            q: query,
+            page: page.toString(),
+        });
+
+        const response = await this.call(`${this.mangaUrl}?${params.toString()}`);
         return {
             page,
             rawData: await response.json(),
@@ -35,15 +39,14 @@ export class JikanClient extends BaseClient {
     }
 
     async getMangaDetails(mangaId: number): Promise<JikanDetails> {
-        const url = `${this.mangaUrl}/${mangaId}/full`;
-        const response = await this.call(url);
+        const response = await this.call(`${this.mangaUrl}/${mangaId}/full`);
         const data = await response.json();
         return data.data;
     }
 
     async getAnimeGenresAndDemographics(animeName: string): Promise<JikanAnimeSearchResponse> {
-        const url = `${this.animeUrl}?q=${animeName}`;
-        const response = await this.call(url);
+        const params = new URLSearchParams({ q: animeName });
+        const response = await this.call(`${this.animeUrl}?${params.toString()}`);
         return response.json();
     }
 }
