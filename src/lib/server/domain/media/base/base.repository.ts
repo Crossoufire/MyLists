@@ -183,6 +183,15 @@ export abstract class BaseRepository<TConfig extends MediaSchemaConfig> {
             .orderBy(desc(similarSub.commonGenreCount));
     }
 
+    async getMediaForActivity(mediaIds: number[]) {
+        const { mediaTable } = this.config;
+
+        return getDbClient()
+            .select()
+            .from(mediaTable)
+            .where(inArray(mediaTable.id, mediaIds));
+    }
+
     async getCommonListFilters(userId: number) {
         const { genreTable, collectionTable, listTable } = this.config;
 

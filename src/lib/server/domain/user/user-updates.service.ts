@@ -1,6 +1,6 @@
 import {MediaType} from "@/lib/utils/enums";
 import {LogUpdateParams} from "@/lib/types/base.types";
-import {AllUpdatesSearch} from "@/lib/types/zod.schema.types";
+import {SearchType} from "@/lib/types/zod.schema.types";
 import {UserUpdatesRepository} from "@/lib/server/domain/user/user-updates.repository";
 
 
@@ -28,8 +28,8 @@ export class UserUpdatesService {
         return this.repository.deleteMediaUpdates(mediaType, mediaIds);
     }
 
-    async getUserUpdatesPaginated(userId: number, filters: AllUpdatesSearch) {
-        return this.repository.getUserUpdatesPaginated(userId, filters)
+    async getUserUpdatesPaginated(filters: SearchType, userId?: number) {
+        return this.repository.getUserUpdatesPaginated(filters, userId)
     }
 
     async getFollowsUpdates(profileOwnerId: number, visitorId?: number, limit = 10) {

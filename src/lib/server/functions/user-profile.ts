@@ -118,5 +118,5 @@ export const getAllUpdatesHistory = createServerFn({ method: "GET" })
     .inputValidator(allUpdatesHistorySchema)
     .handler(async ({ data, context: { user } }) => {
         const userUpdatesService = await getContainer().then((c) => c.services.userUpdates);
-        return userUpdatesService.getUserUpdatesPaginated(user.id, data);
+        return userUpdatesService.getUserUpdatesPaginated(data, user.id);
     });

@@ -88,7 +88,7 @@ export const userMediaStatsHistory = sqliteTable("user_media_stats_history", {
     statusCounts: customJson<Record<Status, number>>("status_counts").default(sql`'{}'`).notNull(),
     averageRating: real(),
     timestamp: text().default(sql`(CURRENT_TIMESTAMP)`).notNull(),
-    mediaId: integer(),
+    mediaId: integer().notNull(),
 }, (table) => [
     index("ix_user_media_stats_history_user_id").on(table.userId),
     index("ix_user_media_stats_history_media_type").on(table.mediaType),

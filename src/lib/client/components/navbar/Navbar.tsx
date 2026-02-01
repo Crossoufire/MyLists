@@ -15,7 +15,7 @@ import {MainThemeIcon, PrivacyIcon} from "@/lib/client/components/general/MainIc
 import {Notifications} from "@/lib/client/components/navbar/Notifications";
 import {authOptions} from "@/lib/client/react-query/query-options/query-options";
 import {useFeatureFlagMutation} from "@/lib/client/react-query/query-mutations/user.mutations";
-import {Activity, BarChart2, Calendar, ChartNoAxesColumn, ChevronDown, Crown, LogOut, Menu, Popcorn, Settings, ShieldCheck, TrendingUp, Trophy, User, X} from "lucide-react";
+import {Activity, BarChart2, Calendar, ChartNoAxesColumn, ChevronDown, Crown, LogOut, Menu, Popcorn, Settings, ShieldCheck, TrendingUp, Trophy, User, X, Zap} from "lucide-react";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -153,6 +153,16 @@ export const Navbar = () => {
                                 </DropdownMenuGroup>
                                 <DropdownMenuSeparator/>
                                 <DropdownMenuGroup>
+                                    <DropdownMenuItem asChild>
+                                        <Link
+                                            to="/stats/$username/activity"
+                                            params={{ username: currentUser.name }}
+                                            search={{ year: String(new Date().getFullYear()), month: String(new Date().getMonth() + 1) }}
+                                        >
+                                            <Zap/>
+                                            My Activity
+                                        </Link>
+                                    </DropdownMenuItem>
                                     <DropdownMenuItem asChild>
                                         <Link to="/coming-next">
                                             <Calendar/>

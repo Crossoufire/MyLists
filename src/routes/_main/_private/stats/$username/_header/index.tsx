@@ -1,7 +1,7 @@
 import {MediaType} from "@/lib/utils/enums";
 import {TabValue} from "@/lib/types/stats.types";
 import {useSuspenseQuery} from "@tanstack/react-query";
-import {Award, EllipsisVertical, User} from "lucide-react";
+import {Award, EllipsisVertical, User, Zap} from "lucide-react";
 import {createFileRoute, Link} from "@tanstack/react-router";
 import {MainThemeIcon} from "@/lib/client/components/general/MainIcons";
 import {DashboardContent} from "@/lib/client/media-stats/DashboardContent";
@@ -65,6 +65,9 @@ function UserStatsPage() {
 
 
 const QuickActions = ({ username }: { username: string }) => {
+    const year = String(new Date().getFullYear());
+    const month = String(new Date().getMonth() + 1);
+
     return (
         <DropdownMenu>
             <DropdownMenuTrigger className="opacity-70 hover:opacity-100">
@@ -75,6 +78,12 @@ const QuickActions = ({ username }: { username: string }) => {
                     <DropdownMenuItem className="cursor-pointer">
                         <User className="size-4 text-muted-foreground"/>
                         <span>User's Profile</span>
+                    </DropdownMenuItem>
+                </Link>
+                <Link to="/stats/$username/activity" params={{ username }} search={{ year, month }}>
+                    <DropdownMenuItem className="cursor-pointer">
+                        <Zap className="size-4 text-muted-foreground"/>
+                        <span>User's Activity</span>
                     </DropdownMenuItem>
                 </Link>
                 <Link to="/achievements/$username" params={{ username }}>

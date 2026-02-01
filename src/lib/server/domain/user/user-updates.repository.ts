@@ -1,6 +1,6 @@
 import {LogUpdateParams} from "@/lib/types/base.types";
+import {SearchType} from "@/lib/types/zod.schema.types";
 import {MediaType, PrivacyType} from "@/lib/utils/enums";
-import {AllUpdatesSearch} from "@/lib/types/zod.schema.types";
 import {getDbClient} from "@/lib/server/database/async-storage";
 import {followers, user, userMediaUpdate} from "@/lib/server/database/schema";
 import {and, count, desc, eq, getTableColumns, inArray, like, or, sql} from "drizzle-orm";
@@ -17,22 +17,35 @@ export class UserUpdatesRepository {
         });
     }
 
-    static async getUserUpdatesPaginated(userId: number, filters: AllUpdatesSearch) {
+    static async getUserUpdatesPaginated(filters: SearchType, userId?: number) {
         const page = filters?.page ?? 1;
         const limit = filters?.perPage ?? 25;
         const search = filters?.search ?? "";
         const offset = (page - 1) * limit;
 
+        const baseConditions = [];
+        if (userId !== undefined) baseConditions.push(eq(userMediaUpdate.userId, userId));
+        if (search) baseConditions.push(like(userMediaUpdate.mediaName, `%${search}%`));
+
         const totalCount = getDbClient()
             .select({ count: sql<number>`count()` })
             .from(userMediaUpdate)
-            .where(and(eq(userMediaUpdate.userId, userId), like(userMediaUpdate.mediaName, `%${search}%`)))
+            .where(baseConditions.length > 0 ? and(...baseConditions) : undefined)
             .get()?.count ?? 0;
 
-        const historyResult = await getDbClient()
-            .select()
-            .from(userMediaUpdate)
-            .where(and(eq(userMediaUpdate.userId, userId), like(userMediaUpdate.mediaName, `%${search}%`)))
+        const queryItems = getDbClient()
+            .select({
+                ...(userId === undefined ? { username: user.name } : {}),
+                ...getTableColumns(userMediaUpdate),
+            })
+            .from(userMediaUpdate);
+
+        if (userId === undefined) {
+            queryItems.innerJoin(user, eq(userMediaUpdate.userId, user.id));
+        }
+
+        const historyResult = await queryItems
+            .where(baseConditions.length > 0 ? and(...baseConditions) : undefined)
             .orderBy(desc(userMediaUpdate.timestamp))
             .offset(offset)
             .limit(limit);

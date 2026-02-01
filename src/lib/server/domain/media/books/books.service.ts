@@ -164,25 +164,19 @@ description: ${book.synopsis}
         const oldStatus = oldState?.status;
         const oldRating = oldState?.rating;
         const oldRedo = oldState?.redo ?? 0;
-        const oldComment = oldState?.comment;
-        const oldFavorite = oldState?.favorite ?? false;
+        const wasCommented = !!oldState?.comment;
+        const wasRated = oldState?.rating != null;
+        const wasFavorited = !!oldState?.favorite;
         const oldTotalSpecificValue = oldState?.total ?? 0;
         const oldTotalTimeSpent = oldTotalSpecificValue * 1.7;
-        const wasCompleted = oldStatus === Status.COMPLETED;
-        const wasFavorited = wasCompleted && oldFavorite;
-        const wasCommented = wasCompleted && !!oldComment;
-        const wasRated = wasCompleted && oldRating != null;
-
+        
         // Extract New State Info
         const newStatus = newState?.status;
         const newRating = newState?.rating;
         const newRedo = newState?.redo ?? 0;
-        const newComment = newState?.comment;
-        const newFavorite = newState?.favorite ?? false;
-        const isCompleted = newStatus === Status.COMPLETED;
-        const isFavorited = isCompleted && newFavorite;
-        const isCommented = isCompleted && !!newComment;
-        const isRated = isCompleted && newRating != null;
+        const isCommented = !!newState?.comment;
+        const isRated = newState?.rating != null;
+        const isFavorited = !!newState?.favorite;
         const newTotalSpecificValue = newState?.total ?? 0;
         const newTotalTimeSpent = newTotalSpecificValue * 1.7;
 

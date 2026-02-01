@@ -3,8 +3,8 @@ import {tryNotFound} from "@/lib/utils/try-not-found";
 import {getContainer} from "@/lib/server/core/container";
 import {FormattedError} from "@/lib/utils/error-classes";
 import {AdvancedMediaStats} from "@/lib/types/stats.types";
-import {getUserStatsSchema} from "@/lib/types/zod.schema.types";
 import {authorizationMiddleware} from "@/lib/server/middlewares/authorization";
+import {getMonthlyActivitySchema, getSectionActivitySchema, getUserStatsSchema} from "@/lib/types/zod.schema.types";
 
 
 export const getUserStats = createServerFn({ method: "GET" })
@@ -35,4 +35,28 @@ export const getUserStats = createServerFn({ method: "GET" })
             activatedMediaTypes,
             ratingSystem: user.ratingSystem,
         } as AdvancedMediaStats;
+    });
+
+
+export const getMonthlyActivity = createServerFn({ method: "GET" })
+    .middleware([authorizationMiddleware])
+    .inputValidator(tryNotFound(getMonthlyActivitySchema))
+    .handler(async ({ data: { year, month }, context: { user } }) => {
+        const container = await getContainer();
+        const userStatsService = container.services.userStats;
+
+        const start = new Date(year, month - 1, 1);
+        const end = new Date(year, month, 0, 23, 59, 59);
+
+        return userStatsService.getMonthlyActivity(user.id, start, end);
+    });
+
+
+export const getSectionActivity = createServerFn({ method: "GET" })
+    .middleware([authorizationMiddleware])
+    .inputValidator(tryNotFound(getSectionActivitySchema))
+    .handler(async ({ data, context: { user } }) => {
+        const container = await getContainer();
+        const userStatsService = container.services.userStats;
+        return userStatsService.getSectionActivity(user.id, data);
     });

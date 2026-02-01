@@ -1,6 +1,6 @@
 import {Link} from "@tanstack/react-router";
 import {useAuth} from "@/lib/client/hooks/use-auth";
-import {Archive, Award, CircleX, Film, Home, ListCheck, Play, Settings, Users} from "lucide-react";
+import {Archive, Award, CircleX, Film, History, Home, ListCheck, Play, Settings, Users} from "lucide-react";
 import {
     Sidebar,
     SidebarContent,
@@ -74,6 +74,14 @@ export function AdminSidebar() {
                     <SidebarGroupLabel>Content</SidebarGroupLabel>
                     <SidebarGroupContent>
                         <SidebarMenu>
+                            <SidebarMenuItem>
+                                <SidebarMenuButton asChild>
+                                    <Link to="/admin/history">
+                                        <History className="size-4"/>
+                                        <span>Media History</span>
+                                    </Link>
+                                </SidebarMenuButton>
+                            </SidebarMenuItem>
                             <SidebarMenuItem>
                                 <SidebarMenuButton asChild>
                                     <Link to="/admin/achievements">

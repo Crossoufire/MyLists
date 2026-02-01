@@ -4,8 +4,8 @@ import {DeltaStats} from "@/lib/types/stats.types";
 import {UserMediaStats} from "@/lib/types/base.types";
 import {SearchTypeHoF} from "@/lib/types/zod.schema.types";
 import {getDbClient} from "@/lib/server/database/async-storage";
-import {and, count, countDistinct, eq, gt, inArray, ne, SQL, sql, sum} from "drizzle-orm";
 import {user, userMediaSettings, userMediaStatsHistory} from "@/lib/server/database/schema";
+import {and, asc, count, countDistinct, desc, eq, gt, gte, inArray, lt, lte, ne, SQL, sql, sum} from "drizzle-orm";
 
 
 export class UserStatsRepository {
@@ -402,5 +402,34 @@ export class UserStatsRepository {
             statusCountsList,
             mediaTimeDistribution,
         };
+    }
+
+    // --- Wrapped -----------------------------------------------
+
+    static async getEntriesInRange(userId: number, mediaType: MediaType, start: Date, end: Date) {
+        return getDbClient()
+            .select()
+            .from(userMediaStatsHistory)
+            .where(and(
+                eq(userMediaStatsHistory.userId, userId),
+                eq(userMediaStatsHistory.mediaType, mediaType),
+                gte(userMediaStatsHistory.timestamp, start.toISOString()),
+                lte(userMediaStatsHistory.timestamp, end.toISOString()),
+            ))
+            .orderBy(asc(userMediaStatsHistory.timestamp));
+    }
+
+    static async getLastEntryBefore(userId: number, mediaType: MediaType, timestamp: string) {
+        return getDbClient()
+            .select()
+            .from(userMediaStatsHistory)
+            .where(and(
+                eq(userMediaStatsHistory.userId, userId),
+                eq(userMediaStatsHistory.mediaType, mediaType),
+                lt(userMediaStatsHistory.timestamp, timestamp),
+            ))
+            .orderBy(desc(userMediaStatsHistory.timestamp))
+            .limit(1)
+            .get();
     }
 }

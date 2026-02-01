@@ -7,7 +7,7 @@ import {TabHeader} from "@/lib/client/components/general/TabHeader";
 import {MediaLevel} from "@/lib/client/components/general/MediaLevel";
 import {createFileRoute, Link, Outlet, useLocation} from "@tanstack/react-router";
 import {userListHeaderOption} from "@/lib/client/react-query/query-options/query-options";
-import {Award, ChartLine, ChartNoAxesColumn, EllipsisVertical, Layers, Library, User} from "lucide-react";
+import {Award, ChartLine, ChartNoAxesColumn, EllipsisVertical, Layers, Library, User, Zap} from "lucide-react";
 import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger} from "@/lib/client/components/ui/dropdown-menu";
 
 
@@ -36,10 +36,12 @@ function ListHeader() {
     const activeTab = location.pathname.endsWith("/collections")
         ? "collections" : location.pathname.endsWith("/stats")
             ? "stats" : location.pathname.endsWith("/achievements")
-                ? "achievements" : "list";
+                ? "achievements" : location.pathname.endsWith("/activity")
+                    ? "activity" : "list";
 
     const onTabChange = (tabName: string) => {
         if (tabName === activeTab) return;
+
         if (tabName === "list") {
             return navigate({ to: `/list/${mediaType}/${username}` });
         }
@@ -49,6 +51,13 @@ function ListHeader() {
         if (tabName === "stats") {
             return navigate({ to: `/list/${mediaType}/${username}/stats` });
         }
+        if (tabName === "activity") {
+            const year = new Date().getFullYear();
+            const month = new Date().getMonth() + 1;
+
+            return navigate({ to: `/list/${mediaType}/${username}/activity?year=${year}&month=${month}` });
+        }
+
         return navigate({ to: `/list/${mediaType}/${username}/achievements` });
     };
 
@@ -73,6 +82,11 @@ function ListHeader() {
             id: "achievements",
             label: "achievements",
             icon: <Award className="size-4"/>,
+        }, {
+            isAccent: true,
+            id: "activity",
+            label: "activity",
+            icon: <Zap className="size-4"/>,
         },
     ]
 
@@ -136,7 +150,7 @@ const DotsOthers = ({ mediaType, username }: { mediaType: MediaType; username: s
                 <DropdownMenuItem asChild>
                     <Link to="/stats/$username" params={{ username }} search={{ mediaType }}>
                         <ChartLine className="size-4 text-muted-foreground"/>
-                        <span>Collection Stats</span>
+                        <span>User's Stats</span>
                     </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>

@@ -123,32 +123,25 @@ export class TvService extends BaseService<AnimeSchemaConfig | SeriesSchemaConfi
         const statusCounts: Partial<Record<Status, number>> = {};
 
         // Extract Old State Info
+        const oldRedo = oldState?.redo2;
         const oldStatus = oldState?.status;
         const oldRating = oldState?.rating;
-        const oldComment = oldState?.comment;
-        const oldFavorite = oldState?.favorite ?? false;
+        const wasCommented = !!oldState?.comment;
+        const wasRated = oldState?.rating != null;
+        const wasFavorited = !!oldState?.favorite;
         const oldTotalSpecificValue = oldState?.total ?? 0;
         const oldTotalTimeSpent = oldTotalSpecificValue * media.duration;
-        const oldRedo = oldState?.redo2;
         const oldSumRedo = oldRedo ? oldRedo.reduce((a, c) => a + c, 0) : 0;
-        const wasCompleted = oldStatus === Status.COMPLETED;
-        const wasFavorited = wasCompleted && oldFavorite;
-        const wasCommented = wasCompleted && !!oldComment;
-        const wasRated = wasCompleted && oldRating != null;
 
         // Extract New State Info
         const newStatus = newState?.status;
         const newRating = newState?.rating;
-        const newComment = newState?.comment;
-        const newFavorite = newState?.favorite ?? false;
+        const isCommented = !!newState?.comment;
+        const isRated = newState?.rating != null;
+        const isFavorited = !!newState?.favorite;
         const newTotalSpecificValue = newState?.total ?? 0;
         const newTotalTimeSpent = newTotalSpecificValue * media.duration;
         const newSumRedo = newState?.redo2.reduce((a, c) => a + c, 0) ?? 0;
-        const isCompleted = newStatus === Status.COMPLETED;
-        const isFavorited = isCompleted && newFavorite;
-        const isCommented = isCompleted && !!newComment;
-        const isRated = isCompleted && newRating != null;
-
 
         // --- Calculate Deltas ----------------------------------------------------------------
 

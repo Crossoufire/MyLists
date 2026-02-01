@@ -20,11 +20,10 @@ export type SearchTypeHoF = z.infer<typeof searchTypeHoFSchema>;
 export type SearchTypeAdmin = z.infer<typeof searchTypeAdminSchema>;
 export type MediaListArgs = z.infer<typeof mediaListArgsSchema>;
 export type ListSettings = z.infer<typeof mediaListSettingsSchema>;
-export type AllUpdatesSearch = z.infer<typeof allUpdatesHistorySchema>;
 export type AdminUpdatePayload = z.infer<typeof adminUpdatePayloadSchema>;
 export type AchievementTier = z.infer<typeof tierAchievementSchema>;
 export type UpdateUserMedia = z.infer<typeof updateUserMediaSchema>;
-
+export type SectionActivity = z.infer<typeof getSectionActivitySchema>;
 
 const hofSortingSchema = z.enum(["normalized", "profile", ...Object.values(MediaType)]).optional().catch(undefined);
 
@@ -235,6 +234,24 @@ export const downloadListAsCsvSchema = z.object({
 export const getUserStatsSchema = z.object({
     mediaType: z.enum(MediaType).optional(),
 })
+
+export const getMonthlyActivitySchema = z.object({
+    username: z.string(),
+    year: z.coerce.number().int().positive(),
+    month: z.coerce.number().int().positive().min(1).max(12),
+})
+
+
+export const getSectionActivitySchema = z.object({
+    username: z.string(),
+    mediaType: z.enum(MediaType).optional(),
+    year: z.coerce.number().int().positive(),
+    section: z.enum(["completed", "progressed", "redo"]),
+    limit: z.coerce.number().optional().default(24),
+    offset: z.coerce.number().optional().default(0),
+    month: z.coerce.number().int().positive().min(1).max(12),
+});
+
 
 const adminUpdatePayloadSchema = z.object({
     role: z.enum(RoleType).optional(),

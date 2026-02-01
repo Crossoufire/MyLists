@@ -55,3 +55,29 @@ export const getPlaytimeList = () => {
 export const getRedoList = () => {
     return [...Array(11).keys()];
 };
+
+
+export const getMediaUnitLabel = (mediaType: MediaType, length: "short" | "long" = "long") => {
+    if (length === "short") {
+        switch (mediaType) {
+            case MediaType.SERIES:
+            case MediaType.ANIME:
+                return "eps";
+            case MediaType.BOOKS:
+                return "p.";
+            case MediaType.MANGA:
+                return "ch.";
+        }
+    }
+    else {
+        switch (mediaType) {
+            case MediaType.SERIES:
+            case MediaType.ANIME:
+                return "Episodes";
+            case MediaType.BOOKS:
+                return "Pages Read";
+            case MediaType.MANGA:
+                return "Chapters Read";
+        }
+    }
+};

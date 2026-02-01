@@ -1,21 +1,22 @@
-import {queryOptions} from "@tanstack/react-query";
+import {NotifTab} from "@/lib/types/base.types";
 import {getCurrentUser} from "@/lib/server/functions/auth";
 import {getTrendsMedia} from "@/lib/server/functions/trends";
-import {getUserStats} from "@/lib/server/functions/user-stats";
 import {getSearchResults} from "@/lib/server/functions/search";
 import {getHallOfFame} from "@/lib/server/functions/hall-of-fame";
 import {getComingNextMedia} from "@/lib/server/functions/coming-next";
 import {ApiProviderType, JobType, MediaType} from "@/lib/utils/enums";
 import {getPlatformStats} from "@/lib/server/functions/platform-stats";
+import {getAdminAllUpdatesHistory} from "@/lib/server/functions/admin";
+import {infiniteQueryOptions, queryOptions} from "@tanstack/react-query";
 import {getUserAchievements} from "@/lib/server/functions/user-achievements";
 import {MediaListArgs, SearchType, SearchTypeHoF} from "@/lib/types/zod.schema.types";
 import {getDailyMediadle, getMediadleSuggestions} from "@/lib/server/functions/moviedle";
-import {getUserCollectionNames, getUserMediaHistory} from "@/lib/server/functions/user-media";
 import {getNotifications, getNotificationsCount} from "@/lib/server/functions/notifications";
+import {getUserCollectionNames, getUserMediaHistory} from "@/lib/server/functions/user-media";
+import {getMonthlyActivity, getSectionActivity, getUserStats} from "@/lib/server/functions/user-stats";
 import {getJobDetails, getMediaDetails, getMediaDetailsToEdit} from "@/lib/server/functions/media-details";
 import {getAllUpdatesHistory, getUserProfile, getUserProfileHeader, getUsersFollowers, getUsersFollows} from "@/lib/server/functions/user-profile";
 import {getCollectionsViewFn, getMediaListFilters, getMediaListSearchFilters, getMediaListSF, getUserListHeaderSF} from "@/lib/server/functions/media-lists";
-import {NotifTab} from "@/lib/types/base.types";
 
 
 export const authOptions = queryOptions({
@@ -138,6 +139,12 @@ export const allUpdatesOptions = (username: string, filters: SearchType) => quer
 });
 
 
+export const adminAllUpdatesOptions = (filters: SearchType) => queryOptions({
+    queryKey: ["adminAllUpdates", filters],
+    queryFn: () => getAdminAllUpdatesHistory({ data: filters }),
+});
+
+
 export const historyOptions = (mediaType: MediaType, mediaId: number) => queryOptions({
     queryKey: ["onOpenHistory", mediaType, mediaId],
     queryFn: () => getUserMediaHistory({ data: { mediaType, mediaId } }),
@@ -170,6 +177,43 @@ export const userStatsOptions = (username: string, search: { mediaType?: MediaTy
     queryKey: ["userStats", username, search],
     queryFn: () => getUserStats({ data: { username, ...search } }),
 });
+
+
+export const activityQueryOptions = (username: string, search: { year: string, month: string }) => {
+    return queryOptions({
+        queryKey: ["userStats-activity", username, search.year, search.month],
+        queryFn: () => getMonthlyActivity({ data: { username, ...search } }),
+    })
+}
+
+
+export const sectionActivityQueryOptions = (username: string, params: {
+    year: string;
+    month: string;
+    mediaType: MediaType | "all";
+    section: "completed" | "progressed" | "redo"
+}) => {
+    return infiniteQueryOptions({
+        queryKey: ["userStats-section", username, params.year, params.month, params.mediaType, params.section],
+        queryFn: ({ pageParam = 0 }) => getSectionActivity({
+            data: {
+                username,
+                limit: 24,
+                offset: pageParam,
+                section: params.section,
+                year: Number(params.year),
+                month: Number(params.month),
+                mediaType: params.mediaType === "all" ? undefined : params.mediaType,
+            }
+        }),
+        staleTime: Infinity,
+        initialPageParam: undefined as number | undefined,
+        getNextPageParam: (lastPage, allPages) => {
+            if (!lastPage.hasMore) return undefined;
+            return allPages.reduce((acc, page) => acc + page.items.length, 0);
+        },
+    });
+}
 
 
 export const collectionNamesOptions = (mediaType: MediaType, isOpen: boolean) => queryOptions({

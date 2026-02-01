@@ -160,7 +160,6 @@ export const formatMinutes = (minutes: number | string | null | undefined, optio
     return `${zeroPad(h)} h ${zeroPad(m)}`;
 };
 
-
 export const formatMs = (ms: number) => {
     if (ms < 1000) return `${ms}ms`;
     if (ms < 60000) return `${(ms / 1000).toFixed(1)}s`;
@@ -168,4 +167,14 @@ export const formatMs = (ms: number) => {
     const secs = Math.floor((ms % 60000) / 1000);
 
     return `${mins}m ${secs}s`;
+};
+
+export const getMonthName = (month: string) => {
+    const monthAsNumber = Number(month);
+
+    if (!Number.isNaN(monthAsNumber)) {
+        return new Date(0, Number(month) - 1).toLocaleString("default", { month: "long" });
+    }
+
+    return month;
 };

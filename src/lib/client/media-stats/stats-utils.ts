@@ -34,7 +34,7 @@ export const getMediaNaming = (mediaType: MediaType) => {
         },
         manga: {
             redo: "manga re-read",
-            durationDistributionUnit: "c.",
+            durationDistributionUnit: "ch.",
             totalSpecific: "Total Chapters Read",
             durationDistribution: "Chapters Distribution",
         },

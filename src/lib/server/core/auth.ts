@@ -5,13 +5,14 @@ import {clientEnv} from "@/env/client";
 import {serverEnv} from "@/env/server";
 import {betterAuth} from "better-auth";
 import {db} from "@/lib/server/database/db";
+import {statusUtils} from "@/lib/utils/mapping";
 import {sendEmail} from "@/lib/utils/mail-sender";
 import {createServerOnlyFn} from "@tanstack/react-start";
 import {drizzleAdapter} from "better-auth/adapters/drizzle";
 import {getDbClient} from "@/lib/server/database/async-storage";
 import {tanstackStartCookies} from "better-auth/tanstack-start";
 import {user as userTable, userMediaSettings} from "@/lib/server/database/schema";
-import {ApiProviderType, MediaType, PrivacyType, RatingSystemType, RoleType} from "@/lib/utils/enums";
+import {ApiProviderType, MediaType, PrivacyType, RatingSystemType, RoleType, Status} from "@/lib/utils/enums";
 
 
 const getAuthConfig = createServerOnlyFn(() => betterAuth({
@@ -28,7 +29,7 @@ const getAuthConfig = createServerOnlyFn(() => betterAuth({
         user: {
             create: {
                 before: async (user) => {
-                    const usernameExist = await getDbClient()
+                    const usernameExist = getDbClient()
                         .select()
                         .from(userTable)
                         .where(eq(userTable.name, user.name))
@@ -51,6 +52,9 @@ const getAuthConfig = createServerOnlyFn(() => betterAuth({
                         mediaType: mt,
                         userId: Number(user.id),
                         active: (mt === MediaType.MOVIES || mt === MediaType.SERIES),
+                        statusCounts: Object.fromEntries(
+                            statusUtils.byMediaType(mt).map((status) => [status, 0])
+                        ) as Record<Status, number>,
                     }));
 
                     await getDbClient()

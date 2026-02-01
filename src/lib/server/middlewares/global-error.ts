@@ -30,6 +30,10 @@ export const funcErrorMiddleware = createMiddleware({ type: "function" }).server
             console.error("ServerFunc Error:", { err });
         }
 
+        if (isRedirect(err) || isNotFound(err)) {
+            throw err;
+        }
+        
         await saveErrorToDb(err).catch();
 
         if (err instanceof FormattedError || err instanceof FormZodError) {

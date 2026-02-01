@@ -188,6 +188,15 @@ export const getAdminUserTracking = createServerFn({ method: "GET" })
     });
 
 
+export const getAdminAllUpdatesHistory = createServerFn({ method: "GET" })
+    .middleware([adminAuthMiddleware])
+    .inputValidator(searchTypeSchema)
+    .handler(async ({ data }) => {
+        const userUpdatesService = await getContainer().then((c) => c.services.userUpdates);
+        return userUpdatesService.getUserUpdatesPaginated(data);
+    });
+
+
 export const postImpersonateUser = createServerFn({ method: "POST" })
     .middleware([adminAuthMiddleware])
     .inputValidator((data) => z.object({ userId: z.coerce.number().int().positive() }).parse(data))
