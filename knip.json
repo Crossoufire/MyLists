@@ -13,7 +13,7 @@
         "src/routeTree.gen.ts",
         "src/start.ts",
         "src/styles.css",
-        "src/routes/**/*.tsx"
+        "src/routes/**/*.{ts,tsx}"
     ],
     "project": [
         "src/**/*.{ts,tsx}"
