@@ -31,7 +31,8 @@ import {
     Shield,
     Trash2,
     Trophy,
-    Users
+    Users,
+    Zap
 } from "lucide-react";
 
 
@@ -45,11 +46,23 @@ type FeatureData = {
     icon: LucideIcon,
     details?: JSX.Element,
     description: JSX.Element | string,
-    category: "New" | "Personalization" | "Analytics" | "Management" | "Social" | "Gaming" | "Media" | "Notifications" | "Other" | "Technical",
+    category: "New" | "Library & Management" | "Stats & Insights" | "Social & Notifications" | "Customization" | "Gamification";
 }
 
 
 const FEATURES_DATA: FeatureData[] = [
+    {
+        icon: Zap,
+        category: "New",
+        name: "Monthly Activity",
+        description: (
+            <span>
+                Track your progress in real-time. View a detailed breakdown of what
+                you've spent time on during the month. Your activity can be found
+                in the <b>'MyMedia'</b> dropdown.
+            </span>
+        )
+    },
     {
         icon: Lock,
         category: "New",
@@ -100,8 +113,8 @@ const FEATURES_DATA: FeatureData[] = [
     },
     {
         icon: Search,
-        category: "New",
         name: "Search using !bangs",
+        category: "Library & Management",
         description: "Power user? You can now search MyLists Media and Users directly via URL parameters using custom bangs.",
         details: (
             <div className="space-y-4 text-sm mt-2">
@@ -141,8 +154,8 @@ const FEATURES_DATA: FeatureData[] = [
     },
     {
         icon: Repeat,
-        category: "New",
         name: "Season-based Re-watch",
+        category: "Library & Management",
         description: "Granular control: add re-watch information per individual season instead of the entire show.",
         details: (
             <div className="mt-2 space-y-4 text-sm">
@@ -198,116 +211,116 @@ const FEATURES_DATA: FeatureData[] = [
     },
     {
         icon: BookOpen,
-        category: "New",
         name: "New Manga List",
+        category: "Library & Management",
         description: "Manga is officially supported! Enable it in your settings to start tracking your reading."
     },
     {
         icon: Crop,
         name: "Image Cropping",
-        category: "Personalization",
+        category: "Customization",
         description: "No more stretched images. Crop your profile picture and back cover directly during upload."
     },
     {
         icon: BarChart3,
-        category: "Analytics",
+        category: "Stats & Insights",
         name: "New Global Stats Page",
         description: "Revamped overview with a new 'Overall' section containing aggregated metrics.",
     },
     {
         icon: LineChart,
-        category: "Analytics",
+        category: "Stats & Insights",
         name: "Enhanced Stats Dashboard",
         description: "Drill down into specific media lists via 'Advanced Stats' on your profile."
     },
     {
         icon: Trophy,
-        category: "Analytics",
         name: "HoF Ranking System",
+        category: "Stats & Insights",
         description: "The Hall of Fame page has been redesigned with a new ranking algorithm."
     },
     {
         icon: Edit3,
-        category: "Management",
         name: "Updates in /lists",
+        category: "Library & Management",
         description: "Edit everything about a media entry directly from your main list view."
     },
     {
         icon: Filter,
-        category: "Management",
         name: "Advanced Filtering",
+        category: "Library & Management",
         description: "Refine your library with an expanded set of granular filter options."
     },
     {
         icon: LayoutList,
         name: "Table View",
-        category: "Management",
+        category: "Library & Management",
         description: "Switch between Grid view and a data-dense Table layout for your lists."
     },
     {
         icon: Layers,
+        category: "Customization",
         name: "Custom Collections",
-        category: "Personalization",
         description: "Create and apply custom collections to organize your media list your way."
     },
     {
         name: "CSV Export",
         icon: FileSpreadsheet,
-        category: "Management",
+        category: "Library & Management",
         description: "Data liberation: Download your entire media list as a CSV file."
     },
     {
         icon: Trash2,
-        category: "Management",
         name: "Media Update Removal",
+        category: "Library & Management",
         description: "Made a mistake? You can now delete erroneous media history updates."
     },
     {
         icon: Gamepad2,
-        category: "Gaming",
         name: "Game Platform",
+        category: "Library & Management",
         description: "Specify exactly which console or platform (PC, PS5, Switch) you played on."
     },
     {
         icon: Monitor,
-        category: "Gaming",
         name: "Moviedle Game",
+        category: "Gamification",
         description: "A Wordle-like mini-game: guess the movie from a pixelated poster."
     },
     {
         icon: Trophy,
-        category: "Gaming",
+        category: "Gamification",
         name: "Achievements System",
         description: "Earn badges with 4 difficulty levels based on your viewing habits."
     },
     {
         icon: Shield,
         name: "Privacy Mode",
-        category: "Personalization",
+        category: "Customization",
         description: "Fine-tune visibility for your profile, lists, stats, and updates."
     },
     {
         icon: Activity,
-        category: "Social",
         name: "User Updates",
+        category: "Social & Notifications",
         description: "Follow friends to populate your personalized activity feed."
     },
     {
         icon: Share2,
-        category: "Social",
         name: "Social Connections",
+        category: "Social & Notifications",
         description: "View follower/following networks and discover new users."
     },
     {
         icon: Calendar,
-        category: "Notifications",
         name: "Upcoming Releases",
+        category: "Social & Notifications",
         description: "Track release dates for your ongoing series, movies, and games."
     },
     {
         icon: BellRing,
-        category: "Notifications",
         name: "Release Reminders",
+        category: "Social & Notifications",
         description: "Get notified 7 days before new episodes or game drops."
     },
 ];
@@ -404,6 +417,25 @@ function FeaturesPage() {
         return a.localeCompare(b);
     });
 
+    const getCategoryIcon = (category: FeatureData["category"]) => {
+        switch (category) {
+            case "New":
+                return Activity;
+            case "Library & Management":
+                return LayoutList;
+            case "Stats & Insights":
+                return BarChart3;
+            case "Social & Notifications":
+                return Users;
+            case "Customization":
+                return Edit3;
+            case "Gamification":
+                return Gamepad2;
+            default:
+                return Search;
+        }
+    };
+
     return (
         <PageTitle title="What's New in MyLists" subtitle="Discover the latest features and what's new and Improved">
             <div className="space-y-15 mb-20">
@@ -411,13 +443,7 @@ function FeaturesPage() {
                     <section key={category}>
                         <SectionHeader
                             title={category}
-                            icon={category === "Analytics" ? BarChart3
-                                : category === "Management" ? Edit3
-                                    : category === "Social" ? Users
-                                        : category === "Gaming" ? Gamepad2
-                                            : category === "Notifications" ? BellRing
-                                                : category === "New" ? Activity : Search
-                            }
+                            icon={getCategoryIcon(category)}
                         />
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                             {groupedFeatures[category]?.map((feature, idx) =>
