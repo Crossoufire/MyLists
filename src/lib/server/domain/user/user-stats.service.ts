@@ -257,9 +257,9 @@ export class UserStatsService {
     async getSectionActivity(userId: number, params: SectionActivity) {
         const { year, month, section, offset = 0, mediaType, limit = INIT_ACTIVITY_LIMIT } = params;
 
-        const start = new Date(year, month - 1, 1);
+        const start = new Date(Date.UTC(year, month - 1, 0, 23, 59, 59));
         const mediaTypes = mediaType ? [mediaType] : Object.values(MediaType);
-        const end = new Date(year, month, 0, 23, 59, 59);
+        const end = new Date(Date.UTC(year, month, 0, 23, 59, 59));
 
         const allItems: GridItem[] = [];
         for (const mediaType of mediaTypes) {

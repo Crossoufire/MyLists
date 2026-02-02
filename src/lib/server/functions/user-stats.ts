@@ -45,14 +45,10 @@ export const getMonthlyActivity = createServerFn({ method: "GET" })
         const container = await getContainer();
         const userStatsService = container.services.userStats;
 
-        const start = new Date(year, month - 1, 1);
-        const end = new Date(year, month, 0, 23, 59, 59);
+        const start = new Date(Date.UTC(year, month - 1, 0, 23, 59, 59));
+        const end = new Date(Date.UTC(year, month, 0, 23, 59, 59));
 
-        const result = await userStatsService.getMonthlyActivity(user.id, start, end);
-
-        console.log({ start, end, result });
-
-        return result;
+        return userStatsService.getMonthlyActivity(user.id, start, end);
     });
 
 
@@ -62,5 +58,6 @@ export const getSectionActivity = createServerFn({ method: "GET" })
     .handler(async ({ data, context: { user } }) => {
         const container = await getContainer();
         const userStatsService = container.services.userStats;
+
         return userStatsService.getSectionActivity(user.id, data);
     });

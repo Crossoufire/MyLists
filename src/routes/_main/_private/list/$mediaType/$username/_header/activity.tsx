@@ -35,6 +35,7 @@ function ActivityPage() {
                 mediaType={mediaType}
                 timeGained={data.timeGained}
                 specificTotal={data.specificTotal}
+                dates={{ year: Number(filters.year), month: Number(filters.month) }}
                 onDateChange={(y, m) => navigate({ search: { year: String(y), month: String(m) } })}
             />
             {hasData ?

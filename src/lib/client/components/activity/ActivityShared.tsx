@@ -16,14 +16,16 @@ interface ActivityHeaderProps {
     timeGained: number;
     specificTotal: number;
     mediaType: MediaType | "all";
+    dates: { year: number, month: number };
     onDateChange: (year: number, month: number) => void;
 }
 
 
-export const ActivityHeader = ({ onDateChange, timeGained, count, specificTotal, mediaType }: ActivityHeaderProps) => {
+export const ActivityHeader = ({ onDateChange, timeGained, count, specificTotal, mediaType, dates }: ActivityHeaderProps) => {
     return (
         <div className="flex flex-col gap-4 sm:gap-6 sm:flex-row sm:items-center sm:justify-between">
             <CalendarNav
+                dates={dates}
                 onChange={onDateChange}
             />
             <div className="grid w-full grid-cols-2 gap-3 sm:gap-4 sm:flex sm:justify-end">

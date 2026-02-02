@@ -170,10 +170,8 @@ export const formatMs = (ms: number) => {
 };
 
 export const getMonthName = (month: string) => {
-    const monthAsNumber = Number(month);
-
-    if (!Number.isNaN(monthAsNumber)) {
-        return new Date(0, Number(month) - 1).toLocaleString("default", { month: "long" });
+    if (!isNaN(Number(month))) {
+        return new Date(0, Number(month) - 1).toLocaleString("en", { month: "long" });
     }
 
     return month;
