@@ -14,6 +14,10 @@ const CLIENT_DIR = path.resolve(__dirname, "dist/client");
 const SERVER_ENTRY = path.resolve(__dirname, "dist/server/server.js");
 
 
+let isShuttingDown = false;
+let server: ReturnType<typeof Bun.serve>;
+
+
 const startServer = async () => {
     console.log("[INFO] Starting server...");
 
@@ -44,11 +48,17 @@ const startServer = async () => {
     console.log(`[SUCCESS] Registered ${Object.keys(routes).length} static routes`);
 
     // Start Bun server
-    const server = Bun.serve({
+    server = Bun.serve({
         port: PORT,
         routes: {
             ...routes,
-            "/*": (req: Request) => handler.fetch(req),
+            "/*": (req: Request) => {
+                // Reject new requests during shutdown
+                if (isShuttingDown) {
+                    return new Response("Service Unavailable", { status: 503, headers: { "Retry-After": "5" } });
+                }
+                return handler.fetch(req);
+            },
         },
         error(err) {
             console.error("[ERROR]", err);
@@ -58,6 +68,28 @@ const startServer = async () => {
 
     console.log(`[SUCCESS] Server running on http://localhost:${server.port}`);
 };
+
+
+// Graceful shutdown handler
+const shutdown = async (signal: string) => {
+    console.log(`[INFO] Received ${signal}, starting graceful shutdown...`);
+    isShuttingDown = true;
+
+    // Give in-flight requests time to complete
+    const GRACE_PERIOD_MS = 2_000;
+
+    await new Promise((resolve) => setTimeout(resolve, GRACE_PERIOD_MS));
+
+    console.log("[INFO] Grace period complete, stopping server...");
+    void server.stop();
+
+    console.log("[SUCCESS] Server stopped gracefully");
+    process.exit(0);
+};
+
+
+process.on("SIGINT", () => shutdown("SIGINT"));
+process.on("SIGTERM", () => shutdown("SIGTERM"));
 
 
 startServer().catch((err) => {
