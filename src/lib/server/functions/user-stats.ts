@@ -48,7 +48,11 @@ export const getMonthlyActivity = createServerFn({ method: "GET" })
         const start = new Date(year, month - 1, 1);
         const end = new Date(year, month, 0, 23, 59, 59);
 
-        return userStatsService.getMonthlyActivity(user.id, start, end);
+        const result = await userStatsService.getMonthlyActivity(user.id, start, end);
+
+        console.log({ start, end, result });
+
+        return result;
     });
 
 
