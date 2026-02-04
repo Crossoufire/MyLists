@@ -3,6 +3,7 @@ import {DeltaStats} from "@/lib/types/stats.types";
 import {FormattedError} from "@/lib/utils/error-classes";
 import {Achievement} from "@/lib/types/achievements.types";
 import {MediaSchemaConfig} from "@/lib/types/media.config.types";
+import {getVectorSimilarMovies} from "@/lib/server/database/vectors";
 import {BaseRepository} from "@/lib/server/domain/media/base/base.repository";
 import {CollectionAction, JobType, Status, UpdateType} from "@/lib/utils/enums";
 import {BaseProviderService} from "@/lib/server/domain/media/base/provider.service";
@@ -186,7 +187,7 @@ export abstract class BaseService<TConfig extends MediaSchemaConfig, R extends B
                 throw notFound();
             }
 
-            const similarMedia = await this.repository.findSimilarMedia(mediaWithDetails.id);
+            const similarMedia = await getVectorSimilarMovies(mediaWithDetails.id, []);
             const userMedia = await this.repository.findUserMedia(userId, mediaWithDetails.id);
             const followsData = await this.repository.getUserFollowsMediaData(userId, mediaWithDetails.id);
 

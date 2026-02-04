@@ -15,6 +15,7 @@ export const commonMediaCols = (mediaTypeName: MediaType) => {
         lockStatus: integer({ mode: "boolean" }),
         addedAt: text("added_at").default(sql`(CURRENT_TIMESTAMP)`),
         lastApiUpdate: text("last_api_update"),
+        embeddingText: text("embedding_text"),
     };
 };
 
