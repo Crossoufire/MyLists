@@ -1,9 +1,17 @@
 import {createServerFn} from "@tanstack/react-start";
-import {tryNotFound} from "@/lib/utils/try-not-found";
+import {tryFormZodError, tryNotFound} from "@/lib/utils/try-not-found";
 import {getContainer} from "@/lib/server/core/container";
 import {transactionMiddleware} from "@/lib/server/middlewares/transaction";
 import {authMiddleware, managerAuthMiddleware} from "@/lib/server/middlewares/authentication";
-import {editMediaDetailsSchema, jobDetailsSchema, mediaDetailsSchema, mediaDetailsToEditSchema, refreshMediaDetailsSchema} from "@/lib/types/zod.schema.types";
+import {MediaType} from "@/lib/utils/enums";
+import {
+    editMediaDetailsSchema,
+    jobDetailsSchema,
+    mediaDetailsSchema,
+    mediaDetailsToEditSchema,
+    refreshMediaDetailsSchema,
+    updateBookCoverSchema
+} from "@/lib/types/zod.schema.types";
 
 
 export const getMediaDetails = createServerFn({ method: "GET" })
@@ -52,6 +60,16 @@ export const postEditMediaDetails = createServerFn({ method: "POST" })
         const container = await getContainer();
         const mediaService = container.registries.mediaService.getService(mediaType);
         return mediaService.updateMediaEditableFields(mediaId, payload);
+    });
+
+
+export const postUpdateBookCover = createServerFn({ method: "POST" })
+    .middleware([authMiddleware, transactionMiddleware])
+    .inputValidator(tryFormZodError(updateBookCoverSchema))
+    .handler(async ({ data: { apiId, imageUrl, imageFile } }) => {
+        const container = await getContainer();
+        const mediaService = container.registries.mediaService.getService(MediaType.BOOKS);
+        await mediaService.updateDefaultCover(apiId, { imageUrl, imageFile });
     });
 
 

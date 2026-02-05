@@ -241,3 +241,20 @@ export const platformStatsOptions = (search: { mediaType?: MediaType }) => query
     queryKey: ["platformStats", search],
     queryFn: () => getPlatformStats({ data: search }),
 });
+
+
+export const suggestBookCoverOptions = (mediaName: string, coverUrl: string, enabled: boolean) => {
+    return queryOptions({
+        queryKey: ["openLibraryCover", mediaName] as const,
+        queryFn: () => {
+            return new Promise<"available" | "missing">((resolve) => {
+                const img = new Image();
+                img.onload = () => resolve("available");
+                img.onerror = () => resolve("missing");
+                img.src = coverUrl;
+            });
+        },
+        staleTime: 10 * 60 * 1000,
+        enabled: enabled && Boolean(coverUrl),
+    });
+};
