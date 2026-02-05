@@ -38,7 +38,6 @@ export const serverEnv = createEnv({
         // ApiKeys
         THEMOVIEDB_API_KEY: z.string(),
         GOOGLE_BOOKS_API_KEY: z.string(),
-        IGDB_API_KEY: z.string(),
         IGDB_CLIENT_ID: z.string(),
         IGDB_CLIENT_SECRET: z.string(),
 

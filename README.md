@@ -95,7 +95,6 @@ Below is an explanation for each key found in `.env.example`:
 | `THEMOVIEDB_API_KEY`                        | API key for TMDB                                            | ✅        |                                |
 | `GOOGLE_BOOKS_API_KEY`                      | API key for Google Books                                    | ❌        |                                |
 | `IGDB_CLIENT_ID` / `IGDB_CLIENT_SECRET`     | IGDB OAuth credentials                                      | ✅        |                                |
-| `IGDB_API_KEY`                              | API key for IGDB                                            | ✅        |                                |
 | **LLM Integration (Optional)**              |                                                             |          |                                |
 | `LLM_MODEL_ID`                              | Model ID (OpenRouter or local) used to generate book genres | ❌        | `google/gemini-2.5-flash-lite` |
 | `LLM_BASE_URL`                              | Base URL for the chosen LLM API                             | ❌        | `https://openrouter.ai/api/v1` |
