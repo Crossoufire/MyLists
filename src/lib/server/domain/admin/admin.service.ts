@@ -1,7 +1,7 @@
 import {MediaType} from "@/lib/utils/enums";
 import {ErrorLog} from "@/lib/types/base.types";
 import {SaveTaskToDb} from "@/lib/types/tasks.types";
-import {SearchTypeAdmin} from "@/lib/types/zod.schema.types";
+import {SearchType} from "@/lib/types/zod.schema.types";
 import {AdminRepository} from "@/lib/server/domain/admin/admin.repository";
 import {MediaServiceRegistry} from "@/lib/server/domain/media/media.registries";
 
@@ -14,7 +14,7 @@ export class AdminService {
         return this.repository.saveErrorToDb(error);
     }
 
-    async getPaginatedErrorLogs(data: SearchTypeAdmin) {
+    async getPaginatedErrorLogs(data: SearchType) {
         return this.repository.getPaginatedErrorLogs(data);
     }
 

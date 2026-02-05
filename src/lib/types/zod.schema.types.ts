@@ -15,9 +15,6 @@ import {
 
 
 export type SearchType = z.infer<typeof searchTypeSchema>;
-export type HofSorting = z.infer<typeof hofSortingSchema>;
-export type SearchTypeHoF = z.infer<typeof searchTypeHoFSchema>;
-export type SearchTypeAdmin = z.infer<typeof searchTypeAdminSchema>;
 export type MediaListArgs = z.infer<typeof mediaListArgsSchema>;
 export type ListSettings = z.infer<typeof mediaListSettingsSchema>;
 export type AdminUpdatePayload = z.infer<typeof adminUpdatePayloadSchema>;
@@ -25,22 +22,16 @@ export type AchievementTier = z.infer<typeof tierAchievementSchema>;
 export type UpdateUserMedia = z.infer<typeof updateUserMediaSchema>;
 export type SectionActivity = z.infer<typeof getSectionActivitySchema>;
 
-const hofSortingSchema = z.enum(["normalized", "profile", ...Object.values(MediaType)]).optional().catch(undefined);
+const paginationSchema = z.object({
+    page: z.coerce.number().int().positive().optional().catch(undefined),
+    perPage: z.coerce.number().int().positive().max(50).optional().catch(undefined),
+});
 
-export const searchTypeSchema = z.object({
+export const searchTypeSchema = paginationSchema.extend({
+    sortDesc: z.boolean().optional().catch(true),
     search: z.string().optional().catch(undefined),
     sorting: z.string().optional().catch(undefined),
-    page: z.coerce.number().int().positive().optional().catch(undefined),
-    perPage: z.coerce.number().int().positive().optional().catch(undefined),
-});
-
-export const searchTypeHoFSchema = searchTypeSchema.extend({
-    sorting: hofSortingSchema,
-});
-
-export const searchTypeAdminSchema = searchTypeSchema.extend({
     total: z.coerce.number().int().positive().optional().catch(undefined),
-    sortDesc: z.boolean().optional().catch(true),
 });
 
 export const mediaDetailsSchema = z.object({
@@ -82,11 +73,8 @@ export const jobDetailsSchema = z.object({
     mediaType: z.enum(MediaType),
 });
 
-const mediaListArgsSchema = z.object({
-    page: z.coerce.number().int().positive().optional().catch(undefined),
-    perPage: z.coerce.number().int().positive().optional().catch(undefined),
+const mediaListArgsSchema = paginationSchema.extend({
     search: z.string().optional().catch(undefined),
-    sort: z.string().optional().catch(undefined),
     sorting: z.string().optional().catch(undefined),
     currentUserId: z.coerce.number().int().optional().catch(undefined),
     userId: z.coerce.number().int().optional().catch(undefined),
@@ -105,7 +93,7 @@ const mediaListArgsSchema = z.object({
     networks: z.array(z.string()).optional().catch(undefined),
     creators: z.array(z.string()).optional().catch(undefined),
     platforms: z.array(z.enum(GamesPlatformsEnum)).optional().catch(undefined),
-})
+});
 
 export const mediaListSchema = z.object({
     mediaType: z.enum(MediaType),

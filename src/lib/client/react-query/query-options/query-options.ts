@@ -7,9 +7,9 @@ import {getComingNextMedia} from "@/lib/server/functions/coming-next";
 import {ApiProviderType, JobType, MediaType} from "@/lib/utils/enums";
 import {getPlatformStats} from "@/lib/server/functions/platform-stats";
 import {getAdminAllUpdatesHistory} from "@/lib/server/functions/admin";
+import {MediaListArgs, SearchType} from "@/lib/types/zod.schema.types";
 import {infiniteQueryOptions, queryOptions} from "@tanstack/react-query";
 import {getUserAchievements} from "@/lib/server/functions/user-achievements";
-import {MediaListArgs, SearchType, SearchTypeHoF} from "@/lib/types/zod.schema.types";
 import {getDailyMediadle, getMediadleSuggestions} from "@/lib/server/functions/moviedle";
 import {getNotifications, getNotificationsCount} from "@/lib/server/functions/notifications";
 import {getUserCollectionNames, getUserMediaHistory} from "@/lib/server/functions/user-media";
@@ -153,7 +153,7 @@ export const historyOptions = (mediaType: MediaType, mediaId: number) => queryOp
 });
 
 
-export const hallOfFameOptions = (search: SearchTypeHoF) => queryOptions({
+export const hallOfFameOptions = (search: SearchType) => queryOptions({
     queryKey: ["hof", search],
     queryFn: () => getHallOfFame({ data: search }),
 });

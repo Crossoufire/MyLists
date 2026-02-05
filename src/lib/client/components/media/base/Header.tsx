@@ -25,7 +25,7 @@ interface HeaderProps {
     onGridClick: () => void;
     onFilterClick: () => void;
     pagination: ListPagination;
-    onSortChange: ({ sort }: { sort: string }) => void;
+    onSortChange: ({ sorting }: { sorting: string }) => void;
     onSearchChange: ({ search }: { search: string }) => void;
     onStatusChange: ({ status }: { status: Status[] }) => void;
 }
@@ -206,13 +206,13 @@ interface SortComponentProps {
     sorting: string,
     className?: string;
     allSorting: string[],
-    applySorting: ({ sort }: { sort: string }) => void,
+    applySorting: ({ sorting }: { sorting: string }) => void,
 }
 
 
 const SortComponent = ({ sorting, allSorting, applySorting, className }: SortComponentProps) => {
     const handleSortChange = (sort: string) => {
-        applySorting({ sort });
+        applySorting({ sorting: sort });
     };
 
     return (

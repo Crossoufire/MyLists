@@ -3,7 +3,7 @@ import {DeltaStats} from "@/lib/types/stats.types";
 import {MediaType, Status} from "@/lib/utils/enums";
 import {UserMediaStats} from "@/lib/types/base.types";
 import {userMediaStatsHistory} from "@/lib/server/database/schema";
-import {SearchTypeHoF, SectionActivity} from "@/lib/types/zod.schema.types";
+import {SearchType, SectionActivity} from "@/lib/types/zod.schema.types";
 import {MediaServiceRegistry} from "@/lib/server/domain/media/media.registries";
 import {UserStatsRepository} from "@/lib/server/domain/user/user-stats.repository";
 import {UserUpdatesRepository} from "@/lib/server/domain/user/user-updates.repository";
@@ -49,7 +49,7 @@ export class UserStatsService {
         await this.repository.updateAllUsersPreComputedStats(mediaType, userStats);
     }
 
-    async userHallofFameData(userId: number, filters: SearchTypeHoF) {
+    async userHallofFameData(userId: number, filters: SearchType) {
         const {
             mediaTypes,
             currentUserRankData,

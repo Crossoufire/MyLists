@@ -2,8 +2,9 @@ import {MediaType} from "@/lib/utils/enums";
 import {alias} from "drizzle-orm/sqlite-core";
 import {DeltaStats} from "@/lib/types/stats.types";
 import {UserMediaStats} from "@/lib/types/base.types";
-import {SearchTypeHoF} from "@/lib/types/zod.schema.types";
+import {SearchType} from "@/lib/types/zod.schema.types";
 import {getDbClient} from "@/lib/server/database/async-storage";
+import {resolvePagination, resolveSorting} from "@/lib/server/database/pagination";
 import {user, userMediaSettings, userMediaStatsHistory} from "@/lib/server/database/schema";
 import {and, asc, count, countDistinct, desc, eq, gt, gte, inArray, lt, lte, ne, SQL, sql, sum} from "drizzle-orm";
 
@@ -91,8 +92,15 @@ export class UserStatsRepository {
         }
     }
 
-    static async userHallofFameData(userId: number, filters: SearchTypeHoF) {
-        const { sorting = "normalized", search = "", page = 1, perPage = 10 } = filters;
+    static async userHallofFameData(userId: number, filters: SearchType) {
+        const { search = "" } = filters;
+        const sorting = resolveSorting(filters.sorting, ["normalized", "profile", ...Object.values(MediaType)] as const, "normalized");
+
+        const { page, perPage, offset, limit } = resolvePagination({
+            defaultPerPage: 10,
+            page: filters.page,
+            perPage: filters.perPage,
+        });
 
         const mediaTypes = Object.values(MediaType);
         const umsAlias = alias(userMediaSettings, "ums");
@@ -204,18 +212,18 @@ export class UserStatsRepository {
             .select({ count: sql<number>`count(*)` })
             .from(allUsersRanked);
 
-        if (search)
+        if (search) {
             totalCounter.where(sql`lower(${allUsersRanked.name}) LIKE lower(${`%${search}%`})`);
+        }
 
-        const totalResult = await totalCounter.get();
+        const totalResult = totalCounter.get();
         const total = totalResult?.count ?? 0;
         const pages = Math.ceil(total / perPage);
-        const offset = (page - 1) * perPage;
 
         // Execute Final Paginated Query
         const rankedUsers = await finalQueryBase
             .orderBy(orderByColumn)
-            .limit(perPage)
+            .limit(limit)
             .offset(offset);
 
         // Add user settings to map
@@ -256,7 +264,7 @@ export class UserStatsRepository {
         });
 
         // Get Current User's Ranks
-        const currentUserRankData = await getDbClient()
+        const currentUserRankData = getDbClient()
             .with(allUsersRanked)
             .select()
             .from(allUsersRanked)
@@ -296,7 +304,7 @@ export class UserStatsRepository {
             conditions.push(eq(userMediaSettings.userId, userId));
         }
 
-        const stats = await getDbClient()
+        const stats = getDbClient()
             .select({
                 totalEntries: sum(userMediaSettings.totalEntries).mapWith(Number),
                 totalRedo: sum(userMediaSettings.totalRedo).mapWith(Number),

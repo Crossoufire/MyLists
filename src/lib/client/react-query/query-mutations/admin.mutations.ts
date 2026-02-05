@@ -1,5 +1,5 @@
 import {toast} from "sonner";
-import {SearchTypeAdmin} from "@/lib/types/zod.schema.types";
+import {SearchType} from "@/lib/types/zod.schema.types";
 import {useMutation, useQueryClient} from "@tanstack/react-query";
 import {adminAchievementsOptions, adminArchivedTasksOptions, adminErrorLogsOptions, userAdminOptions} from "@/lib/client/react-query/query-options/admin-options";
 import {
@@ -12,7 +12,7 @@ import {
 } from "@/lib/server/functions/admin";
 
 
-export const useAdminUpdateUserMutation = (filters: SearchTypeAdmin) => {
+export const useAdminUpdateUserMutation = (filters: SearchType) => {
     const queryClient = useQueryClient();
 
     return useMutation({
@@ -76,7 +76,7 @@ export const useAdminDeleteTaskMutation = () => {
 };
 
 
-export const useAdminDeleteErrorLogsMutation = (search: SearchTypeAdmin) => {
+export const useAdminDeleteErrorLogsMutation = (search: SearchType) => {
     const queryClient = useQueryClient();
 
     return useMutation({

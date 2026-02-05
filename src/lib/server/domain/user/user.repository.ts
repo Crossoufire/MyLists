@@ -1,8 +1,9 @@
 import {alias} from "drizzle-orm/sqlite-core";
+import {paginate, resolveSorting} from "@/lib/server/database/pagination";
 import {getDbClient} from "@/lib/server/database/async-storage";
+import {AdminUpdatePayload, SearchType} from "@/lib/types/zod.schema.types";
 import {and, asc, count, desc, eq, isNotNull, like, sql} from "drizzle-orm";
 import {followers, user, userMediaSettings} from "@/lib/server/database/schema";
-import {AdminUpdatePayload, SearchTypeAdmin} from "@/lib/types/zod.schema.types";
 import {ProviderSearchResult, ProviderSearchResults} from "@/lib/types/provider.types";
 import {ApiProviderType, MediaType, PrivacyType, SocialState} from "@/lib/utils/enums";
 
@@ -257,34 +258,35 @@ export class UserRepository {
             .where(eq(user.id, userId));
     }
 
-    static async getAdminPaginatedUsers(data: SearchTypeAdmin) {
-        const page = data.page ?? 1;
+    static async getAdminPaginatedUsers(data: SearchType) {
         const search = data.search ?? "";
-        const perPage = data.perPage ?? 25;
         const sortDesc = data.sortDesc ?? true;
-        const sorting = data.sorting ?? "updatedAt";
-        const offset = (page - 1) * perPage;
+        
+        const allowedSorts = ["id", "name", "createdAt", "updatedAt", "privacy", "showUpdateModal", "role", "emailVerified"] as const;
+        const sorting = resolveSorting(data.sorting, allowedSorts, "updatedAt");
 
-        const totalUsers = getDbClient()
-            .select({ count: count() })
-            .from(user)
-            .where(like(user.name, `%${search}%`))
-            .get()?.count ?? 0;
+        const { items, total, pages } = await paginate({
+            page: data.page,
+            perPage: data.perPage,
+            getTotal: async () => {
+                return getDbClient()
+                    .select({ count: count() })
+                    .from(user)
+                    .where(like(user.name, `%${search}%`))
+                    .get()?.count ?? 0;
+            },
+            getItems: ({ limit, offset }) => {
+                return getDbClient()
+                    .select()
+                    .from(user)
+                    .offset(offset)
+                    .limit(limit)
+                    .orderBy(sortDesc ? desc(user[sorting]) : asc(user[sorting]))
+                    .where(like(user.name, `%${search}%`));
+            },
+        });
 
-        const users = await getDbClient()
-            .select()
-            .from(user)
-            .offset(offset)
-            .limit(perPage)
-            // @ts-expect-error, we know `sorting` is in user table
-            .orderBy(sortDesc ? desc(user[sorting]) : asc(user[sorting]))
-            .where(like(user.name, `%${search}%`));
-
-        return {
-            items: users,
-            total: totalUsers,
-            pages: Math.ceil(totalUsers / perPage),
-        };
+        return { items, total, pages };
     }
 
     static async adminUpdateUser(userId: number, payload: Omit<AdminUpdatePayload, "deleteUser">) {

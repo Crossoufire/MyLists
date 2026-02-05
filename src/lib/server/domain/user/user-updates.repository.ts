@@ -1,9 +1,10 @@
 import {LogUpdateParams} from "@/lib/types/base.types";
 import {SearchType} from "@/lib/types/zod.schema.types";
 import {MediaType, PrivacyType} from "@/lib/utils/enums";
+import {paginate} from "@/lib/server/database/pagination";
 import {getDbClient} from "@/lib/server/database/async-storage";
 import {followers, user, userMediaUpdate} from "@/lib/server/database/schema";
-import {and, count, desc, eq, getTableColumns, inArray, like, or, sql} from "drizzle-orm";
+import {and, count, desc, eq, getTableColumns, inArray, like, or, SQL, sql} from "drizzle-orm";
 
 
 export class UserUpdatesRepository {
@@ -18,20 +19,11 @@ export class UserUpdatesRepository {
     }
 
     static async getUserUpdatesPaginated(filters: SearchType, userId?: number) {
-        const page = filters?.page ?? 1;
-        const limit = filters?.perPage ?? 25;
         const search = filters?.search ?? "";
-        const offset = (page - 1) * limit;
 
-        const baseConditions = [];
+        const baseConditions: SQL[] = [];
         if (userId !== undefined) baseConditions.push(eq(userMediaUpdate.userId, userId));
         if (search) baseConditions.push(like(userMediaUpdate.mediaName, `%${search}%`));
-
-        const totalCount = getDbClient()
-            .select({ count: sql<number>`count()` })
-            .from(userMediaUpdate)
-            .where(baseConditions.length > 0 ? and(...baseConditions) : undefined)
-            .get()?.count ?? 0;
 
         const queryItems = getDbClient()
             .select({
@@ -44,13 +36,26 @@ export class UserUpdatesRepository {
             queryItems.innerJoin(user, eq(userMediaUpdate.userId, user.id));
         }
 
-        const historyResult = await queryItems
-            .where(baseConditions.length > 0 ? and(...baseConditions) : undefined)
-            .orderBy(desc(userMediaUpdate.timestamp))
-            .offset(offset)
-            .limit(limit);
+        const { items, total } = await paginate({
+            page: filters?.page,
+            perPage: filters?.perPage,
+            getTotal: async () => {
+                return getDbClient()
+                    .select({ count: sql<number>`count()` })
+                    .from(userMediaUpdate)
+                    .where(baseConditions.length > 0 ? and(...baseConditions) : undefined)
+                    .get()?.count ?? 0;
+            },
+            getItems: ({ limit, offset }) => {
+                return queryItems
+                    .where(baseConditions.length > 0 ? and(...baseConditions) : undefined)
+                    .orderBy(desc(userMediaUpdate.timestamp))
+                    .offset(offset)
+                    .limit(limit);
+            },
+        });
 
-        return { total: totalCount, items: historyResult };
+        return { total, items };
     }
 
     static async getUserMediaHistory(userId: number, mediaType: MediaType, mediaId: number) {
@@ -168,7 +173,7 @@ export class UserUpdatesRepository {
             mediaName: media.name,
         };
 
-        const previousUpdate = await getDbClient()
+        const previousUpdate = getDbClient()
             .select()
             .from(userMediaUpdate).where(and(
                 eq(userMediaUpdate.userId, userId),

@@ -1,5 +1,5 @@
 import {queryOptions} from "@tanstack/react-query";
-import {SearchType, SearchTypeAdmin} from "@/lib/types/zod.schema.types";
+import {SearchType} from "@/lib/types/zod.schema.types";
 import {
     getAdminAchievements,
     getAdminAllUsers,
@@ -13,7 +13,7 @@ import {
 } from "@/lib/server/functions/admin";
 
 
-export const userAdminOptions = (search: SearchTypeAdmin) => queryOptions({
+export const userAdminOptions = (search: SearchType) => queryOptions({
     queryKey: ["admin", "updateUsers", search],
     queryFn: () => getAdminAllUsers({ data: search }),
 });
@@ -56,7 +56,7 @@ export const adminArchivedTasksOptions = queryOptions({
 });
 
 
-export const adminErrorLogsOptions = (search: SearchTypeAdmin) => queryOptions({
+export const adminErrorLogsOptions = (search: SearchType) => queryOptions({
     queryKey: ["admin", "errors", search],
     queryFn: () => getAdminErrorLogs({ data: search }),
 });

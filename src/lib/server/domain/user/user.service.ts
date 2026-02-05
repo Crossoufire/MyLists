@@ -3,7 +3,7 @@ import {FormattedError} from "@/lib/utils/error-classes";
 import {MediaType, SocialState} from "@/lib/utils/enums";
 import {CacheManager} from "@/lib/server/core/cache-manager";
 import {UserRepository} from "@/lib/server/domain/user/user.repository";
-import {AdminUpdatePayload, SearchTypeAdmin} from "@/lib/types/zod.schema.types";
+import {AdminUpdatePayload, SearchType} from "@/lib/types/zod.schema.types";
 
 
 const LAST_SEEN_CACHE_KEY = "lastSeen";
@@ -31,7 +31,7 @@ export class UserService {
         };
     }
 
-    async getPaginatedUsersForAdmin(data: SearchTypeAdmin) {
+    async getPaginatedUsersForAdmin(data: SearchType) {
         return this.repository.getAdminPaginatedUsers(data);
     }
 

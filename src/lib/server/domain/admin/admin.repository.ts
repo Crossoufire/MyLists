@@ -1,7 +1,8 @@
 import {ErrorLog} from "@/lib/types/base.types";
 import {count, desc, eq, inArray} from "drizzle-orm";
 import {SaveTaskToDb} from "@/lib/types/tasks.types";
-import {SearchTypeAdmin} from "@/lib/types/zod.schema.types";
+import {SearchType} from "@/lib/types/zod.schema.types";
+import {paginate} from "@/lib/server/database/pagination";
 import {getDbClient} from "@/lib/server/database/async-storage";
 import {errorLogs, taskHistory, userMediaStatsHistory} from "@/lib/server/database/schema";
 
@@ -17,28 +18,27 @@ export class AdminRepository {
             });
     }
 
-    static async getPaginatedErrorLogs(data: SearchTypeAdmin) {
-        const page = data.page ?? 1;
-        const perPage = data.perPage ?? 10;
-        const offset = (page - 1) * perPage;
+    static async getPaginatedErrorLogs(data: SearchType) {
+        const { items, total, pages } = await paginate({
+            page: data.page,
+            perPage: data.perPage,
+            getTotal: async () => {
+                return getDbClient()
+                    .select({ count: count() })
+                    .from(errorLogs)
+                    .get()?.count ?? 0;
+            },
+            getItems: ({ limit, offset }) => {
+                return getDbClient()
+                    .select()
+                    .from(errorLogs)
+                    .offset(offset)
+                    .limit(limit)
+                    .orderBy(desc(errorLogs.createdAt));
+            },
+        });
 
-        const totalLogs = getDbClient()
-            .select({ count: count() })
-            .from(errorLogs)
-            .get()?.count ?? 0;
-
-        const logs = await getDbClient()
-            .select()
-            .from(errorLogs)
-            .offset(offset)
-            .limit(perPage)
-            .orderBy(desc(errorLogs.createdAt));
-
-        return {
-            items: logs,
-            total: totalLogs,
-            pages: Math.ceil(totalLogs / perPage),
-        };
+        return { items, total, pages };
     }
 
     static async deleteErrorLogs(errorIds: number[] | null) {

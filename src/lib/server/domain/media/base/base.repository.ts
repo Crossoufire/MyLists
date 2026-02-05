@@ -6,6 +6,7 @@ import {MediaListArgs} from "@/lib/types/zod.schema.types";
 import {getDbClient} from "@/lib/server/database/async-storage";
 import {MediaSchemaConfig} from "@/lib/types/media.config.types";
 import {CollectionAction, JobType, MediaType, Status} from "@/lib/utils/enums";
+import {resolvePagination, resolveSorting} from "@/lib/server/database/pagination";
 import {animeList, booksList, followers, gamesList, mangaList, moviesList, seriesList, user} from "@/lib/server/database/schema";
 import {and, asc, count, countDistinct, desc, eq, getTableColumns, gte, inArray, isNotNull, isNull, like, lt, lte, ne, notInArray, or, SQL, sql} from "drizzle-orm";
 import {
@@ -24,7 +25,6 @@ import {
 } from "@/lib/types/base.types";
 
 
-const DEFAULT_PER_PAGE = 25;
 const SIMILAR_MAX_GENRES = 10;
 
 
@@ -267,7 +267,7 @@ export abstract class BaseRepository<TConfig extends MediaSchemaConfig> {
     async findById(mediaId: number): Promise<TConfig["mediaTable"]["$inferSelect"] | undefined> {
         const { mediaTable } = this.config;
 
-        const result = await getDbClient()
+        const result = getDbClient()
             .select()
             .from(mediaTable)
             .where(eq(mediaTable.id, mediaId))
@@ -279,7 +279,7 @@ export abstract class BaseRepository<TConfig extends MediaSchemaConfig> {
     async findByApiId(apiId: number | string): Promise<TConfig["mediaTable"]["$inferSelect"] | undefined> {
         const { mediaTable } = this.config;
 
-        const result = await getDbClient()
+        const result = getDbClient()
             .select()
             .from(mediaTable)
             .where(eq(mediaTable.apiId, apiId))
@@ -306,7 +306,7 @@ export abstract class BaseRepository<TConfig extends MediaSchemaConfig> {
     async findUserMedia(userId: number, mediaId: number): Promise<UserMediaWithCollections<TConfig["listTable"]["$inferSelect"]> | null> {
         const { listTable, collectionTable } = this.config;
 
-        const mainUserMediaData = await getDbClient()
+        const mainUserMediaData = getDbClient()
             .select({
                 ...getTableColumns(listTable),
                 ratingSystem: user.ratingSystem,
@@ -375,11 +375,9 @@ export abstract class BaseRepository<TConfig extends MediaSchemaConfig> {
     async getMediaList(currentUserId: number | undefined, userId: number, args: MediaListArgs): Promise<MediaListData<TConfig["listTable"]["$inferSelect"]>> {
         const { listTable, mediaTable, collectionTable, mediaList } = this.config;
 
-        const page = args.page ?? 1;
-        const perPage = args.perPage ?? DEFAULT_PER_PAGE;
-        const offset = (page - 1) * perPage;
+        const { page, perPage, offset, limit } = resolvePagination({ page: args.page, perPage: args.perPage });
 
-        const sortKeyName = args.sort ? args.sort : mediaList.defaultSortName;
+        const sortKeyName = resolveSorting(args.sorting, Object.keys(mediaList.availableSorts), mediaList.defaultSortName);
         const selectedSort = mediaList.availableSorts[sortKeyName];
         const filterArgs = { ...args, currentUserId, userId };
 
@@ -432,7 +430,7 @@ export abstract class BaseRepository<TConfig extends MediaSchemaConfig> {
         countQueryBuilder = countQueryBuilder.where(and(...conditions));
         const finalQuery = queryBuilder
             .orderBy(...(Array.isArray(selectedSort) ? selectedSort : [selectedSort]))
-            .limit(perPage)
+            .limit(limit)
             .offset(offset);
 
         // Execute query
@@ -842,7 +840,7 @@ export abstract class BaseRepository<TConfig extends MediaSchemaConfig> {
         const { collectionTable } = this.config;
         const forUser = userId ? eq(collectionTable.userId, userId) : undefined;
 
-        const result = await getDbClient()
+        const result = getDbClient()
             .select({ count: countDistinct(collectionTable.name) })
             .from(collectionTable)
             .where(and(forUser))

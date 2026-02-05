@@ -90,7 +90,7 @@ function MediaList() {
                 onGridClick={handleGridToggle}
                 pagination={apiData.results.pagination}
                 onFilterClick={() => setFiltersPanelOpen(true)}
-                onSortChange={({ sort }) => handleFilterChange({ sort })}
+                onSortChange={({ sorting }) => handleFilterChange({ sorting })}
                 onSearchChange={({ search }) => handleFilterChange({ search })}
                 onStatusChange={({ status }) => handleFilterChange({ status })}
             />

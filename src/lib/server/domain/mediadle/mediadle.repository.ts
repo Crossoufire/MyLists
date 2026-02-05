@@ -2,45 +2,45 @@ import {MediaType} from "@/lib/utils/enums";
 import {SearchType} from "@/lib/types/zod.schema.types";
 import {FormattedError} from "@/lib/utils/error-classes";
 import {getDbClient} from "@/lib/server/database/async-storage";
+import {paginate} from "@/lib/server/database/pagination";
 import {and, count, desc, eq, getTableColumns, gte, isNotNull, like, notInArray, sql} from "drizzle-orm";
 import {dailyMediadle, mediadleStats, movies, user, userMediadleProgress} from "@/lib/server/database/schema";
 
 
 export class MediadleRepository {
     static async getAllUsersStatsForAdmin(data: SearchType) {
-        const page = data.page ?? 1;
         const search = data.search ?? "";
-        const perPage = data.perPage ?? 25;
-        const offset = (page - 1) * perPage;
+        const { items, total, pages } = await paginate({
+            page: data.page,
+            perPage: data.perPage,
+            getTotal: async () => {
+                return getDbClient()
+                    .select({ count: count() })
+                    .from(mediadleStats)
+                    .innerJoin(user, eq(mediadleStats.userId, user.id))
+                    .where(like(user.name, `%${search}%`))
+                    .get()?.count ?? 0;
+            },
+            getItems: ({ limit, offset }) => {
+                return getDbClient()
+                    .select({
+                        name: user.name,
+                        email: user.email,
+                        image: user.image,
+                        createdAt: user.createdAt,
+                        updatedAt: user.updatedAt,
+                        ...getTableColumns(mediadleStats),
+                    })
+                    .from(mediadleStats)
+                    .innerJoin(user, eq(mediadleStats.userId, user.id))
+                    .where(like(user.name, `%${search}%`))
+                    .orderBy(desc(mediadleStats.totalPlayed))
+                    .limit(limit)
+                    .offset(offset);
+            },
+        });
 
-        const totalCount = getDbClient()
-            .select({ count: count() })
-            .from(mediadleStats)
-            .innerJoin(user, eq(mediadleStats.userId, user.id))
-            .where(like(user.name, `%${search}%`))
-            .get()?.count ?? 0;
-
-        const results = await getDbClient()
-            .select({
-                name: user.name,
-                email: user.email,
-                image: user.image,
-                createdAt: user.createdAt,
-                updatedAt: user.updatedAt,
-                ...getTableColumns(mediadleStats),
-            })
-            .from(mediadleStats)
-            .innerJoin(user, eq(mediadleStats.userId, user.id))
-            .where(like(user.name, `%${search}%`))
-            .orderBy(desc(mediadleStats.totalPlayed))
-            .limit(perPage)
-            .offset(offset)
-
-        return {
-            items: results,
-            total: totalCount,
-            pages: Math.ceil(totalCount / perPage),
-        };
+        return { items, total, pages };
     }
 
     static async getTodayMoviedle() {
@@ -61,7 +61,7 @@ export class MediadleRepository {
             .limit(200)
             .then((res) => res.map((r) => r.mediaId));
 
-        const selectedMovie = await getDbClient()
+        const selectedMovie = getDbClient()
             .select()
             .from(movies)
             .where(and(notInArray(movies.id, alreadyUsedMoviesIds), gte(movies.voteCount, 700)))

@@ -2,8 +2,8 @@ import {ClipboardX} from "lucide-react";
 import {Badge} from "@/lib/client/components/ui/badge";
 import {createFileRoute} from "@tanstack/react-router";
 import {useSuspenseQuery} from "@tanstack/react-query";
+import {SearchType} from "@/lib/types/zod.schema.types";
 import {Button} from "@/lib/client/components/ui/button";
-import {SearchTypeAdmin} from "@/lib/types/zod.schema.types";
 import {Pagination} from "@/lib/client/components/general/Pagination";
 import {EmptyState} from "@/lib/client/components/general/EmptyState";
 import {ErrorLogCard} from "@/lib/client/components/admin/ErrorLogCard";
@@ -14,7 +14,7 @@ import {useAdminDeleteErrorLogsMutation} from "@/lib/client/react-query/query-mu
 
 
 export const Route = createFileRoute("/_admin/admin/error-logs")({
-    validateSearch: (search) => search as SearchTypeAdmin,
+    validateSearch: (search) => search as SearchType,
     loaderDeps: ({ search }) => ({ search }),
     loader: async ({ context: { queryClient }, deps: { search } }) => {
         return queryClient.ensureQueryData(adminErrorLogsOptions(search));
@@ -23,7 +23,7 @@ export const Route = createFileRoute("/_admin/admin/error-logs")({
 })
 
 
-const DEFAULT = { page: 1 } satisfies SearchTypeAdmin;
+const DEFAULT = { page: 1 } satisfies SearchType;
 
 
 function AdminErrorLogsPage() {

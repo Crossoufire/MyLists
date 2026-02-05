@@ -19,7 +19,6 @@ import {
     adminUpdateAchievementSchema,
     postAdminUpdateTiersSchema,
     postAdminUpdateUserSchema,
-    searchTypeAdminSchema,
     searchTypeSchema
 } from "@/lib/types/zod.schema.types";
 
@@ -71,7 +70,7 @@ export const getAdminMediaOverview = createServerFn({ method: "GET" })
 
 export const getAdminAllUsers = createServerFn({ method: "GET" })
     .middleware([adminAuthMiddleware])
-    .inputValidator(searchTypeAdminSchema)
+    .inputValidator(searchTypeSchema)
     .handler(async ({ data }) => {
         const userService = await getContainer().then((c) => c.services.user);
         return userService.getPaginatedUsersForAdmin(data);
@@ -163,7 +162,7 @@ export const postAdminDeleteArchivedTask = createServerFn({ method: "POST" })
 
 export const getAdminErrorLogs = createServerFn({ method: "GET" })
     .middleware([adminAuthMiddleware])
-    .inputValidator(searchTypeAdminSchema)
+    .inputValidator(searchTypeSchema)
     .handler(async ({ data }) => {
         const adminService = await getContainer().then((c) => c.services.admin);
         return adminService.getPaginatedErrorLogs(data);

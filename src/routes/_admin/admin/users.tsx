@@ -12,9 +12,9 @@ import {SearchInput} from "@/lib/client/components/general/SearchInput";
 import {ProfileIcon} from "@/lib/client/components/general/ProfileIcon";
 import {useSearchNavigate} from "@/lib/client/hooks/use-search-navigate";
 import {DashboardShell} from "@/lib/client/components/admin/DashboardShell";
+import {AdminUpdatePayload, SearchType} from "@/lib/types/zod.schema.types";
 import {DashboardHeader} from "@/lib/client/components/admin/DashboardHeader";
 import {TablePagination} from "@/lib/client/components/general/TablePagination";
-import {AdminUpdatePayload, SearchTypeAdmin} from "@/lib/types/zod.schema.types";
 import {userAdminOptions} from "@/lib/client/react-query/query-options/admin-options";
 import {useAdminUpdateUserMutation} from "@/lib/client/react-query/query-mutations/admin.mutations";
 import {CheckCircle, ChevronsUpDown, MoreHorizontal, Trash2, UserCheck, UserPen, UserX} from "lucide-react";
@@ -32,7 +32,7 @@ import {
 
 
 export const Route = createFileRoute("/_admin/admin/users")({
-    validateSearch: (search) => search as SearchTypeAdmin,
+    validateSearch: (search) => search as SearchType,
     loaderDeps: ({ search }) => ({ search }),
     loader: async ({ context: { queryClient }, deps: { search } }) => {
         return queryClient.ensureQueryData(userAdminOptions(search));
@@ -41,7 +41,7 @@ export const Route = createFileRoute("/_admin/admin/users")({
 })
 
 
-const DEFAULT = { search: "", page: 1, sorting: "updatedAt" } satisfies SearchTypeAdmin;
+const DEFAULT = { search: "", page: 1, sorting: "updatedAt" } satisfies SearchType;
 
 
 function UserManagementPage() {
@@ -52,9 +52,9 @@ function UserManagementPage() {
     const updateUserMutation = useAdminUpdateUserMutation(filters);
     const apiData = useSuspenseQuery(userAdminOptions(filters)).data;
     const impersonateMutation = useMutation({ mutationFn: postImpersonateUser });
-    const paginationState = { pageIndex: filters?.page ? (filters.page - 1) : 0, pageSize: 25 };
+    const { localSearch, handleInputChange, updateFilters } = useSearchNavigate<SearchType>({ search });
     const sortingState = [{ id: filters?.sorting ?? DEFAULT.sorting, desc: filters?.sortDesc === true }];
-    const { localSearch, handleInputChange, updateFilters } = useSearchNavigate<SearchTypeAdmin>({ search });
+    const paginationState = { pageIndex: filters?.page ? (filters.page - 1) : 0, pageSize: filters.perPage ?? 25 };
 
     const onPaginationChange: OnChangeFn<PaginationState> = async (updaterOrValue) => {
         const newPagination = typeof updaterOrValue === "function" ? updaterOrValue(paginationState) : updaterOrValue;
@@ -389,7 +389,7 @@ function UserManagementPage() {
             <div className="rounded-md border p-3 pt-0 overflow-x-auto">
                 <Table>
                     <TableHeader>
-                        {table.getHeaderGroups().map((headerGroup) => (
+                        {table.getHeaderGroups().map((headerGroup) =>
                             <TableRow key={headerGroup.id}>
                                 {headerGroup.headers.map(header =>
                                     <TableHead key={header.id}>
@@ -397,7 +397,7 @@ function UserManagementPage() {
                                     </TableHead>
                                 )}
                             </TableRow>
-                        ))}
+                        )}
                     </TableHeader>
                     <TableBody>
                         {table.getRowModel().rows?.length ?
