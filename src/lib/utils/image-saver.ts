@@ -32,7 +32,7 @@ interface SaveImageFromUrlOptions {
 interface SaveUploadedImageOptions {
     file: File;
     resize?: ResizeOptions;
-    dirSaveName: Extract<CoverType, "profile-covers" | "profile-back-covers">;
+    dirSaveName: CoverType;
 }
 
 

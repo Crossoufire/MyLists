@@ -53,6 +53,7 @@ function MediaDetailsPage() {
         <PageTitle title={apiData.media.name} onlyHelmet>
             <MediaHero
                 media={media}
+                external={external}
                 mediaType={mediaType}
             />
             <div className="grid grid-cols-12 gap-8 container mx-auto px-4 py-2 max-sm:py-0 max-lg:grid-cols-1">

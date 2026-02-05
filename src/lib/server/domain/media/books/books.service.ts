@@ -2,10 +2,10 @@ import {eq, isNotNull} from "drizzle-orm";
 import {notFound} from "@tanstack/react-router";
 import {DeltaStats} from "@/lib/types/stats.types";
 import {Status, UpdateType} from "@/lib/utils/enums";
-import {saveImageFromUrl} from "@/lib/utils/image-saver";
 import {FormattedError} from "@/lib/utils/error-classes";
 import {Achievement} from "@/lib/types/achievements.types";
 import {BaseService} from "@/lib/server/domain/media/base/base.service";
+import {saveImageFromUrl, saveUploadedImage} from "@/lib/utils/image-saver";
 import {MangaSchemaConfig} from "@/lib/server/domain/media/books/books.config";
 import {BooksRepository} from "@/lib/server/domain/media/books/books.repository";
 import {Book, BooksAchCodeName, BooksList} from "@/lib/server/domain/media/books/books.types";
@@ -117,6 +117,42 @@ export class BooksService extends BaseService<MangaSchemaConfig, BooksRepository
         await this.repository.updateMediaWithDetails({ mediaData: fields, authorsData });
     }
 
+    async updateDefaultCover(apiId: string, payload: { imageUrl?: string; imageFile?: File }) {
+        const media = await this.repository.findByApiId(apiId);
+        if (!media) throw notFound();
+
+        const currentCover = media.imageCover.split("/").pop();
+        if (currentCover !== "default.jpg") {
+            throw new FormattedError("Cover already set for this book.");
+        }
+
+        let imageName;
+        if (payload.imageFile) {
+            imageName = await saveUploadedImage({
+                file: payload.imageFile,
+                dirSaveName: "books-covers",
+                resize: { width: 300, height: 450 },
+            });
+        }
+        else if (payload.imageUrl) {
+            imageName = await saveImageFromUrl({
+                imageUrl: payload.imageUrl,
+                dirSaveName: "books-covers",
+            });
+        }
+
+        if (!imageName || imageName === "default.jpg") {
+            throw new FormattedError("Could not update the book cover. Please choose another one.");
+        }
+
+        await this.repository.updateMediaWithDetails({
+            mediaData: {
+                apiId: media.apiId,
+                imageCover: imageName,
+            },
+        });
+    }
+
     async batchBooksWithoutGenres(batchSize: number) {
         const booksWithoutGenres = await this.repository.getBooksWithoutGenres();
 
@@ -169,7 +205,7 @@ description: ${book.synopsis}
         const wasFavorited = !!oldState?.favorite;
         const oldTotalSpecificValue = oldState?.total ?? 0;
         const oldTotalTimeSpent = oldTotalSpecificValue * 1.7;
-        
+
         // Extract New State Info
         const newStatus = newState?.status;
         const newRating = newState?.rating;

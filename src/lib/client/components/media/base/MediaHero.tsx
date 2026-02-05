@@ -1,15 +1,17 @@
 import {MediaType} from "@/lib/utils/enums";
 import {MediaDetails} from "@/lib/types/query.options.types";
 import {MediaComponent} from "@/lib/client/components/media/base/MediaComponent";
+import {BookCoverEditDialog} from "@/lib/client/components/media/base/BookCoverEditDialog";
 
 
 interface MediaHeroProps {
+    external: boolean;
     media: MediaDetails;
     mediaType: MediaType;
 }
 
 
-export function MediaHero({ media, mediaType }: MediaHeroProps) {
+export function MediaHero({ media, mediaType, external }: MediaHeroProps) {
     const backdropStyle = {
         filter: "blur(20px)",
         backgroundSize: "cover",
@@ -27,12 +29,20 @@ export function MediaHero({ media, mediaType }: MediaHeroProps) {
                     max-sm:items-center
                     "
                 >
-                    <div className="lg:w-60 w-52 shrink-0 overflow-hidden rounded-lg shadow-2xl border">
+                    <div className="relative lg:w-60 w-52 shrink-0 overflow-hidden rounded-lg shadow-2xl border">
                         <img
                             alt={media.name}
                             src={media.imageCover}
                             className="w-full h-full object-cover"
                         />
+                        {mediaType === MediaType.BOOKS && media.imageCover.endsWith("default.jpg") &&
+                            <BookCoverEditDialog
+                                mediaId={media.id}
+                                apiId={media.apiId}
+                                external={external}
+                                mediaName={media.name}
+                            />
+                        }
                     </div>
                     <div className="flex-1 w-full space-y-4">
                         <div className="flex flex-wrap gap-2 mb-2">

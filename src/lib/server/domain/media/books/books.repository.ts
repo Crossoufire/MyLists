@@ -176,7 +176,7 @@ export class BooksRepository extends BaseRepository<MangaSchemaConfig> {
     async findAllAssociatedDetails(mediaId: number) {
         const { apiProvider } = this.config;
 
-        const details = await getDbClient()
+        const details = getDbClient()
             .select({
                 ...getTableColumns(books),
                 authors: sql`json_group_array(DISTINCT json_object('id', ${booksAuthors.id}, 'name', ${booksAuthors.name}))`.mapWith(JSON.parse),
