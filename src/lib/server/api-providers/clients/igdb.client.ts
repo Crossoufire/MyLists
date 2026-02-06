@@ -1,3 +1,4 @@
+import {eq} from "drizzle-orm";
 import {serverEnv} from "@/env/server";
 import {notFound} from "@tanstack/react-router";
 import {ApiProviderType} from "@/lib/utils/enums";
@@ -8,7 +9,6 @@ import {getDbClient} from "@/lib/server/database/async-storage";
 import {createRateLimiter} from "@/lib/server/core/rate-limiter";
 import {BaseClient} from "@/lib/server/api-providers/clients/base.client";
 import {IgdbGameDetails, IgdbSearchResponse, IgdbTokenResponse, SearchData} from "@/lib/types/provider.types";
-import {eq} from "drizzle-orm";
 
 
 export class IgdbClient extends BaseClient {
@@ -55,23 +55,19 @@ export class IgdbClient extends BaseClient {
     }
 
     async getGameDetails(apiId: number): Promise<IgdbGameDetails> {
-        const data = (
-            "fields name, cover.image_id, game_engines.name, game_modes.name, platforms.name, genres.name, " +
-            "player_perspectives.name, total_rating, total_rating_count, first_release_date, " +
-            "involved_companies.company.name, involved_companies.developer, involved_companies.publisher, " +
-            `summary, themes.name, url; where id = ${apiId};`
-        )
+        const body = `
+            fields name, cover.image_id, game_engines.name, game_modes.name, platforms.name, genres.name, 
+            player_perspectives.name, total_rating, total_rating_count, first_release_date, 
+            involved_companies.company.name, involved_companies.developer, involved_companies.publisher,
+            summary, themes.name, url, external_games.uid, external_games.external_game_source;
+            where id = ${apiId};
+        `;
 
         const headers = await this.getHeaders();
-        const response = await this.call(`${this.baseUrl}`, "post", {
-            headers,
-            body: data,
-        });
+        const response = await this.call(`${this.baseUrl}`, "post", { headers, body });
 
         const rawData = await response.json() as IgdbGameDetails[];
-        if (rawData.length === 0) {
-            throw notFound();
-        }
+        if (rawData.length === 0) throw notFound();
 
         return rawData[0];
     }

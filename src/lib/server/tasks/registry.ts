@@ -11,9 +11,10 @@ import {removeNonListMediaTask} from "@/lib/server/tasks/definitions/remove-non-
 import {calculateAchievementsTask} from "@/lib/server/tasks/definitions/calculate-achievements.task";
 import {computeAllUsersStatsTask} from "@/lib/server/tasks/definitions/compute-all-users-stats.task";
 import {addGenresToBooksUsingLlmTask} from "@/lib/server/tasks/definitions/add-books-genres-llm.task";
-import {createMediaNotificationsTask} from "@/lib/server/tasks/definitions/create-media-notifications.task";
 import {deleteNonActivatedUsersTask} from "@/lib/server/tasks/definitions/delete-non-activated-users.task";
 import {removeUnusedMediaCoversTask} from "@/lib/server/tasks/definitions/remove-unused-media-covers.task";
+import {backfillGamesSteamApiIdTask} from "@/lib/server/tasks/definitions/backfill-games-steam-api-id.task";
+import {createMediaNotificationsTask} from "@/lib/server/tasks/definitions/create-media-notifications.task";
 import {removeUnusedProfileImagesTask} from "@/lib/server/tasks/definitions/remove-unused-profile-images.task";
 
 
@@ -29,6 +30,7 @@ export const taskRegistry = {
     [computeAllUsersStatsTask.name]: computeAllUsersStatsTask,
     [calculateAchievementsTask.name]: calculateAchievementsTask,
     [deleteNonActivatedUsersTask.name]: deleteNonActivatedUsersTask,
+    [backfillGamesSteamApiIdTask.name]: backfillGamesSteamApiIdTask,
     [removeUnusedMediaCoversTask.name]: removeUnusedMediaCoversTask,
     [createMediaNotificationsTask.name]: createMediaNotificationsTask,
     [addGenresToBooksUsingLlmTask.name]: addGenresToBooksUsingLlmTask,

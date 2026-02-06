@@ -85,7 +85,11 @@ export interface IgdbGameDetails {
     cover?: {
         id: number;
         image_id: string;
-    }
+    };
+    external_games?: {
+        uid: string;
+        external_game_source: number; // 1 = Steam
+    }[];
     involved_companies?: {
         id: number;
         developer: boolean;

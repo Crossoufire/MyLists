@@ -21,6 +21,7 @@ describe("GamesService", async () => {
         lastApiUpdate: new Date().toISOString(),
         voteAverage: 8,
         voteCount: 100,
+        steamApiId: null,
         igdbUrl: "test-game.com",
         gameEngine: "Unity",
         gameModes: "multiplayer",

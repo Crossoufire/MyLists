@@ -150,7 +150,7 @@ export class GamesRepository extends BaseRepository<GamesSchemaConfig> {
     async gameAvgPlaytime(userId?: number) {
         const forUser = userId ? eq(gamesList.userId, userId) : undefined;
 
-        const avgDuration = await getDbClient()
+        const avgDuration = getDbClient()
             .select({
                 average: sql<number | null>`avg(${gamesList.playtime} / 60)`.as("avg_playtime")
             })
@@ -250,7 +250,7 @@ export class GamesRepository extends BaseRepository<GamesSchemaConfig> {
     async findAllAssociatedDetails(mediaId: number) {
         const { apiProvider } = this.config;
 
-        const details = await getDbClient()
+        const details = getDbClient()
             .select({
                 ...getTableColumns(games),
                 genres: sql`json_group_array(DISTINCT json_object('id', ${gamesGenre.id}, 'name', ${gamesGenre.name}))`.mapWith(JSON.parse),

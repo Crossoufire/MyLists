@@ -41,6 +41,7 @@ export class IgdbTransformer {
             gameEngine: rawData?.game_engines?.[0]?.name,
             playerPerspective: rawData?.player_perspectives?.[0]?.name,
             gameModes: rawData?.game_modes?.map((mode) => mode?.name).join(","),
+            steamApiId: rawData.external_games?.find((source) => source.external_game_source === 1)?.uid,
             releaseDate: rawData.first_release_date ? new Date(rawData.first_release_date * 1000).toISOString() : null,
             hltbMainTime: null,
             hltbMainAndExtraTime: null,
