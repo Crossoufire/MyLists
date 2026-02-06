@@ -37,7 +37,7 @@ export const resolvePagination = (options: PaginationOptions): PaginationParams 
 };
 
 
-export const buildPaginationMeta = (params: { page: number; perPage: number; total: number }) => ({
+const buildPaginationMeta = (params: { page: number; perPage: number; total: number }) => ({
     page: params.page,
     total: params.total,
     perPage: params.perPage,

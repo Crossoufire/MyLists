@@ -27,31 +27,6 @@ export const mediaTypeUtils = {
 };
 
 
-export const getPlaytimeList = () => {
-    const ranges = [
-        { start: 0, end: 50, step: 5 },
-        { start: 60, end: 100, step: 10 },
-        { start: 125, end: 300, step: 25 },
-        { start: 350, end: 600, step: 50 },
-        { start: 700, end: 1000, step: 100 },
-        { start: 1500, end: 3000, step: 500 },
-        { start: 4000, end: 10000, step: 1000 }
-    ];
-
-    const specialCases = [0, 2];
-
-    return [
-        ...specialCases,
-        ...ranges.flatMap(({ start, end, step }) =>
-            Array.from(
-                { length: Math.floor((end - start) / step) + 1 },
-                (_, i) => start + i * step,
-            )
-        ).filter(value => !specialCases.includes(value))
-    ];
-};
-
-
 export const getRedoList = () => {
     return [...Array(11).keys()];
 };
