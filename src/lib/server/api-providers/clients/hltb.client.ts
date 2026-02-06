@@ -10,8 +10,8 @@ import {HltbApiResponse, HltbGameEntry} from "@/lib/types/provider.types";
 export class HltbClient extends BaseClient {
     private static readonly consumeKey = "hltb-API";
     private static readonly baseUrl = "https://howlongtobeat.com/";
-    private static searchUrl = HltbClient.baseUrl + "api/search/"
-    private static tokenUrl = HltbClient.baseUrl + "api/search/init";
+    private static searchUrl = HltbClient.baseUrl + "api/finder/"
+    private static tokenUrl = HltbClient.baseUrl + "api/finder/init";
     private static readonly throttleOptions = { points: 4, duration: 1, keyPrefix: "hltbAPI" };
 
     constructor(limiter: RateLimiterAbstract, consumeKey: string) {
@@ -80,12 +80,6 @@ export class HltbClient extends BaseClient {
         if (authToken) {
             headers["x-auth-token"] = authToken;
         }
-
-        // Not needed anymore for now (search url always /api/search)
-        // const searchUrl = await this._getSearchInfo(false);
-        // if (searchUrl) {
-        //     HltbClient.searchUrl = `${HltbClient.baseUrl}${searchUrl}`;
-        // }
 
         try {
             const payload = this._getSearchPayload(gameName);
