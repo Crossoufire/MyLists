@@ -1,9 +1,10 @@
 import {createServerFn} from "@tanstack/react-start";
-import {tryFormZodError, tryNotFound} from "@/lib/utils/try-not-found";
 import {getContainer} from "@/lib/server/core/container";
+import {FormattedError} from "@/lib/utils/error-classes";
+import {isAtLeastRole, MediaType, RoleType} from "@/lib/utils/enums";
+import {tryFormZodError, tryNotFound} from "@/lib/utils/try-not-found";
 import {transactionMiddleware} from "@/lib/server/middlewares/transaction";
 import {authMiddleware, managerAuthMiddleware} from "@/lib/server/middlewares/authentication";
-import {MediaType} from "@/lib/utils/enums";
 import {
     editMediaDetailsSchema,
     jobDetailsSchema,
@@ -34,11 +35,30 @@ export const getMediaDetails = createServerFn({ method: "GET" })
 
 
 export const refreshMediaDetails = createServerFn({ method: "POST" })
-    .middleware([managerAuthMiddleware, transactionMiddleware])
+    .middleware([authMiddleware, transactionMiddleware])
     .inputValidator(refreshMediaDetailsSchema)
-    .handler(async ({ data: { mediaType, apiId } }) => {
+    .handler(async ({ data: { mediaType, apiId }, context: { currentUser } }) => {
         const container = await getContainer();
+        const mediaService = container.registries.mediaService.getService(mediaType);
+        const isManagerOrAbove = isAtLeastRole(currentUser.role as RoleType, RoleType.MANAGER);
         const mediaProviderService = container.registries.mediaProviderService.getService(mediaType);
+
+        if (!isManagerOrAbove) {
+            if (mediaType === MediaType.BOOKS) {
+                throw new FormattedError("Unauthorized to refresh book metadata.");
+            }
+
+            const media = await mediaService.findByApiId(apiId);
+            if (media?.lastApiUpdate) {
+                const lastUpdateTime = new Date(media.lastApiUpdate).getTime();
+                const nextAvailableRefresh = lastUpdateTime + (24 * 60 * 60 * 1000) // 24 hours;
+
+                if (Date.now() < nextAvailableRefresh) {
+                    throw new FormattedError("You can only refresh metadata once every 24 hours.");
+                }
+            }
+        }
+
         await mediaProviderService.fetchAndRefreshMediaDetails(apiId);
     });
 

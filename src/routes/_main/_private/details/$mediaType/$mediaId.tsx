@@ -1,3 +1,4 @@
+import {MediaType} from "@/lib/utils/enums";
 import {ExternalLink, Plus} from "lucide-react";
 import {capitalize} from "@/lib/utils/formating";
 import {useAuth} from "@/lib/client/hooks/use-auth";
@@ -6,7 +7,6 @@ import {useSuspenseQuery} from "@tanstack/react-query";
 import {createFileRoute} from "@tanstack/react-router";
 import {Button} from "@/lib/client/components/ui/button";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
-import {isAtLeastRole, MediaType, RoleType} from "@/lib/utils/enums";
 import {MediaHero} from "@/lib/client/components/media/base/MediaHero";
 import {MediaSynopsis} from "@/lib/client/components/media/base/MediaSynopsis";
 import {SimilarMediaCard} from "@/lib/client/components/media/base/SimilarMedia";
@@ -94,7 +94,7 @@ function MediaDetailsPage() {
                 <div className="col-span-4 space-y-6 max-lg:col-span-1 max-lg:order-1">
                     <div className="space-y-6 max-lg:grid max-lg:grid-cols-2 max-md:grid-cols-1 max-lg:gap-6">
                         <div className="space-y-6 max-lg:mb-0">
-                            {isAtLeastRole(currentUser?.role, RoleType.MANAGER) &&
+                            {currentUser &&
                                 <RefreshAndEdit
                                     external={external}
                                     mediaType={mediaType}
