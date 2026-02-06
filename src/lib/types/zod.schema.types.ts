@@ -302,3 +302,9 @@ export const llmResponseSchema = z.array(z.object({
     bookApiId: z.string(),
     genres: z.array(z.string()),
 }));
+
+export const adminRefreshSchema = z.object({
+    days: z.coerce.number().int().min(1).max(90).default(30),
+    topLimit: z.coerce.number().int().min(1).max(20).default(8),
+    recentLimit: z.coerce.number().int().min(1).max(30).default(12),
+})

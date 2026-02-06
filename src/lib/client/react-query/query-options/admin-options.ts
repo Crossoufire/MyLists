@@ -6,6 +6,7 @@ import {
     getAdminArchivedTasks,
     getAdminErrorLogs,
     getAdminMediadleStats,
+    getAdminMediaRefreshStats,
     getAdminMediaOverview,
     getAdminOverview,
     getAdminTasks,
@@ -66,4 +67,10 @@ export const adminUserTracking = (userId: number) => queryOptions({
     queryKey: ["admin", "tracking", userId],
     queryFn: () => getAdminUserTracking({ data: { userId } }),
     staleTime: 60 * 1000,
+});
+
+
+export const adminMediaRefreshOptions = (params: { days?: number; topLimit?: number; recentLimit?: number } = {}) => queryOptions({
+    queryKey: ["admin", "media-refresh", params],
+    queryFn: () => getAdminMediaRefreshStats({ data: params }),
 });

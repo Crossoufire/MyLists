@@ -39,6 +39,7 @@ export const refreshMediaDetails = createServerFn({ method: "POST" })
     .inputValidator(refreshMediaDetailsSchema)
     .handler(async ({ data: { mediaType, apiId }, context: { currentUser } }) => {
         const container = await getContainer();
+        const adminService = container.services.admin;
         const mediaService = container.registries.mediaService.getService(mediaType);
         const isManagerOrAbove = isAtLeastRole(currentUser.role as RoleType, RoleType.MANAGER);
         const mediaProviderService = container.registries.mediaProviderService.getService(mediaType);
@@ -60,6 +61,7 @@ export const refreshMediaDetails = createServerFn({ method: "POST" })
         }
 
         await mediaProviderService.fetchAndRefreshMediaDetails(apiId);
+        void adminService.logMediaRefresh({ userId: currentUser.id, mediaType, apiId }).catch();
     });
 
 

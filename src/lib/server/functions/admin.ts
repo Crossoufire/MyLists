@@ -15,6 +15,7 @@ import {adminAuthMiddleware, managerAuthMiddleware} from "@/lib/server/middlewar
 import {
     adminDeleteArchivedTaskSchema,
     adminDeleteErrorLogSchema,
+    adminRefreshSchema,
     adminTriggerTaskSchema,
     adminUpdateAchievementSchema,
     postAdminUpdateTiersSchema,
@@ -184,6 +185,15 @@ export const getAdminUserTracking = createServerFn({ method: "GET" })
     .handler(async ({ data: { userId } }) => {
         const adminService = await getContainer().then((c) => c.services.admin);
         return adminService.getAdminUserTracking(userId);
+    });
+
+
+export const getAdminMediaRefreshStats = createServerFn({ method: "GET" })
+    .middleware([adminAuthMiddleware])
+    .inputValidator(adminRefreshSchema)
+    .handler(async ({ data: { days, topLimit, recentLimit } }) => {
+        const adminService = await getContainer().then((c) => c.services.admin);
+        return adminService.getMediaRefreshStats(days, topLimit, recentLimit);
     });
 
 

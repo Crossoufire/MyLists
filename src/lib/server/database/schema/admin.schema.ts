@@ -1,4 +1,5 @@
 import {sql} from "drizzle-orm";
+import {MediaType} from "@/lib/utils/enums";
 import {relations} from "drizzle-orm/relations";
 import {TaskResult} from "@/lib/types/tasks.types";
 import {user} from "@/lib/server/database/schema/auth.schema";
@@ -37,5 +38,26 @@ export const taskHistoryRelations = relations(taskHistory, ({ one }) => ({
     user: one(user, {
         fields: [taskHistory.userId],
         references: [user.id]
+    }),
+}));
+
+
+export const mediaRefreshLog = sqliteTable("media_refresh_log", {
+    id: integer("id").primaryKey({ autoIncrement: true }).notNull(),
+    userId: integer("user_id").notNull().references(() => user.id, { onDelete: "cascade" }),
+    mediaType: text("media_type").$type<MediaType>().notNull(),
+    apiId: text("api_id").notNull(),
+    refreshedAt: text("refreshed_at").default(sql`(CURRENT_TIMESTAMP)`).notNull(),
+}, (table) => [
+    index("ix_media_refresh_log_user_id").on(table.userId),
+    index("ix_media_refresh_log_refreshed_at").on(table.refreshedAt),
+    index("ix_media_refresh_log_media_type").on(table.mediaType),
+]);
+
+
+export const mediaRefreshLogRelations = relations(mediaRefreshLog, ({ one }) => ({
+    user: one(user, {
+        references: [user.id],
+        fields: [mediaRefreshLog.userId],
     }),
 }));

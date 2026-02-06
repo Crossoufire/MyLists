@@ -1,10 +1,11 @@
+import {MediaType} from "@/lib/utils/enums";
 import {ErrorLog} from "@/lib/types/base.types";
-import {count, desc, eq, inArray} from "drizzle-orm";
 import {SaveTaskToDb} from "@/lib/types/tasks.types";
 import {SearchType} from "@/lib/types/zod.schema.types";
 import {paginate} from "@/lib/server/database/pagination";
 import {getDbClient} from "@/lib/server/database/async-storage";
-import {errorLogs, taskHistory, userMediaStatsHistory} from "@/lib/server/database/schema";
+import {count, countDistinct, desc, eq, gte, inArray, sql} from "drizzle-orm";
+import {errorLogs, mediaRefreshLog, taskHistory, user, userMediaStatsHistory} from "@/lib/server/database/schema";
 
 
 export class AdminRepository {
@@ -87,5 +88,81 @@ export class AdminRepository {
             .select()
             .from(userMediaStatsHistory)
             .where(eq(userMediaStatsHistory.userId, userId))
+    }
+
+    static async logMediaRefresh(params: { userId: number; mediaType: MediaType; apiId: number | string }) {
+        await getDbClient()
+            .insert(mediaRefreshLog)
+            .values({
+                userId: params.userId,
+                mediaType: params.mediaType,
+                apiId: String(params.apiId),
+            });
+    }
+
+    static async getMediaRefreshDailyCountsByType(days: number) {
+        const startOffset = `-${Math.max(days - 1, 0)} day`;
+
+        return getDbClient()
+            .select({
+                mediaType: mediaRefreshLog.mediaType,
+                count: count(mediaRefreshLog.id).as("count"),
+                date: sql<string>`date(${mediaRefreshLog.refreshedAt})`.as("date"),
+            })
+            .from(mediaRefreshLog)
+            .where(gte(sql`date(${mediaRefreshLog.refreshedAt})`, sql`date('now', ${startOffset})`))
+            .groupBy(sql`date(${mediaRefreshLog.refreshedAt})`, mediaRefreshLog.mediaType)
+            .orderBy(sql`date(${mediaRefreshLog.refreshedAt})`);
+    }
+
+    static async getMediaRefreshTotalsByRole(days: number) {
+        const startOffset = `-${Math.max(days - 1, 0)} day`;
+
+        return getDbClient()
+            .select({
+                role: user.role,
+                count: count(mediaRefreshLog.id).as("count"),
+                userCount: countDistinct(mediaRefreshLog.userId).as("userCount"),
+            })
+            .from(mediaRefreshLog)
+            .innerJoin(user, eq(user.id, mediaRefreshLog.userId))
+            .where(gte(sql`date(${mediaRefreshLog.refreshedAt})`, sql`date('now', ${startOffset})`))
+            .groupBy(user.role)
+            .orderBy(desc(sql`count(${mediaRefreshLog.id})`));
+    }
+
+    static async getMediaRefreshTopUsers(days: number, limit: number) {
+        const startOffset = `-${Math.max(days - 1, 0)} day`;
+        const refreshCount = count(mediaRefreshLog.id).as("count");
+
+        return getDbClient()
+            .select({
+                name: user.name,
+                role: user.role,
+                count: refreshCount,
+                userId: mediaRefreshLog.userId,
+            })
+            .from(mediaRefreshLog)
+            .innerJoin(user, eq(user.id, mediaRefreshLog.userId))
+            .where(gte(sql`date(${mediaRefreshLog.refreshedAt})`, sql`date('now', ${startOffset})`))
+            .groupBy(mediaRefreshLog.userId, user.name, user.role)
+            .orderBy(desc(refreshCount))
+            .limit(limit);
+    }
+
+    static async getRecentMediaRefreshes(limit: number) {
+        return getDbClient()
+            .select({
+                name: user.name,
+                role: user.role,
+                apiId: mediaRefreshLog.apiId,
+                userId: mediaRefreshLog.userId,
+                mediaType: mediaRefreshLog.mediaType,
+                refreshedAt: mediaRefreshLog.refreshedAt,
+            })
+            .from(mediaRefreshLog)
+            .innerJoin(user, eq(user.id, mediaRefreshLog.userId))
+            .orderBy(desc(mediaRefreshLog.refreshedAt))
+            .limit(limit);
     }
 }
