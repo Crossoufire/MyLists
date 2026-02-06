@@ -21,7 +21,7 @@ export const Route = createFileRoute("/_admin/admin/media-refresh")({
 const chartColors: Record<MediaType, string> = {
     series: "var(--color-series)",
     anime: "var(--color-anime)",
-    movies: "var--color-movies)",
+    movies: "var(--color-movies)",
     games: "var(--color-games)",
     books: "var(--color-books)",
     manga: "var(--color-manga)",

@@ -1,4 +1,3 @@
-// import * as cheerio from "cheerio";
 import UserAgent from "user-agents";
 import {closest} from "@/lib/utils/levenshtein";
 import {RateLimiterAbstract} from "rate-limiter-flexible";
