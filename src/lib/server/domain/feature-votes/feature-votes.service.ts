@@ -12,14 +12,9 @@ export class FeatureVotesService {
     }
 
     async getFeatureVotes(currentUserId: number) {
-        const [features, voteAgg, userVotes, superVotesUsed] = await Promise.all([
-            this.repository.listFeatureRequests(),
-            this.repository.getVoteAggregates(),
-            this.repository.getUserVotes(currentUserId),
-            this.repository.countUserSuperVotes(currentUserId),
-        ]);
+        const { features, voteAgg, userVotes, superVotesUsed } = await this.repository.getFeatureVotesData(currentUserId);
 
-        const votesByFeature = new Map<number, { normalVotes: number, superVotes: number }>();
+        const votesByFeature = new Map<number, { normalVotes: number; superVotes: number }>();
         voteAgg.forEach((vote) => {
             votesByFeature.set(vote.featureId, {
                 superVotes: Number(vote.superVotes ?? 0),
@@ -29,6 +24,7 @@ export class FeatureVotesService {
 
         const userVoteMap = new Map<number, FeatureVoteType>();
         userVotes.forEach((vote) => userVoteMap.set(vote.featureId, vote.voteType));
+
         const items = features.map((feature) => {
             const votes = votesByFeature.get(feature.id) ?? { normalVotes: 0, superVotes: 0 };
             const totalVotes = votes.normalVotes + votes.superVotes * SUPER_VOTE_WEIGHT;
@@ -55,38 +51,26 @@ export class FeatureVotesService {
         };
     }
 
-    async createFeatureRequest(params: { title: string; description?: string | null }, userId: number) {
-        const title = params.title.trim();
-        const description = params.description?.trim() || "No description provided yet.";
-        const existingFeature = await this.repository.findFeatureByTitleLower(title.toLowerCase());
-
-        if (existingFeature) {
-            throw new FormattedError("That feature already exists. Try voting for it instead.");
-        }
-
-        await this.repository.createFeatureRequest({
-            title,
-            description,
+    async createFeatureRequest(userId: number, params: { title: string; description?: string | null }) {
+        const { duplicate } = await this.repository.createFeatureRequest({
             createdBy: userId,
+            title: params.title,
             status: FeatureStatus.UNDER_CONSIDERATION,
+            description: params.description || "No description provided yet.",
         });
+
+        if (duplicate) {
+            throw new FormattedError("That feature already exists. Please vote for it instead.");
+        }
     }
 
     async toggleFeatureVote(params: { featureId: number; voteType: FeatureVoteType }, userId: number) {
-        const feature = await this.repository.findFeatureById(params.featureId);
+        const { feature, existingVote } = await this.repository.findFeatureWithUserVote(params.featureId, userId,);
+        if (!feature) throw new FormattedError("Feature not found.");
 
-        if (!feature) {
-            throw new FormattedError("Feature not found.");
-        }
-
-        const existingVote = await this.repository.findUserVote(userId, params.featureId);
         const isLocked = feature.status === FeatureStatus.REJECTED || feature.status === FeatureStatus.COMPLETED;
-
-        if (isLocked) {
+        if (isLocked)
             throw new FormattedError("Voting is closed for this feature.");
-        }
-
-        const canSpendSuperVote = (await this.repository.countUserSuperVotes(userId)) < SUPER_VOTE_LIMIT;
 
         if (params.voteType === FeatureVoteType.VOTE) {
             if (existingVote?.voteType === FeatureVoteType.VOTE) {
@@ -99,11 +83,7 @@ export class FeatureVotesService {
                 return;
             }
 
-            await this.repository.insertVote({
-                userId,
-                featureId: params.featureId,
-                voteType: FeatureVoteType.VOTE,
-            });
+            await this.repository.insertVote({ userId, featureId: params.featureId, voteType: FeatureVoteType.VOTE });
             return;
         }
 
@@ -112,8 +92,10 @@ export class FeatureVotesService {
             return;
         }
 
+        const canSpendSuperVote = (await this.repository.countUserSuperVotes(userId)) < SUPER_VOTE_LIMIT;
+
         if (!canSpendSuperVote) {
-            throw new FormattedError("You have no super-votes available.");
+            throw new FormattedError("You have no super-votes available.",);
         }
 
         if (existingVote) {
@@ -121,22 +103,15 @@ export class FeatureVotesService {
             return;
         }
 
-        await this.repository.insertVote({
-            featureId: params.featureId,
-            userId,
-            voteType: FeatureVoteType.SUPER,
-        });
+        await this.repository.insertVote({ featureId: params.featureId, userId, voteType: FeatureVoteType.SUPER });
     }
 
     async updateFeatureStatus(params: { featureId: number; status: FeatureStatus; adminComment?: string | null }) {
-        await this.repository.updateFeatureStatus(params.featureId, params.status, params.adminComment?.trim() || null);
+        await this.repository.updateFeatureStatus(params.featureId, params.status, params.adminComment || null);
     }
 
     async deleteFeatureRequest(featureId: number) {
-        const feature = await this.repository.findFeatureById(featureId);
-        if (!feature) throw new FormattedError("Feature not found.");
-
-        await this.repository.deleteVotesForFeature(featureId);
-        await this.repository.deleteFeatureRequest(featureId);
+        const { found } = await this.repository.deleteFeatureRequest(featureId);
+        if (!found) throw new FormattedError("Feature not found.");
     }
 }
