@@ -23,7 +23,7 @@ export const headerMiddleware = createMiddleware({ type: "function" })
         const currentUser = session?.user ? { ...session.user, id: Number(session.user.id) } : undefined;
 
         if (!currentUser && user.privacy !== PrivacyType.PUBLIC) {
-            throw redirect({ to: "/", search: { authExpired: true } });
+            throw redirect({ to: "/", search: { authExpired: true, login: true } });
         }
 
         return next({
@@ -54,7 +54,7 @@ export const authorizationMiddleware = createMiddleware({ type: "function" })
 
         // Guard: Unauthenticated access to non-public profiles
         if (!currentUser && user.privacy !== PrivacyType.PUBLIC) {
-            throw redirect({ to: "/", search: { authExpired: true } });
+            throw redirect({ to: "/", search: { authExpired: true, login: true } });
         }
 
         // Guard: Private profile access requirements

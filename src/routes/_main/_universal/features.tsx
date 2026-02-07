@@ -1,7 +1,8 @@
 import {JSX} from "react";
 import {mail} from "@/lib/utils/helpers";
 import {ApiProviderType} from "@/lib/utils/enums";
-import {createFileRoute, Link} from "@tanstack/react-router";
+import {createFileRoute} from "@tanstack/react-router";
+import {BlockLink} from "@/lib/client/components/general/BlockLink";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
 import {Popover, PopoverContent, PopoverTrigger} from "@/lib/client/components/ui/popover";
 import {
@@ -15,7 +16,6 @@ import {
     Code2,
     Crop,
     Edit3,
-    ExternalLink,
     FileSpreadsheet,
     Filter,
     Gamepad2,
@@ -119,9 +119,9 @@ const FEATURES_DATA: FeatureData[] = [
         description: (
             <span>
                 Have a great idea? Tell me about it! You can now request new features and vote on what should get built next{" "}
-                <Link to="/features-vote" className="inline-flex gap-1 items-center text-app-accent font-medium hover:text-app-accent/80">
-                    here <ExternalLink className="size-3"/>
-                </Link> or by clicking on the bottom right bulb.
+                <BlockLink to="/features-vote" className="inline-flex gap-1 items-center text-app-accent font-medium hover:text-app-accent/80">
+                    here
+                </BlockLink> or by clicking on the bulb in the bottom right.
             </span>
         )
     },
@@ -168,9 +168,9 @@ const FEATURES_DATA: FeatureData[] = [
         description: (
             <span>
                 New here? Follow this walkthrough to learn how to use MyLists.info, add media, and get the most out it {" "}
-                <Link to="/walkthrough/search-media" className="inline-flex gap-1 items-center text-app-accent font-medium hover:text-app-accent/80">
-                    here <ExternalLink className="size-3"/>
-                </Link>.
+                <BlockLink to="/walkthrough/search-media" className="inline-flex gap-1 items-center text-app-accent font-medium hover:text-app-accent/80">
+                    here
+                </BlockLink>.
             </span>
         )
     },

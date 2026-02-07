@@ -10,7 +10,7 @@ export const Route = createFileRoute("/_main/_private")({
         const currentUser = queryClient.getQueryData(authOptions.queryKey);
 
         if (routeType === "full-private" && !currentUser) {
-            throw redirect({ to: "/" });
+            throw redirect({ to: "/", search: { login: true } });
         }
     },
 });

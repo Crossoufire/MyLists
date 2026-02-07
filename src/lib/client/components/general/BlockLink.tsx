@@ -1,8 +1,9 @@
+import {cn} from "@/lib/utils/helpers";
 import {PrivacyType} from "@/lib/utils/enums";
 import React, {ReactNode, useState} from "react";
 import {useAuth} from "@/lib/client/hooks/use-auth";
 import {Link, LinkProps} from "@tanstack/react-router";
-import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle} from "@/lib/client/components/ui/dialog";
+import {LoginForm} from "@/lib/client/components/auth/LoginForm";
 
 
 interface BlockLinkProps extends LinkProps {
@@ -18,7 +19,9 @@ export const BlockLink = ({ children, ...props }: BlockLinkProps) => {
     const [isOpen, setIsOpen] = useState(false);
 
     const handleClick = (ev: React.MouseEvent<HTMLAnchorElement>) => {
-        if (currentUser) return;
+        // @ts-expect-error - Ok
+        props.onClick?.(ev);
+        if (ev.defaultPrevented || currentUser) return;
 
         if (!props.privacy || props.privacy !== PrivacyType.PUBLIC) {
             ev.preventDefault();
@@ -28,22 +31,15 @@ export const BlockLink = ({ children, ...props }: BlockLinkProps) => {
 
     return (
         <>
-            <Link {...props} onClick={handleClick} className="hover:text-app-accent">
+            <Link {...props} onClick={handleClick} className={cn("hover:text-app-accent", props.className)}>
                 {children}
             </Link>
 
-            <Dialog open={isOpen} onOpenChange={setIsOpen}>
-                <DialogContent className="sm:max-w-100">
-                    <DialogHeader className="space-y-2">
-                        <DialogTitle className="text-2xl font-bold text-center">
-                            Login Required
-                        </DialogTitle>
-                        <DialogDescription className="text-center text-base">
-                            Register or log-in to access this content.
-                        </DialogDescription>
-                    </DialogHeader>
-                </DialogContent>
-            </Dialog>
+            <LoginForm
+                open={isOpen}
+                onOpenChange={setIsOpen}
+                contextMessage="To access this content, please log in."
+            />
         </>
     );
 };
