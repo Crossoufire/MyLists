@@ -1,4 +1,5 @@
 import {sql} from "drizzle-orm";
+import {relations} from "drizzle-orm/relations";
 import {user} from "@/lib/server/database/schema/auth.schema";
 import {FeatureStatus, FeatureVoteType} from "@/lib/utils/enums";
 import {index, integer, sqliteTable, text, uniqueIndex} from "drizzle-orm/sqlite-core";
@@ -30,3 +31,24 @@ export const featureVotes = sqliteTable("feature_votes", {
     index("ix_feature_votes_feature_id").on(table.featureId),
     uniqueIndex("ux_feature_votes_feature_user").on(table.featureId, table.userId),
 ]);
+
+
+export const featureRequestsRelations = relations(featureRequests, ({ one, many }) => ({
+    votes: many(featureVotes),
+    author: one(user, {
+        references: [user.id],
+        fields: [featureRequests.createdBy],
+    }),
+}));
+
+
+export const featureVotesRelations = relations(featureVotes, ({ one }) => ({
+    user: one(user, {
+        references: [user.id],
+        fields: [featureVotes.userId],
+    }),
+    feature: one(featureRequests, {
+        fields: [featureVotes.featureId],
+        references: [featureRequests.id],
+    }),
+}));

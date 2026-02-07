@@ -69,27 +69,22 @@ export class FeatureVotesService {
         if (!feature) throw new FormattedError("Feature not found.");
 
         const isLocked = feature.status === FeatureStatus.REJECTED || feature.status === FeatureStatus.COMPLETED;
-        if (isLocked)
-            throw new FormattedError("Voting is closed for this feature.");
+        if (isLocked) throw new FormattedError("Voting is closed for this feature.");
 
         if (params.voteType === FeatureVoteType.VOTE) {
             if (existingVote?.voteType === FeatureVoteType.VOTE) {
-                await this.repository.deleteVoteById(existingVote.id);
-                return;
+                return this.repository.deleteVoteById(existingVote.id);
             }
 
             if (existingVote) {
-                await this.repository.updateVoteType(existingVote.id, FeatureVoteType.VOTE);
-                return;
+                return this.repository.updateVoteType(existingVote.id, FeatureVoteType.VOTE);
             }
 
-            await this.repository.insertVote({ userId, featureId: params.featureId, voteType: FeatureVoteType.VOTE });
-            return;
+            return this.repository.insertVote({ userId, featureId: params.featureId, voteType: FeatureVoteType.VOTE });
         }
 
         if (existingVote?.voteType === FeatureVoteType.SUPER) {
-            await this.repository.deleteVoteById(existingVote.id);
-            return;
+            return this.repository.deleteVoteById(existingVote.id);
         }
 
         const canSpendSuperVote = (await this.repository.countUserSuperVotes(userId)) < SUPER_VOTE_LIMIT;
@@ -111,7 +106,6 @@ export class FeatureVotesService {
     }
 
     async deleteFeatureRequest(featureId: number) {
-        const { found } = await this.repository.deleteFeatureRequest(featureId);
-        if (!found) throw new FormattedError("Feature not found.");
+        await this.repository.deleteFeatureRequest(featureId);
     }
 }

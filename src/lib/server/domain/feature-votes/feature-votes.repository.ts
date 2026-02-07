@@ -56,27 +56,22 @@ export class FeatureVotesRepository {
     }
 
     static async countUserSuperVotes(userId: number) {
-        return (
-            getDbClient()
-                .select({ count: count() })
-                .from(featureVotes)
-                .innerJoin(featureRequests, eq(featureVotes.featureId, featureRequests.id))
-                .where(and(
-                    eq(featureVotes.userId, userId),
-                    eq(featureVotes.voteType, FeatureVoteType.SUPER),
-                    notInArray(featureRequests.status, [FeatureStatus.REJECTED, FeatureStatus.COMPLETED]),
-                ))
-                .get()?.count ?? 0
-        );
+        return getDbClient()
+            .select({ count: count() })
+            .from(featureVotes)
+            .innerJoin(featureRequests, eq(featureVotes.featureId, featureRequests.id))
+            .where(and(
+                eq(featureVotes.userId, userId),
+                eq(featureVotes.voteType, FeatureVoteType.SUPER),
+                notInArray(featureRequests.status, [FeatureStatus.REJECTED, FeatureStatus.COMPLETED]),
+            )).get()?.count ?? 0;
     }
 
     static async createFeatureRequest(values: typeof featureRequests.$inferInsert) {
         const existing = getDbClient()
             .select({ id: featureRequests.id })
             .from(featureRequests)
-            .where(
-                sql`lower(${featureRequests.title}) = ${values.title!.toLowerCase()}`,
-            )
+            .where(sql`lower(${featureRequests.title}) = ${values.title!.toLowerCase()}`)
             .get();
 
         if (existing) {
@@ -115,20 +110,8 @@ export class FeatureVotesRepository {
     }
 
     static async deleteFeatureRequest(featureId: number) {
-        const feature = getDbClient()
-            .select({ id: featureRequests.id })
-            .from(featureRequests)
-            .where(eq(featureRequests.id, featureId))
-            .get();
-
-        if (!feature) {
-            return { found: false as const };
-        }
-
         await getDbClient()
             .delete(featureRequests)
             .where(eq(featureRequests.id, featureId));
-
-        return { found: true as const };
     }
 }
