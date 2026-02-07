@@ -50,6 +50,9 @@ export const managerAuthMiddleware = createMiddleware({ type: "function" }).serv
 });
 
 
+/**
+ * Check that role is `ADMIN` AND check for admin token
+ */
 export const adminAuthMiddleware = createMiddleware({ type: "function" })
     .middleware([managerAuthMiddleware])
     .server(async ({ next, context }) => {
@@ -62,4 +65,18 @@ export const adminAuthMiddleware = createMiddleware({ type: "function" })
         }
 
         throw redirect({ to: "/admin" });
+    });
+
+
+/**
+ * Only check that role is `ADMIN`, does not check for admin token
+ */
+export const adminRoleMiddleware = createMiddleware({ type: "function" })
+    .middleware([managerAuthMiddleware])
+    .server(async ({ next, context }) => {
+        if (!isAtLeastRole(context.currentUser.role as RoleType, RoleType.ADMIN)) {
+            throw redirect({ to: "/" });
+        }
+
+        return next();
     });

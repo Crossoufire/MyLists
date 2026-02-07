@@ -11,3 +11,4 @@ export * from "./mediadle.schema";
 export * from "./achievements.schema";
 export * from "./notifications.schema";
 export * from "./admin.schema";
+export * from "./feature-votes.schema";

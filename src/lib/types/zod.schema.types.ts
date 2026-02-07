@@ -3,6 +3,8 @@ import {
     AchievementDifficulty,
     ApiProviderType,
     CollectionAction,
+    FeatureStatus,
+    FeatureVoteType,
     GamesPlatformsEnum,
     JobType,
     MediaType,
@@ -308,3 +310,27 @@ export const adminRefreshSchema = z.object({
     topLimit: z.coerce.number().int().min(1).max(20).default(8),
     recentLimit: z.coerce.number().int().min(1).max(30).default(12),
 })
+
+export const featureVotesSearchSchema = z.object({
+    search: z.string().optional().catch(undefined),
+});
+
+export const postFeatureRequestSchema = z.object({
+    title: z.string().trim()
+        .min(3, "Title must be at least 3 characters long")
+        .max(80, "Title is too long (maximum 80 characters)"),
+    description: z.string().trim()
+        .max(400, "Description cannot exceed 400 characters")
+        .optional(),
+});
+
+export const postFeatureVoteSchema = z.object({
+    voteType: z.enum(FeatureVoteType),
+    featureId: z.coerce.number().int().positive(),
+});
+
+export const postFeatureStatusSchema = z.object({
+    status: z.enum(FeatureStatus),
+    featureId: z.coerce.number().int().positive(),
+    adminComment: z.string().trim().max(300).optional().nullable(),
+});

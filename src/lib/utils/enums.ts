@@ -170,3 +170,20 @@ export const ApiProviderType = {
     USERS: "users",
 } as const;
 export type ApiProviderType = (typeof ApiProviderType)[keyof typeof ApiProviderType];
+
+
+export const FeatureStatus = {
+    UNDER_CONSIDERATION: "Under Consideration",
+    PLANNED: "Planned",
+    IN_PROGRESS: "In Progress",
+    REJECTED: "Rejected",
+    COMPLETED: "Completed",
+} as const;
+export type FeatureStatus = (typeof FeatureStatus)[keyof typeof FeatureStatus];
+
+
+export const FeatureVoteType = {
+    VOTE: "vote",
+    SUPER: "super",
+} as const;
+export type FeatureVoteType = (typeof FeatureVoteType)[keyof typeof FeatureVoteType];

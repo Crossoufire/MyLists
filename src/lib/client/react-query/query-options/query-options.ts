@@ -3,6 +3,7 @@ import {getCurrentUser} from "@/lib/server/functions/auth";
 import {getTrendsMedia} from "@/lib/server/functions/trends";
 import {getSearchResults} from "@/lib/server/functions/search";
 import {getHallOfFame} from "@/lib/server/functions/hall-of-fame";
+import {getFeatureVotes} from "@/lib/server/functions/feature-votes";
 import {getComingNextMedia} from "@/lib/server/functions/coming-next";
 import {ApiProviderType, JobType, MediaType} from "@/lib/utils/enums";
 import {getPlatformStats} from "@/lib/server/functions/platform-stats";
@@ -176,6 +177,12 @@ export const achievementOptions = (username: string) => queryOptions({
 export const userStatsOptions = (username: string, search: { mediaType?: MediaType }) => queryOptions({
     queryKey: ["userStats", username, search],
     queryFn: () => getUserStats({ data: { username, ...search } }),
+});
+
+
+export const featureVotesOptions = queryOptions({
+    queryKey: ["featureVotes"],
+    queryFn: () => getFeatureVotes(),
 });
 
 
