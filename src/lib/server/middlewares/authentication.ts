@@ -57,7 +57,7 @@ export const adminAuthMiddleware = createMiddleware({ type: "function" })
     .middleware([managerAuthMiddleware])
     .server(async ({ next, context }) => {
         if (!isAtLeastRole(context.currentUser.role as RoleType, RoleType.ADMIN)) {
-            throw redirect({ to: "/", search: { authExpired: true, login: true } });
+            throw redirect({ to: "/", search: { authExpired: true } });
         }
 
         if (await isAdminAuthenticated(context.currentUser.id)) {
