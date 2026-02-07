@@ -334,3 +334,7 @@ export const postFeatureStatusSchema = z.object({
     featureId: z.coerce.number().int().positive(),
     adminComment: z.string().trim().max(300).optional().nullable(),
 });
+
+export const postFeatureDeleteSchema = z.object({
+    featureId: z.coerce.number().int().positive(),
+});

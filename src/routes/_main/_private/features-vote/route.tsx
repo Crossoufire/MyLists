@@ -12,7 +12,12 @@ import {featureVotesOptions} from "@/lib/client/react-query/query-options/query-
 import {FeatureStatus, FeatureVoteType, isAtLeastRole, RoleType,} from "@/lib/utils/enums";
 import {Card, CardContent, CardDescription, CardHeader, CardTitle,} from "@/lib/client/components/ui/card";
 import {Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger} from "@/lib/client/components/ui/dialog";
-import {useCreateFeatureRequestMutation, useToggleFeatureVoteMutation, useUpdateFeatureStatusMutation} from "@/lib/client/react-query/query-mutations/feature-votes.mutations";
+import {
+    useCreateFeatureRequestMutation,
+    useDeleteFeatureRequestMutation,
+    useToggleFeatureVoteMutation,
+    useUpdateFeatureStatusMutation
+} from "@/lib/client/react-query/query-mutations/feature-votes.mutations";
 
 
 export const Route = createFileRoute("/_main/_private/features-vote")({
@@ -81,8 +86,8 @@ function FeatureVotesPage() {
                                     How do votes work?
                                 </dt>
                                 <dd>
-                                    Each feature gets one vote per user. You can rescind it at any
-                                    time.
+                                    Each feature gets one vote per user. You can rescind it while voting
+                                    is open.
                                 </dd>
                             </div>
                             <div>
@@ -225,7 +230,7 @@ function FeatureVotesPage() {
                                                 size="sm"
                                                 variant={isNormalVote ? "emeraldy" : "outline"}
                                                 onClick={() => handleVote(req.id, FeatureVoteType.VOTE)}
-                                                disabled={toggleVoteMutation.isPending || (isLocked && !isNormalVote)}
+                                                disabled={toggleVoteMutation.isPending || isLocked}
                                             >
                                                 {normalVoteLabel}
                                             </Button>
@@ -234,7 +239,7 @@ function FeatureVotesPage() {
                                                 variant={isSuperVote ? "emeraldy" : "outline"}
                                                 onClick={() => handleVote(req.id, FeatureVoteType.SUPER)}
                                                 disabled={
-                                                    (isLocked && !isSuperVote) ||
+                                                    isLocked ||
                                                     toggleVoteMutation.isPending ||
                                                     (availableSuperVotes <= 0 && !isSuperVote)
                                                 }
@@ -274,10 +279,19 @@ export function AdminFeatureControls({ featureId, currentStatus, currentComment 
     const [open, setOpen] = useState(false);
     const [note, setNote] = useState(currentComment ?? "");
     const updateStatusMutation = useUpdateFeatureStatusMutation();
+    const deleteFeatureMutation = useDeleteFeatureRequestMutation();
     const [status, setStatus] = useState<FeatureStatus>(currentStatus);
 
     const handleSave = () => {
         updateStatusMutation.mutate({ data: { featureId, status, adminComment: note } }, {
+            onSuccess: () => setOpen(false),
+        });
+    };
+
+    const handleDelete = () => {
+        if (!window.confirm("Delete this feature request and all its votes?")) return;
+
+        deleteFeatureMutation.mutate({ data: { featureId } }, {
             onSuccess: () => setOpen(false),
         });
     };
@@ -333,19 +347,34 @@ export function AdminFeatureControls({ featureId, currentStatus, currentComment 
                     </div>
                 </div>
 
+                <div className="rounded-lg border border-dashed border-destructive/60 bg-destructive/10 px-4 py-3 text-xs text-muted-foreground">
+                    <p className="font-semibold text-destructive">Delete request</p>
+                    <p>This permanently removes the feature request and all votes.</p>
+                    <Button
+                        size="sm"
+                        type="button"
+                        className="mt-3"
+                        variant="destructive"
+                        onClick={handleDelete}
+                        disabled={deleteFeatureMutation.isPending}
+                    >
+                        {deleteFeatureMutation.isPending ? "Deleting..." : "Delete feature request"}
+                    </Button>
+                </div>
+
                 <DialogFooter>
                     <Button
                         type="button"
                         variant="ghost"
-                        disabled={updateStatusMutation.isPending}
                         onClick={() => setOpen(false)}
+                        disabled={updateStatusMutation.isPending || deleteFeatureMutation.isPending}
                     >
                         Cancel
                     </Button>
                     <Button
                         type="button"
                         onClick={handleSave}
-                        disabled={updateStatusMutation.isPending}
+                        disabled={updateStatusMutation.isPending || deleteFeatureMutation.isPending}
                     >
                         {updateStatusMutation.isPending ? "Saving..." : "Save Changes"}
                     </Button>
