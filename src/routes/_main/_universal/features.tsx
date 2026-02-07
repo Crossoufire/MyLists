@@ -10,6 +10,7 @@ import {
     BellRing,
     BookOpen,
     Calendar,
+    CheckCheck,
     ChevronDown,
     Code2,
     Crop,
@@ -41,6 +42,66 @@ export const Route = createFileRoute("/_main/_universal/features")({
 });
 
 
+function FeaturesPage() {
+    const groupedFeatures = FEATURES_DATA.reduce((acc, feature) => {
+        const cat = feature.category;
+        if (!acc[cat]) {
+            acc[cat] = [];
+        }
+        acc[cat]!.push(feature);
+        return acc;
+    }, {} as Partial<Record<FeatureData["category"], FeatureData[]>>);
+
+    const activeCategories = (Object.keys(groupedFeatures) as FeatureData["category"][]).sort((a, b) => {
+        if (a === "New") return -1;
+        if (b === "New") return 1;
+        return a.localeCompare(b);
+    });
+
+    const getCategoryIcon = (category: FeatureData["category"]) => {
+        switch (category) {
+            case "New":
+                return Activity;
+            case "Library & Management":
+                return LayoutList;
+            case "Stats & Insights":
+                return BarChart3;
+            case "Social & Notifications":
+                return Users;
+            case "Customization":
+                return Edit3;
+            case "Gamification":
+                return Gamepad2;
+            default:
+                return Search;
+        }
+    };
+
+    return (
+        <PageTitle title="What's New in MyLists" subtitle="Discover the latest features and what's new and Improved">
+            <div className="space-y-15 mb-20">
+                {activeCategories.map((category) =>
+                    <section key={category}>
+                        <SectionHeader
+                            title={category}
+                            icon={getCategoryIcon(category)}
+                        />
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                            {groupedFeatures[category]?.map((feature, idx) =>
+                                <FeatureCard
+                                    feature={feature}
+                                    key={`${category}-${idx}`}
+                                />
+                            )}
+                        </div>
+                    </section>
+                )}
+            </div>
+        </PageTitle>
+    );
+}
+
+
 type FeatureData = {
     name: string,
     icon: LucideIcon,
@@ -51,6 +112,19 @@ type FeatureData = {
 
 
 const FEATURES_DATA: FeatureData[] = [
+    {
+        icon: CheckCheck,
+        category: "New",
+        name: "Features Voting!",
+        description: (
+            <span>
+                Have a great idea? Tell me about it! You can now request new features and vote on what should get built next{" "}
+                <Link to="/features-vote" className="inline-flex gap-1 items-center text-app-accent font-medium hover:text-app-accent/80">
+                    here <ExternalLink className="size-3"/>
+                </Link> or by clicking on the bottom right bulb.
+            </span>
+        )
+    },
     {
         icon: Zap,
         category: "New",
@@ -399,63 +473,3 @@ const SectionHeader = ({ title, icon: Icon }: SectionHeaderProps) => (
         <div className="h-1 w-30 bg-linear-to-r from-app-accent to-transparent rounded-full mb-2"/>
     </div>
 );
-
-
-function FeaturesPage() {
-    const groupedFeatures = FEATURES_DATA.reduce((acc, feature) => {
-        const cat = feature.category;
-        if (!acc[cat]) {
-            acc[cat] = [];
-        }
-        acc[cat]!.push(feature);
-        return acc;
-    }, {} as Partial<Record<FeatureData["category"], FeatureData[]>>);
-
-    const activeCategories = (Object.keys(groupedFeatures) as FeatureData["category"][]).sort((a, b) => {
-        if (a === "New") return -1;
-        if (b === "New") return 1;
-        return a.localeCompare(b);
-    });
-
-    const getCategoryIcon = (category: FeatureData["category"]) => {
-        switch (category) {
-            case "New":
-                return Activity;
-            case "Library & Management":
-                return LayoutList;
-            case "Stats & Insights":
-                return BarChart3;
-            case "Social & Notifications":
-                return Users;
-            case "Customization":
-                return Edit3;
-            case "Gamification":
-                return Gamepad2;
-            default:
-                return Search;
-        }
-    };
-
-    return (
-        <PageTitle title="What's New in MyLists" subtitle="Discover the latest features and what's new and Improved">
-            <div className="space-y-15 mb-20">
-                {activeCategories.map((category) =>
-                    <section key={category}>
-                        <SectionHeader
-                            title={category}
-                            icon={getCategoryIcon(category)}
-                        />
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                            {groupedFeatures[category]?.map((feature, idx) =>
-                                <FeatureCard
-                                    feature={feature}
-                                    key={`${category}-${idx}`}
-                                />
-                            )}
-                        </div>
-                    </section>
-                )}
-            </div>
-        </PageTitle>
-    );
-}
