@@ -179,15 +179,6 @@ export const postAdminDeleteErrorLog = createServerFn({ method: "POST" })
     });
 
 
-export const getAdminUserTracking = createServerFn({ method: "GET" })
-    .middleware([adminAuthMiddleware])
-    .inputValidator((data) => z.object({ userId: z.coerce.number().int().positive() }).parse(data))
-    .handler(async ({ data: { userId } }) => {
-        const adminService = await getContainer().then((c) => c.services.admin);
-        return adminService.getAdminUserTracking(userId);
-    });
-
-
 export const getAdminMediaRefreshStats = createServerFn({ method: "GET" })
     .middleware([adminAuthMiddleware])
     .inputValidator(adminRefreshSchema)

@@ -5,7 +5,7 @@ import {SearchType} from "@/lib/types/zod.schema.types";
 import {paginate} from "@/lib/server/database/pagination";
 import {getDbClient} from "@/lib/server/database/async-storage";
 import {count, countDistinct, desc, eq, gte, inArray, sql} from "drizzle-orm";
-import {errorLogs, mediaRefreshLog, taskHistory, user, userMediaStatsHistory} from "@/lib/server/database/schema";
+import {errorLogs, mediaRefreshLog, taskHistory, user} from "@/lib/server/database/schema";
 
 
 export class AdminRepository {
@@ -81,13 +81,6 @@ export class AdminRepository {
             .select()
             .from(taskHistory)
             .orderBy(desc(taskHistory.startedAt));
-    }
-
-    static async getAdminUserTracking(userId: number) {
-        return getDbClient()
-            .select()
-            .from(userMediaStatsHistory)
-            .where(eq(userMediaStatsHistory.userId, userId))
     }
 
     static async logMediaRefresh(params: { userId: number; mediaType: MediaType; apiId: number | string }) {

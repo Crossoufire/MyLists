@@ -6,11 +6,10 @@ import {
     getAdminArchivedTasks,
     getAdminErrorLogs,
     getAdminMediadleStats,
-    getAdminMediaRefreshStats,
     getAdminMediaOverview,
+    getAdminMediaRefreshStats,
     getAdminOverview,
     getAdminTasks,
-    getAdminUserTracking,
 } from "@/lib/server/functions/admin";
 
 
@@ -60,13 +59,6 @@ export const adminArchivedTasksOptions = queryOptions({
 export const adminErrorLogsOptions = (search: SearchType) => queryOptions({
     queryKey: ["admin", "errors", search],
     queryFn: () => getAdminErrorLogs({ data: search }),
-});
-
-
-export const adminUserTracking = (userId: number) => queryOptions({
-    queryKey: ["admin", "tracking", userId],
-    queryFn: () => getAdminUserTracking({ data: { userId } }),
-    staleTime: 60 * 1000,
 });
 
 

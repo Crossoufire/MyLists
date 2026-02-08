@@ -311,10 +311,6 @@ export const adminRefreshSchema = z.object({
     recentLimit: z.coerce.number().int().min(1).max(30).default(12),
 })
 
-export const featureVotesSearchSchema = z.object({
-    search: z.string().optional().catch(undefined),
-});
-
 export const postFeatureRequestSchema = z.object({
     title: z.string().trim()
         .min(3, "Title must be at least 3 characters long")

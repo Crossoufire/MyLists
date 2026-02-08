@@ -55,10 +55,6 @@ export class AdminService {
         };
     }
 
-    async getAdminUserTracking(userId: number) {
-        return this.repository.getAdminUserTracking(userId);
-    }
-
     async logMediaRefresh(params: { userId: number; mediaType: MediaType; apiId: number | string }) {
         return this.repository.logMediaRefresh(params);
     }
