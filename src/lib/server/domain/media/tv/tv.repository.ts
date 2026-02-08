@@ -6,7 +6,7 @@ import {BaseRepository} from "@/lib/server/domain/media/base/base.repository";
 import {TvType, UpsertTvWithDetails} from "@/lib/server/domain/media/tv/tv.types";
 import {AnimeSchemaConfig} from "@/lib/server/domain/media/tv/anime/anime.config";
 import {SeriesSchemaConfig} from "@/lib/server/domain/media/tv/series/series.config";
-import {and, asc, count, countDistinct, eq, getTableColumns, gte, inArray, isNotNull, lte, max, ne, notInArray, sql} from "drizzle-orm";
+import {and, asc, count, countDistinct, eq, getTableColumns, gte, inArray, isNotNull, lte, max, ne, notInArray, or, sql} from "drizzle-orm";
 
 
 export class TvRepository extends BaseRepository<AnimeSchemaConfig | SeriesSchemaConfig> {
@@ -33,17 +33,20 @@ export class TvRepository extends BaseRepository<AnimeSchemaConfig | SeriesSchem
     async getMediaIdsToBeRefreshed(apiIds: number[]) {
         const { mediaTable } = this.config;
 
-        if (apiIds.length === 0) return [];
+        const airedCondition = and(
+            isNotNull(mediaTable.nextEpisodeToAir),
+            lte(mediaTable.nextEpisodeToAir, sql`datetime('now')`),
+        );
 
-        const mediaIds = await getDbClient()
+        const staleListCondition = apiIds.length > 0
+            ? and(inArray(mediaTable.apiId, apiIds), lte(mediaTable.lastApiUpdate, sql`datetime('now', '-1 day')`))
+            : undefined;
+
+        return getDbClient()
             .select({ apiId: mediaTable.apiId })
             .from(mediaTable)
-            .where(and(
-                inArray(mediaTable.apiId, apiIds),
-                lte(mediaTable.lastApiUpdate, sql`datetime('now', '-1 day')`),
-            ));
-
-        return mediaIds.map((m) => m.apiId);
+            .where(staleListCondition ? or(staleListCondition, airedCondition) : airedCondition)
+            .then((res) => res.map((m) => m.apiId));
     }
 
     // --- Achievements ----------------------------------------------------------
@@ -110,7 +113,7 @@ export class TvRepository extends BaseRepository<AnimeSchemaConfig | SeriesSchem
         const { listTable } = this.config;
         const forUser = userId ? eq(listTable.userId, userId) : undefined;
 
-        const totalSeasons = await getDbClient()
+        const totalSeasons = getDbClient()
             .select({ totalSeasons: sql<number>`coalesce(sum(${listTable.currentSeason}), 0)` })
             .from(listTable)
             .where(and(forUser, ne(listTable.status, Status.PLAN_TO_WATCH)))
@@ -123,7 +126,7 @@ export class TvRepository extends BaseRepository<AnimeSchemaConfig | SeriesSchem
         const { mediaTable, listTable } = this.config;
         const forUser = userId ? eq(listTable.userId, userId) : undefined;
 
-        const avgDuration = await getDbClient()
+        const avgDuration = getDbClient()
             .select({
                 average: sql<number | null>`AVG(${mediaTable.duration} * ${listTable.total})`
             })
@@ -274,7 +277,7 @@ export class TvRepository extends BaseRepository<AnimeSchemaConfig | SeriesSchem
     async findAllAssociatedDetails(mediaId: number) {
         const { apiProvider, mediaTable, actorTable, genreTable, epsPerSeasonTable, networkTable } = this.config;
 
-        const details = await getDbClient()
+        const details = getDbClient()
             .select({
                 ...getTableColumns(mediaTable),
                 actors: sql`json_group_array(DISTINCT json_object('id', ${actorTable.id}, 'name', ${actorTable.name}))`.mapWith(JSON.parse),
