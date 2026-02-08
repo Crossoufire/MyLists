@@ -6,7 +6,7 @@ import {useQueryClient} from "@tanstack/react-query";
 import {Input} from "@/lib/client/components/ui/input";
 import {Button} from "@/lib/client/components/ui/button";
 import {Separator} from "@/lib/client/components/ui/separator";
-import {Link, useLocation, useNavigate, useRouter} from "@tanstack/react-router";
+import {Link, useNavigate, useRouter} from "@tanstack/react-router";
 import {authOptions} from "@/lib/client/react-query/query-options/query-options";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/lib/client/components/ui/form";
 import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle} from "@/lib/client/components/ui/dialog";
@@ -14,7 +14,6 @@ import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle} fro
 
 interface LoginFormProps {
     open: boolean;
-    contextMessage?: string;
     onOpenChange: (open: boolean) => void;
 }
 
@@ -25,10 +24,9 @@ type FormValues = {
 };
 
 
-export const LoginForm = ({ open, onOpenChange, contextMessage }: LoginFormProps) => {
+export const LoginForm = ({ open, onOpenChange }: LoginFormProps) => {
     const router = useRouter();
     const navigate = useNavigate();
-    const pathname = useLocation({ select: (loc) => loc.pathname });
     const queryClient = useQueryClient();
     const form = useForm<FormValues>({
         shouldFocusError: false,
@@ -72,28 +70,12 @@ export const LoginForm = ({ open, onOpenChange, contextMessage }: LoginFormProps
         });
     };
 
-    const handleRegisterClick = async (ev: React.MouseEvent<HTMLAnchorElement>) => {
-        ev.preventDefault();
-        onOpenChange(false);
-
-        await navigate({
-            to: pathname,
-            replace: true,
-            resetScroll: false,
-            search: (prev) => ({ ...prev, register: true, login: undefined }),
-        });
-    };
-
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="max-sm:w-full w-87 bg-neutral-950">
                 <DialogHeader>
                     <DialogTitle>Login to MyLists</DialogTitle>
-                    {!!contextMessage &&
-                        <DialogDescription>
-                            {contextMessage}
-                        </DialogDescription>
-                    }
+                    <DialogDescription></DialogDescription>
                 </DialogHeader>
                 <div className="mt-4">
                     <Form {...form}>
@@ -158,12 +140,6 @@ export const LoginForm = ({ open, onOpenChange, contextMessage }: LoginFormProps
                         <Button variant="secondary" className="w-full" onClick={() => withProvider("github")}>
                             <FaGithub className="size-4"/> Connexion via Github
                         </Button>
-                    </div>
-                    <div className="mt-4 text-center text-sm text-muted-foreground">
-                        Don't have an account?{" "}
-                        <Link to={pathname} onClick={handleRegisterClick} className="font-medium text-app-accent hover:text-app-accent/80">
-                            Register here
-                        </Link>
                     </div>
                 </div>
             </DialogContent>

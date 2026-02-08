@@ -1,4 +1,4 @@
-import {useEffect, useState} from "react";
+import {useState} from "react";
 import {cva} from "class-variance-authority";
 import {capitalize} from "@/lib/utils/formating";
 import authClient from "@/lib/utils/auth-client";
@@ -8,11 +8,11 @@ import {Button} from "@/lib/client/components/ui/button";
 import {isAtLeastRole, RoleType} from "@/lib/utils/enums";
 import {LoginForm} from "@/lib/client/components/auth/LoginForm";
 import {SearchBar} from "@/lib/client/components/navbar/SearchBar";
+import {Link, useNavigate, useRouter} from "@tanstack/react-router";
 import {RegisterForm} from "@/lib/client/components/auth/RegisterForm";
 import {ProfileIcon} from "@/lib/client/components/general/ProfileIcon";
 import {Notifications} from "@/lib/client/components/navbar/Notifications";
 import {authOptions} from "@/lib/client/react-query/query-options/query-options";
-import {Link, useLocation, useNavigate, useRouter} from "@tanstack/react-router";
 import {MainThemeIcon, PrivacyIcon} from "@/lib/client/components/general/MainIcons";
 import {useFeatureFlagMutation} from "@/lib/client/react-query/query-mutations/user.mutations";
 import {Activity, BarChart2, Calendar, ChartNoAxesColumn, ChevronDown, Crown, LogOut, Menu, Popcorn, Settings, ShieldCheck, TrendingUp, Trophy, User, X, Zap} from "lucide-react";
@@ -41,24 +41,6 @@ export const Navbar = () => {
     const [showLogin, setShowLogin] = useState(false);
     const [showRegister, setShowRegister] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-
-    const location = useLocation();
-    const pathname = location.pathname;
-    const searchStr = location.searchStr;
-    const hasLoginParam = new URLSearchParams(searchStr ?? "").has("login");
-    const hasRegisterParam = new URLSearchParams(searchStr ?? "").has("register");
-
-    useEffect(() => {
-        if (currentUser) return;
-        if (hasRegisterParam) {
-            setShowLogin(false);
-            setShowRegister(true);
-            return;
-        }
-        if (hasLoginParam) {
-            setShowLogin(true);
-        }
-    }, [currentUser, hasLoginParam, hasRegisterParam]);
 
     const logoutUser = async () => {
         await authClient.signOut();
@@ -99,31 +81,11 @@ export const Navbar = () => {
                         </div>
                         <LoginForm
                             open={showLogin}
-                            onOpenChange={(open) => {
-                                setShowLogin(open);
-                                if (!open && hasLoginParam) {
-                                    void navigate({
-                                        to: pathname,
-                                        replace: true,
-                                        resetScroll: false,
-                                        search: (prev) => ({ ...prev, login: undefined })
-                                    });
-                                }
-                            }}
+                            onOpenChange={setShowLogin}
                         />
                         <RegisterForm
                             open={showRegister}
-                            onOpenChange={(open) => {
-                                setShowRegister(open);
-                                if (!open && hasRegisterParam) {
-                                    void navigate({
-                                        to: pathname,
-                                        replace: true,
-                                        resetScroll: false,
-                                        search: (prev) => ({ ...prev, register: undefined })
-                                    });
-                                }
-                            }}
+                            onOpenChange={setShowRegister}
                         />
                     </div>
                 </div>

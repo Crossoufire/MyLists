@@ -12,7 +12,7 @@ export const authMiddleware = createMiddleware({ type: "function" }).server(asyn
     const session = await auth.api.getSession({ headers, query: { disableCookieCache: true } });
 
     if (!session) {
-        throw redirect({ to: "/", search: { authExpired: true, login: true } });
+        throw redirect({ to: "/", search: { authExpired: true } });
     }
 
     const container = await getContainer();
@@ -32,7 +32,7 @@ export const managerAuthMiddleware = createMiddleware({ type: "function" }).serv
     const session = await auth.api.getSession({ headers, query: { disableCookieCache: true } });
 
     if (!session || !session.user || !isAtLeastRole(session.user.role as RoleType, RoleType.MANAGER)) {
-        throw redirect({ to: "/", search: { authExpired: true, login: true } });
+        throw redirect({ to: "/", search: { authExpired: true } });
     }
 
     const container = await getContainer();
