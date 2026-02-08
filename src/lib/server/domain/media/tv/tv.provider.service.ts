@@ -17,10 +17,7 @@ export class TvProviderService extends BaseTrendsProviderService<TvRepository, T
 
     protected _transformDetails(rawData: TmdbTvDetails) {
         const isAnime = rawData.genres?.some((g: { id: number; }) => g.id === 16) && rawData.original_language === "ja";
-        if (isAnime) {
-            return tmdbTransformer.transformAnimeDetailsResults(rawData);
-        }
-
+        if (isAnime) return tmdbTransformer.transformAnimeDetailsResults(rawData);
         return tmdbTransformer.transformSeriesDetailsResults(rawData);
     }
 
@@ -45,7 +42,7 @@ export class TvProviderService extends BaseTrendsProviderService<TvRepository, T
             // Automatic refresh metadata, don't update anime genres to not erase better ones from jikan
             // If I add an automatic storing somedays this will means that no genres will ever be added in the first
             // place because this function is called on refresh and on storing.
-            // For now because storing is never with isBulk = true, this works (band-aid!)
+            // For now because storing is never with isBulk = true, so this works (band-aid!)
             if (isBulk) {
                 delete details.genresData;
             }

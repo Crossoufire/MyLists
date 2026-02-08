@@ -101,8 +101,13 @@ export interface MediaSchemaConfig<
 }
 
 
+type TvMediaTableColumns = {
+    nextEpisodeToAir: Column<any, any, any>;
+}
+
+
 export interface TvSchemaConfig<
-    TMediaTable extends MediaTable,
+    TMediaTable extends MediaTable & TvMediaTableColumns,
     TListTable extends ListTable,
     TGenreTable extends GenreTable,
     TColTable extends CollectionTable,
