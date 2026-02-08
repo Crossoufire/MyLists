@@ -2,7 +2,7 @@ import {statusUtils} from "@/lib/utils/mapping";
 import {DeltaStats} from "@/lib/types/stats.types";
 import {MediaType, Status} from "@/lib/utils/enums";
 import {UserMediaStats} from "@/lib/types/base.types";
-import {userMediaStatsHistory} from "@/lib/server/database/schema";
+import {userMediaActivity, userMediaStatsHistory} from "@/lib/server/database/schema";
 import {SearchType, SectionActivity} from "@/lib/types/zod.schema.types";
 import {MediaServiceRegistry} from "@/lib/server/domain/media/media.registries";
 import {UserStatsRepository} from "@/lib/server/domain/user/user-stats.repository";
@@ -13,6 +13,7 @@ import {GridItem, MediaData, MediaInfo, MediaResult, WrappedResult} from "@/lib/
 
 const INIT_ACTIVITY_LIMIT = 24;
 type StatsHistory = typeof userMediaStatsHistory.$inferSelect;
+type ActivityEvent = typeof userMediaActivity.$inferSelect;
 
 
 const emptyResult: WrappedResult = {
@@ -43,6 +44,23 @@ export class UserStatsService {
 
     async updateUserPreComputedStatsWithDelta(userId: number, mediaType: MediaType, mediaId: number, delta: DeltaStats) {
         await this.repository.updateUserPreComputedStatsWithDelta(userId, mediaType, mediaId, delta);
+    }
+
+    async logActivityEventFromDelta(userId: number, mediaType: MediaType, mediaId: number, delta: DeltaStats) {
+        const specificGained = this._resolveSpecificGainedFromDelta(mediaType, delta);
+        if (!specificGained || specificGained <= 0) return;
+
+        const isCompleted = (delta.statusCounts?.[Status.COMPLETED] ?? 0) > 0;
+        const isRedo = (delta.totalRedo ?? 0) > 0;
+
+        await this.repository.logActivityEvents([{
+            userId,
+            mediaId,
+            mediaType,
+            specificGained,
+            isCompleted,
+            isRedo,
+        }]);
     }
 
     async updateAllUsersPreComputedStats(mediaType: MediaType, userStats: UserMediaStats[]) {
@@ -238,20 +256,18 @@ export class UserStatsService {
     }
 
     async getMediaTypeActivity(userId: number, mediaType: MediaType, start: Date, end: Date) {
-        const logEntries = await this.repository.getEntriesInRange(userId, mediaType, start, end);
-        if (logEntries.length === 0) return emptyResult;
+        const events = await this._getActivityEventsInRange(userId, mediaType, start, end, true);
+        if (events.length === 0) return emptyResult;
 
-        const baseline = await this.repository.getLastEntryBefore(userId, mediaType, logEntries[0].timestamp);
-
-        const mediaResults = this._computeActivityDeltas(mediaType, logEntries, baseline);
-        const mediaIds = Object.keys(mediaResults).map(Number);
+        const aggregated = this._aggregateEventsByMedia(events);
+        const mediaIds = Array.from(aggregated.keys());
         if (mediaIds.length === 0) return emptyResult;
 
         const mediaService = this.mediaServiceRegistry.getService(mediaType);
         const mediaDetails = await mediaService.getMediaForActivity(mediaIds) as MediaInfo[];
         const metadataMap = new Map(mediaDetails.map((m) => [m.id, m]));
 
-        return this._aggActivityResults(mediaType, mediaResults, metadataMap);
+        return this._aggActivityResults(mediaType, aggregated, metadataMap);
     }
 
     async getSectionActivity(userId: number, params: SectionActivity) {
@@ -283,43 +299,50 @@ export class UserStatsService {
         };
     }
 
+    async getActivityEvents(userId: number, filters: { year: number; month: number; mediaType?: MediaType; mediaId?: number }) {
+        const { year, month, mediaType, mediaId } = filters;
+        const start = new Date(Date.UTC(year, month - 1, 0, 23, 59, 59));
+        const end = new Date(Date.UTC(year, month, 0, 23, 59, 59));
+
+        if (mediaType) {
+            const events = await this._getActivityEventsInRange(userId, mediaType, start, end, true);
+            return mediaId ? events.filter((event) => event.mediaId === mediaId) : events;
+        }
+
+        const eventsByType = await Promise.all(
+            Object.values(MediaType).map((type) => this._getActivityEventsInRange(userId, type, start, end, true))
+        );
+        const merged = eventsByType.flat().sort((a, b) => a.timestamp.localeCompare(b.timestamp));
+
+        return mediaId ? merged.filter((event) => event.mediaId === mediaId) : merged;
+    }
+
+    async updateActivityEvent(userId: number, eventId: number, payload: {
+        specificGained?: number;
+        isCompleted?: boolean;
+        isRedo?: boolean;
+        timestamp?: string;
+    }) {
+        return this.repository.updateActivityEvent(userId, eventId, payload);
+    }
+
+    async deleteActivityEvent(userId: number, eventId: number) {
+        await this.repository.deleteActivityEvent(userId, eventId);
+    }
+
     async _getFullMediaTypeActivity(userId: number, mediaType: MediaType, start: Date, end: Date) {
-        const logEntries = await this.repository.getEntriesInRange(userId, mediaType, start, end);
-        if (logEntries.length === 0) return { completed: [], progressed: [], redo: [] };
+        const events = await this._getActivityEventsInRange(userId, mediaType, start, end, true);
+        if (events.length === 0) return { completed: [], progressed: [], redo: [] };
 
-        const baseline = await this.repository.getLastEntryBefore(userId, mediaType, logEntries[0].timestamp);
-
-        const mediaResults = this._computeActivityDeltas(mediaType, logEntries, baseline);
-        const mediaIds = Object.keys(mediaResults).map(Number);
+        const aggregated = this._aggregateEventsByMedia(events);
+        const mediaIds = Array.from(aggregated.keys());
         if (mediaIds.length === 0) return { completed: [], progressed: [], redo: [] };
 
         const mediaService = this.mediaServiceRegistry.getService(mediaType);
         const mediaDetails = (await mediaService.getMediaForActivity(mediaIds)) as MediaInfo[];
         const metadataMap = new Map(mediaDetails.map((m) => [m.id, m]));
 
-        const redo: MediaData[] = [];
-        const completed: MediaData[] = [];
-        const progressed: MediaData[] = [];
-
-        for (const result of Object.values(mediaResults)) {
-            const meta = metadataMap.get(result.mediaId);
-            if (!meta || result.specificGained <= 0) continue;
-
-            const itemTime = this._calculateActivityTime(mediaType, result.specificGained, meta.duration);
-            const mediaData: MediaData = {
-                mediaId: meta.id,
-                timeGained: itemTime,
-                mediaName: meta.name,
-                mediaCover: meta.imageCover,
-                specificGained: result.specificGained,
-            };
-
-            if (result.isCompleted) completed.push(mediaData);
-            else if (result.isRedo) redo.push(mediaData);
-            else progressed.push(mediaData);
-        }
-
-        return { completed, progressed, redo };
+        return this._expandActivitySections(mediaType, aggregated, metadataMap);
     }
 
     _calculateActivityTime(mediaType: MediaType, specificGained: number, duration?: number) {
@@ -376,14 +399,14 @@ export class UserStatsService {
         return results;
     }
 
-    _aggActivityResults(mediaType: MediaType, mediaResults: Record<number, MediaResult>, metadataMap: Map<number, MediaInfo>) {
+    _aggActivityResults(mediaType: MediaType, mediaResults: Map<number, MediaResult>, metadataMap: Map<number, MediaInfo>) {
         let timeGained = 0;
         let specificTotal = 0;
         const redo: MediaData[] = [];
         const completed: MediaData[] = [];
         const progressed: MediaData[] = [];
 
-        for (const result of Object.values(mediaResults)) {
+        for (const result of mediaResults.values()) {
             const meta = metadataMap.get(result.mediaId);
             if (!meta || result.specificGained <= 0) continue;
 
@@ -422,6 +445,113 @@ export class UserStatsService {
             completed: completed.slice(0, INIT_ACTIVITY_LIMIT),
             progressed: progressed.slice(0, INIT_ACTIVITY_LIMIT),
         };
+    }
+
+    private _resolveSpecificGainedFromDelta(mediaType: MediaType, delta: DeltaStats) {
+        if (mediaType === MediaType.GAMES) {
+            return delta.timeSpent ?? 0;
+        }
+        return delta.totalSpecific ?? 0;
+    }
+
+    private async _getActivityEventsInRange(userId: number, mediaType: MediaType, start: Date, end: Date, seedIfMissing: boolean) {
+        const existing = await this.repository.getActivityEventsInRange(userId, mediaType, start, end);
+        if (existing.length > 0 || !seedIfMissing) return existing;
+
+        const seeded = await this._seedActivityEventsFromHistory(userId, mediaType, start, end);
+        return seeded;
+    }
+
+    private async _seedActivityEventsFromHistory(userId: number, mediaType: MediaType, start: Date, end: Date) {
+        const logEntries = await this.repository.getEntriesInRange(userId, mediaType, start, end);
+        if (logEntries.length === 0) return [];
+
+        const baseline = await this.repository.getLastEntryBefore(userId, mediaType, logEntries[0].timestamp);
+        const events = this._computeActivityEventsFromHistory(mediaType, logEntries, baseline);
+        const validEvents = events.filter((event) => event.specificGained > 0);
+
+        await this.repository.logActivityEvents(validEvents);
+
+        return validEvents;
+    }
+
+    private _computeActivityEventsFromHistory(mediaType: MediaType, logEntries: StatsHistory[], baseline?: StatsHistory) {
+        const events: ActivityEvent[] = [];
+        const ledger = baseline ? [baseline, ...logEntries] : logEntries;
+
+        for (let i = 1; i < ledger.length; i += 1) {
+            const curr = ledger[i];
+            const prev = ledger[i - 1];
+
+            const specificGained = (mediaType === MediaType.GAMES)
+                ? curr.timeSpent - prev.timeSpent
+                : curr.totalSpecific - prev.totalSpecific;
+
+            if (specificGained <= 0) continue;
+
+            events.push({
+                id: 0,
+                userId: curr.userId,
+                mediaId: curr.mediaId,
+                mediaType: curr.mediaType,
+                specificGained,
+                isCompleted: curr.statusCounts.Completed > prev.statusCounts.Completed,
+                isRedo: curr.totalRedo > prev.totalRedo,
+                timestamp: curr.timestamp,
+            });
+        }
+
+        return events;
+    }
+
+    private _aggregateEventsByMedia(events: ActivityEvent[]) {
+        const aggregated = new Map<number, MediaResult>();
+
+        for (const event of events) {
+            if (event.specificGained <= 0) continue;
+
+            if (!aggregated.has(event.mediaId)) {
+                aggregated.set(event.mediaId, {
+                    mediaId: event.mediaId,
+                    isRedo: false,
+                    isCompleted: false,
+                    specificGained: 0,
+                });
+            }
+
+            const entry = aggregated.get(event.mediaId)!;
+            entry.specificGained += event.specificGained;
+            entry.isCompleted = entry.isCompleted || event.isCompleted;
+            entry.isRedo = entry.isRedo || event.isRedo;
+        }
+
+        return aggregated;
+    }
+
+    private _expandActivitySections(mediaType: MediaType, aggregated: Map<number, MediaResult>, metadataMap: Map<number, MediaInfo>) {
+        const redo: MediaData[] = [];
+        const completed: MediaData[] = [];
+        const progressed: MediaData[] = [];
+
+        for (const result of aggregated.values()) {
+            const meta = metadataMap.get(result.mediaId);
+            if (!meta || result.specificGained <= 0) continue;
+
+            const itemTime = this._calculateActivityTime(mediaType, result.specificGained, meta.duration);
+            const mediaData: MediaData = {
+                mediaId: meta.id,
+                timeGained: itemTime,
+                mediaName: meta.name,
+                mediaCover: meta.imageCover,
+                specificGained: result.specificGained,
+            };
+
+            if (result.isCompleted) completed.push(mediaData);
+            else if (result.isRedo) redo.push(mediaData);
+            else progressed.push(mediaData);
+        }
+
+        return { completed, progressed, redo };
     }
 
     // --- Helpers ---------------------------------------------------------------

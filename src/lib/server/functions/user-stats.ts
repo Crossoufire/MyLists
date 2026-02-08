@@ -4,7 +4,16 @@ import {getContainer} from "@/lib/server/core/container";
 import {FormattedError} from "@/lib/utils/error-classes";
 import {AdvancedMediaStats} from "@/lib/types/stats.types";
 import {authorizationMiddleware} from "@/lib/server/middlewares/authorization";
-import {getMonthlyActivitySchema, getSectionActivitySchema, getUserStatsSchema} from "@/lib/types/zod.schema.types";
+import {authMiddleware} from "@/lib/server/middlewares/authentication";
+import {transactionMiddleware} from "@/lib/server/middlewares/transaction";
+import {
+    deleteActivityEventSchema,
+    getActivityEventsSchema,
+    getMonthlyActivitySchema,
+    getSectionActivitySchema,
+    getUserStatsSchema,
+    updateActivityEventSchema
+} from "@/lib/types/zod.schema.types";
 
 
 export const getUserStats = createServerFn({ method: "GET" })
@@ -60,4 +69,28 @@ export const getSectionActivity = createServerFn({ method: "GET" })
         const userStatsService = container.services.userStats;
 
         return userStatsService.getSectionActivity(user.id, data);
+    });
+
+export const getActivityEvents = createServerFn({ method: "GET" })
+    .middleware([authorizationMiddleware])
+    .inputValidator(tryNotFound(getActivityEventsSchema))
+    .handler(async ({ data: { year, month, mediaType, mediaId }, context: { user } }) => {
+        const userStatsService = await getContainer().then(c => c.services.userStats);
+        return userStatsService.getActivityEvents(user.id, { year, month, mediaType, mediaId });
+    });
+
+export const postUpdateActivityEvent = createServerFn({ method: "POST" })
+    .middleware([authMiddleware, transactionMiddleware])
+    .inputValidator(updateActivityEventSchema)
+    .handler(async ({ data: { eventId, payload }, context: { currentUser } }) => {
+        const userStatsService = await getContainer().then(c => c.services.userStats);
+        return userStatsService.updateActivityEvent(currentUser.id, eventId, payload);
+    });
+
+export const postDeleteActivityEvent = createServerFn({ method: "POST" })
+    .middleware([authMiddleware, transactionMiddleware])
+    .inputValidator(deleteActivityEventSchema)
+    .handler(async ({ data: { eventId }, context: { currentUser } }) => {
+        const userStatsService = await getContainer().then(c => c.services.userStats);
+        await userStatsService.deleteActivityEvent(currentUser.id, eventId);
     });

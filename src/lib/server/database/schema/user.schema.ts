@@ -48,6 +48,22 @@ export const userMediaUpdate = sqliteTable("user_media_update", {
     index("ix_user_media_update_user_id").on(table.userId),
 ]);
 
+export const userMediaActivity = sqliteTable("user_media_activity", {
+    id: integer().primaryKey().notNull(),
+    userId: integer().notNull().references(() => user.id, { onDelete: "cascade" }),
+    mediaId: integer().notNull(),
+    mediaType: text().$type<MediaType>().notNull(),
+    specificGained: real().notNull(),
+    isCompleted: integer({ mode: "boolean" }).default(false).notNull(),
+    isRedo: integer({ mode: "boolean" }).default(false).notNull(),
+    timestamp: text().default(sql`(CURRENT_TIMESTAMP)`).notNull(),
+}, (table) => [
+    index("ix_user_media_activity_media_id").on(table.mediaId),
+    index("ix_user_media_activity_timestamp").on(table.timestamp),
+    index("ix_user_media_activity_media_type").on(table.mediaType),
+    index("ix_user_media_activity_user_id").on(table.userId),
+]);
+
 
 export const userMediaSettings = sqliteTable("user_media_settings", {
     id: integer().primaryKey().notNull(),
@@ -113,6 +129,7 @@ export const userRelations = relations(user, ({ many }) => ({
     seriesCollections: many(seriesCollections),
     mediadleStats: many(mediadleStats),
     userMediaUpdates: many(userMediaUpdate),
+    userMediaActivity: many(userMediaActivity),
     userAchievements: many(userAchievement),
     userMediaSettings: many(userMediaSettings),
     userMediadleProgresses: many(userMediadleProgress),
@@ -142,6 +159,13 @@ export const followersRelations = relations(followers, ({ one }) => ({
 export const userMediaUpdateRelations = relations(userMediaUpdate, ({ one }) => ({
     user: one(user, {
         fields: [userMediaUpdate.userId],
+        references: [user.id]
+    }),
+}));
+
+export const userMediaActivityRelations = relations(userMediaActivity, ({ one }) => ({
+    user: one(user, {
+        fields: [userMediaActivity.userId],
         references: [user.id]
     }),
 }));

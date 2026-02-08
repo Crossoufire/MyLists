@@ -34,6 +34,7 @@ export const postAddMediaToList = createServerFn({ method: "POST" })
 
         const { newState, media, delta, logPayload } = await mediaService.addMediaToUserList(currentUser.id, mediaId, status);
         await userStatsService.updateUserPreComputedStatsWithDelta(currentUser.id, mediaType, mediaId, delta);
+        await userStatsService.logActivityEventFromDelta(currentUser.id, mediaType, mediaId, delta);
 
         await userUpdatesService.logUpdate({
             media,
@@ -60,6 +61,7 @@ export const postUpdateUserMedia = createServerFn({ method: "POST" })
 
         const { newState, media, delta, logPayload } = await mediaService.updateUserMediaDetails(currentUser.id, mediaId, payload);
         await userStatsService.updateUserPreComputedStatsWithDelta(currentUser.id, mediaType, mediaId, delta);
+        await userStatsService.logActivityEventFromDelta(currentUser.id, mediaType, mediaId, delta);
 
         if (logPayload) {
             await userUpdatesService.logUpdate({

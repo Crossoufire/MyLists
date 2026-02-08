@@ -23,6 +23,7 @@ export type AdminUpdatePayload = z.infer<typeof adminUpdatePayloadSchema>;
 export type AchievementTier = z.infer<typeof tierAchievementSchema>;
 export type UpdateUserMedia = z.infer<typeof updateUserMediaSchema>;
 export type SectionActivity = z.infer<typeof getSectionActivitySchema>;
+export type ActivityEventFilters = z.infer<typeof getActivityEventsSchema>;
 
 const paginationSchema = z.object({
     page: z.coerce.number().int().positive().optional().catch(undefined),
@@ -250,6 +251,30 @@ export const getSectionActivitySchema = z.object({
     limit: z.coerce.number().optional().default(24),
     offset: z.coerce.number().optional().default(0),
     month: z.coerce.number().int().positive().min(1).max(12),
+});
+
+export const getActivityEventsSchema = z.object({
+    username: z.string(),
+    mediaType: z.enum(MediaType).optional(),
+    mediaId: z.coerce.number().int().positive().optional(),
+    year: z.coerce.number().int().positive(),
+    month: z.coerce.number().int().positive().min(1).max(12),
+});
+
+export const updateActivityEventSchema = z.object({
+    eventId: z.coerce.number().int().positive(),
+    payload: z.object({
+        specificGained: z.number().min(0).optional(),
+        isCompleted: z.boolean().optional(),
+        isRedo: z.boolean().optional(),
+        timestamp: z.string().optional(),
+    }).refine((data) => Object.values(data).some((value) => value !== undefined), {
+        message: "Provide at least one field to update.",
+    }),
+});
+
+export const deleteActivityEventSchema = z.object({
+    eventId: z.coerce.number().int().positive(),
 });
 
 

@@ -5,7 +5,7 @@ import {UserMediaStats} from "@/lib/types/base.types";
 import {SearchType} from "@/lib/types/zod.schema.types";
 import {getDbClient} from "@/lib/server/database/async-storage";
 import {resolvePagination, resolveSorting} from "@/lib/server/database/pagination";
-import {user, userMediaSettings, userMediaStatsHistory} from "@/lib/server/database/schema";
+import {user, userMediaActivity, userMediaSettings, userMediaStatsHistory} from "@/lib/server/database/schema";
 import {and, asc, count, countDistinct, desc, eq, gt, gte, inArray, lt, lte, ne, SQL, sql, sum} from "drizzle-orm";
 
 
@@ -439,5 +439,101 @@ export class UserStatsRepository {
             .orderBy(desc(userMediaStatsHistory.timestamp))
             .limit(1)
             .get();
+    }
+
+    // --- Activity Events -------------------------------------------------------
+
+    static async logActivityEvents(events: {
+        userId: number;
+        mediaId: number;
+        mediaType: MediaType;
+        specificGained: number;
+        isCompleted: boolean;
+        isRedo: boolean;
+        timestamp?: string;
+    }[]) {
+        if (events.length === 0) return;
+
+        await getDbClient()
+            .insert(userMediaActivity)
+            .values(events.map((event) => ({
+                userId: event.userId,
+                mediaId: event.mediaId,
+                mediaType: event.mediaType,
+                specificGained: event.specificGained,
+                isCompleted: event.isCompleted,
+                isRedo: event.isRedo,
+                ...(event.timestamp ? { timestamp: event.timestamp } : {}),
+            })));
+    }
+
+    static async getActivityEventsInRange(userId: number, mediaType: MediaType, start: Date, end: Date) {
+        return getDbClient()
+            .select()
+            .from(userMediaActivity)
+            .where(and(
+                eq(userMediaActivity.userId, userId),
+                eq(userMediaActivity.mediaType, mediaType),
+                gte(userMediaActivity.timestamp, start.toISOString()),
+                lte(userMediaActivity.timestamp, end.toISOString()),
+            ))
+            .orderBy(asc(userMediaActivity.timestamp));
+    }
+
+    static async getActivityEventsForRange(userId: number, start: Date, end: Date, filters: {
+        mediaType?: MediaType;
+        mediaId?: number;
+    }) {
+        const conditions = [
+            eq(userMediaActivity.userId, userId),
+            gte(userMediaActivity.timestamp, start.toISOString()),
+            lte(userMediaActivity.timestamp, end.toISOString()),
+        ];
+
+        if (filters.mediaType) {
+            conditions.push(eq(userMediaActivity.mediaType, filters.mediaType));
+        }
+        if (filters.mediaId) {
+            conditions.push(eq(userMediaActivity.mediaId, filters.mediaId));
+        }
+
+        return getDbClient()
+            .select()
+            .from(userMediaActivity)
+            .where(and(...conditions))
+            .orderBy(asc(userMediaActivity.timestamp));
+    }
+
+    static async updateActivityEvent(userId: number, eventId: number, payload: {
+        specificGained?: number;
+        isCompleted?: boolean;
+        isRedo?: boolean;
+        timestamp?: string;
+    }) {
+        const updatePayload = Object.fromEntries(
+            Object.entries(payload).filter(([, value]) => value !== undefined)
+        );
+
+        if (Object.keys(updatePayload).length === 0) return null;
+
+        const [result] = await getDbClient()
+            .update(userMediaActivity)
+            .set(updatePayload)
+            .where(and(
+                eq(userMediaActivity.id, eventId),
+                eq(userMediaActivity.userId, userId),
+            ))
+            .returning();
+
+        return result ?? null;
+    }
+
+    static async deleteActivityEvent(userId: number, eventId: number) {
+        await getDbClient()
+            .delete(userMediaActivity)
+            .where(and(
+                eq(userMediaActivity.id, eventId),
+                eq(userMediaActivity.userId, userId),
+            ));
     }
 }
