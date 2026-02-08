@@ -11,7 +11,6 @@ interface AppContainer {
     cacheManager: CacheManager;
     clients: ProviderModule["clients"];
     repositories: UserModule["repositories"];
-    transformers: ProviderModule["transformers"];
     services: UserModule["services"] & { admin: AdminService };
     registries: {
         mediaRepo: typeof MediaRepositoryRegistry;
@@ -34,7 +33,6 @@ async function initContainer(): Promise<AppContainer> {
     return {
         cacheManager,
         clients: apiModule.clients,
-        transformers: apiModule.transformers,
         repositories: userModule.repositories,
         services: {
             ...userModule.services,

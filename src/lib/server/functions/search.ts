@@ -3,6 +3,10 @@ import {createServerFn} from "@tanstack/react-start";
 import {getContainer} from "@/lib/server/core/container";
 import {navbarSearchSchema} from "@/lib/types/zod.schema.types";
 import {authMiddleware} from "@/lib/server/middlewares/authentication";
+import {tmdbTransformer} from "@/lib/server/api-providers/transformers/tmdb.transformer";
+import {igdbTransformer} from "@/lib/server/api-providers/transformers/igdb.transformer";
+import {jikanTransformer} from "@/lib/server/api-providers/transformers/jikan.transformer";
+import {gbooksTransformer} from "@/lib/server/api-providers/transformers/gbook.transformer";
 
 
 export const getSearchResults = createServerFn({ method: "GET" })
@@ -15,10 +19,6 @@ export const getSearchResults = createServerFn({ method: "GET" })
         const gBookClient = container.clients.gBook;
         const jikanClient = container.clients.jikan;
         const userService = container.services.user;
-        const igdbTransformer = container.transformers.igdb;
-        const tmdbTransformer = container.transformers.tmdb;
-        const gBookTransformer = container.transformers.gBook;
-        const jikanTransformer = container.transformers.jikan;
 
         if (query === "") {
             return { hasNextPage: false, data: [] };
@@ -40,7 +40,7 @@ export const getSearchResults = createServerFn({ method: "GET" })
 
         if (apiProvider === ApiProviderType.BOOKS) {
             const rawResults = await gBookClient.search(query, page);
-            return gBookTransformer.transformSearchResults(rawResults);
+            return gbooksTransformer.transformSearchResults(rawResults);
         }
         else {
             const rawResults = await jikanClient.search(query, page);

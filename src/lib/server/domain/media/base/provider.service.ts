@@ -2,11 +2,7 @@ import {TrendsMedia} from "@/lib/types/provider.types";
 import {BaseRepository} from "@/lib/server/domain/media/base/base.repository";
 
 
-export abstract class BaseProviderService<
-    R extends BaseRepository<any>,
-    TRawDetails,
-    TTransformedDetails,
-> {
+export abstract class BaseProviderService<R extends BaseRepository<any>, TRawDetails, TTransformedDetails> {
     protected constructor(protected repository: R) {
     }
 
@@ -49,14 +45,14 @@ export abstract class BaseProviderService<
         await this.repository.updateMediaWithDetails(details);
     }
 
-    protected async _enhanceDetails(details: TTransformedDetails, _isBulk: boolean, _rawData: TRawDetails) {
-        return details;
-    }
-
     private async _fetchAndTransformDetails(apiId: number | string, isBulk: boolean) {
         const rawData = await this._fetchRawDetails(apiId);
         const details = await this._transformDetails(rawData);
         return this._enhanceDetails(details, isBulk, rawData);
+    }
+
+    protected async _enhanceDetails(details: TTransformedDetails, _isBulk: boolean, _rawData: TRawDetails) {
+        return details;
     }
 
     protected abstract _transformDetails(rawData: TRawDetails): Promise<TTransformedDetails>;
@@ -69,8 +65,7 @@ export abstract class BaseProviderService<
 
 export abstract class BaseTrendsProviderService<
     R extends BaseRepository<any>,
-    TRawDetails,
-    TTransformedDetails,
+    TRawDetails, TTransformedDetails,
 > extends BaseProviderService<R, TRawDetails, TTransformedDetails> {
     async fetchAndFormatTrends() {
         const rawData = await this._fetchRawTrends();

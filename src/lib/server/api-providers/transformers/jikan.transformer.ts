@@ -1,63 +1,64 @@
 import {MediaType} from "@/lib/utils/enums";
-import {manga} from "@/lib/server/database/schema";
 import {getImageUrl} from "@/lib/utils/image-url";
 import {saveImageFromUrl} from "@/lib/utils/image-saver";
-import {JikanDetails, JikanMangaSearchResponse, ProviderSearchResult, ProviderSearchResults, SearchData} from "@/lib/types/provider.types";
+import {JikanDetails, JikanMangaSearchResponse, ProviderSearchResult, SearchData} from "@/lib/types/provider.types";
 
 
-type Manga = typeof manga.$inferInsert;
+const transformSearchResults = (searchData: SearchData<JikanMangaSearchResponse>) => {
+    const results = searchData.rawData?.data ?? [];
+    const hasNextPage = searchData.rawData.pagination.has_next_page;
+
+    const transformedResults = results.map((item): ProviderSearchResult => {
+        return {
+            id: item.mal_id,
+            date: item.published.from,
+            itemType: MediaType.MANGA,
+            name: item.title_english ?? item.title,
+            image: item.images.jpg.image_url ?? getImageUrl("manga-covers"),
+        };
+    });
+
+    return { data: transformedResults, hasNextPage };
+};
 
 
-export class JikanTransformer {
-    transformSearchResults(searchData: SearchData<JikanMangaSearchResponse>): ProviderSearchResults {
-        const results = searchData.rawData?.data ?? [];
-        const hasNextPage = searchData.rawData.pagination.has_next_page;
-
-        const transformedResults = results.map((item): ProviderSearchResult => {
-            return {
-                id: item.mal_id,
-                date: item.published.from,
-                itemType: MediaType.MANGA,
-                name: item.title_english ?? item.title,
-                image: item.images.jpg.image_url ?? getImageUrl("manga-covers"),
-            };
-        });
-
-        return { data: transformedResults, hasNextPage };
+const transformMangaDetailsResults = async (rawData: JikanDetails) => {
+    const mediaData = {
+        siteUrl: rawData.url,
+        apiId: rawData.mal_id,
+        volumes: rawData.volumes,
+        chapters: rawData.chapters,
+        synopsis: rawData.synopsis,
+        prodStatus: rawData.status,
+        voteAverage: rawData.score,
+        originalName: rawData.title,
+        voteCount: rawData.scored_by,
+        endDate: rawData.published.to,
+        popularity: rawData.popularity,
+        releaseDate: rawData.published.from,
+        name: rawData.title_english ?? rawData.title,
+        publishers: rawData.serializations?.[0]?.name ?? null,
+        imageCover: await saveImageFromUrl({
+            dirSaveName: "manga-covers",
+            imageUrl: rawData.images.jpg.large_image_url,
+        }),
     }
 
-    async transformMangaDetailsResults(rawData: JikanDetails) {
-        const mediaData: Manga = {
-            siteUrl: rawData.url,
-            apiId: rawData.mal_id,
-            volumes: rawData.volumes,
-            chapters: rawData.chapters,
-            synopsis: rawData.synopsis,
-            prodStatus: rawData.status,
-            voteAverage: rawData.score,
-            originalName: rawData.title,
-            voteCount: rawData.scored_by,
-            endDate: rawData.published.to,
-            popularity: rawData.popularity,
-            releaseDate: rawData.published.from,
-            name: rawData.title_english ?? rawData.title,
-            publishers: rawData.serializations?.[0]?.name ?? null,
-            imageCover: await saveImageFromUrl({
-                dirSaveName: "manga-covers",
-                imageUrl: rawData.images.jpg.large_image_url,
-            }),
-        }
+    const genresData = rawData?.genres.map((genre) => ({ name: genre.name }));
+    const authorsData = (rawData?.authors ?? [])
+        .slice(0, 2)
+        .map((author) => {
+            const [last, first] = author.name?.split(",", 2) ?? [""];
+            return first ? `${first.trim()} ${last.trim()}` : last;
+        })
+        .filter((name) => name.trim())
+        .map((name) => ({ name }));
 
-        const genresData = rawData?.genres.map((genre) => ({ name: genre.name }));
-        const authorsData = (rawData?.authors ?? [])
-            .slice(0, 2)
-            .map((author) => {
-                const [last, first] = author.name?.split(",", 2) ?? [""];
-                return first ? `${first.trim()} ${last.trim()}` : last;
-            })
-            .filter((name) => name.trim())
-            .map((name) => ({ name }));
+    return { mediaData, authorsData, genresData };
+};
 
-        return { mediaData, authorsData, genresData };
-    };
+
+export const jikanTransformer = {
+    transformSearchResults,
+    transformDetailsResults: transformMangaDetailsResults,
 }

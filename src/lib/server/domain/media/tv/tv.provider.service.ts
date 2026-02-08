@@ -2,21 +2,12 @@ import {TvRepository} from "@/lib/server/domain/media/tv/tv.repository";
 import {UpsertTvWithDetails} from "@/lib/server/domain/media/tv/tv.types";
 import {JikanClient, TmdbClient} from "@/lib/server/api-providers/clients";
 import {TmdbTrendingTvResponse, TmdbTvDetails} from "@/lib/types/provider.types";
-import {TmdbTransformer} from "@/lib/server/api-providers/transformers/tmdb.transformer";
+import {tmdbTransformer} from "@/lib/server/api-providers/transformers/tmdb.transformer";
 import {BaseTrendsProviderService} from "@/lib/server/domain/media/base/provider.service";
 
 
-export class TvProviderService extends BaseTrendsProviderService<
-    TvRepository,
-    TmdbTvDetails,
-    UpsertTvWithDetails
-> {
-    constructor(
-        private client: TmdbClient,
-        private transformer: TmdbTransformer,
-        repository: TvRepository,
-        private readonly jikanClient: JikanClient,
-    ) {
+export class TvProviderService extends BaseTrendsProviderService<TvRepository, TmdbTvDetails, UpsertTvWithDetails> {
+    constructor(private client: TmdbClient, repository: TvRepository, private readonly jikanClient: JikanClient) {
         super(repository);
     }
 
@@ -26,8 +17,11 @@ export class TvProviderService extends BaseTrendsProviderService<
 
     protected _transformDetails(rawData: TmdbTvDetails) {
         const isAnime = rawData.genres?.some((g: { id: number; }) => g.id === 16) && rawData.original_language === "ja";
-        if (isAnime) return this.transformer.transformAnimeDetailsResults(rawData);
-        return this.transformer.transformSeriesDetailsResults(rawData);
+        if (isAnime) {
+            return tmdbTransformer.transformAnimeDetailsResults(rawData);
+        }
+
+        return tmdbTransformer.transformSeriesDetailsResults(rawData);
     }
 
     protected async _getMediaIdsForBulkRefresh() {
@@ -40,7 +34,7 @@ export class TvProviderService extends BaseTrendsProviderService<
     }
 
     protected _transformTrends(rawData: TmdbTrendingTvResponse) {
-        const tvTrends = this.transformer.transformTvTrends(rawData);
+        const tvTrends = tmdbTransformer.transformTvTrends(rawData);
         return tvTrends;
     }
 
@@ -57,7 +51,7 @@ export class TvProviderService extends BaseTrendsProviderService<
             }
             else {
                 const jikanData = await this.jikanClient.getAnimeGenresAndDemographics(details.mediaData.name);
-                details.genresData = this.transformer.addAnimeSpecificGenres(jikanData, details.genresData);
+                details.genresData = tmdbTransformer.addAnimeSpecificGenres(jikanData, details.genresData);
             }
         }
 

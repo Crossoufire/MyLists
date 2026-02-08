@@ -2,20 +2,12 @@ import {TmdbClient} from "@/lib/server/api-providers/clients/tmdb.client";
 import {MoviesRepository} from "@/lib/server/domain/media/movies/movies.repository";
 import {UpsertMovieWithDetails} from "@/lib/server/domain/media/movies/movies.types";
 import {TmdbMovieDetails, TmdbTrendingMoviesResponse} from "@/lib/types/provider.types";
-import {TmdbTransformer} from "@/lib/server/api-providers/transformers/tmdb.transformer";
+import {tmdbTransformer} from "@/lib/server/api-providers/transformers/tmdb.transformer";
 import {BaseTrendsProviderService} from "@/lib/server/domain/media/base/provider.service";
 
 
-export class MoviesProviderService extends BaseTrendsProviderService<
-    MoviesRepository,
-    TmdbMovieDetails,
-    UpsertMovieWithDetails
-> {
-    constructor(
-        private client: TmdbClient,
-        private transformer: TmdbTransformer,
-        repository: MoviesRepository,
-    ) {
+export class MoviesProviderService extends BaseTrendsProviderService<MoviesRepository, TmdbMovieDetails, UpsertMovieWithDetails> {
+    constructor(private client: TmdbClient, repository: MoviesRepository) {
         super(repository);
     }
 
@@ -24,7 +16,7 @@ export class MoviesProviderService extends BaseTrendsProviderService<
     }
 
     protected _transformDetails(rawData: TmdbMovieDetails) {
-        return this.transformer.transformMoviesDetailsResults(rawData);
+        return tmdbTransformer.transformMoviesDetailsResults(rawData);
     }
 
     protected _getMediaIdsForBulkRefresh() {
@@ -36,6 +28,6 @@ export class MoviesProviderService extends BaseTrendsProviderService<
     }
 
     protected _transformTrends(rawData: TmdbTrendingMoviesResponse) {
-        return this.transformer.transformMoviesTrends(rawData);
+        return tmdbTransformer.transformMoviesTrends(rawData);
     }
 }
