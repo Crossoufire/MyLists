@@ -4,6 +4,7 @@ import {MediaType} from "@/lib/utils/enums";
 import {GridItem} from "@/lib/types/activity.types";
 import {createFileRoute} from "@tanstack/react-router";
 import {useSuspenseQuery} from "@tanstack/react-query";
+import {useAuth} from "@/lib/client/hooks/use-auth";
 import {TabHeader} from "@/lib/client/components/general/TabHeader";
 import {EmptyState} from "@/lib/client/components/general/EmptyState";
 import {MainThemeIcon} from "@/lib/client/components/general/MainIcons";
@@ -26,8 +27,10 @@ function MonthlyActivityPage() {
     const filters = Route.useSearch();
     const navigate = Route.useNavigate();
     const { username } = Route.useParams();
+    const { currentUser } = useAuth();
     const [activeTab, setActiveTab] = useState<MediaType | "all">("all");
     const apiData = useSuspenseQuery(activityQueryOptions(username, filters)).data;
+    const canEdit = currentUser?.name === username;
 
     const mediaTypes = (Object.keys(apiData) as MediaType[]).filter((key) => apiData[key].count > 0);
 
@@ -124,6 +127,7 @@ function MonthlyActivityPage() {
                         showBadge={activeTab === "all"}
                         initialItems={viewData.completed}
                         totalCount={viewData.completedCount}
+                        canEdit={canEdit}
                     />
                     <ActivitySectionGrid
                         icon={TrendingUp}
@@ -136,6 +140,7 @@ function MonthlyActivityPage() {
                         showBadge={activeTab === "all"}
                         initialItems={viewData.progressed}
                         totalCount={viewData.progressedCount}
+                        canEdit={canEdit}
                     />
                     <ActivitySectionGrid
                         section="redo"
@@ -148,6 +153,7 @@ function MonthlyActivityPage() {
                         initialItems={viewData.redo}
                         totalCount={viewData.redoCount}
                         showBadge={activeTab === "all"}
+                        canEdit={canEdit}
                     />
                 </div>
                 :

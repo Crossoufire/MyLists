@@ -14,7 +14,7 @@ import {getUserAchievements} from "@/lib/server/functions/user-achievements";
 import {getDailyMediadle, getMediadleSuggestions} from "@/lib/server/functions/moviedle";
 import {getNotifications, getNotificationsCount} from "@/lib/server/functions/notifications";
 import {getUserCollectionNames, getUserMediaHistory} from "@/lib/server/functions/user-media";
-import {getMonthlyActivity, getSectionActivity, getUserStats} from "@/lib/server/functions/user-stats";
+import {getActivityEvents, getMonthlyActivity, getSectionActivity, getUserStats} from "@/lib/server/functions/user-stats";
 import {getJobDetails, getMediaDetails, getMediaDetailsToEdit} from "@/lib/server/functions/media-details";
 import {getAllUpdatesHistory, getUserProfile, getUserProfileHeader, getUsersFollowers, getUsersFollows} from "@/lib/server/functions/user-profile";
 import {getCollectionsViewFn, getMediaListFilters, getMediaListSearchFilters, getMediaListSF, getUserListHeaderSF} from "@/lib/server/functions/media-lists";
@@ -190,6 +190,18 @@ export const activityQueryOptions = (username: string, search: { year: string, m
     return queryOptions({
         queryKey: ["userStats-activity", username, search.year, search.month],
         queryFn: () => getMonthlyActivity({ data: { username, ...search } }),
+    })
+}
+
+export const activityEventsOptions = (username: string, search: {
+    year: number;
+    month: number;
+    mediaType?: MediaType;
+    mediaId?: number;
+}) => {
+    return queryOptions({
+        queryKey: ["userActivityEvents", username, String(search.year), String(search.month), search.mediaType, search.mediaId],
+        queryFn: () => getActivityEvents({ data: { username, ...search } }),
     })
 }
 
