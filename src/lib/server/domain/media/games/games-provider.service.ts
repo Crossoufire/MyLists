@@ -27,6 +27,14 @@ export class GamesProviderService extends BaseProviderService<GamesRepository, I
         return this.repository.getMediaIdsToBeRefreshed();
     }
 
+    protected _getBulkRefreshChunkSize() {
+        return 500;
+    }
+
+    protected _fetchRawDetailsBatch(apiIds: (number | string)[]) {
+        return this.client.getGamesDetails(apiIds as number[]);
+    }
+
     protected async _enhanceDetails(details: UpsertGameWithDetails, isBulk: boolean) {
         if (!isBulk) {
             const hltbData = await this.hltbClient.search(details.mediaData.name);

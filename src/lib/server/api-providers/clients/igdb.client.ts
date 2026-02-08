@@ -72,6 +72,23 @@ export class IgdbClient extends BaseClient {
         return rawData[0];
     }
 
+    async getGamesDetails(apiIds: number[]): Promise<IgdbGameDetails[]> {
+        if (apiIds.length === 0) return [];
+
+        const body = `
+            fields name, cover.image_id, game_engines.name, game_modes.name, platforms.name, genres.name, 
+            player_perspectives.name, total_rating, total_rating_count, first_release_date, 
+            involved_companies.company.name, involved_companies.developer, involved_companies.publisher,
+            summary, themes.name, url, external_games.uid, external_games.external_game_source;
+            where id = (${apiIds.join(",")});
+            limit ${apiIds.length};
+        `;
+
+        const headers = await this.getHeaders();
+        const response = await this.call(`${this.baseUrl}`, "post", { headers, body });
+        return await response.json() as Promise<IgdbGameDetails[]>;
+    }
+
     async refreshAccessToken() {
         const tokenResponse = await this.fetchNewIgdbToken();
 
