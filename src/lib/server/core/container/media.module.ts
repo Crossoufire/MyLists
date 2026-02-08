@@ -9,7 +9,7 @@ import {MediaProviderServiceRegistry, MediaRepositoryRegistry, MediaServiceRegis
 
 
 export function setupMediaModule(apiModule: ProviderModule) {
-    const { clients, transformers } = apiModule;
+    const { clients } = apiModule;
 
     const repositories = {
         series: new TvRepository(seriesConfig),
@@ -17,7 +17,7 @@ export function setupMediaModule(apiModule: ProviderModule) {
         movies: new MoviesRepository(),
         games: new GamesRepository(),
         books: new BooksRepository(),
-        manga: new MangaRepository()
+        manga: new MangaRepository(),
     };
     Object.entries(repositories).forEach(([key, repo]) => {
         MediaRepositoryRegistry.registerRepository(key as MediaType, repo);
@@ -29,7 +29,7 @@ export function setupMediaModule(apiModule: ProviderModule) {
         movies: new MoviesService(repositories.movies),
         games: new GamesService(repositories.games),
         books: new BooksService(repositories.books),
-        manga: new MangaService(repositories.manga)
+        manga: new MangaService(repositories.manga),
     };
     Object.entries(services).forEach(([key, service]) => {
         MediaServiceRegistry.registerService(key as MediaType, service);
@@ -37,12 +37,12 @@ export function setupMediaModule(apiModule: ProviderModule) {
 
     // Create and register provider services
     const providerServices = {
-        series: new TvProviderService(clients.tmdb, transformers.tmdb, repositories.series, clients.jikan),
-        anime: new TvProviderService(clients.tmdb, transformers.tmdb, repositories.anime, clients.jikan),
-        movies: new MoviesProviderService(clients.tmdb, transformers.tmdb, repositories.movies),
-        games: new GamesProviderService(clients.igdb, transformers.igdb, repositories.games, clients.hltb),
-        books: new BooksProviderService(clients.gBook, clients.llmClient, transformers.gBook, repositories.books),
-        manga: new MangaProviderService(clients.jikan, transformers.jikan, repositories.manga)
+        series: new TvProviderService(clients.tmdb, repositories.series, clients.jikan),
+        anime: new TvProviderService(clients.tmdb, repositories.anime, clients.jikan),
+        movies: new MoviesProviderService(clients.tmdb, repositories.movies),
+        games: new GamesProviderService(clients.igdb, repositories.games, clients.hltb),
+        books: new BooksProviderService(clients.gBook, clients.llmClient, repositories.books),
+        manga: new MangaProviderService(clients.jikan, repositories.manga),
     };
     Object.entries(providerServices).forEach(([key, service]) => {
         MediaProviderServiceRegistry.registerService(key as MediaType, service);

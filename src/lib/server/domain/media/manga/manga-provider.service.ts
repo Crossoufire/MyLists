@@ -3,19 +3,11 @@ import {JikanClient} from "@/lib/server/api-providers/clients/jikan.client";
 import {MangaRepository} from "@/lib/server/domain/media/manga/manga.repository";
 import {UpsertMangaWithDetails} from "@/lib/server/domain/media/manga/manga.types";
 import {BaseProviderService} from "@/lib/server/domain/media/base/provider.service";
-import {JikanTransformer} from "@/lib/server/api-providers/transformers/jikan.transformer";
+import {jikanTransformer} from "@/lib/server/api-providers/transformers/jikan.transformer";
 
 
-export class MangaProviderService extends BaseProviderService<
-    MangaRepository,
-    JikanDetails,
-    UpsertMangaWithDetails
-> {
-    constructor(
-        private client: JikanClient,
-        private transformer: JikanTransformer,
-        repository: MangaRepository,
-    ) {
+export class MangaProviderService extends BaseProviderService<MangaRepository, JikanDetails, UpsertMangaWithDetails> {
+    constructor(private client: JikanClient, repository: MangaRepository) {
         super(repository);
     }
 
@@ -24,7 +16,7 @@ export class MangaProviderService extends BaseProviderService<
     }
 
     protected _transformDetails(rawData: JikanDetails) {
-        return this.transformer.transformMangaDetailsResults(rawData);
+        return jikanTransformer.transformDetailsResults(rawData);
     }
 
     protected _getMediaIdsForBulkRefresh() {

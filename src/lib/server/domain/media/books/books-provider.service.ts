@@ -1,23 +1,14 @@
 import z from "zod";
 import {GBooksDetails} from "@/lib/types/provider.types";
-import {GBooksTransformer} from "@/lib/server/api-providers/transformers";
 import {GBooksClient, LlmClient} from "@/lib/server/api-providers/clients";
 import {BooksRepository} from "@/lib/server/domain/media/books/books.repository";
 import {UpsertBooksWithDetails} from "@/lib/server/domain/media/books/books.types";
 import {BaseProviderService} from "@/lib/server/domain/media/base/provider.service";
+import {gbooksTransformer} from "@/lib/server/api-providers/transformers/gbook.transformer";
 
 
-export class BooksProviderService extends BaseProviderService<
-    BooksRepository,
-    GBooksDetails,
-    UpsertBooksWithDetails
-> {
-    constructor(
-        private client: GBooksClient,
-        private llmClient: LlmClient,
-        private transformer: GBooksTransformer,
-        repository: BooksRepository,
-    ) {
+export class BooksProviderService extends BaseProviderService<BooksRepository, GBooksDetails, UpsertBooksWithDetails> {
+    constructor(private client: GBooksClient, private llmClient: LlmClient, repository: BooksRepository) {
         super(repository);
     }
 
@@ -26,7 +17,7 @@ export class BooksProviderService extends BaseProviderService<
     }
 
     protected _transformDetails(rawData: GBooksDetails) {
-        return this.transformer.transformBooksDetailsResults(rawData);
+        return gbooksTransformer.transformDetailsResults(rawData);
     }
 
     protected _getMediaIdsForBulkRefresh() {
