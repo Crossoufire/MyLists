@@ -70,6 +70,12 @@ export const gamesConfig: GamesSchemaConfig = {
             nameColumn: gamesCompanies.name,
             mediaIdColumn: gamesCompanies.mediaId,
             getFilter: (name) => and(like(gamesCompanies.name, `%${name}%`), eq(gamesCompanies.developer, true))
+        },
+        [JobType.PUBLISHER]: {
+            sourceTable: gamesCompanies,
+            nameColumn: gamesCompanies.name,
+            mediaIdColumn: gamesCompanies.mediaId,
+            getFilter: (name) => and(like(gamesCompanies.name, `%${name}%`), eq(gamesCompanies.publisher, true))
         }
     },
     tablesForDeletion: [gamesCompanies, gamesPlatforms, gamesGenre, gamesCollections],
