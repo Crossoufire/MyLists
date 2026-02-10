@@ -345,11 +345,7 @@ export function AdminFeatureControls({ featureId, currentStatus, currentComment 
                             placeholder="Provide context on why this status was chosen..."
                         />
                     </div>
-                </div>
 
-                <div className="rounded-lg border border-dashed border-destructive/60 bg-destructive/10 px-4 py-3 text-xs text-muted-foreground">
-                    <p className="font-semibold text-destructive">Delete request</p>
-                    <p>This permanently removes the feature request and all votes.</p>
                     <Button
                         size="sm"
                         type="button"

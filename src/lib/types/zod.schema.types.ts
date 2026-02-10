@@ -328,7 +328,7 @@ export const postFeatureVoteSchema = z.object({
 export const postFeatureStatusSchema = z.object({
     status: z.enum(FeatureStatus),
     featureId: z.coerce.number().int().positive(),
-    adminComment: z.string().trim().max(300).optional().nullable(),
+    adminComment: z.string().trim().optional().nullable(),
 });
 
 export const postFeatureDeleteSchema = z.object({
