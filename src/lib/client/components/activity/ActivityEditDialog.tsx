@@ -155,11 +155,11 @@ export const ActivityEditDialog = (props: ActivityEditDialogProps) => {
                     </DialogFooter>
                 </form>
 
-                <div className="text-xs text-red-300">
+                <div className="text-xs text-red-400">
                     <b>Note:</b> These values determine how your time is allocated to your{" "}
-                    <b>monthly</b> and <b>yearly recaps</b>. For example, you can log a show you watched years
-                    ago without it inflating your current monthly/yearly recap. This does not affect your total lifetime
-                    progress—only how it is distributed in your history.
+                    monthly and yearly recaps. For example, you can log a show you watched years
+                    ago without it inflating your current monthly / yearly recap. This does not affect your total lifetime
+                    progress, only how it is distributed in your history.
                 </div>
             </DialogContent>
         </Dialog>
