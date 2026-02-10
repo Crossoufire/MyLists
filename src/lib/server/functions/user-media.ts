@@ -3,14 +3,7 @@ import {createServerFn} from "@tanstack/react-start";
 import {getContainer} from "@/lib/server/core/container";
 import {authMiddleware} from "@/lib/server/middlewares/authentication";
 import {transactionMiddleware} from "@/lib/server/middlewares/transaction";
-import {
-    addMediaToListSchema,
-    deleteUserUpdatesSchema,
-    editUserCollectionSchema,
-    mediaActionSchema,
-    updateUserMediaSchema,
-    userCollectionNamesSchema
-} from "@/lib/types/zod.schema.types";
+import {addMediaToListSchema, deleteUserUpdatesSchema, editUserTagSchema, mediaActionSchema, updateUserMediaSchema, userTagNamesSchema} from "@/lib/types/zod.schema.types";
 
 
 export const getUserMediaHistory = createServerFn({ method: "GET" })
@@ -101,22 +94,22 @@ export const postDeleteUserUpdates = createServerFn({ method: "POST" })
     });
 
 
-export const getUserCollectionNames = createServerFn({ method: "GET" })
+export const getUserTagNames = createServerFn({ method: "GET" })
     .middleware([authMiddleware])
-    .inputValidator(userCollectionNamesSchema)
+    .inputValidator(userTagNamesSchema)
     .handler(async ({ data: { mediaType }, context: { currentUser } }) => {
         const container = await getContainer();
         const mediaService = container.registries.mediaService.getService(mediaType);
-        return mediaService.getCollectionNames(currentUser.id);
+        return mediaService.getTagNames(currentUser.id);
     });
 
 
-export const postEditUserCollection = createServerFn({ method: "POST" })
+export const postEditUserTag = createServerFn({ method: "POST" })
     .middleware([authMiddleware, transactionMiddleware])
-    .inputValidator(editUserCollectionSchema)
-    .handler(async ({ data: { mediaType, mediaId, collection, action }, context: { currentUser } }) => {
+    .inputValidator(editUserTagSchema)
+    .handler(async ({ data: { mediaType, mediaId, tag, action }, context: { currentUser } }) => {
         const container = await getContainer();
         const mediaService = container.registries.mediaService.getService(mediaType);
 
-        return mediaService.editUserCollection(currentUser.id, collection, action, mediaId);
+        return mediaService.editUserTag(currentUser.id, tag, action, mediaId);
     });

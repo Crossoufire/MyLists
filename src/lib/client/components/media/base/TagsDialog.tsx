@@ -1,49 +1,49 @@
 import {cn} from "@/lib/utils/helpers";
 import {useMemo, useState} from "react";
+import {Tag} from "@/lib/types/base.types";
 import {Link} from "@tanstack/react-router";
 import {useQuery} from "@tanstack/react-query";
-import {Collection} from "@/lib/types/base.types";
 import {useAuth} from "@/lib/client/hooks/use-auth";
 import {Input} from "@/lib/client/components/ui/input";
+import {MediaType, TagAction} from "@/lib/utils/enums";
 import {Button} from "@/lib/client/components/ui/button";
-import {CollectionAction, MediaType} from "@/lib/utils/enums";
-import {collectionNamesOptions} from "@/lib/client/react-query/query-options/query-options";
-import {Check, ChevronRight, Layers, LoaderCircle, PlusCircle, TriangleAlert} from "lucide-react";
-import {useEditCollectionMutation} from "@/lib/client/react-query/query-mutations/user-media.mutations";
+import {tagNamesOptions} from "@/lib/client/react-query/query-options/query-options";
+import {Check, ChevronRight, LoaderCircle, PlusCircle, Tags, TriangleAlert} from "lucide-react";
+import {useEditTagMutation} from "@/lib/client/react-query/query-mutations/user-media.mutations";
 import {Credenza, CredenzaContent, CredenzaDescription, CredenzaHeader, CredenzaTitle, CredenzaTrigger} from "@/lib/client/components/ui/credenza";
 
 
-interface CollectionsDialogProps {
+interface TagsDialogProps {
+    tags: Tag[];
     mediaId: number;
     mediaType: MediaType;
-    collections: Collection[];
-    updateCollection: (collections: (Collection | undefined)[]) => void;
+    updateTag: (tags: (Tag | undefined)[]) => void;
 }
 
 
-export const CollectionsDialog = ({ mediaType, mediaId, collections, updateCollection }: CollectionsDialogProps) => {
+export const TagsDialog = ({ mediaType, mediaId, tags, updateTag }: TagsDialogProps) => {
     const { currentUser } = useAuth();
     const [isOpen, setIsOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
-    const mutation = useEditCollectionMutation(mediaType, mediaId);
-    const { data: allCollections = [], isLoading } = useQuery(collectionNamesOptions(mediaType, isOpen));
+    const mutation = useEditTagMutation(mediaType, mediaId);
+    const { data: allTags = [], isLoading } = useQuery(tagNamesOptions(mediaType, isOpen));
     const [toast, setToast] = useState<{ type: "error" | "success"; message: string } | null>(null);
 
-    const activeIds = useMemo(() => new Set(collections.map((c) => c.name)), [collections]);
-    const filteredCollections = allCollections.filter((c) => c.name.toLowerCase().includes(searchQuery.toLowerCase()));
+    const activeIds = useMemo(() => new Set(tags.map((c) => c.name)), [tags]);
+    const filteredTags = allTags.filter((c) => c.name.toLowerCase().includes(searchQuery.toLowerCase()));
 
     const showCreateButton = searchQuery.trim().length > 0
-        && !allCollections.some((c) => c.name.toLowerCase() === searchQuery.trim().toLowerCase());
+        && !allTags.some((c) => c.name.toLowerCase() === searchQuery.trim().toLowerCase());
 
-    const handleAction = (collection: Collection, action: CollectionAction) => {
-        mutation.mutate({ collection, action }, {
+    const handleAction = (tag: Tag, action: TagAction) => {
+        mutation.mutate({ tag, action }, {
             onSuccess: (data) => {
-                if (action === CollectionAction.ADD) {
-                    updateCollection([...collections, data]);
+                if (action === TagAction.ADD) {
+                    updateTag([...tags, data]);
                     setSearchQuery("");
                 }
                 else {
-                    updateCollection(collections.filter((c) => c.name !== collection.name));
+                    updateTag(tags.filter((c) => c.name !== tag.name));
                 }
             },
             onError: () => setToast({ message: "Action failed", type: "error" })
@@ -52,7 +52,7 @@ export const CollectionsDialog = ({ mediaType, mediaId, collections, updateColle
 
     const onSearchKeyDown = (ev: React.KeyboardEvent<HTMLInputElement>) => {
         if (ev.key === "Enter" && showCreateButton) {
-            handleAction({ name: searchQuery.trim() }, CollectionAction.ADD);
+            handleAction({ name: searchQuery.trim() }, TagAction.ADD);
         }
     }
 
@@ -73,10 +73,10 @@ export const CollectionsDialog = ({ mediaType, mediaId, collections, updateColle
                 <div className="p-6 pb-4">
                     <CredenzaHeader className="p-0 mb-6 mt-2">
                         <CredenzaTitle>
-                            Manage Collections
+                            Manage Tags
                         </CredenzaTitle>
                         <CredenzaDescription>
-                            Add this {mediaType} to your collections to organize your list.
+                            Add this {mediaType} to your tags to organize your list.
                         </CredenzaDescription>
                     </CredenzaHeader>
 
@@ -87,7 +87,7 @@ export const CollectionsDialog = ({ mediaType, mediaId, collections, updateColle
                             disabled={isLoading}
                             onKeyDown={onSearchKeyDown}
                             className="h-11 bg-popover/50"
-                            placeholder="Find or create a collection..."
+                            placeholder="Find or create a tag..."
                             onChange={(ev) => setSearchQuery(ev.target.value)}
                         />
                         <div className="absolute right-1.5 top-1/2 -translate-y-1/2 h-8 flex items-center">
@@ -96,7 +96,7 @@ export const CollectionsDialog = ({ mediaType, mediaId, collections, updateColle
                                     size="sm"
                                     className="h-7 bg-app-accent/50 hover:bg-app-accent/70 text-[10px]
                                     font-bold px-2.5 rounded shadow-sm transition-all text-primary/90"
-                                    onClick={() => handleAction({ name: searchQuery.trim() }, CollectionAction.ADD)}
+                                    onClick={() => handleAction({ name: searchQuery.trim() }, TagAction.ADD)}
                                 >
                                     {mutation.isPending ? "..." : "CREATE"}
                                 </Button>
@@ -116,15 +116,15 @@ export const CollectionsDialog = ({ mediaType, mediaId, collections, updateColle
                                 <LoaderCircle className="size-6 animate-spin"/>
                                 <span className="text-xs font-medium">Syncing...</span>
                             </div>
-                            : filteredCollections.length === 0 ?
+                            : filteredTags.length === 0 ?
                                 <div className="flex flex-col items-center justify-center h-full text-center p-6">
                                     <PlusCircle className="size-8 text-muted-foreground mb-3 opacity-50"/>
                                     <p className="text-sm text-zinc-400 font-medium">
-                                        No collection found
+                                        No tag found
                                     </p>
                                     <p className="text-xs text-zinc-600 mt-1">
                                         {searchQuery ?
-                                            `Click 'create' to create '${searchQuery.trim()}' collection.`
+                                            `Click 'create' to create '${searchQuery.trim()}' tags.`
                                             :
                                             "Start typing to create your first list."
                                         }
@@ -132,14 +132,14 @@ export const CollectionsDialog = ({ mediaType, mediaId, collections, updateColle
                                 </div>
                                 :
                                 <div className="grid gap-0.5">
-                                    {filteredCollections.map((col) => {
+                                    {filteredTags.map((col) => {
                                         const isActive = activeIds.has(col.name);
 
                                         return (
                                             <button
                                                 key={col.name}
                                                 disabled={mutation.isPending}
-                                                onClick={() => handleAction(col, isActive ? CollectionAction.DELETE_ONE : CollectionAction.ADD)}
+                                                onClick={() => handleAction(col, isActive ? TagAction.DELETE_ONE : TagAction.ADD)}
                                                 className={cn("flex items-center justify-between w-full px-3 py-3 " +
                                                     "rounded-lg text-sm transition-all group", isActive
                                                     ? "bg-app-accent/4 text-app-accent" : "text-primary/90 hover:bg-popover"
@@ -176,12 +176,12 @@ export const CollectionsDialog = ({ mediaType, mediaId, collections, updateColle
 
                     <div className="p-4 border-t flex items-center justify-between bg-popover">
                         <Link
-                            to="/list/$mediaType/$username/collections"
+                            to="/list/$mediaType/$username/tags"
                             params={{ mediaType, username: currentUser!.name }}
                             className="flex items-center gap-1.5 text-xs text-primary/90 hover:text-app-accent transition-colors"
                         >
-                            <Layers className="size-3"/>
-                            Open Collections
+                            <Tags className="size-3"/>
+                            Open Tags
                             <ChevronRight className="size-3 mt-0.5"/>
                         </Link>
                         <Button size="sm" variant="secondary" className="text-primary/90" onClick={() => setIsOpen(false)}>

@@ -2,7 +2,7 @@ import {MediaType} from "@/lib/utils/enums";
 import {relations} from "drizzle-orm/relations";
 import {user} from "@/lib/server/database/schema/auth.schema";
 import {integer, sqliteTable, text} from "drizzle-orm/sqlite-core";
-import {commonGenericCols, commonMediaCollectionsCols, commonMediaCols, commonMediaListCols} from "@/lib/server/database/schema/media/_helper";
+import {commonGenericCols, commonMediaCols, commonMediaListCols, commonMediaTagsCols} from "@/lib/server/database/schema/media/_helper";
 
 
 export const books = sqliteTable("books", {
@@ -32,15 +32,15 @@ export const booksAuthors = sqliteTable("books_authors", {
 });
 
 
-export const booksCollections = sqliteTable("books_collections", {
-    ...commonMediaCollectionsCols(books.id),
+export const booksTags = sqliteTable("books_tags", {
+    ...commonMediaTagsCols(books.id),
 });
 
 
 export const booksRelations = relations(books, ({ many }) => ({
     booksAuthors: many(booksAuthors),
     booksGenres: many(booksGenre),
-    booksCollections: many(booksCollections),
+    booksTags: many(booksTags),
     booksLists: many(booksList),
 }));
 
@@ -73,13 +73,13 @@ export const booksGenreRelations = relations(booksGenre, ({ one }) => ({
 }));
 
 
-export const booksCollectionsRelations = relations(booksCollections, ({ one }) => ({
+export const booksTagsRelations = relations(booksTags, ({ one }) => ({
     user: one(user, {
-        fields: [booksCollections.userId],
+        fields: [booksTags.userId],
         references: [user.id]
     }),
     book: one(books, {
-        fields: [booksCollections.mediaId],
+        fields: [booksTags.mediaId],
         references: [books.id]
     }),
 }));

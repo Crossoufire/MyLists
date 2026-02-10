@@ -14,7 +14,7 @@ TV series, anime, manga, books, and video games in one unified interface.
 
 ### Key Features
 
-- **Multi-Media Collections**: Dedicated lists/collections for Movies, Series, Anime, Manga, Books, and Games.
+- **Multi-Media lists**: Dedicated lists for Movies, Series, Anime, Manga, Books, and Games.
 - **Upcoming Media**: Get notified when new Media are released.
 - **Advanced Analytics**: Visualize your habits with detailed statistics, trends, and platform-wide insights.
 - **Modern Full-Stack Architecture**: Built with TanStack Start and end-to-end type-safety.

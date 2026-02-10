@@ -43,7 +43,7 @@ export const commonGenericCols = (modelMediaId: SQLiteColumn) => {
 };
 
 
-export const commonMediaCollectionsCols = (modelMediaId: SQLiteColumn) => {
+export const commonMediaTagsCols = (modelMediaId: SQLiteColumn) => {
     return {
         id: integer().primaryKey().notNull(),
         userId: integer().notNull().references(() => user.id, { onDelete: "cascade" }),

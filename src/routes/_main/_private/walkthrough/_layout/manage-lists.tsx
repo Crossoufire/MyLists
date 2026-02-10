@@ -23,11 +23,11 @@ export const Route = createFileRoute("/_main/_private/walkthrough/_layout/manage
     loader: async ({ context: { queryClient } }) => {
         return queryClient.ensureQueryData(mediaListOptions(MediaType.MOVIES, "DemoProfile", {}));
     },
-    component: CollectionOnboarding,
+    component: ListsOnboarding,
 });
 
 
-function CollectionOnboarding() {
+function ListsOnboarding() {
     const apiData = useSuspenseQuery(mediaListOptions(MediaType.MOVIES, "DemoProfile", {})).data;
 
     return (
@@ -79,8 +79,8 @@ function CollectionOnboarding() {
                     />
                     <OnboardingFeatureCard
                         icon={Bookmark}
-                        title="Custom Collections"
-                        description="Filter by your custom collections (like 'Top Sci-Fi') to view curated subsets of your lists."
+                        title="Custom Tags"
+                        description="Filter using custom tags (like 'Top Sci-Fi') to view curated subsets of your lists."
                     />
                 </OnboardingGrid>
 
@@ -148,7 +148,7 @@ function CollectionOnboarding() {
                         description={
                             <span>
                                 See something you like on a follows's list? Click the <PlusCircle className="inline size-4 text-primary"/>
-                                {" "} button to instantly add it to your collection.
+                                {" "} button to instantly add it to your list.
                             </span>
                         }
                     />

@@ -62,7 +62,7 @@ export const getMediaListSF = createServerFn({ method: "GET" })
     });
 
 
-export const getCollectionsViewFn = createServerFn({ method: "GET" })
+export const getTagsViewFn = createServerFn({ method: "GET" })
     .middleware([authorizationMiddleware])
     .inputValidator(z.object({ username: z.string(), mediaType: z.enum(MediaType) }))
     .handler(async ({ data: { mediaType }, context: { user } }) => {
@@ -70,7 +70,7 @@ export const getCollectionsViewFn = createServerFn({ method: "GET" })
         const container = await getContainer();
         const mediaService = container.registries.mediaService.getService(mediaType);
 
-        return mediaService.getCollectionsView(targetUserId);
+        return mediaService.getTagsView(targetUserId);
     });
 
 

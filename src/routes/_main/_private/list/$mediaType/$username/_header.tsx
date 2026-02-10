@@ -7,7 +7,7 @@ import {TabHeader} from "@/lib/client/components/general/TabHeader";
 import {MediaLevel} from "@/lib/client/components/general/MediaLevel";
 import {createFileRoute, Link, Outlet, useLocation} from "@tanstack/react-router";
 import {userListHeaderOption} from "@/lib/client/react-query/query-options/query-options";
-import {Award, ChartLine, ChartNoAxesColumn, EllipsisVertical, Layers, Library, User, Zap} from "lucide-react";
+import {Award, ChartLine, ChartNoAxesColumn, EllipsisVertical, Library, Tags, User, Zap} from "lucide-react";
 import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger} from "@/lib/client/components/ui/dropdown-menu";
 
 
@@ -33,8 +33,8 @@ function ListHeader() {
     const { username, mediaType } = Route.useParams();
     const { timeSpent } = useSuspenseQuery(userListHeaderOption(mediaType, username)).data;
 
-    const activeTab = location.pathname.endsWith("/collections")
-        ? "collections" : location.pathname.endsWith("/stats")
+    const activeTab = location.pathname.endsWith("/tags")
+        ? "tags" : location.pathname.endsWith("/stats")
             ? "stats" : location.pathname.endsWith("/achievements")
                 ? "achievements" : location.pathname.endsWith("/activity")
                     ? "activity" : "list";
@@ -45,8 +45,8 @@ function ListHeader() {
         if (tabName === "list") {
             return navigate({ to: `/list/${mediaType}/${username}` });
         }
-        if (tabName === "collections") {
-            return navigate({ to: `/list/${mediaType}/${username}/collections` });
+        if (tabName === "tags") {
+            return navigate({ to: `/list/${mediaType}/${username}/tags` });
         }
         if (tabName === "stats") {
             return navigate({ to: `/list/${mediaType}/${username}/stats` });
@@ -69,9 +69,9 @@ function ListHeader() {
             icon: <Library className="size-4"/>,
         }, {
             isAccent: true,
-            id: "collections",
-            label: "Collections",
-            icon: <Layers className="size-4"/>,
+            id: "tags",
+            label: "Tags",
+            icon: <Tags className="size-4"/>,
         }, {
             id: "stats",
             label: "stats",

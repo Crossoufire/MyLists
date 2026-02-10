@@ -1,7 +1,7 @@
 import {describe, expect, it} from "vitest";
 import type {Manga, MangaList} from "./manga.types";
 import {getContainer} from "@/lib/server/core/container";
-import type {UserMediaWithCollections} from "@/lib/types/base.types";
+import type {UserMediaWithTags} from "@/lib/types/base.types";
 import {MediaType, RatingSystemType, Status} from "@/lib/utils/enums";
 
 
@@ -48,9 +48,9 @@ describe("MangaService", async () => {
         ...overrides,
     });
 
-    const makeUserState = (overrides: Partial<UserMediaWithCollections<MangaList>>): UserMediaWithCollections<MangaList> => ({
+    const makeUserState = (overrides: Partial<UserMediaWithTags<MangaList>>): UserMediaWithTags<MangaList> => ({
         ...makeState(overrides),
-        collections: [],
+        tags: [],
         ratingSystem: RatingSystemType.SCORE,
     });
 

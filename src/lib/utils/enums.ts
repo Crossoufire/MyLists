@@ -72,13 +72,13 @@ export const Status = {
 export type Status = (typeof Status)[keyof typeof Status];
 
 
-export const CollectionAction = {
+export const TagAction = {
     ADD: "add",
     RENAME: "rename",
     DELETE_ONE: "deleteOne",
     DELETE_ALL: "deleteAll",
 } as const;
-export type CollectionAction = (typeof CollectionAction)[keyof typeof CollectionAction];
+export type TagAction = (typeof TagAction)[keyof typeof TagAction];
 
 
 export const JobType = {

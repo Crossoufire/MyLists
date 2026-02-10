@@ -3,14 +3,14 @@ import {JobType, MediaType, Status} from "@/lib/utils/enums";
 import {TvSchemaConfig} from "@/lib/types/media.config.types";
 import {createArrayFilterDef} from "@/lib/server/domain/media/base/base.repository";
 import {seriesAchievements} from "@/lib/server/domain/media/tv/series/achievements.seed";
-import {series, seriesActors, seriesEpisodesPerSeason, seriesGenre, seriesCollections, seriesList, seriesNetwork} from "@/lib/server/database/schema/media/series.schema";
+import {series, seriesActors, seriesEpisodesPerSeason, seriesGenre, seriesList, seriesNetwork, seriesTags} from "@/lib/server/database/schema/media/series.schema";
 
 
 export type SeriesSchemaConfig = TvSchemaConfig<
     typeof series,
     typeof seriesList,
     typeof seriesGenre,
-    typeof seriesCollections,
+    typeof seriesTags,
     typeof seriesActors,
     typeof seriesNetwork,
     typeof seriesEpisodesPerSeason
@@ -21,7 +21,7 @@ export const seriesConfig: SeriesSchemaConfig = {
     mediaTable: series,
     listTable: seriesList,
     genreTable: seriesGenre,
-    collectionTable: seriesCollections,
+    tagTable: seriesTags,
     actorTable: seriesActors,
     networkTable: seriesNetwork,
     epsPerSeasonTable: seriesEpisodesPerSeason,
@@ -117,6 +117,6 @@ export const seriesConfig: SeriesSchemaConfig = {
             mediaIdColumn: seriesNetwork.mediaId,
         }
     },
-    tablesForDeletion: [seriesEpisodesPerSeason, seriesNetwork, seriesActors, seriesGenre, seriesCollections],
+    tablesForDeletion: [seriesEpisodesPerSeason, seriesNetwork, seriesActors, seriesGenre, seriesTags],
     achievements: seriesAchievements,
 };

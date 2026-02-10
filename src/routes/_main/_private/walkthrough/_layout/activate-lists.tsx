@@ -1,6 +1,6 @@
 import {createFileRoute} from "@tanstack/react-router";
+import {ArrowRight, List, MousePointer2, Settings} from "lucide-react";
 import {ProfileIcon} from "@/lib/client/components/general/ProfileIcon";
-import {ArrowRight, Layers, MousePointer2, Settings} from "lucide-react";
 import {OnboardingContainer, OnboardingDemoBox, OnboardingNote, OnboardingSection, OnboardingSubSection} from "@/lib/client/components/onboarding/OnBoardingShared";
 
 
@@ -13,7 +13,7 @@ function ActiveListsOnboarding() {
     return (
         <OnboardingContainer>
             <OnboardingSection
-                icon={Layers}
+                icon={List}
                 title="Activate More Lists"
                 description={
                     <span>

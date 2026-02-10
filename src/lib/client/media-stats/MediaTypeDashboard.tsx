@@ -6,7 +6,7 @@ import {RatingsChart} from "@/lib/client/media-stats/RatingsChart";
 import {getMediaNaming} from "@/lib/client/media-stats/stats-utils";
 import {MainThemeIcon} from "@/lib/client/components/general/MainIcons";
 import {TopAffinityCard} from "@/lib/client/media-stats/TopAffinityCard";
-import {ChartColumn, Clock, Heart, Layers, Play, Star} from "lucide-react";
+import {ChartColumn, Clock, Heart, Play, Star, Tags} from "lucide-react";
 import {DistributionChart} from "@/lib/client/media-stats/DistributionChart";
 import {StatusDistribution} from "@/lib/client/media-stats/StatusDistribution";
 import {capitalize, formatCurrency, formatHours, formatNumber} from "@/lib/utils/formating";
@@ -65,9 +65,9 @@ export function MediaTypeDashboard({ stats }: MediaTypeDashboardProps) {
                     value={formatNumber(stats.totalFavorites)}
                 />
                 <StatCard
-                    title="Total Collections"
-                    value={formatNumber(specificMediaStats.totalCollections)}
-                    icon={<Layers className="size-4"/>}
+                    title="Total Tags"
+                    icon={<Tags className="size-4"/>}
+                    value={formatNumber(specificMediaStats.totalTags)}
                 />
             </div>
 

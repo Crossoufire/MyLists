@@ -1,47 +1,47 @@
 import {useMemo, useState} from "react";
+import {UserTag} from "@/lib/types/base.types";
 import {useAuth} from "@/lib/client/hooks/use-auth";
-import {UserCollection} from "@/lib/types/base.types";
 import {Input} from "@/lib/client/components/ui/input";
 import {useSuspenseQuery} from "@tanstack/react-query";
+import {MediaType, TagAction} from "@/lib/utils/enums";
 import {Button} from "@/lib/client/components/ui/button";
 import {DropdownMenu} from "@radix-ui/react-dropdown-menu";
 import {createFileRoute, Link} from "@tanstack/react-router";
-import {CollectionAction, MediaType} from "@/lib/utils/enums";
-import {Layers, MoreVertical, Pen, Trash2} from "lucide-react";
+import {Layers, MoreVertical, Pen, Tags, Trash2} from "lucide-react";
 import {EmptyState} from "@/lib/client/components/general/EmptyState";
-import {collectionsViewOptions} from "@/lib/client/react-query/query-options/query-options";
-import {useEditCollectionMutation} from "@/lib/client/react-query/query-mutations/user-media.mutations";
+import {tagsViewOptions} from "@/lib/client/react-query/query-options/query-options";
+import {useEditTagMutation} from "@/lib/client/react-query/query-mutations/user-media.mutations";
 import {DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger} from "@/lib/client/components/ui/dropdown-menu";
 
 
-export const Route = createFileRoute("/_main/_private/list/$mediaType/$username/_header/collections")({
+export const Route = createFileRoute("/_main/_private/list/$mediaType/$username/_header/tags")({
     loader: async ({ context: { queryClient }, params: { mediaType, username } }) => {
-        return queryClient.ensureQueryData(collectionsViewOptions(mediaType, username));
+        return queryClient.ensureQueryData(tagsViewOptions(mediaType, username));
     },
-    component: CollectionsView,
+    component: TagsView,
 });
 
 
-function CollectionsView() {
+function TagsView() {
     const { currentUser } = useAuth();
     const { username, mediaType } = Route.useParams();
-    const editMutation = useEditCollectionMutation(mediaType);
+    const editMutation = useEditTagMutation(mediaType);
     const [searchQuery, setSearchQuery] = useState("");
     const isOwner = !!currentUser && currentUser?.name === username;
-    const { data: collections } = useSuspenseQuery(collectionsViewOptions(mediaType, username),);
+    const { data: tags } = useSuspenseQuery(tagsViewOptions(mediaType, username),);
 
-    const filteredCollections = useMemo(() => {
-        return collections.filter((c) => c.collectionName.toLowerCase().includes(searchQuery.toLowerCase()));
-    }, [collections, searchQuery]);
+    const filteredTags = useMemo(() => {
+        return tags.filter((c) => c.tagName.toLowerCase().includes(searchQuery.toLowerCase()));
+    }, [tags, searchQuery]);
 
     const showCreateButton = isOwner && searchQuery.trim().length > 0
-        && !collections.some((c) => c.collectionName.toLowerCase() === searchQuery.trim().toLowerCase(),);
+        && !tags.some((c) => c.tagName.toLowerCase() === searchQuery.trim().toLowerCase(),);
 
     const handleCreate = () => {
         const trimmed = searchQuery.trim();
         if (!trimmed || editMutation.isPending) return;
 
-        editMutation.mutate({ collection: { name: trimmed }, action: CollectionAction.ADD }, {
+        editMutation.mutate({ tag: { name: trimmed }, action: TagAction.ADD }, {
             onSuccess: () => setSearchQuery(""),
         });
     };
@@ -52,10 +52,10 @@ function CollectionsView() {
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                         <h2 className="text-xl font-semibold tracking-tight">
-                            {isOwner ? "Your" : `${username}`} Collections
+                            {isOwner ? "Your" : `${username}`} Tags
                         </h2>
                         <p className="text-sm text-muted-foreground">
-                            Curated collections from {isOwner ? "your" : `${username}`} list
+                            All the tags from {isOwner ? "your" : `${username}`} list
                         </p>
                     </div>
 
@@ -63,7 +63,7 @@ function CollectionsView() {
                         <Input
                             value={searchQuery}
                             className="h-10 bg-popover/50"
-                            placeholder="Find or create collection..."
+                            placeholder="Find or create tag..."
                             onChange={(ev) => setSearchQuery(ev.target.value)}
                             onKeyDown={(ev) => {
                                 if (ev.key === "Enter" && showCreateButton) handleCreate();
@@ -91,33 +91,33 @@ function CollectionsView() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mt-8">
-                    {filteredCollections.length === 0 ?
+                    {filteredTags.length === 0 ?
                         <EmptyState
-                            icon={Layers}
+                            icon={Tags}
                             className="col-span-full py-20"
                             message={searchQuery
-                                ? `No collections found matching "${searchQuery}". Create it?`
-                                : "No collections created yet."
+                                ? `No tags found matching "${searchQuery}". Create it?`
+                                : "No tags created yet."
                             }
                         />
                         :
-                        filteredCollections.map((col) =>
-                            <CollectionCard
-                                collection={col}
+                        filteredTags.map((col) =>
+                            <TagCard
+                                tag={col}
                                 isOwner={isOwner}
                                 username={username}
                                 mediaType={mediaType}
-                                key={col.collectionId}
+                                key={col.tagId}
                                 onDelete={(name) => {
                                     editMutation.mutate({
-                                        collection: { name },
-                                        action: CollectionAction.DELETE_ALL,
+                                        tag: { name },
+                                        action: TagAction.DELETE_ALL,
                                     });
                                 }}
                                 onRename={(oldName, newName) => {
                                     editMutation.mutate({
-                                        action: CollectionAction.RENAME,
-                                        collection: { name: newName, oldName },
+                                        action: TagAction.RENAME,
+                                        tag: { name: newName, oldName },
                                     });
                                 }}
                             />
@@ -130,23 +130,23 @@ function CollectionsView() {
 }
 
 
-interface CollectionCardProps {
+interface TagCardProps {
+    tag: UserTag;
     username: string;
     isOwner: boolean;
     mediaType: MediaType;
-    collection: UserCollection;
     onDelete: (name: string) => void;
     onRename: (oldName: string, newName: string) => void;
 }
 
 
-const CollectionCard = ({ collection, isOwner, mediaType, username, onRename, onDelete }: CollectionCardProps) => {
+const TagCard = ({ tag, isOwner, mediaType, username, onRename, onDelete }: TagCardProps) => {
     const [isEditing, setIsEditing] = useState(false);
-    const [editName, setEditName] = useState(collection.collectionName);
+    const [editName, setEditName] = useState(tag.tagName);
 
     const handleRename = () => {
-        if (editName.trim() && editName !== collection.collectionName) {
-            onRename(collection.collectionName, editName);
+        if (editName.trim() && editName !== tag.tagName) {
+            onRename(tag.tagName, editName);
         }
         setIsEditing(false);
     };
@@ -154,8 +154,8 @@ const CollectionCard = ({ collection, isOwner, mediaType, username, onRename, on
     const handleDelete = (ev: React.MouseEvent) => {
         ev.preventDefault();
         ev.stopPropagation();
-        if (window.confirm(`Delete "${collection.collectionName}"?`)) {
-            onDelete(collection.collectionName);
+        if (window.confirm(`Delete "${tag.tagName}"?`)) {
+            onDelete(tag.tagName);
         }
     };
 
@@ -165,11 +165,11 @@ const CollectionCard = ({ collection, isOwner, mediaType, username, onRename, on
                 to="/list/$mediaType/$username"
                 params={{ mediaType, username }}
                 className={isEditing ? "pointer-events-none" : ""}
-                search={{ collections: [collection.collectionName] }}
+                search={{ tags: [tag.tagName] }}
             >
                 <div className="aspect-video rounded-lg border overflow-hidden duration-200 hover:border-app-accent/50">
                     <div className="relative flex h-full items-center justify-center p-6">
-                        {collection.medias.map((item, idx, arr) => {
+                        {tag.medias.map((item, idx, arr) => {
                             const offset = idx - (arr.length - 1) / 2;
 
                             return (
@@ -208,10 +208,10 @@ const CollectionCard = ({ collection, isOwner, mediaType, username, onRename, on
                     <div className="flex items-center justify-between pl-1">
                         <div>
                             <h3 className="font-bold">
-                                {collection.collectionName}
+                                {tag.tagName}
                             </h3>
                             <span className="flex items-center gap-1 pt-1 text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
-                                <Layers className="size-3"/> {collection.totalCount} items
+                                <Layers className="size-3"/> {tag.totalCount} items
                             </span>
                         </div>
                         {(isOwner && !isEditing) &&

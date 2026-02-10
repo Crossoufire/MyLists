@@ -395,7 +395,7 @@ export class TvRepository extends BaseRepository<AnimeSchemaConfig | SeriesSchem
 
     async getListFilters(userId: number) {
         const { mediaTable, listTable } = this.config;
-        const { genres, collections } = await super.getCommonListFilters(userId);
+        const { genres, tags } = await super.getCommonListFilters(userId);
 
         const langs = await getDbClient()
             .selectDistinct({ name: sql<string>`${mediaTable.originCountry}` })
@@ -403,7 +403,7 @@ export class TvRepository extends BaseRepository<AnimeSchemaConfig | SeriesSchem
             .innerJoin(listTable, eq(listTable.mediaId, mediaTable.id))
             .where(and(eq(listTable.userId, userId), isNotNull(mediaTable.originCountry)));
 
-        return { langs, genres, collections };
+        return { langs, genres, tags };
     }
 
     // --- Logic When Updating Seasons data -----------------------------------

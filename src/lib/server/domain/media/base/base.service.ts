@@ -3,11 +3,11 @@ import {DeltaStats} from "@/lib/types/stats.types";
 import {FormattedError} from "@/lib/utils/error-classes";
 import {Achievement} from "@/lib/types/achievements.types";
 import {MediaSchemaConfig} from "@/lib/types/media.config.types";
+import {JobType, Status, TagAction, UpdateType} from "@/lib/utils/enums";
 import {BaseRepository} from "@/lib/server/domain/media/base/base.repository";
-import {CollectionAction, JobType, Status, UpdateType} from "@/lib/utils/enums";
 import {BaseProviderService} from "@/lib/server/domain/media/base/provider.service";
 import {MediaListArgs, SearchType, UpdateUserMedia} from "@/lib/types/zod.schema.types";
-import {Collection, StatsCTE, UpdateHandlerFn, UpdateUserMediaDetails, UserMediaWithCollections} from "@/lib/types/base.types";
+import {StatsCTE, Tag, UpdateHandlerFn, UpdateUserMediaDetails, UserMediaWithTags} from "@/lib/types/base.types";
 
 
 export abstract class BaseService<TConfig extends MediaSchemaConfig, R extends BaseRepository<TConfig>> {
@@ -59,12 +59,12 @@ export abstract class BaseService<TConfig extends MediaSchemaConfig, R extends B
         return this.repository.getListFilters(userId);
     }
 
-    async computeTotalCollections(userId?: number) {
-        return this.repository.computeTotalCollections(userId);
+    async computeTotalTags(userId?: number) {
+        return this.repository.computeTotalTags(userId);
     }
 
-    async getCollectionNames(userId: number) {
-        return await this.repository.getCollectionNames(userId);
+    async getTagNames(userId: number) {
+        return await this.repository.getTagNames(userId);
     }
 
     async getMediaForActivity(mediaIds: number[]) {
@@ -88,11 +88,11 @@ export abstract class BaseService<TConfig extends MediaSchemaConfig, R extends B
 
         // Specific media stats but calculation common
         const ratings = await this.repository.computeRatingStats(userId);
-        const totalCollections = await this.repository.computeTotalCollections(userId);
+        const totalTags = await this.repository.computeTotalTags(userId);
         const releaseDates = await this.repository.computeReleaseDateStats(userId);
         const genresStats = await this.repository.computeTopGenresStats(mediaAvgRating, userId);
 
-        return { ratings, genresStats, totalCollections, releaseDates };
+        return { ratings, genresStats, totalTags, releaseDates };
     }
 
     async getSearchListFilters(userId: number, query: string, job: JobType) {
@@ -107,16 +107,16 @@ export abstract class BaseService<TConfig extends MediaSchemaConfig, R extends B
         return this.repository.getMediaJobDetails(userId, job, name, offset, perPage);
     }
 
-    async editUserCollection(userId: number, collection: Collection, action: CollectionAction, mediaId?: number) {
-        return this.repository.editUserCollection(userId, collection, action, mediaId);
+    async editUserTag(userId: number, tag: Tag, action: TagAction, mediaId?: number) {
+        return this.repository.editUserTag(userId, tag, action, mediaId);
     }
 
     async getMediaList(currentUserId: number | undefined, userId: number, args: MediaListArgs) {
         return this.repository.getMediaList(currentUserId, userId, args);
     }
 
-    async getCollectionsView(userId: number) {
-        return this.repository.getCollectionsView(userId);
+    async getTagsView(userId: number) {
+        return this.repository.getTagsView(userId);
     }
 
     async addMediaToUserList(userId: number, mediaId: number, status?: Status) {
@@ -236,5 +236,5 @@ export abstract class BaseService<TConfig extends MediaSchemaConfig, R extends B
 
     abstract updateMediaEditableFields(mediaId: number, payload: Record<string, any>): Promise<void>;
 
-    abstract calculateDeltaStats(oldState: UserMediaWithCollections<any>, newState: any, media: any): DeltaStats;
+    abstract calculateDeltaStats(oldState: UserMediaWithTags<any>, newState: any, media: any): DeltaStats;
 }

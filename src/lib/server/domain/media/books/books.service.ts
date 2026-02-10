@@ -9,7 +9,7 @@ import {saveImageFromUrl, saveUploadedImage} from "@/lib/utils/image-saver";
 import {MangaSchemaConfig} from "@/lib/server/domain/media/books/books.config";
 import {BooksRepository} from "@/lib/server/domain/media/books/books.repository";
 import {Book, BooksAchCodeName, BooksList} from "@/lib/server/domain/media/books/books.types";
-import {LogPayload, PagePayload, RedoPayload, StatsCTE, StatusPayload, UserMediaWithCollections} from "@/lib/types/base.types";
+import {LogPayload, PagePayload, RedoPayload, StatsCTE, StatusPayload, UserMediaWithTags} from "@/lib/types/base.types";
 
 
 export class BooksService extends BaseService<MangaSchemaConfig, BooksRepository> {
@@ -45,7 +45,7 @@ export class BooksService extends BaseService<MangaSchemaConfig, BooksRepository
     async calculateAdvancedMediaStats(mediaAvgRating: number | null, userId?: number) {
         // If userId not provided, calculations are platform-wide
 
-        const { ratings, genresStats, totalCollections, releaseDates } = await super.calculateAdvancedMediaStats(mediaAvgRating, userId);
+        const { ratings, genresStats, totalTags, releaseDates } = await super.calculateAdvancedMediaStats(mediaAvgRating, userId);
 
         // Specific stats
         const avgDuration = await this.repository.avgBooksDuration(userId);
@@ -54,7 +54,7 @@ export class BooksService extends BaseService<MangaSchemaConfig, BooksRepository
 
         return {
             ratings,
-            totalCollections,
+            totalTags,
             genresStats,
             releaseDates,
             avgDuration,
@@ -190,7 +190,7 @@ description: ${book.synopsis}
         ];
     }
 
-    calculateDeltaStats(oldState: UserMediaWithCollections<BooksList> | null, newState: BooksList | null, _media: Book) {
+    calculateDeltaStats(oldState: UserMediaWithTags<BooksList> | null, newState: BooksList | null, _media: Book) {
         const delta: DeltaStats = {};
         const statusCounts: Partial<Record<Status, number>> = {};
 

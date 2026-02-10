@@ -133,7 +133,7 @@ export class MoviesRepository extends BaseRepository<MovieSchemaConfig> {
     async avgMovieDuration(userId?: number) {
         const forUser = userId ? eq(moviesList.userId, userId) : undefined;
 
-        const avgDuration = await getDbClient()
+        const avgDuration = getDbClient()
             .select({
                 average: sql<number | null>`avg(${movies.duration})`,
             })
@@ -163,7 +163,7 @@ export class MoviesRepository extends BaseRepository<MovieSchemaConfig> {
     async budgetRevenueStats(userId?: number) {
         const forUser = userId ? eq(moviesList.userId, userId) : undefined;
 
-        const data = await getDbClient()
+        const data = getDbClient()
             .select({
                 totalBudget: sql<number>`coalesce(sum(${movies.budget}), 0)`.as("total_budget"),
                 totalRevenue: sql<number>`coalesce(sum(${movies.revenue}), 0)`.as("total_revenue"),
@@ -248,7 +248,7 @@ export class MoviesRepository extends BaseRepository<MovieSchemaConfig> {
     async findAllAssociatedDetails(mediaId: number) {
         const { apiProvider } = this.config;
 
-        const details = await getDbClient()
+        const details = getDbClient()
             .select({
                 ...getTableColumns(movies),
                 genres: sql`json_group_array(DISTINCT json_object('id', ${moviesGenre.id}, 'name', ${moviesGenre.name}))`.mapWith(JSON.parse),
@@ -363,7 +363,7 @@ export class MoviesRepository extends BaseRepository<MovieSchemaConfig> {
     }
 
     async getListFilters(userId: number) {
-        const { genres, collections } = await super.getCommonListFilters(userId);
+        const { genres, tags } = await super.getCommonListFilters(userId);
 
         const langs = await getDbClient()
             .selectDistinct({ name: sql<string>`${movies.originalLanguage}` })
@@ -371,6 +371,6 @@ export class MoviesRepository extends BaseRepository<MovieSchemaConfig> {
             .innerJoin(moviesList, eq(moviesList.mediaId, movies.id))
             .where(and(eq(moviesList.userId, userId), isNotNull(movies.originalLanguage)));
 
-        return { langs, genres, collections };
+        return { langs, genres, tags };
     }
 }

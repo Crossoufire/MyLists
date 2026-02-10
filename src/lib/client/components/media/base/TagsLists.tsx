@@ -1,34 +1,34 @@
+import {Tag} from "@/lib/types/base.types";
 import {Link} from "@tanstack/react-router";
 import {MediaType} from "@/lib/utils/enums";
-import {Collection} from "@/lib/types/base.types";
 import {useAuth} from "@/lib/client/hooks/use-auth";
 import {useQueryClient} from "@tanstack/react-query";
 import {Badge} from "@/lib/client/components/ui/badge";
 import {Separator} from "@/lib/client/components/ui/separator";
-import {CollectionsDialog} from "@/lib/client/components/media/base/CollectionsDialog";
+import {TagsDialog} from "@/lib/client/components/media/base/TagsDialog";
 import {UserMediaQueryOption} from "@/lib/client/react-query/query-mutations/user-media.mutations";
 
 
-interface CollectionListsProps {
+interface TagListsProps {
+    tags: Tag[];
     mediaId: number;
     mediaType: MediaType;
-    collections: Collection[];
     queryOption: UserMediaQueryOption;
 }
 
 
-export const CollectionLists = ({ queryOption, mediaType, mediaId, collections }: CollectionListsProps) => {
+export const TagsLists = ({ queryOption, mediaType, mediaId, tags }: TagListsProps) => {
     const { currentUser } = useAuth();
     const queryClient = useQueryClient();
 
-    const updateCollectionNames = (newCollectionsList: (Collection | undefined)[]) => {
+    const updateTagNames = (newTagsList: (Tag | undefined)[]) => {
         if (queryOption.queryKey[0] === "details") {
             queryClient.setQueryData(queryOption.queryKey, (oldData) => {
                 if (!oldData) return;
 
                 return {
                     ...oldData,
-                    userMedia: Object.assign({}, oldData.userMedia, { collections: newCollectionsList }),
+                    userMedia: Object.assign({}, oldData.userMedia, { tags: newTagsList }),
                 };
             })
         }
@@ -39,7 +39,7 @@ export const CollectionLists = ({ queryOption, mediaType, mediaId, collections }
                     ...oldData,
                     results: Object.assign({}, oldData.results, {
                         items: oldData.results.items.map((m) =>
-                            m.mediaId === mediaId ? Object.assign({}, m, { collections: newCollectionsList }) : m
+                            m.mediaId === mediaId ? Object.assign({}, m, { tags: newTagsList }) : m
                         )
                     }),
                 };
@@ -50,26 +50,26 @@ export const CollectionLists = ({ queryOption, mediaType, mediaId, collections }
     return (
         <>
             <h4 className="text-lg flex justify-between items-center mt-5 font-semibold">
-                Collections
-                <CollectionsDialog
+                Tags
+                <TagsDialog
+                    tags={tags}
                     mediaId={mediaId}
                     mediaType={mediaType}
-                    collections={collections}
-                    updateCollection={updateCollectionNames}
+                    updateTag={updateTagNames}
                 />
             </h4>
             <Separator className="-mt-1 mb-1"/>
             <div className="flex flex-wrap gap-2">
-                {collections.length === 0 ?
+                {tags.length === 0 ?
                     <div className="text-muted-foreground text-sm">
-                        Not in a collection yet.
+                        Not tag added yet.
                     </div>
                     :
-                    collections.map((col) =>
+                    tags.map((col) =>
                         <Link
                             key={col.name}
+                            search={{ tags: [col.name] }}
                             to="/list/$mediaType/$username"
-                            search={{ collections: [col.name] }}
                             params={{ mediaType, username: currentUser!.name }}
                         >
                             <Badge key={col.name} variant="emerald" className="max-w-50">

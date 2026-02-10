@@ -20,7 +20,6 @@ import {
     Filter,
     Gamepad2,
     GraduationCap,
-    Layers,
     LayoutList,
     LineChart,
     Lock,
@@ -30,6 +29,7 @@ import {
     Search,
     Share2,
     Shield,
+    Tags,
     Trash2,
     Trophy,
     Users,
@@ -150,14 +150,14 @@ const FEATURES_DATA: FeatureData[] = [
         )
     },
     {
-        icon: Layers,
+        icon: Tags,
         category: "New",
-        name: "Labels become Collections",
+        name: "Labels become Tags",
         description: (
             <span>
-                Labels have a fresh new look and are now called 'collections'.
+                Labels have a fresh new look and are now called 'tags'.
                 Check out the new design on your lists page.
-                The collection management modal has also been updated.
+                The tags management modal has also been updated.
             </span>
         )
     },
@@ -332,10 +332,10 @@ const FEATURES_DATA: FeatureData[] = [
         description: "Switch between Grid view and a data-dense Table layout for your lists."
     },
     {
-        icon: Layers,
+        icon: Tags,
+        name: "Custom Tags",
         category: "Customization",
-        name: "Custom Collections",
-        description: "Create and apply custom collections to organize your media list your way."
+        description: "Create and apply custom tags to organize your media list your way."
     },
     {
         name: "CSV Export",

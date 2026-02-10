@@ -31,7 +31,7 @@ type ListTableColumns = {
 }
 
 
-type CollectionTableColumns = {
+type TagTableColumns = {
     id: Column<any, any, any>;
     name: Column<any, any, any>;
     userId: Column<any, any, any>;
@@ -68,19 +68,19 @@ type BaseSelection<TListTable, TMediaTable> = {
 export type ListTable = Table & ListTableColumns;
 export type MediaTable = Table & MediaTableColumns;
 export type GenreTable = Table & GenreTableColumns;
-export type CollectionTable = Table & CollectionTableColumns;
+export type TagTable = Table & TagTableColumns;
 
 
 export interface MediaSchemaConfig<
     TMediaTable extends MediaTable = MediaTable,
     TListTable extends ListTable = ListTable,
     TGenreTable extends GenreTable = GenreTable,
-    TColTable extends CollectionTable = CollectionTable,
+    TTagTable extends TagTable = TagTable,
 > {
     mediaTable: TMediaTable,
     listTable: TListTable,
     genreTable: TGenreTable,
-    collectionTable: TColTable,
+    tagTable: TTagTable,
     mediaType: MediaType,
     mediaList: {
         defaultStatus: Status;
@@ -110,11 +110,11 @@ export interface TvSchemaConfig<
     TMediaTable extends MediaTable & TvMediaTableColumns,
     TListTable extends ListTable,
     TGenreTable extends GenreTable,
-    TColTable extends CollectionTable,
+    TTagTable extends TagTable,
     TActorTable extends Table,
     TNetworkTable extends Table,
     TEpsPerSeasonTable extends Table,
-> extends MediaSchemaConfig<TMediaTable, TListTable, TGenreTable, TColTable> {
+> extends MediaSchemaConfig<TMediaTable, TListTable, TGenreTable, TTagTable> {
     actorTable: TActorTable;
     networkTable: TNetworkTable;
     epsPerSeasonTable: TEpsPerSeasonTable;

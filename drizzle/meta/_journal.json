@@ -120,6 +120,13 @@
       "when": 1770472463791,
       "tag": "0016_luxuriant_living_mummy",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "6",
+      "when": 1770741381676,
+      "tag": "0017_wealthy_ma_gnuci",
+      "breakpoints": true
     }
   ]
 }

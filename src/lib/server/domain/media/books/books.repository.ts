@@ -89,7 +89,7 @@ export class BooksRepository extends BaseRepository<MangaSchemaConfig> {
     async avgBooksDuration(userId?: number) {
         const forUser = userId ? eq(booksList.userId, userId) : undefined;
 
-        const avgDuration = await getDbClient()
+        const avgDuration = getDbClient()
             .select({
                 average: sql<number | null>`avg(${books.pages})`
             })
@@ -257,7 +257,7 @@ export class BooksRepository extends BaseRepository<MangaSchemaConfig> {
     }
 
     async getListFilters(userId: number) {
-        const { genres, collections } = await super.getCommonListFilters(userId);
+        const { genres, tags } = await super.getCommonListFilters(userId);
 
         const langs = await getDbClient()
             .selectDistinct({ name: sql<string>`${books.language}` })
@@ -265,6 +265,6 @@ export class BooksRepository extends BaseRepository<MangaSchemaConfig> {
             .innerJoin(booksList, eq(booksList.mediaId, books.id))
             .where(and(eq(booksList.userId, userId), isNotNull(books.language)));
 
-        return { langs, genres, collections };
+        return { langs, genres, tags };
     }
 }

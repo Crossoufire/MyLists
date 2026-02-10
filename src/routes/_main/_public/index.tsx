@@ -183,7 +183,7 @@ function HomePage() {
             <section className="pt-24 pb-12 px-6 text-center">
                 <div className="max-w-3xl mx-auto space-y-8">
                     <h2 className="text-4xl md:text-5xl font-bold">
-                        Ready to start your collection?
+                        Ready to start your lists?
                     </h2>
                     <p className="text-xl text-muted-foreground">
                         Join thousands of other media enthusiasts today.

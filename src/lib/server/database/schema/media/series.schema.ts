@@ -4,7 +4,7 @@ import {relations} from "drizzle-orm/relations";
 import {user} from "@/lib/server/database/schema/auth.schema";
 import {customJson} from "@/lib/server/database/custom-types";
 import {integer, real, sqliteTable, text} from "drizzle-orm/sqlite-core";
-import {commMediaEpsCols, commonGenericCols, commonMediaCollectionsCols, commonMediaCols, commonMediaListCols} from "@/lib/server/database/schema/media/_helper";
+import {commMediaEpsCols, commonGenericCols, commonMediaCols, commonMediaListCols, commonMediaTagsCols} from "@/lib/server/database/schema/media/_helper";
 
 
 export const series = sqliteTable("series", {
@@ -58,15 +58,15 @@ export const seriesEpisodesPerSeason = sqliteTable("series_episodes_per_season",
 });
 
 
-export const seriesCollections = sqliteTable("series_collections", {
-    ...commonMediaCollectionsCols(series.id),
+export const seriesTags = sqliteTable("series_tags", {
+    ...commonMediaTagsCols(series.id),
 });
 
 
 export const seriesRelations = relations(series, ({ many }) => ({
     seriesEpisodesPerSeasons: many(seriesEpisodesPerSeason),
     seriesGenres: many(seriesGenre),
-    seriesCollections: many(seriesCollections),
+    seriesTags: many(seriesTags),
     seriesNetworks: many(seriesNetwork),
     seriesLists: many(seriesList),
     seriesActors: many(seriesActors),
@@ -117,13 +117,13 @@ export const seriesNetworkRelations = relations(seriesNetwork, ({ one }) => ({
 }));
 
 
-export const seriesCollectionsRelations = relations(seriesCollections, ({ one }) => ({
+export const seriesTagsRelations = relations(seriesTags, ({ one }) => ({
     series: one(series, {
-        fields: [seriesCollections.mediaId],
+        fields: [seriesTags.mediaId],
         references: [series.id]
     }),
     user: one(user, {
-        fields: [seriesCollections.userId],
+        fields: [seriesTags.userId],
         references: [user.id]
     }),
 }));
