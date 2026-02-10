@@ -7,10 +7,10 @@ import {Input} from "@/lib/client/components/ui/input";
 import {Button} from "@/lib/client/components/ui/button";
 import {Textarea} from "@/lib/client/components/ui/textarea";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
-import {CalendarClock, CheckCircle2, Crown, Settings2} from "lucide-react";
+import {CalendarClock, ChevronUp, Crown, Settings2} from "lucide-react";
 import {featureVotesOptions} from "@/lib/client/react-query/query-options/query-options";
 import {FeatureStatus, FeatureVoteType, isAtLeastRole, RoleType,} from "@/lib/utils/enums";
-import {Card, CardContent, CardDescription, CardHeader, CardTitle,} from "@/lib/client/components/ui/card";
+import {Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle,} from "@/lib/client/components/ui/card";
 import {Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger} from "@/lib/client/components/ui/dialog";
 import {
     useCreateFeatureRequestMutation,
@@ -18,6 +18,7 @@ import {
     useToggleFeatureVoteMutation,
     useUpdateFeatureStatusMutation
 } from "@/lib/client/react-query/query-mutations/feature-votes.mutations";
+import {formatDateTime} from "@/lib/utils/formating";
 
 
 export const Route = createFileRoute("/_main/_private/features-vote")({
@@ -174,52 +175,43 @@ function FeatureVotesPage() {
                     </Card>
                 </div>
 
-                <div className="grid gap-4">
+                <div className="grid gap-6">
                     {filteredRequests.map((req) => {
-                        const isLocked = req.status === FeatureStatus.REJECTED || req.status === FeatureStatus.COMPLETED;
                         const isNormalVote = req.userVote === FeatureVoteType.VOTE;
                         const isSuperVote = req.userVote === FeatureVoteType.SUPER;
                         const normalVoteLabel = isNormalVote ? "Rescind vote" : "Vote";
                         const superVoteLabel = isSuperVote ? "Rescind super-vote" : "Super Vote";
+                        const isLocked = req.status === FeatureStatus.REJECTED || req.status === FeatureStatus.COMPLETED;
 
                         return (
-                            <Card key={req.id} className="relative overflow-hidden">
+                            <Card key={req.id}>
                                 <CardHeader>
-                                    <div className="flex flex-wrap items-start justify-between gap-3">
-                                        <div className="space-y-1">
-                                            <CardTitle>{req.title}</CardTitle>
-                                            <CardDescription>{req.description}</CardDescription>
-                                        </div>
+                                    <CardTitle>{req.title}</CardTitle>
+                                    <CardDescription className="text-xs flex items-center gap-1">
+                                        <CalendarClock className="size-3"/>
+                                        Created {formatDateTime(req.createdAt)}
+                                    </CardDescription>
+                                    <CardAction>
                                         <div className="flex items-center gap-2">
                                             <Badge className={STATUS_STYLES[req.status]}>
                                                 {req.status}
                                             </Badge>
-                                            <div className="rounded-lg border px-3 py-1 text-xs text-muted-foreground">
-                                                {req.totalVotes} votes
-                                            </div>
+                                            <Badge variant="outline">
+                                                <ChevronUp/> {req.totalVotes} votes
+                                            </Badge>
                                         </div>
-                                    </div>
+                                    </CardAction>
                                 </CardHeader>
-                                <CardContent className="space-y-4">
-                                    <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
-                                        <div className="flex items-center gap-1">
-                                            <CalendarClock className="size-3"/>
-                                            Created {req.createdAt}
-                                        </div>
-                                        {req.userVote &&
-                                            <div className="flex items-center gap-1 text-emerald-300">
-                                                <CheckCircle2 className="size-3"/>
-                                                You cast a{" "}
-                                                {req.userVote === FeatureVoteType.SUPER ? "super-vote" : "vote"}
-                                            </div>
-                                        }
+                                <CardContent className="space-y-6">
+                                    <div className="flex flex-wrap items-center gap-3 text-sm">
+                                        {req.description}
                                     </div>
 
                                     {req.adminComment &&
-                                        <div className="rounded-lg border border-dashed px-3 py-2 text-xs text-muted-foreground">
-                                            <span className="font-semibold text-primary">
+                                        <div className="rounded-lg border border-dashed px-3 py-2 text-sm">
+                                            <div className="text-sm font-semibold text-app-accent">
                                                 Admin note:
-                                            </span>{" "}
+                                            </div>
                                             {req.adminComment}
                                         </div>
                                     }
@@ -229,8 +221,8 @@ function FeatureVotesPage() {
                                             <Button
                                                 size="sm"
                                                 variant={isNormalVote ? "emeraldy" : "outline"}
-                                                onClick={() => handleVote(req.id, FeatureVoteType.VOTE)}
                                                 disabled={toggleVoteMutation.isPending || isLocked}
+                                                onClick={() => handleVote(req.id, FeatureVoteType.VOTE)}
                                             >
                                                 {normalVoteLabel}
                                             </Button>
