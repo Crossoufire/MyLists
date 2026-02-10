@@ -1,10 +1,10 @@
+import {useAuth} from "@/lib/client/hooks/use-auth";
 import {MediaData} from "@/lib/types/activity.types";
 import {createFileRoute} from "@tanstack/react-router";
 import {useSuspenseQuery} from "@tanstack/react-query";
-import {useAuth} from "@/lib/client/hooks/use-auth";
 import {EmptyState} from "@/lib/client/components/general/EmptyState";
 import {CheckCircle2, LayoutGrid, RotateCcw, TrendingUp} from "lucide-react";
-import {activityQueryOptions} from "@/lib/client/react-query/query-options/query-options";
+import {monthlyActivityOptions} from "@/lib/client/react-query/query-options/query-options";
 import {ActivityHeader, ActivitySectionGrid} from "@/lib/client/components/activity/ActivityShared";
 
 
@@ -12,20 +12,21 @@ export const Route = createFileRoute("/_main/_private/list/$mediaType/$username/
     validateSearch: (search) => search as { year: string, month: string },
     loaderDeps: ({ search }) => ({ search }),
     loader: async ({ context: { queryClient }, params: { username }, deps: { search } }) => {
-        return queryClient.ensureQueryData(activityQueryOptions(username, search));
+        return queryClient.ensureQueryData(monthlyActivityOptions(username, search));
     },
     component: ActivityPage,
 });
 
 
 function ActivityPage() {
+    const { currentUser } = useAuth();
     const filters = Route.useSearch();
     const navigate = Route.useNavigate();
     const { mediaType, username } = Route.useParams();
-    const { currentUser } = useAuth();
-    const data = useSuspenseQuery(activityQueryOptions(username, filters)).data[mediaType];
-    const hasData = data.completed.length > 0 || data.progressed.length > 0 || data.redo.length > 0;
+    const data = useSuspenseQuery(monthlyActivityOptions(username, filters)).data[mediaType];
+
     const canEdit = currentUser?.name === username;
+    const hasData = data.completed.length > 0 || data.progressed.length > 0 || data.redo.length > 0;
 
     const wrap = (items: MediaData[]) => {
         return items.map(data => ({ data, mediaType }));
@@ -45,6 +46,7 @@ function ActivityPage() {
                 <>
                     <ActivitySectionGrid
                         title="Completed"
+                        canEdit={canEdit}
                         username={username}
                         icon={CheckCircle2}
                         section="completed"
@@ -53,9 +55,9 @@ function ActivityPage() {
                         mediaType={mediaType}
                         totalCount={data.completedCount}
                         initialItems={wrap(data.completed)}
-                        canEdit={canEdit}
                     />
                     <ActivitySectionGrid
+                        canEdit={canEdit}
                         icon={TrendingUp}
                         username={username}
                         title="In Progress"
@@ -65,11 +67,11 @@ function ActivityPage() {
                         month={filters.month}
                         totalCount={data.progressedCount}
                         initialItems={wrap(data.progressed)}
-                        canEdit={canEdit}
                     />
                     <ActivitySectionGrid
                         section="redo"
                         icon={RotateCcw}
+                        canEdit={canEdit}
                         username={username}
                         year={filters.year}
                         month={filters.month}
@@ -77,7 +79,6 @@ function ActivityPage() {
                         title="Re-experienced"
                         totalCount={data.redoCount}
                         initialItems={wrap(data.redo)}
-                        canEdit={canEdit}
                     />
                 </>
                 :

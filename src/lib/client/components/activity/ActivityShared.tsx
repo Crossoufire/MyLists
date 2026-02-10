@@ -1,4 +1,4 @@
-import {useState} from "react";
+import React, {useState} from "react";
 import {MediaType} from "@/lib/utils/enums";
 import {GridItem} from "@/lib/types/activity.types";
 import {getMediaUnitLabel} from "@/lib/utils/mapping";
@@ -7,10 +7,11 @@ import {useInfiniteQuery} from "@tanstack/react-query";
 import {StatCard} from "@/lib/client/media-stats/StatCard";
 import {capitalize, formatMinutes} from "@/lib/utils/formating";
 import {MediaCard} from "@/lib/client/components/media/base/MediaCard";
-import {Clock, LayoutGrid, LucideIcon, Pencil, TrendingUp} from "lucide-react";
 import {CalendarNav} from "@/lib/client/components/activity/CalendarNav";
-import {sectionActivityQueryOptions} from "@/lib/client/react-query/query-options/query-options";
+import {Clock, LayoutGrid, LucideIcon, Settings2, TrendingUp} from "lucide-react";
 import {ActivityEditDialog} from "@/lib/client/components/activity/ActivityEditDialog";
+import {sectionActivityOptions} from "@/lib/client/react-query/query-options/query-options";
+import {MediaCornerCommon} from "@/lib/client/components/media/base/MediaCornerCommon";
 
 
 interface ActivityHeaderProps {
@@ -63,24 +64,23 @@ interface ActivitySectionGridProps {
     title: string;
     username: string;
     icon: LucideIcon;
+    canEdit?: boolean;
     totalCount: number;
-    showBadge?: boolean;
     initialItems: GridItem[];
     mediaType: MediaType | "all";
     section: "completed" | "progressed" | "redo";
-    canEdit?: boolean;
 }
 
 
 export const ActivitySectionGrid = (props: ActivitySectionGridProps) => {
-    const { title, username, initialItems, totalCount, section, mediaType, year, month, icon: Icon, showBadge = false, canEdit = false } = props;
     const [editingItem, setEditingItem] = useState<GridItem | null>(null);
+    const { title, username, initialItems, totalCount, section, mediaType, year, month, icon: Icon, canEdit = false } = props;
 
     const limitedInitialItems = initialItems.slice(0, 24);
     const hasMoreThanInitial = totalCount > limitedInitialItems.length;
 
     const { data, fetchNextPage, hasNextPage, isFetchingNextPage } = useInfiniteQuery({
-        ...sectionActivityQueryOptions(username, { year, month, mediaType, section }),
+        ...sectionActivityOptions(username, { year, month, mediaType, section }),
         initialData: {
             pageParams: [0],
             pages: [{ total: totalCount, items: limitedInitialItems, hasMore: hasMoreThanInitial }],
@@ -106,42 +106,48 @@ export const ActivitySectionGrid = (props: ActivitySectionGridProps) => {
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
                 {items.map((wrapper) =>
                     <MediaCard key={`${wrapper.mediaType}-${wrapper.data.mediaId}`} item={wrapper.data} mediaType={wrapper.mediaType}>
-                        {canEdit &&
-                            <button
-                                type="button"
-                                aria-label="Edit activity"
-                                onClick={(event) => {
-                                    event.preventDefault();
-                                    event.stopPropagation();
-                                    setEditingItem(wrapper);
-                                }}
-                                className="absolute left-2 top-2 z-20 flex size-8 items-center justify-center rounded-full
-                                border border-border bg-background/90 text-foreground transition hover:bg-background"
-                            >
-                                <Pencil className="size-4"/>
-                            </button>
-                        }
-                        {showBadge &&
-                            <div className="absolute right-2 top-2 z-10">
-                                <Badge variant="outline" className="bg-popover capitalize">
-                                    {wrapper.mediaType}
-                                </Badge>
+                        <div className="absolute right-2 top-2 z-10">
+                            {canEdit &&
+                                <div
+                                    role="button"
+                                    aria-label="Edit activity"
+                                    onClick={(ev) => {
+                                        ev.preventDefault();
+                                        ev.stopPropagation();
+                                        setEditingItem(wrapper);
+                                    }}
+                                >
+                                    <Settings2 className="size-4 opacity-70 hover:opacity-90 transition-opacity"/>
+                                </div>
+                            }
+                        </div>
+
+                        {wrapper.mediaType !== MediaType.GAMES &&
+                            <div className="absolute left-2 top-2 z-10 rounded-md bg-neutral-950 px-2.5 py-1 text-primary/95 text-xs">
+                                <span>
+                                     +{wrapper.data.specificGained}{" "}
+                                    {getMediaUnitLabel(wrapper.mediaType, "short")}
+                                </span>
                             </div>
                         }
+
+                        {username &&
+                            <MediaCornerCommon/>
+                        }
+
                         <div className="absolute bottom-0 w-full space-y-2 rounded-b-sm p-3">
-                            <h3 className="grow truncate font-semibold text-sm sm:text-base" title={wrapper.data.mediaName}>
-                                {wrapper.data.mediaName}
-                            </h3>
+                            <div className="flex w-full items-center justify-between space-x-2 max-sm:text-sm">
+                                <h3 className="grow truncate font-semibold" title={wrapper.data.mediaName}>
+                                    {wrapper.data.mediaName}
+                                </h3>
+                            </div>
                             <div className="flex w-full flex-wrap items-center justify-between text-xs font-medium text-muted-foreground">
                                 <span>
                                     {formatMinutes(wrapper.data.timeGained)}
                                 </span>
-                                {wrapper.mediaType !== MediaType.GAMES &&
-                                    <span>
-                                        +{wrapper.data.specificGained}{" "}
-                                        {getMediaUnitLabel(wrapper.mediaType, "short")}
-                                    </span>
-                                }
+                                <Badge variant="outline" className="bg-popover capitalize">
+                                    {wrapper.mediaType}
+                                </Badge>
                             </div>
                         </div>
                     </MediaCard>
@@ -159,13 +165,14 @@ export const ActivitySectionGrid = (props: ActivitySectionGridProps) => {
             }
             {editingItem &&
                 <ActivityEditDialog
-                    open={Boolean(editingItem)}
                     year={Number(year)}
+                    username={username}
                     month={Number(month)}
+                    open={Boolean(editingItem)}
+                    mediaType={editingItem.mediaType}
                     mediaId={editingItem.data.mediaId}
                     mediaName={editingItem.data.mediaName}
-                    mediaType={editingItem.mediaType}
-                    username={username}
+                    sectionParams={{ year, month, mediaType, section }}
                     onOpenChange={(open) => {
                         if (!open) setEditingItem(null);
                     }}

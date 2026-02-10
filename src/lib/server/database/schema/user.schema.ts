@@ -3,7 +3,7 @@ import {relations} from "drizzle-orm/relations";
 import {customJson} from "@/lib/server/database/custom-types";
 import {taskHistory} from "@/lib/server/database/schema/admin.schema";
 import {MediaType, SocialState, Status, UpdateType} from "@/lib/utils/enums";
-import {index, integer, real, sqliteTable, text} from "drizzle-orm/sqlite-core";
+import {index, integer, real, sqliteTable, text, uniqueIndex} from "drizzle-orm/sqlite-core";
 import {
     animeCollections,
     animeList,
@@ -56,12 +56,14 @@ export const userMediaActivity = sqliteTable("user_media_activity", {
     specificGained: real().notNull(),
     isCompleted: integer({ mode: "boolean" }).default(false).notNull(),
     isRedo: integer({ mode: "boolean" }).default(false).notNull(),
-    timestamp: text().default(sql`(CURRENT_TIMESTAMP)`).notNull(),
+    monthBucket: text().notNull(),
+    lastUpdate: text().default(sql`(CURRENT_TIMESTAMP)`).notNull(),
 }, (table) => [
-    index("ix_user_media_activity_media_id").on(table.mediaId),
-    index("ix_user_media_activity_timestamp").on(table.timestamp),
-    index("ix_user_media_activity_media_type").on(table.mediaType),
     index("ix_user_media_activity_user_id").on(table.userId),
+    index("ix_user_media_activity_media_id").on(table.mediaId),
+    index("ix_user_media_activity_media_type").on(table.mediaType),
+    index("ix_user_media_activity_month_bucket").on(table.monthBucket),
+    uniqueIndex("user_media_month_idx").on(table.userId, table.mediaId, table.mediaType, table.monthBucket),
 ]);
 
 

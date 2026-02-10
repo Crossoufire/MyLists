@@ -10,7 +10,6 @@ import {
     profileHeaderOptions,
     profileOptions,
     upcomingOptions,
-    activityEventsOptions,
 } from "@/lib/client/react-query/query-options/query-options";
 
 
@@ -27,7 +26,6 @@ export type HofUserData = Awaited<ReturnType<NonNullable<ReturnType<typeof hallO
 export type HofUserRank = Awaited<ReturnType<NonNullable<ReturnType<typeof hallOfFameOptions>["queryFn"]>>>["userRanks"];
 export type ComingNextItem = Awaited<ReturnType<NonNullable<typeof upcomingOptions.queryFn>>>[number]["items"][number];
 export type AdminUserOverview = Awaited<ReturnType<NonNullable<typeof adminOverviewOptions.queryFn>>>["recentUsers"];
-export type ActivityEventOptionsType = Awaited<ReturnType<NonNullable<ReturnType<typeof activityEventsOptions>["queryFn"]>>>;
 
 
 // --- User Media Details Types ----------------------------------------------------

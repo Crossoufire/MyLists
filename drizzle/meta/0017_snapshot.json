@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "fcba846e-c387-4df8-8043-4ecd5612fb45",
+  "id": "3250b1f6-b0f8-4720-9ddf-cac16d63864b",
   "prevId": "5c4d6388-9692-4f26-8ed0-c6072838b010",
   "tables": {
     "account": {
@@ -4399,8 +4399,15 @@
           "autoincrement": false,
           "default": false
         },
-        "timestamp": {
-          "name": "timestamp",
+        "month_bucket": {
+          "name": "month_bucket",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "last_update": {
+          "name": "last_update",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
@@ -4409,17 +4416,17 @@
         }
       },
       "indexes": {
+        "ix_user_media_activity_user_id": {
+          "name": "ix_user_media_activity_user_id",
+          "columns": [
+            "user_id"
+          ],
+          "isUnique": false
+        },
         "ix_user_media_activity_media_id": {
           "name": "ix_user_media_activity_media_id",
           "columns": [
             "media_id"
-          ],
-          "isUnique": false
-        },
-        "ix_user_media_activity_timestamp": {
-          "name": "ix_user_media_activity_timestamp",
-          "columns": [
-            "timestamp"
           ],
           "isUnique": false
         },
@@ -4430,12 +4437,22 @@
           ],
           "isUnique": false
         },
-        "ix_user_media_activity_user_id": {
-          "name": "ix_user_media_activity_user_id",
+        "ix_user_media_activity_month_bucket": {
+          "name": "ix_user_media_activity_month_bucket",
           "columns": [
-            "user_id"
+            "month_bucket"
           ],
           "isUnique": false
+        },
+        "user_media_month_idx": {
+          "name": "user_media_month_idx",
+          "columns": [
+            "user_id",
+            "media_id",
+            "media_type",
+            "month_bucket"
+          ],
+          "isUnique": true
         }
       },
       "foreignKeys": {

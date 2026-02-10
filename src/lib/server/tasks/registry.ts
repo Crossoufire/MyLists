@@ -5,6 +5,7 @@ import {maintenanceTask} from "@/lib/server/tasks/definitions/maintenance.task";
 import {dbMaintenanceTask} from "@/lib/server/tasks/definitions/db-maintenance.task";
 import {lockOldMoviesTask} from "@/lib/server/tasks/definitions/lock-old-movies.task";
 import {checkHltbWorksTask} from "@/lib/server/tasks/definitions/check-hltb-works.task";
+import {backfillActivityTask} from "@/lib/server/tasks/definitions/backfill-activity.task";
 import {seedAchievementsTask} from "@/lib/server/tasks/definitions/seed-achievements.task";
 import {bulkMediaRefreshTask} from "@/lib/server/tasks/definitions/bulk-media-refresh.task";
 import {removeNonListMediaTask} from "@/lib/server/tasks/definitions/remove-non-list-media.task";
@@ -13,7 +14,6 @@ import {computeAllUsersStatsTask} from "@/lib/server/tasks/definitions/compute-a
 import {addGenresToBooksUsingLlmTask} from "@/lib/server/tasks/definitions/add-books-genres-llm.task";
 import {deleteNonActivatedUsersTask} from "@/lib/server/tasks/definitions/delete-non-activated-users.task";
 import {removeUnusedMediaCoversTask} from "@/lib/server/tasks/definitions/remove-unused-media-covers.task";
-import {backfillGamesSteamApiIdTask} from "@/lib/server/tasks/definitions/backfill-games-steam-api-id.task";
 import {createMediaNotificationsTask} from "@/lib/server/tasks/definitions/create-media-notifications.task";
 import {removeUnusedProfileImagesTask} from "@/lib/server/tasks/definitions/remove-unused-profile-images.task";
 
@@ -25,12 +25,12 @@ export const taskRegistry = {
     [dbMaintenanceTask.name]: dbMaintenanceTask,
     [checkHltbWorksTask.name]: checkHltbWorksTask,
     [bulkMediaRefreshTask.name]: bulkMediaRefreshTask,
+    [backfillActivityTask.name]: backfillActivityTask,
     [seedAchievementsTask.name]: seedAchievementsTask,
     [removeNonListMediaTask.name]: removeNonListMediaTask,
     [computeAllUsersStatsTask.name]: computeAllUsersStatsTask,
     [calculateAchievementsTask.name]: calculateAchievementsTask,
     [deleteNonActivatedUsersTask.name]: deleteNonActivatedUsersTask,
-    [backfillGamesSteamApiIdTask.name]: backfillGamesSteamApiIdTask,
     [removeUnusedMediaCoversTask.name]: removeUnusedMediaCoversTask,
     [createMediaNotificationsTask.name]: createMediaNotificationsTask,
     [addGenresToBooksUsingLlmTask.name]: addGenresToBooksUsingLlmTask,

@@ -1,57 +1,30 @@
+import {SectionParams} from "@/lib/types/activity.types";
 import {useMutation, useQueryClient} from "@tanstack/react-query";
-import {MediaType} from "@/lib/utils/enums";
-import {postDeleteActivityEvent, postUpdateActivityEvent} from "@/lib/server/functions/user-stats";
+import {sectionActivityOptions} from "@/lib/client/react-query/query-options/query-options";
+import {postDeleteSpecificActivity, postUpdateSpecificActivity} from "@/lib/server/functions/user-stats";
 
 
-export const useUpdateActivityEventMutation = (args: {
-    username: string;
-    year: number;
-    month: number;
-    mediaType?: MediaType;
-    mediaId?: number;
-}) => {
+export const useUpdateActivityMutation = (username: string, sectionParams: SectionParams) => {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: postUpdateActivityEvent,
+        mutationFn: postUpdateSpecificActivity,
         meta: { errorMessage: "Failed to update activity event." },
         onSuccess: async () => {
-            await queryClient.invalidateQueries({
-                queryKey: ["userActivityEvents", args.username, String(args.year), String(args.month)]
-            });
-            await queryClient.invalidateQueries({
-                queryKey: ["userStats-activity", args.username, String(args.year), String(args.month)]
-            });
-            await queryClient.invalidateQueries({
-                queryKey: ["userStats-section", args.username, String(args.year), String(args.month)]
-            });
+            await queryClient.invalidateQueries({ queryKey: sectionActivityOptions(username, sectionParams).queryKey });
         },
     });
 };
 
 
-export const useDeleteActivityEventMutation = (args: {
-    username: string;
-    year: number;
-    month: number;
-    mediaType?: MediaType;
-    mediaId?: number;
-}) => {
+export const useDeleteActivityMutation = (username: string, sectionParams: SectionParams) => {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: postDeleteActivityEvent,
+        mutationFn: postDeleteSpecificActivity,
         meta: { errorMessage: "Failed to delete activity event." },
         onSuccess: async () => {
-            await queryClient.invalidateQueries({
-                queryKey: ["userActivityEvents", args.username, String(args.year), String(args.month)]
-            });
-            await queryClient.invalidateQueries({
-                queryKey: ["userStats-activity", args.username, String(args.year), String(args.month)]
-            });
-            await queryClient.invalidateQueries({
-                queryKey: ["userStats-section", args.username, String(args.year), String(args.month)]
-            });
+            await queryClient.invalidateQueries({ queryKey: sectionActivityOptions(username, sectionParams).queryKey });
         },
     });
 };

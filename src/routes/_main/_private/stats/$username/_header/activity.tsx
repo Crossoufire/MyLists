@@ -1,15 +1,14 @@
-import {cn} from "@/lib/utils/helpers";
 import {useMemo, useState} from "react";
 import {MediaType} from "@/lib/utils/enums";
+import {useAuth} from "@/lib/client/hooks/use-auth";
 import {GridItem} from "@/lib/types/activity.types";
 import {createFileRoute} from "@tanstack/react-router";
 import {useSuspenseQuery} from "@tanstack/react-query";
-import {useAuth} from "@/lib/client/hooks/use-auth";
 import {TabHeader} from "@/lib/client/components/general/TabHeader";
 import {EmptyState} from "@/lib/client/components/general/EmptyState";
 import {MainThemeIcon} from "@/lib/client/components/general/MainIcons";
-import {CheckCircle2, LayoutGrid, LucideIcon, RotateCcw, TrendingUp} from "lucide-react";
-import {activityQueryOptions} from "@/lib/client/react-query/query-options/query-options";
+import {CheckCircle2, LayoutGrid, RotateCcw, TrendingUp} from "lucide-react";
+import {monthlyActivityOptions} from "@/lib/client/react-query/query-options/query-options";
 import {ActivityHeader, ActivitySectionGrid} from "@/lib/client/components/activity/ActivityShared";
 
 
@@ -17,21 +16,21 @@ export const Route = createFileRoute("/_main/_private/stats/$username/_header/ac
     validateSearch: (search) => search as { year: string, month: string },
     loaderDeps: ({ search }) => ({ search }),
     loader: async ({ context: { queryClient }, params: { username }, deps: { search } }) => {
-        return queryClient.ensureQueryData(activityQueryOptions(username, search));
+        return queryClient.ensureQueryData(monthlyActivityOptions(username, search));
     },
     component: MonthlyActivityPage,
 });
 
 
 function MonthlyActivityPage() {
+    const { currentUser } = useAuth();
     const filters = Route.useSearch();
     const navigate = Route.useNavigate();
     const { username } = Route.useParams();
-    const { currentUser } = useAuth();
     const [activeTab, setActiveTab] = useState<MediaType | "all">("all");
-    const apiData = useSuspenseQuery(activityQueryOptions(username, filters)).data;
-    const canEdit = currentUser?.name === username;
+    const apiData = useSuspenseQuery(monthlyActivityOptions(username, filters)).data;
 
+    const canEdit = currentUser?.name === username;
     const mediaTypes = (Object.keys(apiData) as MediaType[]).filter((key) => apiData[key].count > 0);
 
     const viewData = useMemo(() => {
@@ -118,33 +117,32 @@ function MonthlyActivityPage() {
                 <div key={activeTab}>
                     <ActivitySectionGrid
                         title="Completed"
+                        canEdit={canEdit}
                         username={username}
                         section="completed"
                         icon={CheckCircle2}
                         year={filters.year}
                         month={filters.month}
                         mediaType={activeTab}
-                        showBadge={activeTab === "all"}
                         initialItems={viewData.completed}
                         totalCount={viewData.completedCount}
-                        canEdit={canEdit}
                     />
                     <ActivitySectionGrid
                         icon={TrendingUp}
+                        canEdit={canEdit}
                         username={username}
                         title="In Progress"
                         section="progressed"
                         year={filters.year}
                         month={filters.month}
                         mediaType={activeTab}
-                        showBadge={activeTab === "all"}
                         initialItems={viewData.progressed}
                         totalCount={viewData.progressedCount}
-                        canEdit={canEdit}
                     />
                     <ActivitySectionGrid
                         section="redo"
                         icon={RotateCcw}
+                        canEdit={canEdit}
                         username={username}
                         year={filters.year}
                         month={filters.month}
@@ -152,8 +150,6 @@ function MonthlyActivityPage() {
                         title="Re-experienced"
                         initialItems={viewData.redo}
                         totalCount={viewData.redoCount}
-                        showBadge={activeTab === "all"}
-                        canEdit={canEdit}
                     />
                 </div>
                 :
@@ -166,27 +162,3 @@ function MonthlyActivityPage() {
         </div>
     );
 }
-
-
-interface ActivityStatCardProps {
-    title: string;
-    icon: LucideIcon;
-    className?: string;
-    value: string | number;
-}
-
-
-export const ActivityStatCard = ({ title, value, icon: Icon, className }: ActivityStatCardProps) => (
-    <div className={cn("sm:min-w-50 bg-card text-card-foreground border-border rounded-xl " +
-        "border p-4 shadow-sm flex flex-col gap-2", className)}>
-        <div className="flex items-center justify-between opacity-70">
-            <span className="text-xs font-medium uppercase tracking-wider">
-                {title}
-            </span>
-            <Icon size={16}/>
-        </div>
-        <div className="text-2xl font-bold tracking-tight">
-            {value}
-        </div>
-    </div>
-);

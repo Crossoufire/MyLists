@@ -1,18 +1,19 @@
+import {zeroPad} from "@/lib/utils/formating";
 import {createServerFn} from "@tanstack/react-start";
 import {tryNotFound} from "@/lib/utils/try-not-found";
 import {getContainer} from "@/lib/server/core/container";
 import {FormattedError} from "@/lib/utils/error-classes";
 import {AdvancedMediaStats} from "@/lib/types/stats.types";
-import {authorizationMiddleware} from "@/lib/server/middlewares/authorization";
 import {authMiddleware} from "@/lib/server/middlewares/authentication";
 import {transactionMiddleware} from "@/lib/server/middlewares/transaction";
+import {authorizationMiddleware} from "@/lib/server/middlewares/authorization";
 import {
-    deleteActivityEventSchema,
-    getActivityEventsSchema,
-    getMonthlyActivitySchema,
+    deleteActivitySchema,
     getSectionActivitySchema,
+    getSpecificActivitySchema,
     getUserStatsSchema,
-    updateActivityEventSchema
+    monthlyActivitySchema,
+    updateActivitySchema
 } from "@/lib/types/zod.schema.types";
 
 
@@ -49,15 +50,14 @@ export const getUserStats = createServerFn({ method: "GET" })
 
 export const getMonthlyActivity = createServerFn({ method: "GET" })
     .middleware([authorizationMiddleware])
-    .inputValidator(tryNotFound(getMonthlyActivitySchema))
+    .inputValidator(tryNotFound(monthlyActivitySchema))
     .handler(async ({ data: { year, month }, context: { user } }) => {
         const container = await getContainer();
+
+        const timeBucket = `${year}-${zeroPad(month)}`;
         const userStatsService = container.services.userStats;
 
-        const start = new Date(Date.UTC(year, month - 1, 0, 23, 59, 59));
-        const end = new Date(Date.UTC(year, month, 0, 23, 59, 59));
-
-        return userStatsService.getMonthlyActivity(user.id, start, end);
+        return userStatsService.getMonthlyActivity(user.id, timeBucket);
     });
 
 
@@ -71,26 +71,29 @@ export const getSectionActivity = createServerFn({ method: "GET" })
         return userStatsService.getSectionActivity(user.id, data);
     });
 
-export const getActivityEvents = createServerFn({ method: "GET" })
+
+export const getSpecificActivity = createServerFn({ method: "GET" })
     .middleware([authorizationMiddleware])
-    .inputValidator(tryNotFound(getActivityEventsSchema))
+    .inputValidator(tryNotFound(getSpecificActivitySchema))
     .handler(async ({ data: { year, month, mediaType, mediaId }, context: { user } }) => {
         const userStatsService = await getContainer().then(c => c.services.userStats);
-        return userStatsService.getActivityEvents(user.id, { year, month, mediaType, mediaId });
+        return userStatsService.getSpecificActivity(user.id, { year, month, mediaType, mediaId });
     });
 
-export const postUpdateActivityEvent = createServerFn({ method: "POST" })
+
+export const postUpdateSpecificActivity = createServerFn({ method: "POST" })
     .middleware([authMiddleware, transactionMiddleware])
-    .inputValidator(updateActivityEventSchema)
-    .handler(async ({ data: { eventId, payload }, context: { currentUser } }) => {
+    .inputValidator(updateActivitySchema)
+    .handler(async ({ data: { activityId, payload }, context: { currentUser } }) => {
         const userStatsService = await getContainer().then(c => c.services.userStats);
-        return userStatsService.updateActivityEvent(currentUser.id, eventId, payload);
+        return userStatsService.updateSpecificActivity(currentUser.id, activityId, payload);
     });
 
-export const postDeleteActivityEvent = createServerFn({ method: "POST" })
+
+export const postDeleteSpecificActivity = createServerFn({ method: "POST" })
     .middleware([authMiddleware, transactionMiddleware])
-    .inputValidator(deleteActivityEventSchema)
-    .handler(async ({ data: { eventId }, context: { currentUser } }) => {
+    .inputValidator(deleteActivitySchema)
+    .handler(async ({ data: { activityId }, context: { currentUser } }) => {
         const userStatsService = await getContainer().then(c => c.services.userStats);
-        await userStatsService.deleteActivityEvent(currentUser.id, eventId);
+        await userStatsService.deleteSpecificActivity(currentUser.id, activityId);
     });

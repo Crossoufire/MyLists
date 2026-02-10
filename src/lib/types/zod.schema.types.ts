@@ -23,7 +23,7 @@ export type AdminUpdatePayload = z.infer<typeof adminUpdatePayloadSchema>;
 export type AchievementTier = z.infer<typeof tierAchievementSchema>;
 export type UpdateUserMedia = z.infer<typeof updateUserMediaSchema>;
 export type SectionActivity = z.infer<typeof getSectionActivitySchema>;
-export type ActivityEventFilters = z.infer<typeof getActivityEventsSchema>;
+export type SpecificActivityFilters = z.infer<typeof getSpecificActivitySchema>;
 
 const paginationSchema = z.object({
     page: z.coerce.number().int().positive().optional().catch(undefined),
@@ -236,12 +236,11 @@ export const getUserStatsSchema = z.object({
     mediaType: z.enum(MediaType).optional(),
 })
 
-export const getMonthlyActivitySchema = z.object({
+export const monthlyActivitySchema = z.object({
     username: z.string(),
     year: z.coerce.number().int().positive(),
     month: z.coerce.number().int().positive().min(1).max(12),
 })
-
 
 export const getSectionActivitySchema = z.object({
     username: z.string(),
@@ -253,30 +252,29 @@ export const getSectionActivitySchema = z.object({
     month: z.coerce.number().int().positive().min(1).max(12),
 });
 
-export const getActivityEventsSchema = z.object({
+export const getSpecificActivitySchema = z.object({
     username: z.string(),
-    mediaType: z.enum(MediaType).optional(),
-    mediaId: z.coerce.number().int().positive().optional(),
+    mediaType: z.enum(MediaType),
     year: z.coerce.number().int().positive(),
+    mediaId: z.coerce.number().int().positive(),
     month: z.coerce.number().int().positive().min(1).max(12),
 });
 
-export const updateActivityEventSchema = z.object({
-    eventId: z.coerce.number().int().positive(),
+export const updateActivitySchema = z.object({
+    activityId: z.coerce.number().int().positive(),
     payload: z.object({
-        specificGained: z.number().min(0).optional(),
-        isCompleted: z.boolean().optional(),
         isRedo: z.boolean().optional(),
-        timestamp: z.string().optional(),
-    }).refine((data) => Object.values(data).some((value) => value !== undefined), {
+        lastUpdate: z.string().optional(),
+        isCompleted: z.boolean().optional(),
+        specificGained: z.number().min(0).optional(),
+    }).refine((data) => Object.values(data).some((val) => val !== undefined), {
         message: "Provide at least one field to update.",
     }),
 });
 
-export const deleteActivityEventSchema = z.object({
-    eventId: z.coerce.number().int().positive(),
+export const deleteActivitySchema = z.object({
+    activityId: z.coerce.number().int().positive(),
 });
-
 
 const adminUpdatePayloadSchema = z.object({
     role: z.enum(RoleType).optional(),
