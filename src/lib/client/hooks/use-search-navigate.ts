@@ -4,13 +4,13 @@ import type {NavigateOptions} from "@tanstack/router-core";
 import {useDebounceCallback} from "@/lib/client/hooks/use-debounce";
 
 
-interface BaseSearchParams {
+type BaseSearchParams = {
     page?: number;
     search?: string;
 }
 
 
-interface UseSearchInputProps {
+type UseSearchInputProps = {
     search: string;
     delay?: number;
     options?: NavigateOptions;
@@ -35,6 +35,7 @@ export const useSearchNavigate = <T extends BaseSearchParams>({ search, delay = 
     };
 
     const updateFilters = (updater: Partial<T>) => {
+        // @ts-expect-error - prev is any
         void navigate({ search: (prev) => ({ ...prev, ...updater }), replace: true, ...options });
     };
 

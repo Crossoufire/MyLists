@@ -15,7 +15,7 @@ import {Notifications} from "@/lib/client/components/navbar/Notifications";
 import {authOptions} from "@/lib/client/react-query/query-options/query-options";
 import {MainThemeIcon, PrivacyIcon} from "@/lib/client/components/general/MainIcons";
 import {useFeatureFlagMutation} from "@/lib/client/react-query/query-mutations/user.mutations";
-import {Activity, BarChart2, Calendar, ChartNoAxesColumn, ChevronDown, Crown, LogOut, Menu, Popcorn, Settings, ShieldCheck, TrendingUp, Trophy, User, X, Zap} from "lucide-react";
+import {Activity, BarChart2, Calendar, ChartNoAxesColumn, ChevronDown, LogOut, Menu, Settings, ShieldCheck, TrendingUp, Trophy, User, Users, X, Zap} from "lucide-react";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -113,18 +113,34 @@ export const Navbar = () => {
                         <SearchBar/>
                     </div>
 
-                    <div className="flex items-center gap-1 max-lg:hidden">
-                        <Link to="/hall-of-fame" className={navStyle()} activeProps={{ className: "text-app-accent font-bold" }}>
-                            HoF
-                        </Link>
-                        <Link to="/platform-stats" className={navStyle()} activeProps={{ className: "text-app-accent font-bold" }}>
+                    <div className="flex items-center gap-1">
+                        <DropdownMenu>
+                            <DropdownMenuTrigger className={navStyle()}>
+                                Community
+                                <ChevronDown className="ml-2 size-3 opacity-70"/>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent className="w-36" align="end">
+                                <DropdownMenuGroup className="space-y-1">
+                                    <DropdownMenuItem>
+                                        <Link to="/collections/discover">
+                                            Collections
+                                        </Link>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem>
+                                        <Link to="/moviedle">
+                                            Moviedle
+                                        </Link>
+                                    </DropdownMenuItem>
+                                </DropdownMenuGroup>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+
+                        <Link to="/platform-stats" className={navStyle()} activeProps={{ className: "text-app-accent" }}>
                             Stats
                         </Link>
-                        <Link to="/trends" className={navStyle()} activeProps={{ className: "text-app-accent font-bold" }}>
+
+                        <Link to="/trends" className={navStyle()} activeProps={{ className: "text-app-accent" }}>
                             Trends
-                        </Link>
-                        <Link to="/moviedle" className={navStyle()} activeProps={{ className: "text-app-accent font-bold" }}>
-                            Moviedle
                         </Link>
                     </div>
 
@@ -290,10 +306,10 @@ export const Navbar = () => {
 
                         <div className="p-2 max-h-[70vh] overflow-y-auto scrollbar-thin mt-3">
                             <div className="flex flex-wrap justify-around items-center gap-2 px-2">
-                                <Link to="/hall-of-fame" onClick={() => setIsMobileMenuOpen(false)}>
+                                <Link to="/collections/discover" onClick={() => setIsMobileMenuOpen(false)}>
                                     <button className="flex flex-col items-center gap-1 text-muted-foreground hover:text-app-accent">
-                                        <Crown className="size-5"/>
-                                        <span className="text-[10px]">HoF</span>
+                                        <Users className="size-5"/>
+                                        <span className="text-[10px]">Collections</span>
                                     </button>
                                 </Link>
                                 <Link to="/platform-stats" onClick={() => setIsMobileMenuOpen(false)}>
@@ -306,12 +322,6 @@ export const Navbar = () => {
                                     <button className="flex flex-col items-center gap-1 text-muted-foreground hover:text-app-accent">
                                         <TrendingUp className="size-5"/>
                                         <span className="text-[10px]">Trends</span>
-                                    </button>
-                                </Link>
-                                <Link to="/moviedle" onClick={() => setIsMobileMenuOpen(false)}>
-                                    <button className="flex flex-col items-center gap-1 text-muted-foreground hover:text-app-accent">
-                                        <Popcorn className="size-5"/>
-                                        <span className="text-[10px]">Moviedle</span>
                                     </button>
                                 </Link>
                             </div>

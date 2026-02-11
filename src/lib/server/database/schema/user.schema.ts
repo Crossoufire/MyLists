@@ -9,6 +9,8 @@ import {
     animeTags,
     booksList,
     booksTags,
+    collectionLikes,
+    collections,
     gamesList,
     gamesTags,
     mangaList,
@@ -116,6 +118,8 @@ export const userRelations = relations(user, ({ many }) => ({
     userAchievements: many(userAchievement),
     userMediaSettings: many(userMediaSettings),
     userMediadleProgresses: many(userMediadleProgress),
+    collections: many(collections),
+    collectionLikes: many(collectionLikes),
     followers_followedId: many(followers, {
         relationName: "followers_followedId_user_id"
     }),

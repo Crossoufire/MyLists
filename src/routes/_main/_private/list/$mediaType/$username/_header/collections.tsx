@@ -1,0 +1,68 @@
+import {Plus} from "lucide-react";
+import {useAuth} from "@/lib/client/hooks/use-auth";
+import {createFileRoute} from "@tanstack/react-router";
+import {useSuspenseQuery} from "@tanstack/react-query";
+import {Button} from "@/lib/client/components/ui/button";
+import {EmptyState} from "@/lib/client/components/general/EmptyState";
+import {CollectionCard} from "@/lib/client/components/collections/CollectionCard";
+import {userCollectionsOptions} from "@/lib/client/react-query/query-options/query-options";
+
+
+export const Route = createFileRoute("/_main/_private/list/$mediaType/$username/_header/collections")({
+    loader: ({ context: { queryClient }, params: { mediaType, username } }) => {
+        return queryClient.ensureQueryData(userCollectionsOptions(username, mediaType));
+    },
+    component: CollectionsTab,
+});
+
+
+function CollectionsTab() {
+    const { currentUser } = useAuth();
+    const { mediaType, username } = Route.useParams();
+    const collections = useSuspenseQuery(userCollectionsOptions(username, mediaType)).data;
+    const isOwner = currentUser?.name === username;
+
+    return (
+        <div className="space-y-4">
+            <div className="flex items-center justify-between">
+                <div>
+                    <h3 className="text-lg font-semibold">Collections</h3>
+                    <p className="text-sm text-muted-foreground">
+                        Curated {mediaType} lists by {isOwner ? "you" : username}.
+                    </p>
+                </div>
+                {isOwner &&
+                    <Button asChild>
+                        <Route.Link to="/collections/create">
+                            <Plus className="size-4"/>
+                            New collection
+                        </Route.Link>
+                    </Button>
+                }
+            </div>
+            {collections.length === 0 ?
+                <EmptyState
+                    icon={Plus}
+                    message={isOwner ? "You have not created any collections yet." : "No collections yet."}
+                />
+                :
+                <div className="grid gap-4 md:grid-cols-2">
+                    {collections.map((collection) => (
+                        <CollectionCard
+                            key={collection.id}
+                            collection={collection}
+                            isOwner={isOwner}
+                            actions={isOwner ? (
+                                <Button size="sm" variant="ghost" asChild>
+                                    <Route.Link to="/collections/$collectionId/edit" params={{ collectionId: collection.id }}>
+                                        Edit
+                                    </Route.Link>
+                                </Button>
+                            ) : null}
+                        />
+                    ))}
+                </div>
+            }
+        </div>
+    );
+}

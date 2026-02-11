@@ -23,6 +23,7 @@ export type AdminUpdatePayload = z.infer<typeof adminUpdatePayloadSchema>;
 export type AchievementTier = z.infer<typeof tierAchievementSchema>;
 export type UpdateUserMedia = z.infer<typeof updateUserMediaSchema>;
 export type SectionActivity = z.infer<typeof getSectionActivitySchema>;
+export type CollectionItemInput = z.infer<typeof collectionItemSchema>;
 
 const paginationSchema = z.object({
     page: z.coerce.number().int().positive().optional().catch(undefined),
@@ -333,4 +334,45 @@ export const postFeatureStatusSchema = z.object({
 
 export const postFeatureDeleteSchema = z.object({
     featureId: z.coerce.number().int().positive(),
+});
+
+export const collectionItemSchema = z.object({
+    mediaId: z.coerce.number().int().positive(),
+    annotation: z.string().trim().max(500).optional().nullable(),
+});
+
+export const createCollectionSchema = z.object({
+    ordered: z.boolean(),
+    privacy: z.enum(PrivacyType),
+    mediaType: z.enum(MediaType),
+    items: z.array(collectionItemSchema),
+    title: z.string().trim()
+        .min(3, "Title must be at least 3 characters long")
+        .max(80, "Title is too long (maximum 80 characters)"),
+    description: z.string().trim().max(400, "Description cannot exceed 400 characters").optional().nullable(),
+});
+
+export const updateCollectionSchema = z.object({
+    ordered: z.boolean(),
+    privacy: z.enum(PrivacyType),
+    items: z.array(collectionItemSchema),
+    collectionId: z.coerce.number().int().positive(),
+    title: z.string().trim()
+        .min(3, "Title must be at least 3 characters long")
+        .max(80, "Title is too long (maximum 80 characters)"),
+    description: z.string().trim().max(400, "Description cannot exceed 400 characters").optional().nullable(),
+});
+
+export const collectionIdSchema = z.object({
+    collectionId: z.coerce.number().int().positive(),
+});
+
+export const userCollectionsSchema = z.object({
+    username: z.string(),
+    mediaType: z.enum(MediaType).optional(),
+});
+
+export const communityCollectionsSchema = paginationSchema.extend({
+    search: z.string().optional().catch(undefined),
+    mediaType: z.enum(MediaType).optional().catch(undefined),
 });

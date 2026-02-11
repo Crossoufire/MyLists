@@ -1,6 +1,7 @@
 import {NotifTab} from "@/lib/types/base.types";
 import {getCurrentUser} from "@/lib/server/functions/auth";
 import {getTrendsMedia} from "@/lib/server/functions/trends";
+import {CommunitySearch} from "@/lib/types/collections.types";
 import {getSearchResults} from "@/lib/server/functions/search";
 import {getHallOfFame} from "@/lib/server/functions/hall-of-fame";
 import {getFeatureVotes} from "@/lib/server/functions/feature-votes";
@@ -16,6 +17,7 @@ import {getDailyMediadle, getMediadleSuggestions} from "@/lib/server/functions/m
 import {getNotifications, getNotificationsCount} from "@/lib/server/functions/notifications";
 import {getMonthlyActivity, getSectionActivity, getUserStats} from "@/lib/server/functions/user-stats";
 import {getJobDetails, getMediaDetails, getMediaDetailsToEdit} from "@/lib/server/functions/media-details";
+import {getCollectionDetails, getCommunityCollections, getUserCollections} from "@/lib/server/functions/collections";
 import {getAllUpdatesHistory, getUserProfile, getUserProfileHeader, getUsersFollowers, getUsersFollows} from "@/lib/server/functions/user-profile";
 import {getMediaListFilters, getMediaListSearchFilters, getMediaListSF, getTagsViewFn, getUserListHeaderSF} from "@/lib/server/functions/media-lists";
 
@@ -247,6 +249,24 @@ export const jobDetailsOptions = (mediaType: MediaType, job: JobType, name: stri
 export const platformStatsOptions = (search: { mediaType?: MediaType }) => queryOptions({
     queryKey: ["platformStats", search],
     queryFn: () => getPlatformStats({ data: search }),
+});
+
+
+export const userCollectionsOptions = (username: string, mediaType?: MediaType) => queryOptions({
+    queryKey: ["collections", "user", username, mediaType] as const,
+    queryFn: () => getUserCollections({ data: { username, mediaType } }),
+});
+
+
+export const collectionDetailsOptions = (collectionId: number) => queryOptions({
+    queryKey: ["collections", "details", collectionId] as const,
+    queryFn: () => getCollectionDetails({ data: { collectionId } }),
+});
+
+
+export const communityCollectionsOptions = (search: CommunitySearch) => queryOptions({
+    queryKey: ["collections", "community", search] as const,
+    queryFn: () => getCommunityCollections({ data: search }),
 });
 
 

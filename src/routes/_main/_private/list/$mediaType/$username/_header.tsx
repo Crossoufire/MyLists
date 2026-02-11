@@ -7,7 +7,7 @@ import {TabHeader} from "@/lib/client/components/general/TabHeader";
 import {MediaLevel} from "@/lib/client/components/general/MediaLevel";
 import {createFileRoute, Link, Outlet, useLocation} from "@tanstack/react-router";
 import {userListHeaderOption} from "@/lib/client/react-query/query-options/query-options";
-import {Award, ChartLine, ChartNoAxesColumn, EllipsisVertical, Library, Tags, User, Zap} from "lucide-react";
+import {Award, ChartLine, ChartNoAxesColumn, EllipsisVertical, Library, ListOrdered, Tags, User, Zap} from "lucide-react";
 import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger} from "@/lib/client/components/ui/dropdown-menu";
 
 
@@ -34,10 +34,11 @@ function ListHeader() {
     const { timeSpent } = useSuspenseQuery(userListHeaderOption(mediaType, username)).data;
 
     const activeTab = location.pathname.endsWith("/tags")
-        ? "tags" : location.pathname.endsWith("/stats")
-            ? "stats" : location.pathname.endsWith("/achievements")
-                ? "achievements" : location.pathname.endsWith("/activity")
-                    ? "activity" : "list";
+        ? "tags" : location.pathname.endsWith("/collections")
+            ? "collections" : location.pathname.endsWith("/stats")
+                ? "stats" : location.pathname.endsWith("/achievements")
+                    ? "achievements" : location.pathname.endsWith("/activity")
+                        ? "activity" : "list";
 
     const onTabChange = (tabName: string) => {
         if (tabName === activeTab) return;
@@ -50,6 +51,9 @@ function ListHeader() {
         }
         if (tabName === "stats") {
             return navigate({ to: `/list/${mediaType}/${username}/stats` });
+        }
+        if (tabName === "collections") {
+            return navigate({ to: `/list/${mediaType}/${username}/collections` });
         }
         if (tabName === "activity") {
             const year = new Date().getFullYear();
@@ -77,6 +81,11 @@ function ListHeader() {
             label: "stats",
             isAccent: true,
             icon: <ChartNoAxesColumn className="size-4"/>,
+        }, {
+            isAccent: true,
+            id: "collections",
+            label: "collections",
+            icon: <ListOrdered className="size-4"/>,
         }, {
             isAccent: true,
             id: "achievements",
@@ -157,6 +166,12 @@ const DotsOthers = ({ mediaType, username }: { mediaType: MediaType; username: s
                     <Link to="/achievements/$username" params={{ username }}>
                         <Award className="size-4 text-muted-foreground"/>
                         <span>Achievements</span>
+                    </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                    <Link to="/collections/user/$username" params={{ username }}>
+                        <ListOrdered className="size-4 text-muted-foreground"/>
+                        <span>User's Collections</span>
                     </Link>
                 </DropdownMenuItem>
             </DropdownMenuContent>
