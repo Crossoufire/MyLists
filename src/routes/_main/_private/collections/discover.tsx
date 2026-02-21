@@ -78,10 +78,9 @@ function CollectionsDiscoverPage() {
                             message={`No public collections found${search ? ` for '${search}'` : ""}.`}
                         />
                         :
-                        <div className="grid gap-4 md:grid-cols-2">
+                        <div className="grid gap-4 md:grid-cols-2 pt-4">
                             {apiData.items.map((collection) =>
                                 <CollectionCard
-                                    showOwner={true}
                                     key={collection.id}
                                     collection={collection}
                                 />

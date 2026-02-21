@@ -25,12 +25,12 @@ export type CollectionOwner = {
 
 export type CollectionSummary = {
     id: number;
-    ownerId: number;
-    mediaType: MediaType;
     title: string;
-    description?: string | null;
-    privacy: PrivacyType;
+    ownerId: number;
     ordered: boolean;
+    mediaType: MediaType;
+    privacy: PrivacyType;
+    description?: string | null;
     viewCount: number;
     likeCount: number;
     copiedCount: number;
@@ -48,12 +48,4 @@ export type CollectionItemDetails = {
     mediaCover: string;
     annotation?: string | null;
     releaseDate?: string | null;
-};
-
-
-export type CollectionDetails = {
-    collection: CollectionSummary;
-    items: CollectionItemDetails[];
-    isOwner: boolean;
-    isLiked: boolean;
 };

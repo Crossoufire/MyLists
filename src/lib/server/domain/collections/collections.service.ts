@@ -1,11 +1,11 @@
 import {notFound} from "@tanstack/react-router";
+import {MediaInfo} from "@/lib/types/activity.types";
 import {FormattedError} from "@/lib/utils/error-classes";
 import {MediaType, PrivacyType} from "@/lib/utils/enums";
 import {CommunitySearch} from "@/lib/types/collections.types";
 import {withTransaction} from "@/lib/server/database/async-storage";
 import {MediaServiceRegistry} from "@/lib/server/domain/media/media.registries";
 import {CollectionsRepository} from "@/lib/server/domain/collections/collections.repository";
-import {MediaInfo} from "@/lib/types/activity.types";
 
 
 type CollectionItemInput = {
@@ -28,9 +28,7 @@ export class CollectionsService {
         const isOwner = (viewerUserId === collection.ownerId);
         this.assertVisible(collection.privacy, isOwner, viewerUserId);
 
-        if (viewerUserId && !isOwner) {
-            await this.repository.incrementViewCount(collectionId);
-        }
+        await this.repository.incrementViewCount(collectionId);
 
         const items = await this.repository.getCollectionItems(collectionId);
         const mediaService = this.mediaRegistry.getService(collection.mediaType);
@@ -59,18 +57,54 @@ export class CollectionsService {
 
     async getUserCollections(params: { userId: number; mediaType?: MediaType; currentUserId?: number }) {
         const isOwner = params.currentUserId === params.userId;
+        const allowedPrivacy = isOwner ? undefined : params.currentUserId ? [PrivacyType.PUBLIC, PrivacyType.RESTRICTED] : [PrivacyType.PUBLIC];
 
-        const allowedPrivacy = isOwner
-            ? undefined
-            : params.currentUserId
-                ? [PrivacyType.PUBLIC, PrivacyType.RESTRICTED]
-                : [PrivacyType.PUBLIC];
+        const collections = await this.repository.getUserCollections(params.userId, { mediaType: params.mediaType, allowedPrivacy });
 
-        return this.repository.getUserCollections(params.userId, { mediaType: params.mediaType, allowedPrivacy });
+        const enrichedItems = await Promise.all(
+            collections.map(async (collection) => {
+                const mediaService = this.mediaRegistry.getService(collection.mediaType);
+                const mediaDetails = await mediaService.getMediaForActivity(collection.previewItems);
+
+                return {
+                    ...collection,
+                    previews: mediaDetails.map((m) => ({
+                        mediaId: m.id as number,
+                        mediaName: m.name as string,
+                        mediaCover: m.imageCover as string,
+                        releaseDate: m.releaseDate as string,
+                    })),
+                };
+            }),
+        );
+
+        return enrichedItems;
     }
 
     async getPublicCollections(params: CommunitySearch) {
-        return this.repository.getPublicCollections(params);
+        const paginatedData = await this.repository.getPublicCollections(params);
+
+        const enrichedItems = await Promise.all(
+            paginatedData.items.map(async (collection) => {
+                const mediaService = this.mediaRegistry.getService(collection.mediaType);
+                const mediaDetails = await mediaService.getMediaForActivity(collection.previewItems);
+
+                return {
+                    ...collection,
+                    previews: mediaDetails.map((m) => ({
+                        mediaId: m.id as number,
+                        mediaName: m.name as string,
+                        mediaCover: m.imageCover as string,
+                        releaseDate: m.releaseDate as string,
+                    })),
+                };
+            }),
+        );
+
+        return {
+            ...paginatedData,
+            items: enrichedItems,
+        };
     }
 
     async createCollection(params: {

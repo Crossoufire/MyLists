@@ -1,5 +1,5 @@
 import {Copy, Heart, Pencil} from "lucide-react";
-import {capitalize} from "@/lib/utils/formating";
+import {capitalize, formatDateTime} from "@/lib/utils/formating";
 import {createFileRoute} from "@tanstack/react-router";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {Badge} from "@/lib/client/components/ui/badge";
@@ -9,6 +9,8 @@ import {EmptyState} from "@/lib/client/components/general/EmptyState";
 import {MediaCard} from "@/lib/client/components/media/base/MediaCard";
 import {collectionDetailsOptions} from "@/lib/client/react-query/query-options/query-options";
 import {useCopyCollectionMutation, useToggleCollectionLikeMutation} from "@/lib/client/react-query/query-mutations/collections.mutations";
+import {DisplayComment} from "@/lib/client/components/media/base/DisplayComment";
+import React from "react";
 
 
 export const Route = createFileRoute("/_main/_private/collections/$collectionId/")({
@@ -43,32 +45,37 @@ function CollectionViewer() {
 
     return (
         <PageTitle
-            title={collection.title}
-            subtitle={`${collection.ownerName} • ${capitalize(collection.mediaType)} • ${collection.itemsCount} items`}
+            title={`Collection - ${collection.title}`}
+            subtitle={`${collection.ownerName} • ${capitalize(collection.mediaType)} • ${collection.itemsCount} media`}
         >
-            <div className="flex flex-wrap items-center gap-3">
-                <Button
-                    size="sm"
-                    onClick={handleLikeCollection}
-                    disabled={toggleLikeMutation.isPending}
-                    variant={isLiked ? "default" : "outline"}
-                >
-                    <Heart className="size-4"/> {collection.likeCount}
-                </Button>
-                <Button size="sm" variant="outline" onClick={handleCopyCollection} disabled={copyMutation.isPending}>
-                    <Copy className="size-4"/> Copy
-                </Button>
-                {isOwner &&
-                    <Button size="sm" variant="outline" onClick={handleEditCollection}>
-                        <Pencil className="size-4"/> Edit
+            <div className="flex flex-wrap items-center justify-between pb-5">
+                <div className="flex items-center gap-3">
+                    <Button
+                        size="sm"
+                        onClick={handleLikeCollection}
+                        disabled={toggleLikeMutation.isPending}
+                        variant={isLiked ? "default" : "outline"}
+                    >
+                        <Heart className="size-4"/> {collection.likeCount}
                     </Button>
-                }
-                <Badge variant="outline">
-                    {collection.ordered ? "Ranked" : "Unranked"}
-                </Badge>
+                    <Button size="sm" variant="outline" onClick={handleCopyCollection} disabled={copyMutation.isPending}>
+                        <Copy className="size-4"/> Copy
+                    </Button>
+                    <Badge variant="outline">
+                        {collection.ordered ? "Ranked" : "Unranked"}
+                    </Badge>
+                </div>
+                <div>
+                    {isOwner &&
+                        <Button size="sm" variant="outline" onClick={handleEditCollection}>
+                            <Pencil/> Edit Collection
+                        </Button>
+                    }
+                </div>
             </div>
+
             {collection.description &&
-                <div className="pt-2 text-sm text-muted-foreground max-w-3xl">
+                <div className="border rounded-lg w-full px-4 py-3">
                     {collection.description}
                 </div>
             }
@@ -76,26 +83,32 @@ function CollectionViewer() {
             {items.length === 0 ?
                 <EmptyState
                     icon={Heart}
-                    message="This collection does not have any items yet."
+                    message="This collection does not have any media yet."
                 />
                 :
                 <div className="pt-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
                     {items.map((item) =>
                         <MediaCard key={item.mediaId} item={item} mediaType={collection.mediaType}>
-                            <div className="absolute inset-0 flex flex-col justify-between p-3">
-                                {collection.ordered &&
-                                    <div className="self-start rounded-full bg-black/70 px-2 py-0.5 text-xs font-semibold text-white">
-                                        #{item.orderIndex}
-                                    </div>
-                                }
-                                <div className="mt-auto space-y-1 rounded-md bg-black/70 p-2">
-                                    <div className="text-sm font-semibold text-white line-clamp-2">
+                            {collection.ordered &&
+                                <div className="absolute top-2 left-2 self-start rounded-md bg-black/70 px-3 py-0.5 text-sm font-semibold">
+                                    #{item.orderIndex}
+                                </div>
+                            }
+
+                            <div className="absolute bottom-0 w-full space-y-1 rounded-b-sm p-3">
+                                <div className="flex w-full items-center justify-between space-x-2 max-sm:text-sm">
+                                    <h3 className="grow truncate font-semibold text-primary" title={item.mediaName}>
                                         {item.mediaName}
+                                    </h3>
+                                </div>
+                                <div className="flex w-full flex-wrap items-center justify-between">
+                                    <div className="shrink-0 text-xs font-medium text-muted-foreground">
+                                        {formatDateTime(item.releaseDate, { noTime: true })}
                                     </div>
                                     {item.annotation &&
-                                        <div className="text-xs text-white/80 line-clamp-2">
-                                            {item.annotation}
-                                        </div>
+                                        <DisplayComment
+                                            content={item.annotation}
+                                        />
                                     }
                                 </div>
                             </div>

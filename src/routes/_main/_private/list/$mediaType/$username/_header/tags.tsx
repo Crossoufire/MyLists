@@ -205,7 +205,7 @@ const TagCard = ({ tag, isOwner, mediaType, username, onRename, onDelete }: TagC
                         }}
                     />
                     :
-                    <div className="flex items-center justify-between pl-1">
+                    <div className="flex items-baseline justify-between pl-1">
                         <div>
                             <h3 className="font-bold">
                                 {tag.tagName}
@@ -216,7 +216,7 @@ const TagCard = ({ tag, isOwner, mediaType, username, onRename, onDelete }: TagC
                         </div>
                         {(isOwner && !isEditing) &&
                             <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
+                                <DropdownMenuTrigger className="pt-1" asChild>
                                     <button>
                                         <MoreVertical className="size-4 opacity-60 hover:opacity-100"/>
                                     </button>

@@ -24,6 +24,8 @@ function CollectionEditPage() {
     const updateMutation = useUpdateCollectionMutation(collectionId);
     const apiData = useSuspenseQuery(collectionDetailsOptions(collectionId)).data;
 
+    // TODO: Add a delete collection mutation and button
+
     if (!apiData.isOwner) {
         return (
             <PageTitle
@@ -36,7 +38,7 @@ function CollectionEditPage() {
     const { collection } = apiData;
 
     return (
-        <PageTitle title={`Edit ${collection.title}`} subtitle="Refine your list and annotations.">
+        <PageTitle title={`Edit - ${collection.title}`} subtitle="Refine your collection, descriptions, and annotations.">
             <CollectionEditor
                 submitLabel="Update Collection"
                 mediaType={collection.mediaType}

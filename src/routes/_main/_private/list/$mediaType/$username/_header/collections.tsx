@@ -26,9 +26,11 @@ function CollectionsTab() {
         <div className="space-y-4">
             <div className="flex items-center justify-between">
                 <div>
-                    <h3 className="text-lg font-semibold">Collections</h3>
+                    <h3 className="text-lg font-semibold">
+                        Collections
+                    </h3>
                     <p className="text-sm text-muted-foreground">
-                        Curated {mediaType} lists by {isOwner ? "you" : username}.
+                        Curated {mediaType} collections by {isOwner ? "you" : username}.
                     </p>
                 </div>
                 {isOwner &&
@@ -46,21 +48,14 @@ function CollectionsTab() {
                     message={isOwner ? "You have not created any collections yet." : "No collections yet."}
                 />
                 :
-                <div className="grid gap-4 md:grid-cols-2">
-                    {collections.map((collection) => (
+                <div className="grid gap-4 md:grid-cols-3">
+                    {collections.map((collection) =>
                         <CollectionCard
+                            isOwner={isOwner}
                             key={collection.id}
                             collection={collection}
-                            isOwner={isOwner}
-                            actions={isOwner ? (
-                                <Button size="sm" variant="ghost" asChild>
-                                    <Route.Link to="/collections/$collectionId/edit" params={{ collectionId: collection.id }}>
-                                        Edit
-                                    </Route.Link>
-                                </Button>
-                            ) : null}
                         />
-                    ))}
+                    )}
                 </div>
             }
         </div>

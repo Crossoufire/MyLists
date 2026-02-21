@@ -61,33 +61,36 @@ export class CollectionsRepository {
             .orderBy(asc(collectionItems.orderIndex));
     }
 
-    static async getUserCollections(userId: number, params: {
-        mediaType?: MediaType;
-        allowedPrivacy?: PrivacyType[];
-    }) {
-        const itemsCount = sql<number>`
-            (SELECT COUNT(*) FROM ${collectionItems} ci WHERE ci.collection_id = ${collections.id})
-        `.as("itemsCount");
-
-        const conditions = [
-            eq(collections.ownerId, userId),
-            params.mediaType ? eq(collections.mediaType, params.mediaType) : undefined,
-            params.allowedPrivacy && params.allowedPrivacy.length > 0
-                ? inArray(collections.privacy, params.allowedPrivacy)
-                : undefined,
-        ].filter(Boolean);
-
+    static async getUserCollections(userId: number, params: { mediaType?: MediaType; allowedPrivacy?: PrivacyType[] }) {
         return getDbClient()
             .select({
-                ...getTableColumns(collections),
-                itemsCount,
                 ownerName: user.name,
                 ownerImage: user.image,
+                itemsCount: sql<number>`(
+                    SELECT COUNT(*) 
+                    FROM ${collectionItems} ci 
+                    WHERE ci.collection_id = ${collections.id}
+                )`.as("itemsCount"),
+                previewItems: sql<number[]>`(
+                    SELECT json_group_array(media_id)
+                    FROM (
+                        SELECT ${collectionItems.mediaId} as media_id
+                        FROM ${collectionItems}
+                        WHERE ${collectionItems.collectionId} = ${collections.id}
+                        ORDER BY ${collectionItems.orderIndex} ASC
+                        LIMIT 4
+                    )
+                )`.mapWith(JSON.parse).as("previewItems"),
+                ...getTableColumns(collections),
             })
             .from(collections)
             .innerJoin(user, eq(collections.ownerId, user.id))
-            .where(and(...conditions))
-            .orderBy(desc(collections.createdAt));
+            .where(and(
+                eq(collections.ownerId, userId),
+                params.mediaType ? eq(collections.mediaType, params.mediaType) : undefined,
+                params.allowedPrivacy && params.allowedPrivacy.length > 0 ? inArray(collections.privacy, params.allowedPrivacy) : undefined,
+            ))
+            .orderBy(desc(collections.likeCount));
     }
 
     static async getPublicCollections(params: CommunitySearch) {
@@ -116,9 +119,21 @@ export class CollectionsRepository {
                     .select({
                         ownerName: user.name,
                         ownerImage: user.image,
-                        itemsCount: sql<number>`
-                            (SELECT COUNT(*) FROM ${collectionItems} ci WHERE ci.collection_id = ${collections.id})
-                        `.as("itemsCount"),
+                        itemsCount: sql<number>`(
+                            SELECT COUNT(*) 
+                            FROM ${collectionItems} ci 
+                            WHERE ci.collection_id = ${collections.id}
+                        )`.as("itemsCount"),
+                        previewItems: sql<number[]>`(
+                            SELECT json_group_array(media_id)
+                            FROM (
+                                SELECT ${collectionItems.mediaId} as media_id
+                                FROM ${collectionItems}
+                                WHERE ${collectionItems.collectionId} = ${collections.id}
+                                ORDER BY ${collectionItems.orderIndex} ASC
+                                LIMIT 4
+                            )
+                        )`.mapWith(JSON.parse).as("previewItems"),
                         ...getTableColumns(collections),
                     })
                     .from(collections)
@@ -128,7 +143,7 @@ export class CollectionsRepository {
                         params.mediaType ? eq(collections.mediaType, params.mediaType) : undefined,
                         searchCondition,
                     ))
-                    .orderBy(desc(collections.createdAt))
+                    .orderBy(desc(collections.likeCount))
                     .limit(limit)
                     .offset(offset);
             },

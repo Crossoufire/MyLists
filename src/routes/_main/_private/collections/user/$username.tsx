@@ -33,8 +33,7 @@ function UserCollectionsPage() {
                     {isOwner &&
                         <Button asChild>
                             <Route.Link to="/collections/create">
-                                <Plus className="size-4"/>
-                                New collection
+                                <Plus className="size-4"/> New collection
                             </Route.Link>
                         </Button>
                     }
@@ -45,21 +44,12 @@ function UserCollectionsPage() {
                         message={isOwner ? "You have not created any collections yet." : "No collections yet."}
                     />
                     :
-                    <div className="grid gap-4 md:grid-cols-2">
+                    <div className="grid gap-4 gap-y-6 md:grid-cols-3">
                         {collections.map((collection) =>
                             <CollectionCard
+                                isOwner={isOwner}
                                 key={collection.id}
                                 collection={collection}
-                                showOwner={!isOwner}
-                                isOwner={isOwner}
-                                actions={isOwner ?
-                                    <Button size="sm" variant="ghost" asChild>
-                                        <Route.Link to="/collections/$collectionId/edit" params={{ collectionId: collection.id }}>
-                                            Edit
-                                        </Route.Link>
-                                    </Button>
-                                    : null
-                                }
                             />
                         )}
                     </div>
