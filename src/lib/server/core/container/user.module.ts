@@ -30,7 +30,7 @@ export function setupUserModule(mediaServiceRegistry: typeof MediaServiceRegistr
     const featureVotesService = new FeatureVotesService(featureVotesRepository);
     const achievementsService = new AchievementsService(achievementsRepository);
     const notificationsService = new NotificationsService(notificationsRepository);
-    const collectionsService = new CollectionsService(collectionsRepository, mediaServiceRegistry);
+    const collectionsService = new CollectionsService(userService, collectionsRepository, mediaServiceRegistry);
     const userStatsService = new UserStatsService(userStatsRepository, achievementsRepository, userUpdatesRepository, mediaServiceRegistry);
 
     return {

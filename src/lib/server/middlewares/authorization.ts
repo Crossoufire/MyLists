@@ -72,3 +72,19 @@ export const authorizationMiddleware = createMiddleware({ type: "function" })
             },
         });
     });
+
+
+export const collectionDetailsMiddleware = createMiddleware({ type: "function" })
+    .server(async ({ next }) => {
+        const { headers } = getRequest();
+        const session = await auth.api.getSession({ headers, query: { disableCookieCache: true } });
+        const currentUser = session?.user ? { ...session.user, id: Number(session.user.id) } : undefined;
+
+        if (currentUser) {
+            const container = await getContainer();
+            const userService = container.services.user;
+            await userService.updateUserLastSeen(container.cacheManager, currentUser.id);
+        }
+        
+        return next({ context: { currentUser } });
+    });

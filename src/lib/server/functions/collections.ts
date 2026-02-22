@@ -3,7 +3,7 @@ import {getContainer} from "@/lib/server/core/container";
 import {tryFormZodError, tryNotFound} from "@/lib/utils/try-not-found";
 import {authMiddleware} from "@/lib/server/middlewares/authentication";
 import {transactionMiddleware} from "@/lib/server/middlewares/transaction";
-import {authorizationMiddleware} from "@/lib/server/middlewares/authorization";
+import {authorizationMiddleware, collectionDetailsMiddleware} from "@/lib/server/middlewares/authorization";
 import {collectionIdSchema, communityCollectionsSchema, createCollectionSchema, updateCollectionSchema, userCollectionsSchema} from "@/lib/types/zod.schema.types";
 
 
@@ -13,7 +13,7 @@ export const getUserCollections = createServerFn({ method: "GET" })
     .handler(async ({ data: { mediaType }, context: { user, currentUser } }) => {
         const container = await getContainer();
         const collectionService = container.services.collections;
-        return collectionService.getUserCollections({ mediaType, userId: user.id, currentUserId: currentUser?.id });
+        return collectionService.getUserCollections(user.id, mediaType, currentUser?.id);
     });
 
 
@@ -28,17 +28,17 @@ export const getCommunityCollections = createServerFn({ method: "GET" })
 
 
 export const getCollectionDetails = createServerFn({ method: "GET" })
-    .middleware([authMiddleware])
+    .middleware([collectionDetailsMiddleware])
     .inputValidator(tryNotFound(collectionIdSchema))
     .handler(async ({ data: { collectionId }, context: { currentUser } }) => {
         const container = await getContainer();
         const collectionService = container.services.collections;
-        return collectionService.getCollectionDetails(collectionId, currentUser.id);
+        return collectionService.getCollectionDetails(collectionId, currentUser?.id);
     });
 
 
 export const postCreateCollection = createServerFn({ method: "POST" })
-    .middleware([authMiddleware])
+    .middleware([authMiddleware, transactionMiddleware])
     .inputValidator(tryFormZodError(createCollectionSchema))
     .handler(async ({ data, context: { currentUser } }) => {
         const container = await getContainer();
@@ -50,7 +50,7 @@ export const postCreateCollection = createServerFn({ method: "POST" })
 
 
 export const postUpdateCollection = createServerFn({ method: "POST" })
-    .middleware([authMiddleware])
+    .middleware([authMiddleware, transactionMiddleware])
     .inputValidator(updateCollectionSchema)
     .handler(async ({ data, context: { currentUser } }) => {
         const container = await getContainer();

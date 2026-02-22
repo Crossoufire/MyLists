@@ -9,10 +9,10 @@ import {Button} from "@/lib/client/components/ui/button";
 import {Textarea} from "@/lib/client/components/ui/textarea";
 import {EmptyState} from "@/lib/client/components/general/EmptyState";
 import {CollectionItemDetails, DraftItem} from "@/lib/types/collections.types";
+import {RadioGroup, RadioGroupItem} from "@/lib/client/components/ui/radio-group";
 import {MainThemeIcon, PrivacyIcon} from "@/lib/client/components/general/MainIcons";
 import {CollectionSearch} from "@/lib/client/components/collections/CollectionSearch";
 import {GripVertical, List, ListOrdered, TextAlignJustify, Trash2} from "lucide-react";
-import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/lib/client/components/ui/select";
 
 
 interface CollectionEditorProps {
@@ -233,49 +233,74 @@ export const CollectionEditor = ({ mediaType, initialData, onSubmit, submitLabel
                 </div>
                 <div className="col-span-4 space-y-6 max-lg:col-span-12">
                     <div className="rounded-lg border p-4 space-y-5">
-                        <div className="space-y-2">
-                            <Label>Privacy</Label>
-                            <Select value={privacy} onValueChange={(value) => setPrivacy(value as PrivacyType)}>
-                                <SelectTrigger>
-                                    <SelectValue/>
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value={PrivacyType.PRIVATE}>
-                                        <div className="flex items-center gap-2">
-                                            <PrivacyIcon type={PrivacyType.PRIVATE}/>
-                                            Private
-                                        </div>
-                                    </SelectItem>
-                                    <SelectItem value={PrivacyType.RESTRICTED}>
-                                        <div className="flex items-center gap-2">
-                                            <PrivacyIcon type={PrivacyType.RESTRICTED}/>
-                                            Restricted
-                                        </div>
-                                    </SelectItem>
-                                    <SelectItem value={PrivacyType.PUBLIC}>
-                                        <div className="flex items-center gap-2">
-                                            <PrivacyIcon type={PrivacyType.PUBLIC}/>
-                                            Public
-                                        </div>
-                                    </SelectItem>
-                                </SelectContent>
-                            </Select>
+                        <div className="space-y-4">
+                            <Label className="text-base">Privacy Settings</Label>
+                            <RadioGroup
+                                value={privacy}
+                                className="space-y-3"
+                                onValueChange={(val) => setPrivacy(val as PrivacyType)}
+                            >
+                                <div className="flex items-start space-x-3">
+                                    <RadioGroupItem
+                                        className="mt-1"
+                                        id="privacy-private"
+                                        value={PrivacyType.PRIVATE}
+                                    />
+                                    <div className="grid gap-1.5 leading-none">
+                                        <Label><PrivacyIcon type={PrivacyType.PRIVATE}/> Only Me</Label>
+                                        <p className="text-xs text-muted-foreground">
+                                            Visible only to you. This collection is completely hidden from everyone else.
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div className="flex items-start space-x-3">
+                                    <RadioGroupItem
+                                        className="mt-1"
+                                        id="privacy-restricted"
+                                        value={PrivacyType.RESTRICTED}
+                                    />
+                                    <div className="grid gap-1.5 leading-none">
+                                        <Label><PrivacyIcon type={PrivacyType.RESTRICTED}/> Personal</Label>
+                                        <p className="text-xs text-muted-foreground">
+                                            Not displayed on the community page. It remains visible on your profile
+                                            to followers (or anyone if your account is public).
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div className="flex items-start space-x-3">
+                                    <RadioGroupItem
+                                        className="mt-1"
+                                        id="privacy-public"
+                                        value={PrivacyType.PUBLIC}
+                                    />
+                                    <div className="grid gap-1.5 leading-none">
+                                        <Label><PrivacyIcon type={PrivacyType.PUBLIC}/> Public</Label>
+                                        <p className="text-xs text-muted-foreground">
+                                            Visible to everyone. This collection will be featured on the community discovery page.
+                                        </p>
+                                    </div>
+                                </div>
+                            </RadioGroup>
                         </div>
-                        <div className="space-y-2">
+
+                        <div className="space-y-2 pt-3">
                             <Label>Ranking</Label>
                             <div className="flex items-center justify-between rounded-md border px-3 py-2">
                                 <div className="space-y-1">
-                                    <div className="text-sm font-semibold">Ranked list</div>
+                                    <div className="text-sm font-semibold">
+                                        Ranked list
+                                    </div>
                                     <div className="text-xs text-muted-foreground">
                                         Enable drag & drop ranking.
                                     </div>
                                 </div>
-                                <Switch checked={ordered} onCheckedChange={setOrdered}/>
+                                <Switch
+                                    checked={ordered}
+                                    onCheckedChange={setOrdered}
+                                />
                             </div>
-                        </div>
-                        <div className="text-xs text-muted-foreground">
-                            <strong className="text-foreground">Restricted</strong>{" "}
-                            collections appear on profiles but not on the collection community page.
                         </div>
                     </div>
                 </div>

@@ -15,7 +15,25 @@ import {Notifications} from "@/lib/client/components/navbar/Notifications";
 import {authOptions} from "@/lib/client/react-query/query-options/query-options";
 import {MainThemeIcon, PrivacyIcon} from "@/lib/client/components/general/MainIcons";
 import {useFeatureFlagMutation} from "@/lib/client/react-query/query-mutations/user.mutations";
-import {Activity, BarChart2, Calendar, ChartNoAxesColumn, ChevronDown, LogOut, Menu, Settings, ShieldCheck, TrendingUp, Trophy, User, Users, X, Zap} from "lucide-react";
+import {
+    Activity,
+    BarChart2,
+    Calendar,
+    ChartNoAxesColumn,
+    ChevronDown,
+    Clapperboard,
+    Layers,
+    LogOut,
+    Menu,
+    Settings,
+    ShieldCheck,
+    TrendingUp,
+    Trophy,
+    User,
+    Users,
+    X,
+    Zap
+} from "lucide-react";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -28,7 +46,7 @@ import {
 
 
 const navStyle = cva("inline-flex items-center justify-center px-4 text-sm font-medium hover:text-app-accent " +
-    "disabled:pointer-events-none disabled:opacity-50"
+    "disabled:pointer-events-none disabled:opacity-50 focus:outline-none focus:ring-0 focus-visible:ring-0 focus-visible:outline-none"
 )
 
 
@@ -120,20 +138,26 @@ export const Navbar = () => {
                                 <ChevronDown className="ml-2 size-3 opacity-70"/>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent className="w-36" align="end">
-                                <DropdownMenuGroup className="space-y-1">
-                                    <DropdownMenuItem>
-                                        <Link to="/collections/discover">
-                                            Collections
+                                <DropdownMenuGroup>
+                                    <DropdownMenuItem asChild>
+                                        <Link to="/moviedle">
+                                            <Clapperboard className="size-3.5"/> Moviedle
                                         </Link>
                                     </DropdownMenuItem>
-                                    <DropdownMenuItem>
-                                        <Link to="/moviedle">
-                                            Moviedle
+                                    <DropdownMenuItem asChild>
+                                        <Link to="/collections/discover">
+                                            <Layers className="size-3.5"/> Collections
+                                        </Link>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem asChild>
+                                        <Link to="/hall-of-fame">
+                                            <Trophy className="size-3.5"/> Hall of Fame
                                         </Link>
                                     </DropdownMenuItem>
                                 </DropdownMenuGroup>
                             </DropdownMenuContent>
                         </DropdownMenu>
+
 
                         <Link to="/platform-stats" className={navStyle()} activeProps={{ className: "text-app-accent" }}>
                             Stats
@@ -150,42 +174,66 @@ export const Navbar = () => {
                                 MyMedia
                                 <ChevronDown className="ml-2 size-3 opacity-70"/>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent className="w-42" align="end">
-                                <DropdownMenuLabel className="text-[10px] uppercase tracking-wide text-muted-foreground">
-                                    Tracking Lists
-                                </DropdownMenuLabel>
-                                <DropdownMenuGroup className="space-y-1">
-                                    {currentUser?.settings.filter((s) => s.active).map((setting) =>
-                                        <DropdownMenuItem key={setting.mediaType} asChild>
-                                            <Link
-                                                to="/list/$mediaType/$username"
-                                                params={{ mediaType: setting.mediaType, username: currentUser.name }}
-                                            >
-                                                <MainThemeIcon type={setting.mediaType}/>
-                                                {capitalize(setting.mediaType)} List
-                                            </Link>
-                                        </DropdownMenuItem>
-                                    )}
-                                </DropdownMenuGroup>
-                                <DropdownMenuSeparator/>
-                                <DropdownMenuGroup>
-                                    <DropdownMenuItem asChild>
-                                        <Link
-                                            to="/stats/$username/activity"
-                                            params={{ username: currentUser.name }}
-                                            search={{ year: String(new Date().getFullYear()), month: String(new Date().getMonth() + 1) }}
-                                        >
-                                            <Zap/>
-                                            My Activity
-                                        </Link>
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem asChild>
-                                        <Link to="/coming-next">
-                                            <Calendar/>
-                                            Coming Next
-                                        </Link>
-                                    </DropdownMenuItem>
-                                </DropdownMenuGroup>
+                            <DropdownMenuContent className="w-90 p-0" align="end">
+                                <div className="grid grid-cols-2">
+                                    <div className="bg-muted/30 pt-1 pb-2 px-3">
+                                        <DropdownMenuLabel className="mb-2 text-[10px] uppercase tracking-wide text-muted-foreground">
+                                            Tracking Lists
+                                        </DropdownMenuLabel>
+                                        <DropdownMenuGroup>
+                                            {currentUser?.settings
+                                                .filter((s) => s.active)
+                                                .map((setting) =>
+                                                    <DropdownMenuItem key={setting.mediaType} asChild>
+                                                        <Link
+                                                            to="/list/$mediaType/$username"
+                                                            params={{ mediaType: setting.mediaType, username: currentUser.name }}
+                                                        >
+                                                            <MainThemeIcon type={setting.mediaType}/>
+                                                            {capitalize(setting.mediaType)} List
+                                                        </Link>
+                                                    </DropdownMenuItem>
+                                                )}
+                                        </DropdownMenuGroup>
+                                    </div>
+                                    <div className="border-l pt-1 pb-2 px-3">
+                                        <DropdownMenuLabel className="mb-2 text-[10px] uppercase tracking-wide text-muted-foreground">
+                                            Personal
+                                        </DropdownMenuLabel>
+                                        <DropdownMenuGroup>
+                                            <DropdownMenuItem asChild>
+                                                <Link to="/stats/$username" params={{ username: currentUser.name }}>
+                                                    <ChartNoAxesColumn className="size-4"/> My Stats
+                                                </Link>
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem asChild>
+                                                <Link
+                                                    to="/stats/$username/activity"
+                                                    params={{ username: currentUser.name }}
+                                                    search={{ year: String(new Date().getFullYear()), month: String(new Date().getMonth() + 1) }}
+                                                >
+                                                    <Zap className="size-4"/> My Activity
+                                                </Link>
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem asChild>
+                                                <Link to="/coming-next">
+                                                    <Calendar className="size-4"/> Coming Next
+                                                </Link>
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem asChild>
+                                                <Link to="/collections/user/$username" params={{ username: currentUser.name }}>
+                                                    <Layers className="size-4"/> My Collections
+                                                </Link>
+                                            </DropdownMenuItem>
+
+                                            <DropdownMenuItem asChild>
+                                                <Link to="/achievements/$username" params={{ username: currentUser.name }}>
+                                                    <Trophy className="size-4"/> My Achievements
+                                                </Link>
+                                            </DropdownMenuItem>
+                                        </DropdownMenuGroup>
+                                    </div>
+                                </div>
                             </DropdownMenuContent>
                         </DropdownMenu>
 
@@ -226,23 +274,11 @@ export const Navbar = () => {
                                     </p>
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator/>
-                                <DropdownMenuGroup className="space-y-1">
+                                <DropdownMenuGroup>
                                     <DropdownMenuItem asChild>
                                         <Link to="/profile/$username" params={{ username: currentUser.name! }}>
                                             <User/>
                                             Profile
-                                        </Link>
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem asChild>
-                                        <Link to="/stats/$username" params={{ username: currentUser.name! }}>
-                                            <ChartNoAxesColumn/>
-                                            My Stats
-                                        </Link>
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem asChild>
-                                        <Link to="/achievements/$username" params={{ username: currentUser.name! }}>
-                                            <Trophy/>
-                                            Achievements
                                         </Link>
                                     </DropdownMenuItem>
                                     {isAtLeastRole(currentUser.role, RoleType.ADMIN) &&
@@ -257,7 +293,7 @@ export const Navbar = () => {
                                     }
                                     <DropdownMenuItem asChild>
                                         <Link to="/features" className="relative w-full" onClick={onFeaturesClick}>
-                                            <div className="flex w-full items-center justify-between py-1">
+                                            <div className="flex w-full items-center justify-between">
                                                 <div className="flex items-center gap-2">
                                                     <Activity className="size-4 text-app-accent"/>
                                                     <span>News & Features</span>

@@ -42,6 +42,7 @@ export class CollectionsRepository {
             .select({
                 ownerName: user.name,
                 ownerImage: user.image,
+                ownerPrivacy: user.privacy,
                 itemsCount: sql<number>`
                     (SELECT COUNT(*) FROM ${collectionItems} ci WHERE ci.collection_id = ${collections.id})
                 `.as("itemsCount"),

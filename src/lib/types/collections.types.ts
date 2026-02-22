@@ -1,6 +1,13 @@
 import {MediaType, PrivacyType} from "@/lib/utils/enums";
 
 
+export type AssertCollection = {
+    ownerId: number;
+    privacy: PrivacyType;
+    ownerPrivacy: PrivacyType;
+};
+
+
 export type DraftItem = {
     mediaId: number;
     mediaName: string;

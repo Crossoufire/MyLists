@@ -35,7 +35,7 @@ function CollectionsDiscoverPage() {
     const { localSearch, handleInputChange, updateFilters } = useSearchNavigate<CommunitySearch>({ search });
 
     return (
-        <PageTitle title="Public collections" subtitle="Curated lists shared by the community.">
+        <PageTitle title="Community collections" subtitle="Public collections created and shared by the community.">
             <div className="space-y-10">
                 <div className="space-y-4">
                     <div className="flex justify-between items-center">
@@ -54,7 +54,7 @@ function CollectionsDiscoverPage() {
                                     <SelectValue/>
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="all">All types</SelectItem>
+                                    <SelectItem value="all">All Types</SelectItem>
                                     {Object.values(MediaType).map((type) =>
                                         <SelectItem key={type} value={type}>
                                             {capitalize(type)}
@@ -78,7 +78,7 @@ function CollectionsDiscoverPage() {
                             message={`No public collections found${search ? ` for '${search}'` : ""}.`}
                         />
                         :
-                        <div className="grid gap-4 md:grid-cols-2 pt-4">
+                        <div className="grid gap-4 md:grid-cols-3 pt-4">
                             {apiData.items.map((collection) =>
                                 <CollectionCard
                                     key={collection.id}

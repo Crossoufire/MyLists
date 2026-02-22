@@ -1,9 +1,9 @@
 import {notFound} from "@tanstack/react-router";
+import {UserService} from "@/lib/server/domain/user";
 import {MediaInfo} from "@/lib/types/activity.types";
 import {FormattedError} from "@/lib/utils/error-classes";
-import {MediaType, PrivacyType} from "@/lib/utils/enums";
-import {CommunitySearch} from "@/lib/types/collections.types";
-import {withTransaction} from "@/lib/server/database/async-storage";
+import {MediaType, PrivacyType, SocialState} from "@/lib/utils/enums";
+import {AssertCollection, CommunitySearch} from "@/lib/types/collections.types";
 import {MediaServiceRegistry} from "@/lib/server/domain/media/media.registries";
 import {CollectionsRepository} from "@/lib/server/domain/collections/collections.repository";
 
@@ -16,6 +16,7 @@ type CollectionItemInput = {
 
 export class CollectionsService {
     constructor(
+        private userService: UserService,
         private repository: typeof CollectionsRepository,
         private mediaRegistry: typeof MediaServiceRegistry,
     ) {
@@ -26,10 +27,9 @@ export class CollectionsService {
         if (!collection) throw notFound();
 
         const isOwner = (viewerUserId === collection.ownerId);
-        this.assertVisible(collection.privacy, isOwner, viewerUserId);
+        await this.assertVisible(collection, isOwner, viewerUserId);
 
         await this.repository.incrementViewCount(collectionId);
-
         const items = await this.repository.getCollectionItems(collectionId);
         const mediaService = this.mediaRegistry.getService(collection.mediaType);
         const mediaRows = await mediaService.getMediaForActivity(items.map((item) => item.mediaId)) as MediaInfo[];
@@ -55,11 +55,10 @@ export class CollectionsService {
         };
     }
 
-    async getUserCollections(params: { userId: number; mediaType?: MediaType; currentUserId?: number }) {
-        const isOwner = params.currentUserId === params.userId;
-        const allowedPrivacy = isOwner ? undefined : params.currentUserId ? [PrivacyType.PUBLIC, PrivacyType.RESTRICTED] : [PrivacyType.PUBLIC];
-
-        const collections = await this.repository.getUserCollections(params.userId, { mediaType: params.mediaType, allowedPrivacy });
+    async getUserCollections(userId: number, mediaType?: MediaType, currentUserId?: number) {
+        const isOwner = currentUserId === userId;
+        const allowedPrivacy = isOwner ? undefined : [PrivacyType.PUBLIC, PrivacyType.RESTRICTED];
+        const collections = await this.repository.getUserCollections(userId, { mediaType, allowedPrivacy });
 
         const enrichedItems = await Promise.all(
             collections.map(async (collection) => {
@@ -120,7 +119,6 @@ export class CollectionsService {
         const sanitizedItems = this.normalizeItems(items);
 
         const collectionId = await this.repository.createCollection({ ...collectionData });
-
         await this.repository.replaceCollectionItems(collectionId, sanitizedItems.map((item, index) => ({
             collectionId,
             mediaId: item.mediaId,
@@ -147,52 +145,50 @@ export class CollectionsService {
 
         const sanitizedItems = this.normalizeItems(params.items);
 
-        await withTransaction(async () => {
-            await this.repository.updateCollection(params.collectionId, {
-                title: params.title,
-                privacy: params.privacy,
-                ordered: params.ordered,
-                description: params.description ?? null,
-            });
-
-            await this.repository.replaceCollectionItems(params.collectionId, sanitizedItems.map((item, index) => ({
-                mediaId: item.mediaId,
-                orderIndex: index + 1,
-                mediaType: collection.mediaType,
-                collectionId: params.collectionId,
-                annotation: item.annotation ?? null,
-            })));
+        await this.repository.updateCollection(params.collectionId, {
+            title: params.title,
+            privacy: params.privacy,
+            ordered: params.ordered,
+            description: params.description ?? null,
         });
+
+        await this.repository.replaceCollectionItems(params.collectionId, sanitizedItems.map((item, index) => ({
+            mediaId: item.mediaId,
+            orderIndex: index + 1,
+            mediaType: collection.mediaType,
+            collectionId: params.collectionId,
+            annotation: item.annotation ?? null,
+        })));
     }
 
-    async toggleLike(userId: number, collectionId: number) {
+    async toggleLike(viewerUserId: number, collectionId: number) {
         const collection = await this.repository.getCollectionById(collectionId);
         if (!collection) throw notFound();
 
-        const isOwner = (collection.ownerId === userId);
-        this.assertVisible(collection.privacy, isOwner, userId);
+        const isOwner = (collection.ownerId === viewerUserId);
+        await this.assertVisible(collection, isOwner, viewerUserId);
 
-        const existingLike = await this.repository.findLikedCollection(userId, collectionId);
+        const existingLike = await this.repository.findLikedCollection(viewerUserId, collectionId);
         if (existingLike) {
             await this.repository.deleteLike(existingLike.id);
             await this.repository.decrementLikeCount(collectionId);
         }
 
-        await this.repository.insertLike(userId, collectionId);
+        await this.repository.insertLike(viewerUserId, collectionId);
         await this.repository.incrementLikeCount(collectionId);
     }
 
-    async copyCollection(userId: number, collectionId: number) {
+    async copyCollection(viewerUserId: number, collectionId: number) {
         const collection = await this.repository.getCollectionById(collectionId);
         if (!collection) throw notFound();
 
-        const isOwner = (collection.ownerId === userId);
-        this.assertVisible(collection.privacy, isOwner, userId);
+        const isOwner = (collection.ownerId === viewerUserId);
+        await this.assertVisible(collection, isOwner, viewerUserId);
 
         const items = await this.repository.getCollectionItems(collectionId);
 
         const createdId = await this.repository.createCollection({
-            ownerId: userId,
+            ownerId: viewerUserId,
             ordered: collection.ordered,
             privacy: PrivacyType.PRIVATE,
             mediaType: collection.mediaType,
@@ -213,15 +209,6 @@ export class CollectionsService {
         return { id: createdId };
     }
 
-    private assertVisible(privacy: PrivacyType, isOwner: boolean, currentUserId?: number) {
-        if (privacy === PrivacyType.PRIVATE && !isOwner) {
-            throw notFound();
-        }
-        if (privacy === PrivacyType.RESTRICTED && !currentUserId) {
-            throw new FormattedError("Unauthorized");
-        }
-    }
-
     private normalizeItems(items: CollectionItemInput[]) {
         const seen = new Set<number>();
         const normalized: CollectionItemInput[] = [];
@@ -233,5 +220,31 @@ export class CollectionsService {
         }
 
         return normalized;
+    }
+
+    private async assertVisible(collection: AssertCollection, isOwner: boolean, viewerUserId?: number) {
+        // Owners have instant access
+        if (isOwner) return;
+
+        // Private collections are strictly for owners
+        if (collection.privacy === PrivacyType.PRIVATE) {
+            throw new FormattedError("Unauthorized");
+        }
+
+        // Handle non-authed user
+        if (!viewerUserId) {
+            if (collection.ownerPrivacy !== PrivacyType.PUBLIC) {
+                throw new FormattedError("Unauthorized");
+            }
+            return;
+        }
+
+        // Handle Logged-in non-owner logic
+        if (collection.privacy === PrivacyType.RESTRICTED && collection.ownerPrivacy === PrivacyType.PRIVATE) {
+            const followStatus = await this.userService.getFollowingStatus(viewerUserId, collection.ownerId);
+            if (followStatus?.status !== SocialState.ACCEPTED) {
+                throw new FormattedError("Unauthorized");
+            }
+        }
     }
 }

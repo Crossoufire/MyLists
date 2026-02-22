@@ -1,16 +1,16 @@
 import {Copy, Heart, Pencil} from "lucide-react";
-import {capitalize, formatDateTime} from "@/lib/utils/formating";
+import {useAuth} from "@/lib/client/hooks/use-auth";
 import {createFileRoute} from "@tanstack/react-router";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {Badge} from "@/lib/client/components/ui/badge";
 import {Button} from "@/lib/client/components/ui/button";
+import {capitalize, formatDateTime} from "@/lib/utils/formating";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
 import {EmptyState} from "@/lib/client/components/general/EmptyState";
 import {MediaCard} from "@/lib/client/components/media/base/MediaCard";
+import {DisplayComment} from "@/lib/client/components/media/base/DisplayComment";
 import {collectionDetailsOptions} from "@/lib/client/react-query/query-options/query-options";
 import {useCopyCollectionMutation, useToggleCollectionLikeMutation} from "@/lib/client/react-query/query-mutations/collections.mutations";
-import {DisplayComment} from "@/lib/client/components/media/base/DisplayComment";
-import React from "react";
 
 
 export const Route = createFileRoute("/_main/_private/collections/$collectionId/")({
@@ -23,11 +23,14 @@ export const Route = createFileRoute("/_main/_private/collections/$collectionId/
 
 
 function CollectionViewer() {
+    const { currentUser } = useAuth();
     const navigate = Route.useNavigate();
     const { collectionId } = Route.useParams();
     const copyMutation = useCopyCollectionMutation(collectionId);
     const toggleLikeMutation = useToggleCollectionLikeMutation(collectionId);
     const apiData = useSuspenseQuery(collectionDetailsOptions(collectionId)).data;
+
+    const isConnected = !!currentUser;
     const { collection, items, isOwner, isLiked } = apiData;
 
     const handleLikeCollection = () => {
@@ -50,17 +53,21 @@ function CollectionViewer() {
         >
             <div className="flex flex-wrap items-center justify-between pb-5">
                 <div className="flex items-center gap-3">
-                    <Button
-                        size="sm"
-                        onClick={handleLikeCollection}
-                        disabled={toggleLikeMutation.isPending}
-                        variant={isLiked ? "default" : "outline"}
-                    >
-                        <Heart className="size-4"/> {collection.likeCount}
-                    </Button>
-                    <Button size="sm" variant="outline" onClick={handleCopyCollection} disabled={copyMutation.isPending}>
-                        <Copy className="size-4"/> Copy
-                    </Button>
+                    {isConnected &&
+                        <>
+                            <Button
+                                size="sm"
+                                onClick={handleLikeCollection}
+                                disabled={toggleLikeMutation.isPending}
+                                variant={isLiked ? "default" : "outline"}
+                            >
+                                <Heart className="size-4"/> {collection.likeCount}
+                            </Button>
+                            <Button size="sm" variant="outline" onClick={handleCopyCollection} disabled={copyMutation.isPending}>
+                                <Copy className="size-4"/> Copy
+                            </Button>
+                        </>
+                    }
                     <Badge variant="outline">
                         {collection.ordered ? "Ranked" : "Unranked"}
                     </Badge>
