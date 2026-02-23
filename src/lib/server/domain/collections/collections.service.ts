@@ -2,7 +2,7 @@ import {notFound} from "@tanstack/react-router";
 import {UserService} from "@/lib/server/domain/user";
 import {MediaInfo} from "@/lib/types/activity.types";
 import {FormattedError} from "@/lib/utils/error-classes";
-import {MediaType, PrivacyType, SocialState} from "@/lib/utils/enums";
+import {isAtLeastRole, MediaType, PrivacyType, RoleType, SocialState} from "@/lib/utils/enums";
 import {AssertCollection, CommunitySearch} from "@/lib/types/collections.types";
 import {MediaServiceRegistry} from "@/lib/server/domain/media/media.registries";
 import {CollectionsRepository} from "@/lib/server/domain/collections/collections.repository";
@@ -22,12 +22,13 @@ export class CollectionsService {
     ) {
     }
 
-    async getCollectionDetails(collectionId: number, viewerUserId?: number) {
+    async getCollectionDetails(collectionId: number, viewerUserId?: number, viewerRole?: RoleType | null) {
         const collection = await this.repository.getCollectionById(collectionId);
         if (!collection) throw notFound();
 
         const isOwner = (viewerUserId === collection.ownerId);
-        await this.assertVisible(collection, isOwner, viewerUserId);
+        const isModerator = isAtLeastRole(viewerRole, RoleType.MANAGER);
+        await this.assertVisible(collection, isOwner, isModerator, viewerUserId);
 
         await this.repository.incrementViewCount(collectionId);
         const items = await this.repository.getCollectionItems(collectionId);
@@ -48,9 +49,9 @@ export class CollectionsService {
         });
 
         return {
-            isOwner,
             collection,
             items: detailedItems,
+            canManage: isOwner || isModerator,
             isLiked: Boolean(viewerUserId ? await this.repository.findLikedCollection(viewerUserId, collectionId) : undefined),
         };
     }
@@ -132,19 +133,24 @@ export class CollectionsService {
 
     async updateCollection(params: {
         title: string;
-        ownerId: number;
+        actorId: number;
         ordered: boolean;
         privacy: PrivacyType;
         collectionId: number;
         description?: string | null;
+        actorRole?: RoleType | null;
         items: CollectionItemInput[];
     }) {
         const collection = await this.repository.getCollectionById(params.collectionId);
         if (!collection) throw notFound();
-        if (collection.ownerId !== params.ownerId) throw new FormattedError("Unauthorized");
+
+        const isOwner = collection.ownerId === params.actorId;
+        const isModerator = isAtLeastRole(params.actorRole, RoleType.MANAGER);
+        if (!isOwner && !isModerator) {
+            throw new FormattedError("You cannot update this collection.");
+        }
 
         const sanitizedItems = this.normalizeItems(params.items);
-
         await this.repository.updateCollection(params.collectionId, {
             title: params.title,
             privacy: params.privacy,
@@ -161,12 +167,25 @@ export class CollectionsService {
         })));
     }
 
+    async deleteCollection(params: { collectionId: number; actorId: number; actorRole?: RoleType | null }) {
+        const collection = await this.repository.getCollectionById(params.collectionId);
+        if (!collection) throw notFound();
+
+        const isOwner = collection.ownerId === params.actorId;
+        const isModerator = isAtLeastRole(params.actorRole, RoleType.MANAGER);
+        if (!isOwner && !isModerator) {
+            throw new FormattedError("You cannot delete this collection.");
+        }
+
+        await this.repository.deleteCollection(params.collectionId);
+    }
+
     async toggleLike(viewerUserId: number, collectionId: number) {
         const collection = await this.repository.getCollectionById(collectionId);
         if (!collection) throw notFound();
 
         const isOwner = (collection.ownerId === viewerUserId);
-        await this.assertVisible(collection, isOwner, viewerUserId);
+        await this.assertVisible(collection, isOwner, false, viewerUserId);
 
         const existingLike = await this.repository.findLikedCollection(viewerUserId, collectionId);
         if (existingLike) {
@@ -183,7 +202,7 @@ export class CollectionsService {
         if (!collection) throw notFound();
 
         const isOwner = (collection.ownerId === viewerUserId);
-        await this.assertVisible(collection, isOwner, viewerUserId);
+        await this.assertVisible(collection, isOwner, false, viewerUserId);
 
         const items = await this.repository.getCollectionItems(collectionId);
 
@@ -222,9 +241,9 @@ export class CollectionsService {
         return normalized;
     }
 
-    private async assertVisible(collection: AssertCollection, isOwner: boolean, viewerUserId?: number) {
-        // Owners have instant access
-        if (isOwner) return;
+    private async assertVisible(collection: AssertCollection, isOwner: boolean, isModerator: boolean, viewerUserId?: number) {
+        // Owners and moderators have instant access
+        if (isOwner || isModerator) return;
 
         // Private collections are strictly for owners
         if (collection.privacy === PrivacyType.PRIVATE) {

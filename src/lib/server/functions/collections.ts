@@ -4,6 +4,7 @@ import {tryFormZodError, tryNotFound} from "@/lib/utils/try-not-found";
 import {authMiddleware} from "@/lib/server/middlewares/authentication";
 import {transactionMiddleware} from "@/lib/server/middlewares/transaction";
 import {authorizationMiddleware, collectionDetailsMiddleware} from "@/lib/server/middlewares/authorization";
+import {RoleType} from "@/lib/utils/enums";
 import {collectionIdSchema, communityCollectionsSchema, createCollectionSchema, updateCollectionSchema, userCollectionsSchema} from "@/lib/types/zod.schema.types";
 
 
@@ -33,7 +34,7 @@ export const getCollectionDetails = createServerFn({ method: "GET" })
     .handler(async ({ data: { collectionId }, context: { currentUser } }) => {
         const container = await getContainer();
         const collectionService = container.services.collections;
-        return collectionService.getCollectionDetails(collectionId, currentUser?.id);
+        return collectionService.getCollectionDetails(collectionId, currentUser?.id, currentUser?.role as RoleType | null);
     });
 
 
@@ -55,7 +56,17 @@ export const postUpdateCollection = createServerFn({ method: "POST" })
     .handler(async ({ data, context: { currentUser } }) => {
         const container = await getContainer();
         const collectionService = container.services.collections;
-        await collectionService.updateCollection({ ...data, ownerId: currentUser.id });
+        await collectionService.updateCollection({ ...data, actorId: currentUser.id, actorRole: currentUser.role as RoleType });
+    });
+
+
+export const postDeleteCollection = createServerFn({ method: "POST" })
+    .middleware([authMiddleware, transactionMiddleware])
+    .inputValidator(collectionIdSchema)
+    .handler(async ({ data: { collectionId }, context: { currentUser } }) => {
+        const container = await getContainer();
+        const collectionService = container.services.collections;
+        await collectionService.deleteCollection({ collectionId, actorId: currentUser.id, actorRole: currentUser.role as RoleType });
     });
 
 

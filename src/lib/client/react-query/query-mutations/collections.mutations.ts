@@ -1,7 +1,7 @@
 import {toast} from "sonner";
 import {useMutation, useQueryClient} from "@tanstack/react-query";
 import {collectionDetailsOptions} from "@/lib/client/react-query/query-options/query-options";
-import {postCopyCollection, postCreateCollection, postToggleCollectionLike, postUpdateCollection} from "@/lib/server/functions/collections";
+import {postCopyCollection, postCreateCollection, postDeleteCollection, postToggleCollectionLike, postUpdateCollection} from "@/lib/server/functions/collections";
 
 
 export const useCreateCollectionMutation = () => {
@@ -59,6 +59,23 @@ export const useCopyCollectionMutation = (collectionId: number) => {
         onError: () => toast.error("Failed to copy the collection."),
         onSuccess: async () => {
             // TODO: check for setQueryData
+            await queryClient.invalidateQueries({ queryKey: ["collections", "community"] });
+            await queryClient.invalidateQueries({ queryKey: collectionDetailsOptions(collectionId).queryKey });
+        },
+    });
+};
+
+
+export const useDeleteCollectionMutation = (collectionId: number) => {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: postDeleteCollection,
+        meta: { successMessage: "Collection deleted." },
+        onError: () => toast.error("Failed to delete the collection."),
+        onSuccess: async () => {
+            // TODO: check for setQueryData
+            await queryClient.invalidateQueries({ queryKey: ["collections", "user"] });
             await queryClient.invalidateQueries({ queryKey: ["collections", "community"] });
             await queryClient.invalidateQueries({ queryKey: collectionDetailsOptions(collectionId).queryKey });
         },

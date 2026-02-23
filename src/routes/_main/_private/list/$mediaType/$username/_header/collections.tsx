@@ -51,7 +51,6 @@ function CollectionsTab() {
                 <div className="grid gap-4 md:grid-cols-3">
                     {collections.map((collection) =>
                         <CollectionCard
-                            isOwner={isOwner}
                             key={collection.id}
                             collection={collection}
                         />

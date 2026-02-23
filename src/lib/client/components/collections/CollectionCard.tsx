@@ -1,25 +1,32 @@
 import {cn} from "@/lib/utils/helpers";
 import {Link} from "@tanstack/react-router";
 import {DropdownMenu} from "@radix-ui/react-dropdown-menu";
+import {useAuth} from "@/lib/client/hooks/use-auth";
 import {ProfileIcon} from "@/lib/client/components/general/ProfileIcon";
 import {Copy, Eye, Heart, Layers, MoreVertical, Pen, Trash2} from "lucide-react";
+import {isAtLeastRole, RoleType} from "@/lib/utils/enums";
 import {communityCollectionsOptions} from "@/lib/client/react-query/query-options/query-options";
 import {DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger} from "@/lib/client/components/ui/dropdown-menu";
+import {useDeleteCollectionMutation} from "@/lib/client/react-query/query-mutations/collections.mutations";
 import {MainThemeIcon} from "@/lib/client/components/general/MainIcons";
 
 
 interface CollectionCardProps {
-    isOwner?: boolean;
     collection: Awaited<ReturnType<NonNullable<ReturnType<typeof communityCollectionsOptions>["queryFn"]>>>["items"][number];
 }
 
 
-export const CollectionCard = ({ collection, isOwner = false }: CollectionCardProps) => {
+export const CollectionCard = ({ collection }: CollectionCardProps) => {
+    const { currentUser } = useAuth();
+    const deleteMutation = useDeleteCollectionMutation(collection.id);
+    const isOwner = currentUser?.id === collection.ownerId;
+    const canManage = isOwner || isAtLeastRole(currentUser?.role as RoleType, RoleType.MANAGER);
 
-    // TODO: create a delete collection mutation
     const handleDelete = async () => {
-
-    }
+        if (!canManage || deleteMutation.isPending) return;
+        if (!window.confirm("This collection will be permanently deleted. Are you sure?")) return;
+        await deleteMutation.mutateAsync({ data: { collectionId: collection.id } });
+    };
 
     return (
         <div className="max-w-95">
@@ -79,7 +86,7 @@ export const CollectionCard = ({ collection, isOwner = false }: CollectionCardPr
                         <div className="flex items-center gap-1 text-sm text-muted-foreground font-semibold" title="Copied Count">
                             <Copy className="size-4"/> {collection.copiedCount}
                         </div>
-                        {isOwner &&
+                        {canManage &&
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
                                     <button>

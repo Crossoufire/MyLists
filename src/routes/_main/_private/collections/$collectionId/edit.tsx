@@ -1,9 +1,11 @@
+import {useAuth} from "@/lib/client/hooks/use-auth";
 import {createFileRoute} from "@tanstack/react-router";
 import {useSuspenseQuery} from "@tanstack/react-query";
+import {Button} from "@/lib/client/components/ui/button";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
 import {CollectionEditor} from "@/lib/client/components/collections/CollectionEditor";
 import {collectionDetailsOptions} from "@/lib/client/react-query/query-options/query-options";
-import {useUpdateCollectionMutation} from "@/lib/client/react-query/query-mutations/collections.mutations";
+import {useDeleteCollectionMutation, useUpdateCollectionMutation} from "@/lib/client/react-query/query-mutations/collections.mutations";
 
 
 export const Route = createFileRoute("/_main/_private/collections/$collectionId/edit")({
@@ -20,36 +22,45 @@ export const Route = createFileRoute("/_main/_private/collections/$collectionId/
 
 
 function CollectionEditPage() {
+    const { currentUser } = useAuth();
+    const navigate = Route.useNavigate();
     const { collectionId } = Route.useParams();
     const updateMutation = useUpdateCollectionMutation(collectionId);
+    const deleteMutation = useDeleteCollectionMutation(collectionId);
     const apiData = useSuspenseQuery(collectionDetailsOptions(collectionId)).data;
 
-    // TODO: Add a delete collection mutation and button
+    const handleDeleteCollection = async () => {
+        if (deleteMutation.isPending) return;
 
-    if (!apiData.isOwner) {
-        return (
-            <PageTitle
-                title="Collection editor"
-                subtitle="You do not have permission to edit this collection."
-            />
-        );
-    }
+        if (!window.confirm("This collection will be permanently deleted. Are you sure?")) return;
+        await deleteMutation.mutateAsync({ data: { collectionId } });
 
-    const { collection } = apiData;
+        const redirectUsername = currentUser?.id === apiData.collection.ownerId ? currentUser?.name : apiData.collection.ownerName;
+        await navigate({ to: "/collections/user/$username", params: { username: redirectUsername } });
+    };
 
     return (
-        <PageTitle title={`Edit - ${collection.title}`} subtitle="Refine your collection, descriptions, and annotations.">
+        <PageTitle title={`Edit - ${apiData.collection.title}`} subtitle="Refine your collection, descriptions, and annotations.">
+            <div className="flex items-center justify-end pb-4">
+                <Button
+                    variant="destructive"
+                    onClick={handleDeleteCollection}
+                    disabled={deleteMutation.isPending}
+                >
+                    Delete Collection
+                </Button>
+            </div>
             <CollectionEditor
                 submitLabel="Update Collection"
-                mediaType={collection.mediaType}
                 isSubmitting={updateMutation.isPending}
+                mediaType={apiData.collection.mediaType}
                 onSubmit={(payload) => updateMutation.mutate({ data: { collectionId, ...payload } })}
                 initialData={{
                     items: apiData.items,
-                    title: collection.title,
-                    ordered: collection.ordered,
-                    privacy: collection.privacy,
-                    description: collection.description,
+                    title: apiData.collection.title,
+                    ordered: apiData.collection.ordered,
+                    privacy: apiData.collection.privacy,
+                    description: apiData.collection.description,
                 }}
             />
         </PageTitle>

@@ -25,6 +25,12 @@ export class CollectionsRepository {
             .where(eq(collections.id, collectionId));
     }
 
+    static async deleteCollection(collectionId: number) {
+        await getDbClient()
+            .delete(collections)
+            .where(eq(collections.id, collectionId));
+    }
+
     static async replaceCollectionItems(collectionId: number, items: (typeof collectionItems.$inferInsert)[]) {
         await getDbClient()
             .delete(collectionItems)

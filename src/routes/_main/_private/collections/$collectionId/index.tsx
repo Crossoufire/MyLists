@@ -31,7 +31,7 @@ function CollectionViewer() {
     const apiData = useSuspenseQuery(collectionDetailsOptions(collectionId)).data;
 
     const isConnected = !!currentUser;
-    const { collection, items, isOwner, isLiked } = apiData;
+    const { collection, items, isLiked, canManage } = apiData;
 
     const handleLikeCollection = () => {
         toggleLikeMutation.mutate({ data: { collectionId } });
@@ -73,7 +73,7 @@ function CollectionViewer() {
                     </Badge>
                 </div>
                 <div>
-                    {isOwner &&
+                    {canManage &&
                         <Button size="sm" variant="outline" onClick={handleEditCollection}>
                             <Pencil/> Edit Collection
                         </Button>
