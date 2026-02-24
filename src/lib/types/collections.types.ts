@@ -23,31 +23,6 @@ export type CommunitySearch = {
 };
 
 
-export type CollectionOwner = {
-    id: number;
-    name: string;
-    image?: string | null;
-};
-
-
-export type CollectionSummary = {
-    id: number;
-    title: string;
-    ownerId: number;
-    ordered: boolean;
-    mediaType: MediaType;
-    privacy: PrivacyType;
-    description?: string | null;
-    viewCount: number;
-    likeCount: number;
-    copiedCount: number;
-    createdAt: string;
-    itemsCount: number;
-    ownerName: string;
-    ownerImage?: string | null;
-};
-
-
 export type CollectionItemDetails = {
     mediaId: number;
     mediaName: string;

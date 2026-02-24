@@ -1,8 +1,9 @@
 import {useState} from "react";
+import {MediaType} from "@/lib/utils/enums";
 import {useAuth} from "@/lib/client/hooks/use-auth";
 import {createFileRoute} from "@tanstack/react-router";
-import {MediaType, PrivacyType} from "@/lib/utils/enums";
 import {Button} from "@/lib/client/components/ui/button";
+import {CreateCollection} from "@/lib/types/zod.schema.types";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
 import {MainThemeIcon} from "@/lib/client/components/general/MainIcons";
 import {CollectionEditor} from "@/lib/client/components/collections/CollectionEditor";
@@ -22,24 +23,15 @@ function CollectionCreatePage() {
     const [step, setStep] = useState<"mediaType" | "editor">("mediaType");
     const activeTypes = currentUser?.settings.filter((s) => s.active).map((s) => s.mediaType) ?? [];
 
-    // TODO: Check zod error from createMutation (desc max 400 for example)
-    
     const handleSelectMediaType = (mediaType: MediaType) => {
         setMediaType(mediaType);
         setStep("editor");
     };
 
-    const handleSubmit = async (payload: {
-        title: string;
-        ordered: boolean;
-        privacy: PrivacyType;
-        description?: string | null;
-        items: { mediaId: number; annotation?: string | null }[];
-    }) => {
+    const handleSubmit = async (payload: Omit<CreateCollection, "mediaType">) => {
         if (!mediaType) return;
-
-        const result = await createMutation.mutateAsync({ data: { mediaType, ...payload, } });
-        await navigate({ to: "/collections/$collectionId", params: { collectionId: result.id } });
+        const newCollection = await createMutation.mutateAsync({ data: { mediaType, ...payload } });
+        await navigate({ to: "/collections/$collectionId", params: { collectionId: newCollection.id } });
     };
 
     return (

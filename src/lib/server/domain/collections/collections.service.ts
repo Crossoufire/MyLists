@@ -244,7 +244,7 @@ export class CollectionsService {
                     mediaCover: media.imageCover,
                     releaseDate: media.releaseDate,
                 };
-            }).filter(Boolean),
+            }).filter((item): item is NonNullable<typeof item> => item !== null),
         }));
     }
 

@@ -7,6 +7,7 @@ import {Switch} from "@/lib/client/components/ui/switch";
 import {MediaType, PrivacyType} from "@/lib/utils/enums";
 import {Button} from "@/lib/client/components/ui/button";
 import {Textarea} from "@/lib/client/components/ui/textarea";
+import {CreateCollection} from "@/lib/types/zod.schema.types";
 import {EmptyState} from "@/lib/client/components/general/EmptyState";
 import {CollectionItemDetails, DraftItem} from "@/lib/types/collections.types";
 import {RadioGroup, RadioGroupItem} from "@/lib/client/components/ui/radio-group";
@@ -26,16 +27,7 @@ interface CollectionEditorProps {
         description?: string | null;
         items: CollectionItemDetails[];
     };
-    onSubmit: (payload: {
-        title: string;
-        ordered: boolean;
-        privacy: PrivacyType;
-        description?: string | null;
-        items: {
-            mediaId: number;
-            annotation?: string | null;
-        }[];
-    }) => void;
+    onSubmit: (payload: Omit<CreateCollection, "mediaType">) => void;
 }
 
 
@@ -98,11 +90,11 @@ export const CollectionEditor = ({ mediaType, initialData, onSubmit, submitLabel
     const submitPayload = () => {
         const trimmedTitle = title.trim();
         if (trimmedTitle.length < 3) {
-            toast.error("Please provide a title of at least 3 characters.");
+            toast.warning("Please provide a title of at least 3 characters.");
             return;
         }
         if (items.length === 0) {
-            toast.error("Add at least one item to the collection.");
+            toast.warning("Add at least one item to the collection.");
             return;
         }
 

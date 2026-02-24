@@ -24,6 +24,8 @@ export type AchievementTier = z.infer<typeof tierAchievementSchema>;
 export type UpdateUserMedia = z.infer<typeof updateUserMediaSchema>;
 export type SectionActivity = z.infer<typeof getSectionActivitySchema>;
 export type CollectionItemInput = z.infer<typeof collectionItemSchema>;
+export type CreateCollection = z.infer<typeof createCollectionSchema>;
+
 
 const paginationSchema = z.object({
     page: z.coerce.number().int().positive().optional().catch(undefined),
@@ -348,7 +350,7 @@ export const createCollectionSchema = z.object({
     items: z.array(collectionItemSchema),
     title: z.string().trim()
         .min(3, "Title must be at least 3 characters long")
-        .max(80, "Title is too long (maximum 80 characters)"),
+        .max(100, "Title is too long (maximum 80 characters)"),
     description: z.string().trim().max(400, "Description cannot exceed 400 characters").optional().nullable(),
 });
 
