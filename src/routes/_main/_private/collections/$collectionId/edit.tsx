@@ -1,7 +1,9 @@
+import {useForm} from "react-hook-form";
 import {useAuth} from "@/lib/client/hooks/use-auth";
 import {createFileRoute} from "@tanstack/react-router";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {Button} from "@/lib/client/components/ui/button";
+import {CreateCollection} from "@/lib/types/zod.schema.types";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
 import {CollectionEditor} from "@/lib/client/components/collections/CollectionEditor";
 import {collectionDetailsOptions} from "@/lib/client/react-query/query-options/query-options";
@@ -28,42 +30,61 @@ function CollectionEditPage() {
     const updateMutation = useUpdateCollectionMutation(collectionId);
     const deleteMutation = useDeleteCollectionMutation(collectionId);
     const apiData = useSuspenseQuery(collectionDetailsOptions(collectionId)).data;
+    const form = useForm<CreateCollection>({
+        defaultValues: {
+            items: apiData.items ?? [],
+            title: apiData.collection.title,
+            ordered: apiData.collection.ordered,
+            privacy: apiData.collection.privacy,
+            mediaType: apiData.collection.mediaType,
+            description: apiData.collection.description ?? "",
+        },
+    });
 
-    const handleDeleteCollection = async () => {
+    const handleDelete = async () => {
         if (deleteMutation.isPending) return;
-
         if (!window.confirm("This collection will be permanently deleted. Are you sure?")) return;
-        await deleteMutation.mutateAsync({ data: { collectionId } });
 
-        const redirectUsername = currentUser?.id === apiData.collection.ownerId
-            ? currentUser?.name : apiData.collection.ownerName;
+        deleteMutation.mutate({ data: { collectionId } }, {
+            onSuccess: async () => {
+                const redirectUsername = currentUser?.id === apiData.collection.ownerId
+                    ? currentUser?.name : apiData.collection.ownerName;
 
-        await navigate({ to: "/collections/user/$username", params: { username: redirectUsername } });
+                return navigate({ to: "/collections/user/$username", params: { username: redirectUsername } });
+            }
+        });
+    };
+
+    const handleSubmit = async (payload: CreateCollection) => {
+        updateMutation.mutate({ data: { collectionId, ...payload } }, {
+            onError: (error: any) => {
+                error.issues?.forEach((issue: any) => {
+                    form.setError(issue.path.join("."), { message: issue.message });
+                });
+            },
+            onSuccess: () => {
+                form.reset(payload);
+            }
+        });
     };
 
     return (
         <PageTitle title={`Edit - ${apiData.collection.title}`} subtitle="Refine your collection, descriptions, and annotations.">
-            <div className="flex items-center justify-end pb-4">
+            <div className="flex items-center justify-start pb-4">
                 <Button
                     variant="destructive"
-                    onClick={handleDeleteCollection}
+                    onClick={handleDelete}
                     disabled={deleteMutation.isPending}
                 >
                     Delete Collection
                 </Button>
             </div>
             <CollectionEditor
+                form={form}
+                onSubmit={handleSubmit}
                 submitLabel="Update Collection"
                 isSubmitting={updateMutation.isPending}
                 mediaType={apiData.collection.mediaType}
-                onSubmit={(payload) => updateMutation.mutate({ data: { collectionId, ...payload } })}
-                initialData={{
-                    items: apiData.items,
-                    title: apiData.collection.title,
-                    ordered: apiData.collection.ordered,
-                    privacy: apiData.collection.privacy,
-                    description: apiData.collection.description,
-                }}
             />
         </PageTitle>
     );

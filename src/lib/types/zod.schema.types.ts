@@ -317,7 +317,7 @@ export const adminRefreshSchema = z.object({
 export const postFeatureRequestSchema = z.object({
     title: z.string().trim()
         .min(3, "Title must be at least 3 characters long")
-        .max(80, "Title is too long (maximum 80 characters)"),
+        .max(80, "Title is too long (max 80 characters)"),
     description: z.string().trim()
         .max(400, "Description cannot exceed 400 characters")
         .optional(),
@@ -340,6 +340,8 @@ export const postFeatureDeleteSchema = z.object({
 
 export const collectionItemSchema = z.object({
     mediaId: z.coerce.number().int().positive(),
+    mediaName: z.string().optional(), // Added for UI display
+    mediaCover: z.string().optional(), // Added for UI display
     annotation: z.string().trim().max(500).optional().nullable(),
 });
 
@@ -347,21 +349,21 @@ export const createCollectionSchema = z.object({
     ordered: z.boolean(),
     privacy: z.enum(PrivacyType),
     mediaType: z.enum(MediaType),
-    items: z.array(collectionItemSchema),
+    items: z.array(collectionItemSchema).min(1, "Collection must contain at least 1 item."),
     title: z.string().trim()
         .min(3, "Title must be at least 3 characters long")
-        .max(100, "Title is too long (maximum 80 characters)"),
+        .max(100, "Title is too long (max 100 characters)"),
     description: z.string().trim().max(400, "Description cannot exceed 400 characters").optional().nullable(),
 });
 
 export const updateCollectionSchema = z.object({
     ordered: z.boolean(),
     privacy: z.enum(PrivacyType),
-    items: z.array(collectionItemSchema),
     collectionId: z.coerce.number().int().positive(),
+    items: z.array(collectionItemSchema).min(1, "Collection must contain at least 1 item."),
     title: z.string().trim()
         .min(3, "Title must be at least 3 characters long")
-        .max(80, "Title is too long (maximum 80 characters)"),
+        .max(100, "Title is too long (max 100 characters)"),
     description: z.string().trim().max(400, "Description cannot exceed 400 characters").optional().nullable(),
 });
 

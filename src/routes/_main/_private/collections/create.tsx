@@ -1,7 +1,8 @@
 import {useState} from "react";
-import {MediaType} from "@/lib/utils/enums";
+import {useForm} from "react-hook-form";
 import {useAuth} from "@/lib/client/hooks/use-auth";
 import {createFileRoute} from "@tanstack/react-router";
+import {MediaType, PrivacyType} from "@/lib/utils/enums";
 import {Button} from "@/lib/client/components/ui/button";
 import {CreateCollection} from "@/lib/types/zod.schema.types";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
@@ -22,16 +23,36 @@ function CollectionCreatePage() {
     const [mediaType, setMediaType] = useState<MediaType | null>(null);
     const [step, setStep] = useState<"mediaType" | "editor">("mediaType");
     const activeTypes = currentUser?.settings.filter((s) => s.active).map((s) => s.mediaType) ?? [];
+    const form = useForm<CreateCollection>({
+        defaultValues: {
+            title: "",
+            items: [],
+            ordered: false,
+            description: "",
+            privacy: PrivacyType.PRIVATE,
+        },
+    });
 
-    const handleSelectMediaType = (mediaType: MediaType) => {
+    const selectMediaType = (mediaType: MediaType) => {
         setMediaType(mediaType);
         setStep("editor");
+        form.setValue("mediaType", mediaType);
     };
 
-    const handleSubmit = async (payload: Omit<CreateCollection, "mediaType">) => {
-        if (!mediaType) return;
-        const newCollection = await createMutation.mutateAsync({ data: { mediaType, ...payload } });
-        await navigate({ to: "/collections/$collectionId", params: { collectionId: newCollection.id } });
+    const handleSubmit = async (payload: CreateCollection) => {
+        createMutation.mutate({ data: payload }, {
+            onError: (error: any) => {
+                if (error.issues) {
+                    error.issues.forEach((issue: any) => {
+                        form.setError(issue.path.join("."), { message: issue.message });
+                    });
+                }
+            },
+            onSuccess: async (newCollection) => {
+                form.reset(payload);
+                return navigate({ to: "/collections/$collectionId", params: { collectionId: newCollection.id } });
+            }
+        });
     };
 
     return (
@@ -52,30 +73,21 @@ function CollectionCreatePage() {
                         </span>
                     </div>
                     <div className="flex flex-wrap gap-3">
-                        {activeTypes.map((mediaType) =>
-                            <button
-                                key={mediaType}
-                                onClick={() => handleSelectMediaType(mediaType)}
-                                className="rounded-md border bg-card/70 py-1.5 px-3 text-left transition-all hover:border-app-accent/60"
-                            >
-                                <div className="flex items-center gap-2">
-                                    <MainThemeIcon type={mediaType} size={14}/>
-                                    <div className="text-sm font-semibold capitalize">
-                                        {mediaType}
-                                    </div>
-                                </div>
-                            </button>
+                        {activeTypes.map((mt) =>
+                            <Button key={mt} variant="outline" className="capitalize" onClick={() => selectMediaType(mt)}>
+                                <MainThemeIcon type={mt}/> {mt}
+                            </Button>
                         )}
                     </div>
                 </div>
             }
 
-            {step === "editor" && mediaType &&
+            {(step === "editor" && mediaType) &&
                 <div className="space-y-6">
                     <div className="flex items-center justify-between">
                         <div>
                             <Button variant="outline" onClick={() => setStep("mediaType")}>
-                                Change media type
+                                Change Media Type
                             </Button>
                         </div>
                         <div className="text-xs text-muted-foreground">
@@ -83,6 +95,7 @@ function CollectionCreatePage() {
                         </div>
                     </div>
                     <CollectionEditor
+                        form={form}
                         mediaType={mediaType}
                         onSubmit={handleSubmit}
                         submitLabel="Create Collection"

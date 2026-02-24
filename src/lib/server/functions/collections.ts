@@ -52,7 +52,7 @@ export const postCreateCollection = createServerFn({ method: "POST" })
 
 export const postUpdateCollection = createServerFn({ method: "POST" })
     .middleware([authMiddleware, transactionMiddleware])
-    .inputValidator(updateCollectionSchema)
+    .inputValidator(tryFormZodError(updateCollectionSchema))
     .handler(async ({ data, context: { currentUser } }) => {
         const container = await getContainer();
         const collectionService = container.services.collections;

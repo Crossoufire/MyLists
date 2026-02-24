@@ -22,15 +22,12 @@ type FormItemContextValue = { id: string };
 const FormFieldContext = React.createContext<FormFieldContextValue>({} as FormFieldContextValue)
 
 
-const FormField = <
-    TFieldValues extends FieldValues = FieldValues,
-    TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>
->({ ...props }: ControllerProps<TFieldValues, TName>) => {
+const FormField = <TFieldValues extends FieldValues = FieldValues, TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>>({ ...props }: ControllerProps<TFieldValues, TName>) => {
     return (
         <FormFieldContext value={{ name: props.name }}>
             <Controller {...props}/>
         </FormFieldContext>
-    )
+    );
 }
 
 
@@ -83,7 +80,7 @@ function FormLabel({ className, ...props }: React.ComponentProps<typeof LabelPri
         <Label
             data-error={!!error}
             data-slot="form-label"
-            className={cn("data-[error=true]:text-destructive", className)}
+            className={cn("data-[error=true]:text-red-400", className)}
             htmlFor={formItemId}
             {...props}
         />
@@ -121,23 +118,23 @@ function FormDescription({ className, ...props }: React.ComponentProps<"p">) {
 
 
 function FormMessage({ className, ...props }: React.ComponentProps<"p">) {
-    const { error, formMessageId } = useFormField()
-    const body = error ? String(error?.message ?? "") : props.children
+    const { error, formMessageId } = useFormField();
+    const body = error ? String(error?.message || (error as any)?.root?.message || "") : props.children;
 
     if (!body) {
-        return null
+        return null;
     }
 
     return (
         <p
             id={formMessageId}
             data-slot="form-message"
-            className={cn("text-destructive text-sm", className)}
+            className={cn("text-red-400 text-sm", className)}
             {...props}
         >
             {body}
         </p>
-    )
+    );
 }
 
 

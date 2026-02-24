@@ -10,7 +10,6 @@ export const useCreateCollectionMutation = () => {
     return useMutation({
         mutationFn: postCreateCollection,
         meta: { successMessage: "Collection created." },
-        onError: () => toast.error("Failed to create the collection."),
         onSuccess: async () => {
             // TODO: do a setQueryData
             await queryClient.invalidateQueries({ queryKey: ["collections", "user"] });
@@ -26,7 +25,6 @@ export const useUpdateCollectionMutation = (collectionId: number) => {
     return useMutation({
         mutationFn: postUpdateCollection,
         meta: { successMessage: "Collection updated." },
-        onError: () => toast.error("Failed to update the collection."),
         onSuccess: async () => {
             // TODO: do a setQueryData
             await queryClient.invalidateQueries({ queryKey: ["collections", "user"] });

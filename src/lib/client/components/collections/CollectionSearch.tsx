@@ -18,10 +18,15 @@ import {navSearchOptions} from "@/lib/client/react-query/query-options/query-opt
 interface CollectionSearchProps {
     disabled?: boolean;
     mediaType: MediaType;
-    onAdd: (item: { mediaId: number; mediaName: string; mediaCover: string }) => void;
+    onAdd: (item: {
+        mediaId: number;
+        mediaName: string;
+        mediaCover: string;
+    }) => void;
 }
 
 
+// TODO: use mutation or useQuery instead of raw serverFunction
 export const CollectionSearch = ({ mediaType, onAdd, disabled }: CollectionSearchProps) => {
     const [page, setPage] = useState(1);
     const apiProvider = providerByMediaType[mediaType];
@@ -41,21 +46,8 @@ export const CollectionSearch = ({ mediaType, onAdd, disabled }: CollectionSearc
 
         setResolvingId(item.id);
         try {
-            const mediaDetails = await getMediaDetails({
-                data: {
-                    mediaType,
-                    external: true,
-                    mediaId: item.id,
-                }
-            });
-
-            const media = mediaDetails.media;
-            onAdd({
-                mediaId: media.id,
-                mediaName: media.name,
-                mediaCover: media.imageCover,
-            });
-
+            const { media } = await getMediaDetails({ data: { mediaType, external: true, mediaId: item.id } });
+            onAdd({ mediaId: media.id, mediaName: media.name, mediaCover: media.imageCover });
             reset();
         }
         catch {
