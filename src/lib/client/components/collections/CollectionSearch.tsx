@@ -8,11 +8,11 @@ import {ApiProviderType, MediaType} from "@/lib/utils/enums";
 import {Separator} from "@/lib/client/components/ui/separator";
 import {ProviderSearchResult} from "@/lib/types/provider.types";
 import {capitalize, formatDateTime} from "@/lib/utils/formating";
-import {getMediaDetails} from "@/lib/server/functions/media-details";
 import {ChevronLeft, ChevronRight, Loader2, Search} from "lucide-react";
 import {useSearchContainer} from "@/lib/client/hooks/use-search-container";
 import {SearchContainer} from "@/lib/client/components/general/SearchContainer";
 import {navSearchOptions} from "@/lib/client/react-query/query-options/query-options";
+import {useAddMediaToCollectionMutation} from "@/lib/client/react-query/query-mutations/media.mutations";
 
 
 interface CollectionSearchProps {
@@ -26,10 +26,10 @@ interface CollectionSearchProps {
 }
 
 
-// TODO: use mutation or useQuery instead of raw serverFunction
 export const CollectionSearch = ({ mediaType, onAdd, disabled }: CollectionSearchProps) => {
     const [page, setPage] = useState(1);
     const apiProvider = providerByMediaType[mediaType];
+    const mutation = useAddMediaToCollectionMutation(mediaType);
     const [resolvingId, setResolvingId] = useState<number | string | null>(null);
     const { search, setSearch, debouncedSearch, isOpen, reset, containerRef } = useSearchContainer({
         onReset: () => setPage(1),
@@ -41,21 +41,18 @@ export const CollectionSearch = ({ mediaType, onAdd, disabled }: CollectionSearc
         setSearch(ev.target.value);
     };
 
-    const handleAdd = async (item: ProviderSearchResult) => {
+    const handleAdd = (item: ProviderSearchResult) => {
         if (disabled || resolvingId) return;
 
-        setResolvingId(item.id);
-        try {
-            const { media } = await getMediaDetails({ data: { mediaType, external: true, mediaId: item.id } });
-            onAdd({ mediaId: media.id, mediaName: media.name, mediaCover: media.imageCover });
-            reset();
-        }
-        catch {
-            toast.error("Failed to add the media.");
-        }
-        finally {
-            setResolvingId(null);
-        }
+        setResolvingId(item.id)
+        mutation.mutate(item, {
+            onError: () => toast.error("Failed to add the media."),
+            onSuccess: ({ media }) => {
+                onAdd({ mediaId: media.id, mediaName: media.name, mediaCover: media.imageCover });
+                reset();
+            },
+            onSettled: () => setResolvingId(null),
+        });
     };
 
     return (
