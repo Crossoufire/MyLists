@@ -2,7 +2,7 @@ import {serverEnv} from "@/env/server";
 import {getContainer} from "@/lib/server/core/container";
 import {RateLimiterAbstract} from "rate-limiter-flexible";
 import {createRateLimiter} from "@/lib/server/core/rate-limiter";
-import {BaseClient} from "@/lib/server/api-providers/clients/base.client";
+import {BaseApi} from "@/lib/server/api-providers/api/base.api";
 import {
     SearchData,
     TmdbChangesResponse,
@@ -14,7 +14,7 @@ import {
 } from "@/lib/types/provider.types";
 
 
-export class TmdbClient extends BaseClient {
+export class TmdbApi extends BaseApi {
     private static readonly consumeKey = "tmdb-API";
     private readonly apiKey = serverEnv.THEMOVIEDB_API_KEY;
     private readonly baseUrl = "https://api.themoviedb.org/3";
@@ -27,8 +27,8 @@ export class TmdbClient extends BaseClient {
     }
 
     public static async create() {
-        const tmdbLimiter = await createRateLimiter(TmdbClient.throttleOptions);
-        return new TmdbClient(tmdbLimiter, TmdbClient.consumeKey);
+        const tmdbLimiter = await createRateLimiter(TmdbApi.throttleOptions);
+        return new TmdbApi(tmdbLimiter, TmdbApi.consumeKey);
     }
 
     async search(query: string, page = 1): Promise<SearchData<TmdbMultiSearchResponse>> {
@@ -69,7 +69,7 @@ export class TmdbClient extends BaseClient {
     async getTvChangedIds() {
         const cacheStore = await getContainer().then((c) => c.cacheManager);
 
-        return cacheStore.wrap<number[]>(TmdbClient.tvChangedIdsCacheKey, async () => {
+        return cacheStore.wrap<number[]>(TmdbApi.tvChangedIdsCacheKey, async () => {
             let page = 1;
             let totalPages = 1;
             const changedApiIds: number[] = [];
@@ -97,14 +97,14 @@ export class TmdbClient extends BaseClient {
             }
 
             return changedApiIds;
-        }, { ttl: TmdbClient.tvChangedIdsTtl });
+        }, { ttl: TmdbApi.tvChangedIdsTtl });
     }
 
     async getTvChangedIds2() {
         const { connectRedis } = await import("@/lib/server/core/redis-client");
 
         const redisConnection = await connectRedis();
-        const cached = await redisConnection?.get(TmdbClient.tvChangedIdsCacheKey);
+        const cached = await redisConnection?.get(TmdbApi.tvChangedIdsCacheKey);
         if (cached) {
             try {
                 return JSON.parse(cached) as number[];
@@ -140,10 +140,10 @@ export class TmdbClient extends BaseClient {
 
         // Try save data to cache
         await redisConnection?.set(
-            TmdbClient.tvChangedIdsCacheKey,
+            TmdbApi.tvChangedIdsCacheKey,
             JSON.stringify(changedApiIds),
             "EX",
-            TmdbClient.tvChangedIdsTtl,
+            TmdbApi.tvChangedIdsTtl,
         );
 
         return changedApiIds;

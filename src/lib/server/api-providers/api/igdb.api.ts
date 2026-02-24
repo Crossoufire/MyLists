@@ -7,11 +7,11 @@ import {getContainer} from "@/lib/server/core/container";
 import {RateLimiterAbstract} from "rate-limiter-flexible";
 import {getDbClient} from "@/lib/server/database/async-storage";
 import {createRateLimiter} from "@/lib/server/core/rate-limiter";
-import {BaseClient} from "@/lib/server/api-providers/clients/base.client";
+import {BaseApi} from "@/lib/server/api-providers/api/base.api";
 import {IgdbGameDetails, IgdbSearchResponse, IgdbTokenResponse, SearchData} from "@/lib/types/provider.types";
 
 
-export class IgdbClient extends BaseClient {
+export class IgdbApi extends BaseApi {
     private static readonly consumeKey = "igdb-API";
     private readonly clientId = serverEnv.IGDB_CLIENT_ID;
     private readonly secretId = serverEnv.IGDB_CLIENT_SECRET;
@@ -26,8 +26,8 @@ export class IgdbClient extends BaseClient {
     }
 
     public static async create() {
-        const igdbLimiter = await createRateLimiter(IgdbClient.throttleOptions);
-        return new IgdbClient(igdbLimiter, IgdbClient.consumeKey);
+        const igdbLimiter = await createRateLimiter(IgdbApi.throttleOptions);
+        return new IgdbApi(igdbLimiter, IgdbApi.consumeKey);
     }
 
     async search(query: string, page: number = 1): Promise<SearchData<IgdbSearchResponse>> {
@@ -109,9 +109,9 @@ export class IgdbClient extends BaseClient {
             });
 
         const cacheStore = await getContainer().then((c) => c.cacheManager);
-        const ttlMs = Math.max(expiresAt.getTime() - Date.now() - IgdbClient.tokenCacheExpiryMs, 0);
+        const ttlMs = Math.max(expiresAt.getTime() - Date.now() - IgdbApi.tokenCacheExpiryMs, 0);
         if (ttlMs > 0) {
-            await cacheStore.set(IgdbClient.tokenCacheKey, accessToken, ttlMs);
+            await cacheStore.set(IgdbApi.tokenCacheKey, accessToken, ttlMs);
         }
 
         return accessToken;
@@ -137,7 +137,7 @@ export class IgdbClient extends BaseClient {
     private async getAccessToken() {
         const cacheStore = await getContainer().then((c) => c.cacheManager);
 
-        const cachedToken = await cacheStore.get<string>(IgdbClient.tokenCacheKey);
+        const cachedToken = await cacheStore.get<string>(IgdbApi.tokenCacheKey);
         if (cachedToken) return cachedToken;
 
         const existingToken = getDbClient()
@@ -151,10 +151,10 @@ export class IgdbClient extends BaseClient {
 
         if (existingToken) {
             const msLeft = existingToken.expiresAt.getTime() - Date.now();
-            if (msLeft > IgdbClient.tokenCacheExpiryMs) {
-                const ttlMs = Math.max(msLeft - IgdbClient.tokenCacheExpiryMs, 0);
+            if (msLeft > IgdbApi.tokenCacheExpiryMs) {
+                const ttlMs = Math.max(msLeft - IgdbApi.tokenCacheExpiryMs, 0);
                 if (ttlMs > 0) {
-                    await cacheStore.set(IgdbClient.tokenCacheKey, existingToken.accessToken, ttlMs);
+                    await cacheStore.set(IgdbApi.tokenCacheKey, existingToken.accessToken, ttlMs);
                 }
 
                 return existingToken.accessToken;
