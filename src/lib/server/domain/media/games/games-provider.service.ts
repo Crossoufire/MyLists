@@ -1,5 +1,5 @@
 import {IgdbGameDetails} from "@/lib/types/provider.types";
-import {HltbClient, IgdbClient} from "@/lib/server/api-providers/clients";
+import {HltbApi, IgdbApi} from "@/lib/server/api-providers/api";
 import {GamesRepository} from "@/lib/server/domain/media/games/games.repository";
 import {UpsertGameWithDetails} from "@/lib/server/domain/media/games/games.types";
 import {BaseProviderService} from "@/lib/server/domain/media/base/provider.service";
@@ -7,7 +7,7 @@ import {igdbTransformer} from "@/lib/server/api-providers/transformers/igdb.tran
 
 
 export class GamesProviderService extends BaseProviderService<GamesRepository, IgdbGameDetails, UpsertGameWithDetails> {
-    constructor(private client: IgdbClient, repository: GamesRepository, private readonly hltbClient: HltbClient) {
+    constructor(private client: IgdbApi, repository: GamesRepository, private readonly hltbClient: HltbApi) {
         super(repository);
     }
 

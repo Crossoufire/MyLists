@@ -1,14 +1,14 @@
 import {cn} from "@/lib/utils/helpers";
 import {Link} from "@tanstack/react-router";
-import {DropdownMenu} from "@radix-ui/react-dropdown-menu";
 import {useAuth} from "@/lib/client/hooks/use-auth";
-import {ProfileIcon} from "@/lib/client/components/general/ProfileIcon";
-import {Copy, Eye, Heart, Layers, MoreVertical, Pen, Trash2} from "lucide-react";
 import {isAtLeastRole, RoleType} from "@/lib/utils/enums";
-import {communityCollectionsOptions} from "@/lib/client/react-query/query-options/query-options";
-import {DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger} from "@/lib/client/components/ui/dropdown-menu";
-import {useDeleteCollectionMutation} from "@/lib/client/react-query/query-mutations/collections.mutations";
+import {DropdownMenu} from "@radix-ui/react-dropdown-menu";
+import {ProfileIcon} from "@/lib/client/components/general/ProfileIcon";
 import {MainThemeIcon} from "@/lib/client/components/general/MainIcons";
+import {Copy, Eye, Heart, Layers, MoreVertical, Pen, Trash2} from "lucide-react";
+import {communityCollectionsOptions} from "@/lib/client/react-query/query-options/query-options";
+import {useDeleteCollectionMutation} from "@/lib/client/react-query/query-mutations/collections.mutations";
+import {DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger} from "@/lib/client/components/ui/dropdown-menu";
 
 
 interface CollectionCardProps {
@@ -19,6 +19,7 @@ interface CollectionCardProps {
 export const CollectionCard = ({ collection }: CollectionCardProps) => {
     const { currentUser } = useAuth();
     const deleteMutation = useDeleteCollectionMutation(collection.id);
+
     const isOwner = currentUser?.id === collection.ownerId;
     const canManage = isOwner || isAtLeastRole(currentUser?.role as RoleType, RoleType.MANAGER);
 
@@ -73,7 +74,7 @@ export const CollectionCard = ({ collection }: CollectionCardProps) => {
                             </Link>
                         }
                     </div>
-                    <div className={cn("flex flex-wrap gap-4", !isOwner && "pr-1")}>
+                    <div className={cn("flex flex-wrap gap-4", !canManage && "pr-1")}>
                         <div className="flex items-center gap-1 text-sm text-muted-foreground font-semibold" title="Media Count">
                             <Layers className="size-3"/> {collection.itemsCount}
                         </div>

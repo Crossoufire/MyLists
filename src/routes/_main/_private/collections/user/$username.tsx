@@ -1,4 +1,4 @@
-import {Plus} from "lucide-react";
+import {ListOrdered, Plus} from "lucide-react";
 import {useAuth} from "@/lib/client/hooks/use-auth";
 import {createFileRoute} from "@tanstack/react-router";
 import {useSuspenseQuery} from "@tanstack/react-query";
@@ -26,7 +26,7 @@ function UserCollectionsPage() {
     return (
         <PageTitle title={`${username} Collections`} subtitle="All collections across media types.">
             <div className="space-y-4">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-wrap items-center justify-between">
                     <div className="text-sm text-muted-foreground">
                         {isOwner ? "Manage every collection in one place." : `Collections created by ${username}.`}
                     </div>
@@ -40,11 +40,12 @@ function UserCollectionsPage() {
                 </div>
                 {collections.length === 0 ?
                     <EmptyState
-                        icon={Plus}
+                        className="py-20"
+                        icon={ListOrdered}
                         message={isOwner ? "You have not created any collections yet." : "No collections yet."}
                     />
                     :
-                    <div className="grid gap-4 gap-y-6 md:grid-cols-3">
+                    <div className="grid gap-4 gap-y-7 grid-cols-3 max-sm:grid-cols-1">
                         {collections.map((collection) =>
                             <CollectionCard
                                 key={collection.id}

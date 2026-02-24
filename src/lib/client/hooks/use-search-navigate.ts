@@ -35,7 +35,6 @@ export const useSearchNavigate = <T extends BaseSearchParams>({ search, delay = 
     };
 
     const updateFilters = (updater: Partial<T>) => {
-        // @ts-expect-error - prev is any
         void navigate({ search: (prev) => ({ ...prev, ...updater }), replace: true, ...options });
     };
 

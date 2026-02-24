@@ -7,7 +7,7 @@ import {TabHeader} from "@/lib/client/components/general/TabHeader";
 import {MediaLevel} from "@/lib/client/components/general/MediaLevel";
 import {createFileRoute, Link, Outlet, useLocation} from "@tanstack/react-router";
 import {userListHeaderOption} from "@/lib/client/react-query/query-options/query-options";
-import {Award, ChartLine, ChartNoAxesColumn, EllipsisVertical, Library, ListOrdered, Tags, User, Zap} from "lucide-react";
+import {Award, ChartNoAxesColumn, EllipsisVertical, Library, ListOrdered, Tags, User, Zap} from "lucide-react";
 import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger} from "@/lib/client/components/ui/dropdown-menu";
 
 
@@ -149,7 +149,13 @@ const DotsOthers = ({ mediaType, username }: { mediaType: MediaType; username: s
                     <EllipsisVertical className="size-4"/>
                 </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-44">
+            <DropdownMenuContent align="end" className="w-46">
+                <DropdownMenuItem asChild>
+                    <Link to="/stats/$username" params={{ username }} search={{ mediaType }}>
+                        <ChartNoAxesColumn className="size-4 text-muted-foreground"/>
+                        <span>User's Stats</span>
+                    </Link>
+                </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                     <Link to="/profile/$username" params={{ username }}>
                         <User className="size-4 text-muted-foreground"/>
@@ -157,21 +163,15 @@ const DotsOthers = ({ mediaType, username }: { mediaType: MediaType; username: s
                     </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                    <Link to="/stats/$username" params={{ username }} search={{ mediaType }}>
-                        <ChartLine className="size-4 text-muted-foreground"/>
-                        <span>User's Stats</span>
+                    <Link to="/collections/user/$username" params={{ username }}>
+                        <ListOrdered className="size-4 text-muted-foreground"/>
+                        <span>User's Collections</span>
                     </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                     <Link to="/achievements/$username" params={{ username }}>
                         <Award className="size-4 text-muted-foreground"/>
-                        <span>Achievements</span>
-                    </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                    <Link to="/collections/user/$username" params={{ username }}>
-                        <ListOrdered className="size-4 text-muted-foreground"/>
-                        <span>User's Collections</span>
+                        <span>User's Achievements</span>
                     </Link>
                 </DropdownMenuItem>
             </DropdownMenuContent>

@@ -68,7 +68,7 @@ export class CollectionsRepository {
             .orderBy(asc(collectionItems.orderIndex));
     }
 
-    static async getUserCollections(userId: number, params: { mediaType?: MediaType; allowedPrivacy?: PrivacyType[] }) {
+    static async getUserCollections(userId: number, mediaType?: MediaType, allowedPrivacy?: PrivacyType[]) {
         return getDbClient()
             .select({
                 ownerName: user.name,
@@ -78,7 +78,7 @@ export class CollectionsRepository {
                     FROM ${collectionItems} ci 
                     WHERE ci.collection_id = ${collections.id}
                 )`.as("itemsCount"),
-                previewItems: sql<number[]>`(
+                previewItems: sql`(
                     SELECT json_group_array(media_id)
                     FROM (
                         SELECT ${collectionItems.mediaId} as media_id
@@ -87,15 +87,15 @@ export class CollectionsRepository {
                         ORDER BY ${collectionItems.orderIndex} ASC
                         LIMIT 4
                     )
-                )`.mapWith(JSON.parse).as("previewItems"),
+                )`.mapWith((val) => JSON.parse(val) as number[]).as("previewItems"),
                 ...getTableColumns(collections),
             })
             .from(collections)
             .innerJoin(user, eq(collections.ownerId, user.id))
             .where(and(
                 eq(collections.ownerId, userId),
-                params.mediaType ? eq(collections.mediaType, params.mediaType) : undefined,
-                params.allowedPrivacy && params.allowedPrivacy.length > 0 ? inArray(collections.privacy, params.allowedPrivacy) : undefined,
+                mediaType ? eq(collections.mediaType, mediaType) : undefined,
+                allowedPrivacy && allowedPrivacy.length > 0 ? inArray(collections.privacy, allowedPrivacy) : undefined,
             ))
             .orderBy(desc(collections.likeCount));
     }
@@ -131,7 +131,7 @@ export class CollectionsRepository {
                             FROM ${collectionItems} ci 
                             WHERE ci.collection_id = ${collections.id}
                         )`.as("itemsCount"),
-                        previewItems: sql<number[]>`(
+                        previewItems: sql`(
                             SELECT json_group_array(media_id)
                             FROM (
                                 SELECT ${collectionItems.mediaId} as media_id
@@ -140,7 +140,7 @@ export class CollectionsRepository {
                                 ORDER BY ${collectionItems.orderIndex} ASC
                                 LIMIT 4
                             )
-                        )`.mapWith(JSON.parse).as("previewItems"),
+                        )`.mapWith((val) => JSON.parse(val) as number[]).as("previewItems"),
                         ...getTableColumns(collections),
                     })
                     .from(collections)

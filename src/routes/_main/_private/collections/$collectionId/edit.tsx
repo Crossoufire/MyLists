@@ -35,7 +35,9 @@ function CollectionEditPage() {
         if (!window.confirm("This collection will be permanently deleted. Are you sure?")) return;
         await deleteMutation.mutateAsync({ data: { collectionId } });
 
-        const redirectUsername = currentUser?.id === apiData.collection.ownerId ? currentUser?.name : apiData.collection.ownerName;
+        const redirectUsername = currentUser?.id === apiData.collection.ownerId
+            ? currentUser?.name : apiData.collection.ownerName;
+
         await navigate({ to: "/collections/user/$username", params: { username: redirectUsername } });
     };
 

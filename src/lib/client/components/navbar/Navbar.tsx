@@ -17,12 +17,14 @@ import {MainThemeIcon, PrivacyIcon} from "@/lib/client/components/general/MainIc
 import {useFeatureFlagMutation} from "@/lib/client/react-query/query-mutations/user.mutations";
 import {
     Activity,
+    Award,
     BarChart2,
     Calendar,
     ChartNoAxesColumn,
     ChevronDown,
     Clapperboard,
     Layers,
+    ListOrdered,
     LogOut,
     Menu,
     Settings,
@@ -222,13 +224,12 @@ export const Navbar = () => {
                                             </DropdownMenuItem>
                                             <DropdownMenuItem asChild>
                                                 <Link to="/collections/user/$username" params={{ username: currentUser.name }}>
-                                                    <Layers className="size-4"/> My Collections
+                                                    <ListOrdered className="size-4"/> My Collections
                                                 </Link>
                                             </DropdownMenuItem>
-
                                             <DropdownMenuItem asChild>
                                                 <Link to="/achievements/$username" params={{ username: currentUser.name }}>
-                                                    <Trophy className="size-4"/> My Achievements
+                                                    <Award className="size-4"/> My Achievements
                                                 </Link>
                                             </DropdownMenuItem>
                                         </DropdownMenuGroup>

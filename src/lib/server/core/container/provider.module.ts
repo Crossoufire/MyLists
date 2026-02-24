@@ -1,15 +1,15 @@
-import {GBooksClient, HltbClient, IgdbClient, JikanClient, LlmClient, TmdbClient} from "@/lib/server/api-providers/clients";
+import {GbooksApi, HltbApi, IgdbApi, JikanApi, LlmApi, TmdbApi} from "@/lib/server/api-providers/api";
 
 
 export async function setupProviderModule() {
     // API Clients
     const [hltbClient, igdbClient, tmdbClient, jikanClient, gBookClient, llmClient] = await Promise.all([
-        HltbClient.create(),
-        IgdbClient.create(),
-        TmdbClient.create(),
-        JikanClient.create(),
-        GBooksClient.create(),
-        LlmClient.create(),
+        HltbApi.create(),
+        IgdbApi.create(),
+        TmdbApi.create(),
+        JikanApi.create(),
+        GbooksApi.create(),
+        LlmApi.create(),
     ]);
 
     return {

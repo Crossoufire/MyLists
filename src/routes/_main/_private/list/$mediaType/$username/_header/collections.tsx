@@ -48,7 +48,7 @@ function CollectionsTab() {
                     message={isOwner ? "You have not created any collections yet." : "No collections yet."}
                 />
                 :
-                <div className="grid gap-4 md:grid-cols-3">
+                <div className="grid gap-4 gap-y-7 grid-cols-3 max-sm:grid-cols-1">
                     {collections.map((collection) =>
                         <CollectionCard
                             key={collection.id}
