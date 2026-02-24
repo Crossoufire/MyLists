@@ -48,6 +48,7 @@ function UserCollectionsPage() {
                     <div className="grid gap-4 gap-y-7 grid-cols-3 max-sm:grid-cols-1">
                         {collections.map((collection) =>
                             <CollectionCard
+                                showOwner={false}
                                 key={collection.id}
                                 collection={collection}
                             />

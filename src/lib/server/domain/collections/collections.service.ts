@@ -22,13 +22,19 @@ export class CollectionsService {
     ) {
     }
 
-    async getCollectionDetails(collectionId: number, viewerUserId?: number, viewerRole?: RoleType | null) {
+    async getCollectionDetails(collectionId: number, mode: "read" | "edit", viewerUserId?: number, viewerRole?: RoleType | null) {
         const collection = await this.repository.getCollectionById(collectionId);
         if (!collection) throw notFound();
 
         const isOwner = (viewerUserId === collection.ownerId);
         const isModerator = isAtLeastRole(viewerRole, RoleType.MANAGER);
-        await this._assertVisible(collection, isOwner, isModerator, viewerUserId);
+
+        if (mode === "edit") {
+            if (!isOwner && !isModerator) throw notFound();
+        }
+        else {
+            await this._assertVisible(collection, isOwner, isModerator, viewerUserId);
+        }
 
         const [items, isLiked] = await Promise.all([
             this.repository.getCollectionItems(collectionId),
@@ -115,7 +121,7 @@ export class CollectionsService {
         const collection = await this.repository.getCollectionById(params.collectionId);
         if (!collection) throw notFound();
 
-        const isOwner = collection.ownerId === params.actorId;
+        const isOwner = (collection.ownerId === params.actorId);
         const isModerator = isAtLeastRole(params.actorRole, RoleType.MANAGER);
         if (!isOwner && !isModerator) {
             throw new FormattedError("You cannot update this collection.");

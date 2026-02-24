@@ -9,14 +9,14 @@ import {PageTitle} from "@/lib/client/components/general/PageTitle";
 import {EmptyState} from "@/lib/client/components/general/EmptyState";
 import {MediaCard} from "@/lib/client/components/media/base/MediaCard";
 import {DisplayComment} from "@/lib/client/components/media/base/DisplayComment";
-import {collectionDetailsOptions} from "@/lib/client/react-query/query-options/query-options";
+import {collectionDetailsReadOptions} from "@/lib/client/react-query/query-options/query-options";
 import {useCopyCollectionMutation, useToggleCollectionLikeMutation} from "@/lib/client/react-query/query-mutations/collections.mutations";
 
 
 export const Route = createFileRoute("/_main/_private/collections/$collectionId/")({
     params: { parse: (params) => ({ collectionId: Number(params.collectionId) }) },
     loader: ({ context: { queryClient }, params: { collectionId } }) => {
-        return queryClient.ensureQueryData(collectionDetailsOptions(collectionId));
+        return queryClient.ensureQueryData(collectionDetailsReadOptions(collectionId));
     },
     component: CollectionViewer,
 });
@@ -28,7 +28,7 @@ function CollectionViewer() {
     const { collectionId } = Route.useParams();
     const copyMutation = useCopyCollectionMutation(collectionId);
     const toggleLikeMutation = useToggleCollectionLikeMutation(collectionId);
-    const apiData = useSuspenseQuery(collectionDetailsOptions(collectionId)).data;
+    const apiData = useSuspenseQuery(collectionDetailsReadOptions(collectionId)).data;
 
     const isConnected = !!currentUser;
     const { collection, items, isLiked, canManage } = apiData;

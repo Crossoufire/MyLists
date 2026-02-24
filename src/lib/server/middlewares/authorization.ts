@@ -85,6 +85,6 @@ export const collectionDetailsMiddleware = createMiddleware({ type: "function" }
             const userService = container.services.user;
             await userService.updateUserLastSeen(container.cacheManager, currentUser.id);
         }
-        
+
         return next({ context: { currentUser } });
     });

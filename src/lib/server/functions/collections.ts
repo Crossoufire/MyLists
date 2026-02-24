@@ -1,10 +1,10 @@
+import {RoleType} from "@/lib/utils/enums";
 import {createServerFn} from "@tanstack/react-start";
 import {getContainer} from "@/lib/server/core/container";
 import {tryFormZodError, tryNotFound} from "@/lib/utils/try-not-found";
 import {authMiddleware} from "@/lib/server/middlewares/authentication";
 import {transactionMiddleware} from "@/lib/server/middlewares/transaction";
 import {authorizationMiddleware, collectionDetailsMiddleware} from "@/lib/server/middlewares/authorization";
-import {RoleType} from "@/lib/utils/enums";
 import {collectionIdSchema, communityCollectionsSchema, createCollectionSchema, updateCollectionSchema, userCollectionsSchema} from "@/lib/types/zod.schema.types";
 
 
@@ -28,13 +28,23 @@ export const getCommunityCollections = createServerFn({ method: "GET" })
     });
 
 
-export const getCollectionDetails = createServerFn({ method: "GET" })
+export const getReadCollectionDetails = createServerFn({ method: "GET" })
     .middleware([collectionDetailsMiddleware])
     .inputValidator(tryNotFound(collectionIdSchema))
     .handler(async ({ data: { collectionId }, context: { currentUser } }) => {
         const container = await getContainer();
         const collectionService = container.services.collections;
-        return collectionService.getCollectionDetails(collectionId, currentUser?.id, currentUser?.role as RoleType | null);
+        return collectionService.getCollectionDetails(collectionId, "read", currentUser?.id, currentUser?.role as RoleType | null);
+    });
+
+
+export const getEditCollectionDetails = createServerFn({ method: "GET" })
+    .middleware([collectionDetailsMiddleware])
+    .inputValidator(tryNotFound(collectionIdSchema))
+    .handler(async ({ data: { collectionId }, context: { currentUser } }) => {
+        const container = await getContainer();
+        const collectionService = container.services.collections;
+        return collectionService.getCollectionDetails(collectionId, "edit", currentUser?.id, currentUser?.role as RoleType | null);
     });
 
 
@@ -44,8 +54,8 @@ export const postCreateCollection = createServerFn({ method: "POST" })
     .handler(async ({ data, context: { currentUser } }) => {
         const container = await getContainer();
         const collectionService = container.services.collections;
-
         const collectionId = await collectionService.createCollection({ ...data, ownerId: currentUser.id });
+
         return { id: collectionId };
     });
 

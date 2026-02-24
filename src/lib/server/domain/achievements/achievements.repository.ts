@@ -119,6 +119,7 @@ export class AchievementsRepository {
     static async getAchievementsDetails(userId: number, limit = 6) {
         const results = await getDbClient()
             .select({
+                id: achievement.id,
                 name: achievement.name,
                 description: achievement.description,
                 difficulty: achievementTier.difficulty,

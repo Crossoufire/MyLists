@@ -1,6 +1,6 @@
 import {toast} from "sonner";
 import {useMutation, useQueryClient} from "@tanstack/react-query";
-import {collectionDetailsOptions} from "@/lib/client/react-query/query-options/query-options";
+import {collectionDetailsReadOptions} from "@/lib/client/react-query/query-options/query-options";
 import {postCopyCollection, postCreateCollection, postDeleteCollection, postToggleCollectionLike, postUpdateCollection} from "@/lib/server/functions/collections";
 
 
@@ -28,7 +28,7 @@ export const useUpdateCollectionMutation = (collectionId: number) => {
         onSuccess: async () => {
             // TODO: do a setQueryData
             await queryClient.invalidateQueries({ queryKey: ["collections", "user"] });
-            await queryClient.invalidateQueries({ queryKey: collectionDetailsOptions(collectionId).queryKey });
+            await queryClient.invalidateQueries({ queryKey: collectionDetailsReadOptions(collectionId).queryKey });
         },
     });
 };
@@ -42,7 +42,7 @@ export const useToggleCollectionLikeMutation = (collectionId: number) => {
         onError: () => toast.error("Failed to update the like."),
         onSuccess: async () => {
             // TODO: do a setQueryData
-            await queryClient.invalidateQueries({ queryKey: collectionDetailsOptions(collectionId).queryKey });
+            await queryClient.invalidateQueries({ queryKey: collectionDetailsReadOptions(collectionId).queryKey });
         },
     });
 };
@@ -58,7 +58,7 @@ export const useCopyCollectionMutation = (collectionId: number) => {
         onSuccess: async () => {
             // TODO: check for setQueryData
             await queryClient.invalidateQueries({ queryKey: ["collections", "community"] });
-            await queryClient.invalidateQueries({ queryKey: collectionDetailsOptions(collectionId).queryKey });
+            await queryClient.invalidateQueries({ queryKey: collectionDetailsReadOptions(collectionId).queryKey });
         },
     });
 };
@@ -75,7 +75,7 @@ export const useDeleteCollectionMutation = (collectionId: number) => {
             // TODO: check for setQueryData
             await queryClient.invalidateQueries({ queryKey: ["collections", "user"] });
             await queryClient.invalidateQueries({ queryKey: ["collections", "community"] });
-            await queryClient.invalidateQueries({ queryKey: collectionDetailsOptions(collectionId).queryKey });
+            await queryClient.invalidateQueries({ queryKey: collectionDetailsReadOptions(collectionId).queryKey });
         },
     });
 };

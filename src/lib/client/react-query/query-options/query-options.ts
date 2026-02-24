@@ -17,7 +17,7 @@ import {getDailyMediadle, getMediadleSuggestions} from "@/lib/server/functions/m
 import {getNotifications, getNotificationsCount} from "@/lib/server/functions/notifications";
 import {getMonthlyActivity, getSectionActivity, getUserStats} from "@/lib/server/functions/user-stats";
 import {getJobDetails, getMediaDetails, getMediaDetailsToEdit} from "@/lib/server/functions/media-details";
-import {getCollectionDetails, getCommunityCollections, getUserCollections} from "@/lib/server/functions/collections";
+import {getCommunityCollections, getEditCollectionDetails, getReadCollectionDetails, getUserCollections} from "@/lib/server/functions/collections";
 import {getAllUpdatesHistory, getUserProfile, getUserProfileHeader, getUsersFollowers, getUsersFollows} from "@/lib/server/functions/user-profile";
 import {getMediaListFilters, getMediaListSearchFilters, getMediaListSF, getTagsViewFn, getUserListHeaderSF} from "@/lib/server/functions/media-lists";
 
@@ -258,9 +258,15 @@ export const userCollectionsOptions = (username: string, mediaType?: MediaType) 
 });
 
 
-export const collectionDetailsOptions = (collectionId: number) => queryOptions({
-    queryKey: ["collections", "details", collectionId] as const,
-    queryFn: () => getCollectionDetails({ data: { collectionId } }),
+export const collectionDetailsReadOptions = (collectionId: number) => queryOptions({
+    queryKey: ["collections", "details", "read", collectionId] as const,
+    queryFn: () => getReadCollectionDetails({ data: { collectionId } }),
+});
+
+
+export const collectionDetailsEditOptions = (collectionId: number) => queryOptions({
+    queryKey: ["collections", "details", "edit", collectionId] as const,
+    queryFn: () => getEditCollectionDetails({ data: { collectionId } }),
 });
 
 

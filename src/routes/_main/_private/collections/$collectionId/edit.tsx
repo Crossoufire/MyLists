@@ -6,7 +6,7 @@ import {Button} from "@/lib/client/components/ui/button";
 import {CreateCollection} from "@/lib/types/zod.schema.types";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
 import {CollectionEditor} from "@/lib/client/components/collections/CollectionEditor";
-import {collectionDetailsOptions} from "@/lib/client/react-query/query-options/query-options";
+import {collectionDetailsEditOptions} from "@/lib/client/react-query/query-options/query-options";
 import {useDeleteCollectionMutation, useUpdateCollectionMutation} from "@/lib/client/react-query/query-mutations/collections.mutations";
 
 
@@ -17,7 +17,7 @@ export const Route = createFileRoute("/_main/_private/collections/$collectionId/
         }
     },
     loader: async ({ context: { queryClient }, params: { collectionId } }) => {
-        return queryClient.ensureQueryData(collectionDetailsOptions(collectionId));
+        return queryClient.ensureQueryData(collectionDetailsEditOptions(collectionId));
     },
     component: CollectionEditPage,
 });
@@ -29,7 +29,7 @@ function CollectionEditPage() {
     const { collectionId } = Route.useParams();
     const updateMutation = useUpdateCollectionMutation(collectionId);
     const deleteMutation = useDeleteCollectionMutation(collectionId);
-    const apiData = useSuspenseQuery(collectionDetailsOptions(collectionId)).data;
+    const apiData = useSuspenseQuery(collectionDetailsEditOptions(collectionId)).data;
     const form = useForm<CreateCollection>({
         defaultValues: {
             items: apiData.items ?? [],

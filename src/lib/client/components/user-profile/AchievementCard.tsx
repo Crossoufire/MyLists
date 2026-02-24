@@ -32,7 +32,7 @@ export const AchievementsCard = ({ username, achievements }: AchievementsProps) 
                         />
                         :
                         achievements.details.slice(0, 3).map((ach) =>
-                            <div key={ach.name} className={`p-2 rounded-lg border ${diffColors(ach.difficulty, "border")}`}>
+                            <div key={`${ach.id}-${ach.difficulty}`} className={`p-2 rounded-lg border ${diffColors(ach.difficulty, "border")}`}>
                                 <div className="flex justify-between">
                                     <div className="flex gap-2 items-center mb-1">
                                         <Award className={cn("size-4", diffColors(ach.difficulty, "text"))}/>

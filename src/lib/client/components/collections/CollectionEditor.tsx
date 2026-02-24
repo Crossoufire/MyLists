@@ -27,7 +27,6 @@ interface CollectionEditorProps {
 }
 
 
-// TODO: Edit system is based on the visibility policies (user A can access edit mode of user B's collection)
 export const CollectionEditor = ({ form, onSubmit, mediaType, submitLabel, isSubmitting }: CollectionEditorProps) => {
     const { isDirty } = form.formState;
     const ordered = form.watch("ordered");

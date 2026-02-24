@@ -12,11 +12,12 @@ import {DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger} from "@/lib/
 
 
 interface CollectionCardProps {
+    showOwner?: boolean;
     collection: Awaited<ReturnType<NonNullable<ReturnType<typeof communityCollectionsOptions>["queryFn"]>>>["items"][number];
 }
 
 
-export const CollectionCard = ({ collection }: CollectionCardProps) => {
+export const CollectionCard = ({ collection, showOwner = true }: CollectionCardProps) => {
     const { currentUser } = useAuth();
     const deleteMutation = useDeleteCollectionMutation(collection.id);
 
@@ -62,7 +63,7 @@ export const CollectionCard = ({ collection }: CollectionCardProps) => {
                             <MainThemeIcon size={14} type={collection.mediaType} className="mt-0.5"/>
                             {collection.title}
                         </h3>
-                        {!isOwner &&
+                        {showOwner &&
                             <Link to="/profile/$username" params={{ username: collection.ownerName }}>
                                 <div className="flex items-center gap-1 text-sm text-muted-foreground -ml-1 hover:text-app-accent">
                                     <ProfileIcon
