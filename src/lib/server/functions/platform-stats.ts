@@ -4,12 +4,12 @@ import {getContainer} from "@/lib/server/core/container";
 import {AdvancedMediaStats} from "@/lib/types/stats.types";
 import {MediaType, RatingSystemType} from "@/lib/utils/enums";
 import {platformStatsSchema} from "@/lib/types/zod.schema.types";
-import {authMiddleware} from "@/lib/server/middlewares/authentication";
+import {requiredAuthMiddleware} from "@/lib/server/middlewares/authentication";
 import {platformStatsCacheMiddleware} from "@/lib/server/middlewares/caching";
 
 
 export const getPlatformStats = createServerFn({ method: "GET" })
-    .middleware([authMiddleware, platformStatsCacheMiddleware])
+    .middleware([requiredAuthMiddleware, platformStatsCacheMiddleware])
     .inputValidator(tryNotFound(platformStatsSchema))
     .handler(async ({ data: { mediaType } }) => {
         const userStatsService = await getContainer().then(c => c.services.userStats);

@@ -1,13 +1,13 @@
 import {UpdateType} from "@/lib/utils/enums";
 import {createServerFn} from "@tanstack/react-start";
 import {getContainer} from "@/lib/server/core/container";
-import {authMiddleware} from "@/lib/server/middlewares/authentication";
+import {requiredAuthMiddleware} from "@/lib/server/middlewares/authentication";
 import {transactionMiddleware} from "@/lib/server/middlewares/transaction";
 import {addMediaToListSchema, deleteUserUpdatesSchema, editUserTagSchema, mediaActionSchema, updateUserMediaSchema, userTagNamesSchema} from "@/lib/types/zod.schema.types";
 
 
 export const getUserMediaHistory = createServerFn({ method: "GET" })
-    .middleware([authMiddleware])
+    .middleware([requiredAuthMiddleware])
     .inputValidator(mediaActionSchema)
     .handler(async ({ data: { mediaType, mediaId }, context: { currentUser } }) => {
         const userUpdatesService = await getContainer().then(c => c.services.userUpdates);
@@ -16,7 +16,7 @@ export const getUserMediaHistory = createServerFn({ method: "GET" })
 
 
 export const postAddMediaToList = createServerFn({ method: "POST" })
-    .middleware([authMiddleware, transactionMiddleware])
+    .middleware([requiredAuthMiddleware, transactionMiddleware])
     .inputValidator(addMediaToListSchema)
     .handler(async ({ data: { mediaType, mediaId, status }, context: { currentUser } }) => {
         const container = await getContainer();
@@ -41,7 +41,7 @@ export const postAddMediaToList = createServerFn({ method: "POST" })
 
 
 export const postUpdateUserMedia = createServerFn({ method: "POST" })
-    .middleware([authMiddleware, transactionMiddleware])
+    .middleware([requiredAuthMiddleware, transactionMiddleware])
     .inputValidator(updateUserMediaSchema)
     .handler(async ({ data, context: { currentUser } }) => {
         const { mediaType, mediaId, payload } = data;
@@ -69,7 +69,7 @@ export const postUpdateUserMedia = createServerFn({ method: "POST" })
 
 
 export const postRemoveMediaFromList = createServerFn({ method: "POST" })
-    .middleware([authMiddleware, transactionMiddleware])
+    .middleware([requiredAuthMiddleware, transactionMiddleware])
     .inputValidator(mediaActionSchema)
     .handler(async ({ data: { mediaType, mediaId }, context: { currentUser } }) => {
         const container = await getContainer();
@@ -86,7 +86,7 @@ export const postRemoveMediaFromList = createServerFn({ method: "POST" })
 
 
 export const postDeleteUserUpdates = createServerFn({ method: "POST" })
-    .middleware([authMiddleware, transactionMiddleware])
+    .middleware([requiredAuthMiddleware, transactionMiddleware])
     .inputValidator(deleteUserUpdatesSchema)
     .handler(async ({ data: { updateIds, returnData }, context: { currentUser } }) => {
         const userUpdatesService = await getContainer().then(c => c.services.userUpdates);
@@ -95,7 +95,7 @@ export const postDeleteUserUpdates = createServerFn({ method: "POST" })
 
 
 export const getUserTagNames = createServerFn({ method: "GET" })
-    .middleware([authMiddleware])
+    .middleware([requiredAuthMiddleware])
     .inputValidator(userTagNamesSchema)
     .handler(async ({ data: { mediaType }, context: { currentUser } }) => {
         const container = await getContainer();
@@ -105,7 +105,7 @@ export const getUserTagNames = createServerFn({ method: "GET" })
 
 
 export const postEditUserTag = createServerFn({ method: "POST" })
-    .middleware([authMiddleware, transactionMiddleware])
+    .middleware([requiredAuthMiddleware, transactionMiddleware])
     .inputValidator(editUserTagSchema)
     .handler(async ({ data: { mediaType, mediaId, tag, action }, context: { currentUser } }) => {
         const container = await getContainer();

@@ -3,12 +3,12 @@ import {tryNotFound} from "@/lib/utils/try-not-found";
 import {getContainer} from "@/lib/server/core/container";
 import {FormattedError} from "@/lib/utils/error-classes";
 import {AdvancedMediaStats} from "@/lib/types/stats.types";
-import {authorizationMiddleware} from "@/lib/server/middlewares/authorization";
+import {privateAuthZMiddleware} from "@/lib/server/middlewares/authorization";
 import {getMonthlyActivitySchema, getSectionActivitySchema, getUserStatsSchema} from "@/lib/types/zod.schema.types";
 
 
 export const getUserStats = createServerFn({ method: "GET" })
-    .middleware([authorizationMiddleware])
+    .middleware([privateAuthZMiddleware])
     .inputValidator(tryNotFound(getUserStatsSchema))
     .handler(async ({ data: { mediaType }, context: { user } }) => {
         const userStatsService = await getContainer().then(c => c.services.userStats);
@@ -39,7 +39,7 @@ export const getUserStats = createServerFn({ method: "GET" })
 
 
 export const getMonthlyActivity = createServerFn({ method: "GET" })
-    .middleware([authorizationMiddleware])
+    .middleware([privateAuthZMiddleware])
     .inputValidator(tryNotFound(getMonthlyActivitySchema))
     .handler(async ({ data: { year, month }, context: { user } }) => {
         const container = await getContainer();
@@ -53,7 +53,7 @@ export const getMonthlyActivity = createServerFn({ method: "GET" })
 
 
 export const getSectionActivity = createServerFn({ method: "GET" })
-    .middleware([authorizationMiddleware])
+    .middleware([privateAuthZMiddleware])
     .inputValidator(tryNotFound(getSectionActivitySchema))
     .handler(async ({ data, context: { user } }) => {
         const container = await getContainer();

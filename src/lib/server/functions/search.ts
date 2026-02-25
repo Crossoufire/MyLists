@@ -2,7 +2,7 @@ import {ApiProviderType} from "@/lib/utils/enums";
 import {createServerFn} from "@tanstack/react-start";
 import {getContainer} from "@/lib/server/core/container";
 import {navbarSearchSchema} from "@/lib/types/zod.schema.types";
-import {authMiddleware} from "@/lib/server/middlewares/authentication";
+import {requiredAuthMiddleware} from "@/lib/server/middlewares/authentication";
 import {tmdbTransformer} from "@/lib/server/api-providers/transformers/tmdb.transformer";
 import {igdbTransformer} from "@/lib/server/api-providers/transformers/igdb.transformer";
 import {jikanTransformer} from "@/lib/server/api-providers/transformers/jikan.transformer";
@@ -10,7 +10,7 @@ import {gbooksTransformer} from "@/lib/server/api-providers/transformers/gbook.t
 
 
 export const getSearchResults = createServerFn({ method: "GET" })
-    .middleware([authMiddleware])
+    .middleware([requiredAuthMiddleware])
     .inputValidator(navbarSearchSchema)
     .handler(async ({ data: { query, page, apiProvider } }) => {
         const container = await getContainer();

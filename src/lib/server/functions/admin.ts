@@ -11,7 +11,7 @@ import {VISITS_CACHE_KEY} from "@/lib/server/domain/user";
 import {deleteCookie} from "@tanstack/react-start/server";
 import {getAllTasksMetadata, getTask} from "@/lib/server/tasks/registry";
 import {ADMIN_COOKIE_NAME, isAdminAuthenticated, setAdminCookie} from "@/lib/utils/admin-token";
-import {adminAuthMiddleware, managerAuthMiddleware} from "@/lib/server/middlewares/authentication";
+import {requiredAuthAndAdminTokenMiddleware, requiredAuthAndManagerRoleMiddleware} from "@/lib/server/middlewares/authentication";
 import {
     adminDeleteArchivedTaskSchema,
     adminDeleteErrorLogSchema,
@@ -25,14 +25,14 @@ import {
 
 
 export const checkAdminAuth = createServerFn({ method: "GET" })
-    .middleware([managerAuthMiddleware])
+    .middleware([requiredAuthAndManagerRoleMiddleware])
     .handler(async ({ context: { currentUser } }) => {
         return isAdminAuthenticated(currentUser.id);
     });
 
 
 export const adminAuth = createServerFn({ method: "POST" })
-    .middleware([managerAuthMiddleware])
+    .middleware([requiredAuthAndManagerRoleMiddleware])
     .inputValidator((data) => z.object({ password: z.string() }).parse(data))
     .handler(async ({ data, context: { currentUser } }) => {
         if (data.password !== serverEnv.ADMIN_PASSWORD) {
@@ -45,7 +45,7 @@ export const adminAuth = createServerFn({ method: "POST" })
 
 
 export const getAdminOverview = createServerFn({ method: "GET" })
-    .middleware([adminAuthMiddleware])
+    .middleware([requiredAuthAndAdminTokenMiddleware])
     .handler(async () => {
         const container = await getContainer();
         const userService = container.services.user;
@@ -60,7 +60,7 @@ export const getAdminOverview = createServerFn({ method: "GET" })
 
 
 export const getAdminMediaOverview = createServerFn({ method: "GET" })
-    .middleware([adminAuthMiddleware])
+    .middleware([requiredAuthAndAdminTokenMiddleware])
     .handler(async () => {
         const adminService = await getContainer().then((c) => c.services.admin);
         const mediaServiceRegistry = await getContainer().then((c) => c.registries.mediaService);
@@ -70,7 +70,7 @@ export const getAdminMediaOverview = createServerFn({ method: "GET" })
 
 
 export const getAdminAllUsers = createServerFn({ method: "GET" })
-    .middleware([adminAuthMiddleware])
+    .middleware([requiredAuthAndAdminTokenMiddleware])
     .inputValidator(searchTypeSchema)
     .handler(async ({ data }) => {
         const userService = await getContainer().then((c) => c.services.user);
@@ -79,7 +79,7 @@ export const getAdminAllUsers = createServerFn({ method: "GET" })
 
 
 export const getAdminAchievements = createServerFn({ method: "GET" })
-    .middleware([adminAuthMiddleware])
+    .middleware([requiredAuthAndAdminTokenMiddleware])
     .handler(async () => {
         const achievementService = await getContainer().then((c) => c.services.achievements);
         return achievementService.getAllAchievements();
@@ -87,7 +87,7 @@ export const getAdminAchievements = createServerFn({ method: "GET" })
 
 
 export const getAdminMediadleStats = createServerFn({ method: "GET" })
-    .middleware([adminAuthMiddleware])
+    .middleware([requiredAuthAndAdminTokenMiddleware])
     .inputValidator(searchTypeSchema)
     .handler(async ({ data }) => {
         const mediadleService = await getContainer().then((c) => c.services.mediadle);
@@ -96,7 +96,7 @@ export const getAdminMediadleStats = createServerFn({ method: "GET" })
 
 
 export const postAdminUpdateUser = createServerFn({ method: "POST" })
-    .middleware([adminAuthMiddleware])
+    .middleware([requiredAuthAndAdminTokenMiddleware])
     .inputValidator(postAdminUpdateUserSchema)
     .handler(async ({ data: { userId, payload } }) => {
         const userService = await getContainer().then((c) => c.services.user);
@@ -105,7 +105,7 @@ export const postAdminUpdateUser = createServerFn({ method: "POST" })
 
 
 export const postAdminUpdateAchievement = createServerFn({ method: "POST" })
-    .middleware([adminAuthMiddleware])
+    .middleware([requiredAuthAndAdminTokenMiddleware])
     .inputValidator(adminUpdateAchievementSchema)
     .handler(async ({ data: { achievementId, name, description } }) => {
         const achievementService = await getContainer().then((c) => c.services.achievements);
@@ -114,7 +114,7 @@ export const postAdminUpdateAchievement = createServerFn({ method: "POST" })
 
 
 export const postAdminUpdateTiers = createServerFn({ method: "POST" })
-    .middleware([adminAuthMiddleware])
+    .middleware([requiredAuthAndAdminTokenMiddleware])
     .inputValidator(postAdminUpdateTiersSchema)
     .handler(async ({ data: { tiers } }) => {
         const achievementService = await getContainer().then((c) => c.services.achievements);
@@ -123,12 +123,12 @@ export const postAdminUpdateTiers = createServerFn({ method: "POST" })
 
 
 export const getAdminTasks = createServerFn({ method: "GET" })
-    .middleware([adminAuthMiddleware])
+    .middleware([requiredAuthAndAdminTokenMiddleware])
     .handler(async () => getAllTasksMetadata());
 
 
 export const postAdminTriggerTask = createServerFn({ method: "POST" })
-    .middleware([adminAuthMiddleware])
+    .middleware([requiredAuthAndAdminTokenMiddleware])
     .inputValidator(adminTriggerTaskSchema)
     .handler(async ({ data: { taskName, input } }) => {
         const task = getTask(taskName);
@@ -145,7 +145,7 @@ export const postAdminTriggerTask = createServerFn({ method: "POST" })
 
 
 export const getAdminArchivedTasks = createServerFn({ method: "GET" })
-    .middleware([adminAuthMiddleware])
+    .middleware([requiredAuthAndAdminTokenMiddleware])
     .handler(async () => {
         const adminService = await getContainer().then((c) => c.services.admin);
         return adminService.getArchivedTasksForAdmin();
@@ -153,7 +153,7 @@ export const getAdminArchivedTasks = createServerFn({ method: "GET" })
 
 
 export const postAdminDeleteArchivedTask = createServerFn({ method: "POST" })
-    .middleware([adminAuthMiddleware])
+    .middleware([requiredAuthAndAdminTokenMiddleware])
     .inputValidator(adminDeleteArchivedTaskSchema)
     .handler(async ({ data: { taskId } }) => {
         const adminService = await getContainer().then((c) => c.services.admin);
@@ -162,7 +162,7 @@ export const postAdminDeleteArchivedTask = createServerFn({ method: "POST" })
 
 
 export const getAdminErrorLogs = createServerFn({ method: "GET" })
-    .middleware([adminAuthMiddleware])
+    .middleware([requiredAuthAndAdminTokenMiddleware])
     .inputValidator(searchTypeSchema)
     .handler(async ({ data }) => {
         const adminService = await getContainer().then((c) => c.services.admin);
@@ -171,7 +171,7 @@ export const getAdminErrorLogs = createServerFn({ method: "GET" })
 
 
 export const postAdminDeleteErrorLog = createServerFn({ method: "POST" })
-    .middleware([adminAuthMiddleware])
+    .middleware([requiredAuthAndAdminTokenMiddleware])
     .inputValidator(adminDeleteErrorLogSchema)
     .handler(async ({ data: { errorIds } }) => {
         const adminService = await getContainer().then((c) => c.services.admin);
@@ -180,7 +180,7 @@ export const postAdminDeleteErrorLog = createServerFn({ method: "POST" })
 
 
 export const getAdminMediaRefreshStats = createServerFn({ method: "GET" })
-    .middleware([adminAuthMiddleware])
+    .middleware([requiredAuthAndAdminTokenMiddleware])
     .inputValidator(adminRefreshSchema)
     .handler(async ({ data: { days, topLimit, recentLimit } }) => {
         const adminService = await getContainer().then((c) => c.services.admin);
@@ -189,7 +189,7 @@ export const getAdminMediaRefreshStats = createServerFn({ method: "GET" })
 
 
 export const getAdminAllUpdatesHistory = createServerFn({ method: "GET" })
-    .middleware([adminAuthMiddleware])
+    .middleware([requiredAuthAndAdminTokenMiddleware])
     .inputValidator(searchTypeSchema)
     .handler(async ({ data }) => {
         const userUpdatesService = await getContainer().then((c) => c.services.userUpdates);
@@ -198,7 +198,7 @@ export const getAdminAllUpdatesHistory = createServerFn({ method: "GET" })
 
 
 export const postImpersonateUser = createServerFn({ method: "POST" })
-    .middleware([adminAuthMiddleware])
+    .middleware([requiredAuthAndAdminTokenMiddleware])
     .inputValidator((data) => z.object({ userId: z.coerce.number().int().positive() }).parse(data))
     .handler(async ({ data: { userId } }) => {
         const ctx = await auth.$context;

@@ -6,13 +6,13 @@ import {getContainer} from "@/lib/server/core/container";
 import {FormattedError} from "@/lib/utils/error-classes";
 import {tryFormZodError} from "@/lib/utils/try-not-found";
 import {saveUploadedImage} from "@/lib/utils/image-saver";
-import {authMiddleware} from "@/lib/server/middlewares/authentication";
+import {requiredAuthMiddleware} from "@/lib/server/middlewares/authentication";
 import {transactionMiddleware} from "@/lib/server/middlewares/transaction";
 import {downloadListAsCsvSchema, generalSettingsSchema, mediaListSettingsSchema, passwordSettingsSchema} from "@/lib/types/zod.schema.types";
 
 
 export const postGeneralSettings = createServerFn({ method: "POST" })
-    .middleware([authMiddleware, transactionMiddleware])
+    .middleware([requiredAuthMiddleware, transactionMiddleware])
     .inputValidator(tryFormZodError(generalSettingsSchema))
     .handler(async ({ data, context: { currentUser } }) => {
         const userService = await getContainer().then((c) => c.services.user);
@@ -46,7 +46,7 @@ export const postGeneralSettings = createServerFn({ method: "POST" })
 
 
 export const postMediaListSettings = createServerFn({ method: "POST" })
-    .middleware([authMiddleware, transactionMiddleware])
+    .middleware([requiredAuthMiddleware, transactionMiddleware])
     .inputValidator(tryFormZodError(mediaListSettingsSchema))
     .handler(async ({ data, context: { currentUser } }) => {
         const userService = await getContainer().then(c => c.services.user);
@@ -71,7 +71,7 @@ export const postMediaListSettings = createServerFn({ method: "POST" })
 
 
 export const getDownloadListAsCSV = createServerFn({ method: "GET" })
-    .middleware([authMiddleware])
+    .middleware([requiredAuthMiddleware])
     .inputValidator(tryFormZodError(downloadListAsCsvSchema))
     .handler(async ({ data: { selectedList }, context: { currentUser } }) => {
         const container = await getContainer();
@@ -81,7 +81,7 @@ export const getDownloadListAsCSV = createServerFn({ method: "GET" })
 
 
 export const postPasswordSettings = createServerFn({ method: "POST" })
-    .middleware([authMiddleware])
+    .middleware([requiredAuthMiddleware])
     .inputValidator(tryFormZodError(passwordSettingsSchema))
     .handler(async ({ data: { newPassword, currentPassword }, context: { currentUser } }) => {
         const ctx = await auth.$context;
@@ -98,7 +98,7 @@ export const postPasswordSettings = createServerFn({ method: "POST" })
 
 
 export const postDeleteUserAccount = createServerFn({ method: "POST" })
-    .middleware([authMiddleware])
+    .middleware([requiredAuthMiddleware])
     .handler(async ({ context: { currentUser } }) => {
         const userService = await getContainer().then((c) => c.services.user);
         return userService.deleteUserAccount(currentUser.id);
@@ -106,7 +106,7 @@ export const postDeleteUserAccount = createServerFn({ method: "POST" })
 
 
 export const postUpdateFeatureFlag = createServerFn({ method: "POST" })
-    .middleware([authMiddleware])
+    .middleware([requiredAuthMiddleware])
     .handler(async ({ context: { currentUser } }) => {
         const userService = await getContainer().then((c) => c.services.user);
         return userService.updateFeatureFlag(currentUser.id);

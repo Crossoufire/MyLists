@@ -1,82 +1,58 @@
 import {auth} from "@/lib/server/core/auth";
-import {redirect} from "@tanstack/react-router";
 import {createMiddleware} from "@tanstack/react-start";
 import {getRequest} from "@tanstack/react-start/server";
 import {getContainer} from "@/lib/server/core/container";
+import {notFound, redirect} from "@tanstack/react-router";
 import {isAtLeastRole, RoleType} from "@/lib/utils/enums";
 import {isAdminAuthenticated} from "@/lib/utils/admin-token";
 
 
-export const authMiddleware = createMiddleware({ type: "function" }).server(async ({ next }) => {
-    const { headers } = getRequest();
-    const session = await auth.api.getSession({ headers, query: { disableCookieCache: true } });
+export const requiredAuthMiddleware = createMiddleware({ type: "function" })
+    .server(async ({ next }) => {
+        const { headers } = getRequest();
+        const session = await auth.api.getSession({ headers, query: { disableCookieCache: true } });
 
-    if (!session) {
-        throw redirect({ to: "/", search: { authExpired: true } });
-    }
-
-    const container = await getContainer();
-    const userService = container.services.user;
-    await userService.updateUserLastSeen(container.cacheManager, Number(session.user.id));
-
-    return next({
-        context: {
-            currentUser: { ...session.user, id: Number(session.user.id) },
-        }
-    });
-});
-
-
-export const managerAuthMiddleware = createMiddleware({ type: "function" }).server(async ({ next }) => {
-    const { headers } = getRequest();
-    const session = await auth.api.getSession({ headers, query: { disableCookieCache: true } });
-
-    if (!session || !session.user || !isAtLeastRole(session.user.role as RoleType, RoleType.MANAGER)) {
-        throw redirect({ to: "/", search: { authExpired: true } });
-    }
-
-    const container = await getContainer();
-    const userService = container.services.user;
-    await userService.updateUserLastSeen(container.cacheManager, Number(session.user.id));
-
-    return next({
-        context: {
-            currentUser: {
-                ...session.user,
-                id: Number(session.user.id),
-            }
-        }
-    });
-});
-
-
-/**
- * Check that role is `ADMIN` AND check for admin token
- */
-export const adminAuthMiddleware = createMiddleware({ type: "function" })
-    .middleware([managerAuthMiddleware])
-    .server(async ({ next, context }) => {
-        if (!isAtLeastRole(context.currentUser.role as RoleType, RoleType.ADMIN)) {
+        const currentUser = session?.user ? { ...session.user, id: Number(session.user.id) } : undefined;
+        if (!currentUser) {
             throw redirect({ to: "/", search: { authExpired: true } });
         }
 
+        void getContainer()
+            .then((c) => c.services.user.updateUserLastSeen(c.cacheManager, currentUser.id))
+            .catch()
+
+        return next({ context: { currentUser } });
+    });
+
+
+export const requiredAuthAndManagerRoleMiddleware = createMiddleware({ type: "function" })
+    .middleware([requiredAuthMiddleware])
+    .server(async ({ next, context: { currentUser } }) => {
+        if (!isAtLeastRole(currentUser.role as RoleType, RoleType.MANAGER)) {
+            throw notFound();
+        }
+
+        return next();
+    });
+
+
+export const requiredAuthAndAdminRoleMiddleware = createMiddleware({ type: "function" })
+    .middleware([requiredAuthAndManagerRoleMiddleware])
+    .server(async ({ next, context: { currentUser } }) => {
+        if (!isAtLeastRole(currentUser.role as RoleType, RoleType.ADMIN)) {
+            throw notFound();
+        }
+
+        return next();
+    });
+
+
+export const requiredAuthAndAdminTokenMiddleware = createMiddleware({ type: "function" })
+    .middleware([requiredAuthAndAdminRoleMiddleware])
+    .server(async ({ next, context }) => {
         if (await isAdminAuthenticated(context.currentUser.id)) {
             return next();
         }
 
         throw redirect({ to: "/admin" });
-    });
-
-
-/**
- * Only check that role is `ADMIN`, does not check for admin token
- */
-export const adminRoleMiddleware = createMiddleware({ type: "function" })
-    .middleware([managerAuthMiddleware])
-    .server(async ({ next, context }) => {
-        if (!isAtLeastRole(context.currentUser.role as RoleType, RoleType.ADMIN)) {
-            throw redirect({ to: "/" });
-        }
-
-        return next();
     });

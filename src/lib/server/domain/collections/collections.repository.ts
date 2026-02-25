@@ -68,7 +68,7 @@ export class CollectionsRepository {
             .orderBy(asc(collectionItems.orderIndex));
     }
 
-    static async getUserCollections(userId: number, mediaType?: MediaType, allowedPrivacy?: PrivacyType[]) {
+    static async getUserCollections(targetUserId: number, isOwner: boolean, mediaType?: MediaType) {
         return getDbClient()
             .select({
                 ownerName: user.name,
@@ -93,9 +93,9 @@ export class CollectionsRepository {
             .from(collections)
             .innerJoin(user, eq(collections.ownerId, user.id))
             .where(and(
-                eq(collections.ownerId, userId),
+                eq(collections.ownerId, targetUserId),
                 mediaType ? eq(collections.mediaType, mediaType) : undefined,
-                allowedPrivacy && allowedPrivacy.length > 0 ? inArray(collections.privacy, allowedPrivacy) : undefined,
+                isOwner ? undefined : inArray(collections.privacy, [PrivacyType.PUBLIC, PrivacyType.RESTRICTED]),
             ))
             .orderBy(desc(collections.likeCount));
     }
