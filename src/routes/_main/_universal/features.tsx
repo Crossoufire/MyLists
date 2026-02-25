@@ -1,5 +1,4 @@
 import {JSX} from "react";
-import {mail} from "@/lib/utils/helpers";
 import {ApiProviderType} from "@/lib/utils/enums";
 import {createFileRoute} from "@tanstack/react-router";
 import {BlockLink} from "@/lib/client/components/general/BlockLink";
@@ -13,7 +12,6 @@ import {
     Calendar,
     CheckCheck,
     ChevronDown,
-    Code2,
     Crop,
     Edit3,
     FileSpreadsheet,
@@ -22,6 +20,7 @@ import {
     GraduationCap,
     LayoutList,
     LineChart,
+    ListOrdered,
     Lock,
     LucideIcon,
     Monitor,
@@ -113,6 +112,18 @@ type FeatureData = {
 
 const FEATURES_DATA: FeatureData[] = [
     {
+        icon: ListOrdered,
+        category: "New",
+        name: "New (real) Collections System",
+        description: (
+            <span>
+                Create, and rank collections of media. Keep your collections private for organization,
+                or publish them to the Community page to share with others.
+                (The previous `Collection` system is now called `Tags`).
+            </span>
+        )
+    },
+    {
         icon: CheckCheck,
         category: "New",
         name: "Features Voting!",
@@ -171,17 +182,6 @@ const FEATURES_DATA: FeatureData[] = [
                 <BlockLink to="/walkthrough/search-media" className="inline-flex gap-1 items-center text-app-accent font-medium hover:text-app-accent/80">
                     here
                 </BlockLink>.
-            </span>
-        )
-    },
-    {
-        icon: Code2,
-        category: "New",
-        name: "New Backend Language",
-        description: (
-            <span>
-                MyLists is now powered by TypeScript. While this improves long-term stability, bugs are expected during the transition. If you spot one, please <a
-                className="text-app-accent font-medium hover:text-app-accent/80" href={`mailto:${mail}`}>contact me</a>.
             </span>
         )
     },
