@@ -37,7 +37,7 @@ export class CollectionsService {
         ]);
 
         const mediaService = this.mediaRegistry.getService(collection.mediaType);
-        const mediaRows = await mediaService.getMediaForActivity(items.map((item) => item.mediaId)) as MediaInfo[];
+        const mediaRows = await mediaService.getMediaDetailsByIds(items.map((item) => item.mediaId), actorId);
         const mediaMap = new Map(mediaRows.map((m) => [m.id, m]));
 
         const detailedItems = items.map((item) => {
@@ -48,6 +48,7 @@ export class CollectionsService {
                 orderIndex: item.orderIndex,
                 annotation: item.annotation,
                 mediaCover: media.imageCover,
+                inUserList: media.inUserList,
                 releaseDate: media.releaseDate,
             };
         });
@@ -225,7 +226,7 @@ export class CollectionsService {
 
         await Promise.all([...mediaMapByType.entries()].map(async ([mediaType, ids]) => {
             const mediaService = this.mediaRegistry.getService(mediaType);
-            const mediaDetails = await mediaService.getMediaForActivity([...ids]) as MediaInfo[];
+            const mediaDetails = await mediaService.getMediaDetailsByIds([...ids]);
             mediaDetails.forEach((media) => mediaLookup.set(`${mediaType}-${media.id}`, media));
         }));
 

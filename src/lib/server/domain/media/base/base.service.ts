@@ -67,8 +67,8 @@ export abstract class BaseService<TConfig extends MediaSchemaConfig, R extends B
         return await this.repository.getTagNames(userId);
     }
 
-    async getMediaForActivity(mediaIds: number[]) {
-        return this.repository.getMediaForActivity(mediaIds);
+    async getMediaDetailsByIds(mediaIds: number[], userId?: number) {
+        return this.repository.getMediaDetailsByIds(mediaIds, userId);
     }
 
     async findById(mediaId: number) {

@@ -15,6 +15,7 @@ export type MediaInfo = {
     duration?: number;
     imageCover: string;
     releaseDate: string;
+    inUserList?: boolean;
 }
 
 

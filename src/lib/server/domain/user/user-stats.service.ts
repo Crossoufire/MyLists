@@ -248,7 +248,7 @@ export class UserStatsService {
         if (mediaIds.length === 0) return emptyResult;
 
         const mediaService = this.mediaServiceRegistry.getService(mediaType);
-        const mediaDetails = await mediaService.getMediaForActivity(mediaIds) as MediaInfo[];
+        const mediaDetails = await mediaService.getMediaDetailsByIds(mediaIds);
         const metadataMap = new Map(mediaDetails.map((m) => [m.id, m]));
 
         return this._aggActivityResults(mediaType, mediaResults, metadataMap);
@@ -294,7 +294,7 @@ export class UserStatsService {
         if (mediaIds.length === 0) return { completed: [], progressed: [], redo: [] };
 
         const mediaService = this.mediaServiceRegistry.getService(mediaType);
-        const mediaDetails = (await mediaService.getMediaForActivity(mediaIds)) as MediaInfo[];
+        const mediaDetails = (await mediaService.getMediaDetailsByIds(mediaIds));
         const metadataMap = new Map(mediaDetails.map((m) => [m.id, m]));
 
         const redo: MediaData[] = [];

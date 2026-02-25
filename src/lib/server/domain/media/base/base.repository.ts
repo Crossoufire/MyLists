@@ -23,6 +23,7 @@ import {
     UserMediaWithTags,
     UserTag,
 } from "@/lib/types/base.types";
+import {MediaInfo} from "@/lib/types/activity.types";
 
 
 const SIMILAR_MAX_GENRES = 10;
@@ -183,13 +184,20 @@ export abstract class BaseRepository<TConfig extends MediaSchemaConfig> {
             .orderBy(desc(similarSub.commonGenreCount));
     }
 
-    async getMediaForActivity(mediaIds: number[]) {
-        const { mediaTable } = this.config;
+    async getMediaDetailsByIds(mediaIds: number[], userId?: number): Promise<MediaInfo[]> {
+        const { mediaTable, listTable } = this.config;
 
-        return getDbClient()
-            .select()
+        return (await getDbClient()
+            .select({
+                ...getTableColumns(mediaTable),
+                inUserList: isNotNull(listTable.userId).mapWith(Boolean).as("inUserList"),
+            })
             .from(mediaTable)
-            .where(inArray(mediaTable.id, mediaIds));
+            .leftJoin(listTable, and(
+                eq(listTable.mediaId, mediaTable.id),
+                userId === undefined ? sql`FALSE` : eq(listTable.userId, userId),
+            ))
+            .where(inArray(mediaTable.id, mediaIds))) as MediaInfo[];
     }
 
     async getCommonListFilters(userId: number) {
@@ -562,6 +570,8 @@ export abstract class BaseRepository<TConfig extends MediaSchemaConfig> {
 
     async getMediaJobDetails(userId: number, job: JobType, name: string, offset: number, limit = 25) {
         const { mediaTable, listTable, jobDefinitions } = this.config;
+
+        // TODO: use the paginate function?
 
         const jobHandler = jobDefinitions[job];
         if (!jobHandler) throw notFound();

@@ -9,9 +9,8 @@ export const useCreateCollectionMutation = () => {
 
     return useMutation({
         mutationFn: postCreateCollection,
-        meta: { successMessage: "Collection created." },
         onSuccess: async () => {
-            // TODO: do a setQueryData
+            toast.success("New collection created!");
             await queryClient.invalidateQueries({ queryKey: ["collections", "user"] });
             await queryClient.invalidateQueries({ queryKey: ["collections", "community"] });
         },
@@ -26,7 +25,6 @@ export const useUpdateCollectionMutation = (collectionId: number) => {
         mutationFn: postUpdateCollection,
         meta: { successMessage: "Collection updated." },
         onSuccess: async () => {
-            // TODO: do a setQueryData
             await queryClient.invalidateQueries({ queryKey: ["collections", "user"] });
             await queryClient.invalidateQueries({ queryKey: collectionDetailsReadOptions(collectionId).queryKey });
         },
@@ -40,9 +38,18 @@ export const useToggleCollectionLikeMutation = (collectionId: number) => {
     return useMutation({
         mutationFn: postToggleCollectionLike,
         onError: () => toast.error("Failed to update the like."),
-        onSuccess: async () => {
-            // TODO: do a setQueryData
-            await queryClient.invalidateQueries({ queryKey: collectionDetailsReadOptions(collectionId).queryKey });
+        onSuccess: () => {
+            queryClient.setQueryData(collectionDetailsReadOptions(collectionId).queryKey, (oldData) => {
+                if (!oldData) return;
+                return {
+                    ...oldData,
+                    isLiked: !oldData.isLiked,
+                    collection: {
+                        ...oldData.collection,
+                        likeCount: oldData.isLiked ? oldData.collection.likeCount - 1 : oldData.collection.likeCount + 1,
+                    }
+                }
+            })
         },
     });
 };
@@ -56,7 +63,6 @@ export const useCopyCollectionMutation = (collectionId: number) => {
         meta: { successMessage: "Collection copied." },
         onError: () => toast.error("Failed to copy the collection."),
         onSuccess: async () => {
-            // TODO: check for setQueryData
             await queryClient.invalidateQueries({ queryKey: ["collections", "community"] });
             await queryClient.invalidateQueries({ queryKey: collectionDetailsReadOptions(collectionId).queryKey });
         },
@@ -72,7 +78,6 @@ export const useDeleteCollectionMutation = (collectionId: number) => {
         meta: { successMessage: "Collection deleted." },
         onError: () => toast.error("Failed to delete the collection."),
         onSuccess: async () => {
-            // TODO: check for setQueryData
             await queryClient.invalidateQueries({ queryKey: ["collections", "user"] });
             await queryClient.invalidateQueries({ queryKey: ["collections", "community"] });
             await queryClient.invalidateQueries({ queryKey: collectionDetailsReadOptions(collectionId).queryKey });

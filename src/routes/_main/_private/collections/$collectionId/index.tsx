@@ -6,9 +6,11 @@ import {Badge} from "@/lib/client/components/ui/badge";
 import {Button} from "@/lib/client/components/ui/button";
 import {capitalize, formatDateTime} from "@/lib/utils/formating";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
+import {PrivacyIcon} from "@/lib/client/components/general/MainIcons";
 import {EmptyState} from "@/lib/client/components/general/EmptyState";
 import {MediaCard} from "@/lib/client/components/media/base/MediaCard";
 import {DisplayComment} from "@/lib/client/components/media/base/DisplayComment";
+import {MediaCornerCommon} from "@/lib/client/components/media/base/MediaCornerCommon";
 import {collectionDetailsReadOptions} from "@/lib/client/react-query/query-options/query-options";
 import {useCopyCollectionMutation, useToggleCollectionLikeMutation} from "@/lib/client/react-query/query-mutations/collections.mutations";
 
@@ -57,11 +59,12 @@ function CollectionViewer() {
                         <>
                             <Button
                                 size="sm"
+                                variant="outline"
                                 onClick={handleLikeCollection}
                                 disabled={toggleLikeMutation.isPending}
-                                variant={isLiked ? "default" : "outline"}
                             >
-                                <Heart className="size-4"/> {collection.likeCount}
+                                <Heart className={isLiked ? "text-red-500" : ""}/>
+                                {collection.likeCount}
                             </Button>
                             <Button size="sm" variant="outline" onClick={handleCopyCollection} disabled={copyMutation.isPending}>
                                 <Copy className="size-4"/> Copy
@@ -71,6 +74,7 @@ function CollectionViewer() {
                     <Badge variant="outline">
                         {collection.ordered ? "Ranked" : "Unranked"}
                     </Badge>
+                    <PrivacyIcon type={collection.privacy} className="size-4"/>
                 </div>
                 <div>
                     {canManage &&
@@ -101,7 +105,11 @@ function CollectionViewer() {
                                     #{item.orderIndex}
                                 </div>
                             }
-
+                            {isConnected && item.inUserList &&
+                                <MediaCornerCommon
+                                    isCommon={item.inUserList}
+                                />
+                            }
                             <div className="absolute bottom-0 w-full space-y-1 rounded-b-sm p-3">
                                 <div className="flex w-full items-center justify-between space-x-2 max-sm:text-sm">
                                     <h3 className="grow truncate font-semibold text-primary" title={item.mediaName}>
