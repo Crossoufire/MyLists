@@ -30,7 +30,7 @@ export class CollectionsService {
         const isModerator = isAtLeastRole(viewerRole, RoleType.MANAGER);
 
         if (mode === "edit") {
-            if (!isOwner && !isModerator) throw notFound();
+            if (!isOwner && !isModerator) throw new FormattedError("Unauthorized");
         }
         else {
             await this._assertVisible(collection, isOwner, isModerator, viewerUserId);
@@ -151,7 +151,7 @@ export class CollectionsService {
         const isOwner = (collection.ownerId === params.actorId);
         const isModerator = isAtLeastRole(params.actorRole, RoleType.MANAGER);
         if (!isOwner && !isModerator) {
-            throw new FormattedError("You cannot delete this collection.");
+            throw new FormattedError("Unauthorized to delete this collection.");
         }
 
         await this.repository.deleteCollection(params.collectionId);
@@ -183,7 +183,6 @@ export class CollectionsService {
         await this._assertVisible(collection, isOwner, false, viewerUserId);
 
         const items = await this.repository.getCollectionItems(collectionId);
-
         const createdId = await this.repository.createCollection({
             ownerId: viewerUserId,
             ordered: collection.ordered,

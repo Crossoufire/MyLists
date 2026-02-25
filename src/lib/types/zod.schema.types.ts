@@ -23,7 +23,6 @@ export type AdminUpdatePayload = z.infer<typeof adminUpdatePayloadSchema>;
 export type AchievementTier = z.infer<typeof tierAchievementSchema>;
 export type UpdateUserMedia = z.infer<typeof updateUserMediaSchema>;
 export type SectionActivity = z.infer<typeof getSectionActivitySchema>;
-export type CollectionItemInput = z.infer<typeof collectionItemSchema>;
 export type CreateCollection = z.infer<typeof createCollectionSchema>;
 
 
@@ -338,7 +337,7 @@ export const postFeatureDeleteSchema = z.object({
     featureId: z.coerce.number().int().positive(),
 });
 
-export const collectionItemSchema = z.object({
+const collectionItemSchema = z.object({
     mediaId: z.coerce.number().int().positive(),
     mediaName: z.string().optional(), // Added for UI display
     mediaCover: z.string().optional(), // Added for UI display

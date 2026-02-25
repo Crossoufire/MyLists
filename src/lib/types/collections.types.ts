@@ -21,13 +21,3 @@ export type CommunitySearch = {
     search?: string;
     mediaType?: MediaType;
 };
-
-
-export type CollectionItemDetails = {
-    mediaId: number;
-    mediaName: string;
-    orderIndex: number;
-    mediaCover: string;
-    annotation?: string | null;
-    releaseDate?: string | null;
-};
