@@ -32,7 +32,6 @@ import {
     TrendingUp,
     Trophy,
     User,
-    Users,
     X,
     Zap
 } from "lucide-react";
@@ -133,7 +132,7 @@ export const Navbar = () => {
                         <SearchBar/>
                     </div>
 
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-1 max-lg:hidden">
                         <DropdownMenu>
                             <DropdownMenuTrigger className={navStyle()}>
                                 Community
@@ -159,7 +158,6 @@ export const Navbar = () => {
                                 </DropdownMenuGroup>
                             </DropdownMenuContent>
                         </DropdownMenu>
-
 
                         <Link to="/platform-stats" className={navStyle()} activeProps={{ className: "text-app-accent" }}>
                             Stats
@@ -343,21 +341,33 @@ export const Navbar = () => {
 
                         <div className="p-2 max-h-[70vh] overflow-y-auto scrollbar-thin mt-3">
                             <div className="flex flex-wrap justify-around items-center gap-2 px-2">
+                                <Link to="/moviedle" onClick={() => setIsMobileMenuOpen(false)}>
+                                    <button className="flex flex-col items-center gap-1 text-muted-foreground hover:text-app-accent">
+                                        <Clapperboard className="size-4"/>
+                                        <span className="text-[10px]">Moviedle</span>
+                                    </button>
+                                </Link>
                                 <Link to="/collections/discover" onClick={() => setIsMobileMenuOpen(false)}>
                                     <button className="flex flex-col items-center gap-1 text-muted-foreground hover:text-app-accent">
-                                        <Users className="size-5"/>
+                                        <Layers className="size-4"/>
                                         <span className="text-[10px]">Collections</span>
+                                    </button>
+                                </Link>
+                                <Link to="/hall-of-fame" onClick={() => setIsMobileMenuOpen(false)}>
+                                    <button className="flex flex-col items-center gap-1 text-muted-foreground hover:text-app-accent">
+                                        <Trophy className="size-4"/>
+                                        <span className="text-[10px]">HoF</span>
                                     </button>
                                 </Link>
                                 <Link to="/platform-stats" onClick={() => setIsMobileMenuOpen(false)}>
                                     <button className="flex flex-col items-center gap-1 text-muted-foreground hover:text-app-accent">
-                                        <BarChart2 className="size-5"/>
+                                        <BarChart2 className="size-4"/>
                                         <span className="text-[10px]">Stats</span>
                                     </button>
                                 </Link>
                                 <Link to="/trends" onClick={() => setIsMobileMenuOpen(false)}>
                                     <button className="flex flex-col items-center gap-1 text-muted-foreground hover:text-app-accent">
-                                        <TrendingUp className="size-5"/>
+                                        <TrendingUp className="size-4"/>
                                         <span className="text-[10px]">Trends</span>
                                     </button>
                                 </Link>

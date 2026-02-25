@@ -25,8 +25,8 @@ function UserCollectionsPage() {
 
     return (
         <PageTitle title={`${username} Collections`} subtitle="All collections across media types.">
-            <div className="space-y-4">
-                <div className="flex flex-wrap items-center justify-between">
+            <div className="space-y-6">
+                <div className="flex flex-wrap items-center justify-between gap-3">
                     <div className="text-sm text-muted-foreground">
                         {isOwner ? "Manage every collection in one place." : `Collections created by ${username}.`}
                     </div>

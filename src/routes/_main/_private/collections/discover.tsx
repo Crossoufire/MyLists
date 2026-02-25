@@ -38,8 +38,8 @@ function CollectionsDiscoverPage() {
         <PageTitle title="Community collections" subtitle="Public collections created and shared by the community.">
             <div className="space-y-10">
                 <div className="space-y-4">
-                    <div className="flex justify-between items-center">
-                        <div className="flex flex-wrap items-center gap-3">
+                    <div className="flex flex-wrap justify-between items-center gap-4">
+                        <div className="flex flex-wrap items-center gap-3 gap-y-2">
                             <SearchInput
                                 className="w-60"
                                 value={localSearch}
