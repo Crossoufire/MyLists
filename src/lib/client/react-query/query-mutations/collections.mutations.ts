@@ -38,7 +38,7 @@ export const useToggleCollectionLikeMutation = (collectionId: number) => {
     return useMutation({
         mutationFn: postToggleCollectionLike,
         onError: () => toast.error("Failed to update the like."),
-        onSuccess: () => {
+        onSuccess: async () => {
             queryClient.setQueryData(collectionDetailsReadOptions(collectionId).queryKey, (oldData) => {
                 if (!oldData) return;
                 return {
@@ -49,7 +49,9 @@ export const useToggleCollectionLikeMutation = (collectionId: number) => {
                         likeCount: oldData.isLiked ? oldData.collection.likeCount - 1 : oldData.collection.likeCount + 1,
                     }
                 }
-            })
+            });
+
+            await queryClient.invalidateQueries({ queryKey: ["collections", "community"] });
         },
     });
 };

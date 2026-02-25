@@ -36,7 +36,7 @@ export const CollectionEditor = ({ form, onSubmit, mediaType, submitLabel, isSub
 
     useBlocker({
         shouldBlockFn: () => {
-            if (!isDirty) return false;
+            if (!isDirty || isSubmitting) return false;
             return !confirm("Your edit will be lost. Are you sure you want to leave this page?");
         },
     })
