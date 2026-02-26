@@ -1,4 +1,4 @@
-import {Plus} from "lucide-react";
+import {ListOrdered, Plus} from "lucide-react";
 import {useAuth} from "@/lib/client/hooks/use-auth";
 import {createFileRoute} from "@tanstack/react-router";
 import {useSuspenseQuery} from "@tanstack/react-query";
@@ -20,7 +20,7 @@ function CollectionsTab() {
     const { currentUser } = useAuth();
     const { mediaType, username } = Route.useParams();
     const collections = useSuspenseQuery(userCollectionsOptions(username, mediaType)).data;
-    
+
     const isOwner = (currentUser?.name === username);
 
     return (
@@ -45,7 +45,8 @@ function CollectionsTab() {
             </div>
             {collections.length === 0 ?
                 <EmptyState
-                    icon={Plus}
+                    className="py-20"
+                    icon={ListOrdered}
                     message={isOwner ? "You have not created any collections yet." : "No collections yet."}
                 />
                 :

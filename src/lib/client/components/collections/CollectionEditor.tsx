@@ -151,7 +151,6 @@ export const CollectionEditor = ({ form, onSubmit, mediaType, submitLabel, isSub
 
                                     {fields.length === 0 ?
                                         <EmptyState
-                                            iconSize={35}
                                             className="py-20"
                                             icon={ListOrdered}
                                             message="No items added to the collection yet."

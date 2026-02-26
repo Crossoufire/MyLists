@@ -23,7 +23,6 @@ import {
     ChartNoAxesColumn,
     ChevronDown,
     Clapperboard,
-    Layers,
     ListOrdered,
     LogOut,
     Menu,
@@ -147,7 +146,7 @@ export const Navbar = () => {
                                     </DropdownMenuItem>
                                     <DropdownMenuItem asChild>
                                         <Link to="/collections/discover">
-                                            <Layers className="size-3.5"/> Collections
+                                            <ListOrdered className="size-3.5"/> Collections
                                         </Link>
                                     </DropdownMenuItem>
                                     <DropdownMenuItem asChild>
@@ -349,7 +348,7 @@ export const Navbar = () => {
                                 </Link>
                                 <Link to="/collections/discover" onClick={() => setIsMobileMenuOpen(false)}>
                                     <button className="flex flex-col items-center gap-1 text-muted-foreground hover:text-app-accent">
-                                        <Layers className="size-4"/>
+                                        <ListOrdered className="size-4"/>
                                         <span className="text-[10px]">Collections</span>
                                     </button>
                                 </Link>
