@@ -55,6 +55,12 @@ export function MediaHero({ media, mediaType, external }: MediaHeroProps) {
                         <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-primary drop-shadow-lg">
                             {media.name}
                         </h1>
+                        {"originalName" in media && media.originalName && media.originalName !== media.name &&
+                            <div className="text-sm italic text-muted-foreground">
+                                {/*<span className="text-muted-foreground">Original Name - </span>{" "}*/}
+                                <span className="font-medium">{media.originalName}</span>
+                            </div>
+                        }
                         <div className="flex items-center flex-wrap gap-y-2 gap-x-6 text-sm text-primary font-medium">
                             <MediaComponent
                                 media={media}
