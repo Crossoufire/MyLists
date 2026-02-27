@@ -41,6 +41,7 @@ export class IgdbApi extends BaseApi {
                 fields id, name, cover.image_id, first_release_date;
                 limit ${this.resultsPerPage};
                 offset ${offset};
+                sort first_release_date asc;
                 where name ~ *"${query}"*;
             };
         `;
