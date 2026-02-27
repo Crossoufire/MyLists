@@ -8,7 +8,7 @@ import {Button} from "@/lib/client/components/ui/button";
 import {Textarea} from "@/lib/client/components/ui/textarea";
 import {getZodMutationError} from "@/lib/utils/helpers";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
-import {CalendarClock, ChevronUp, Crown, Settings2} from "lucide-react";
+import {CalendarClock, ChevronUp, Crown, ExternalLink, Settings2} from "lucide-react";
 import {featureVotesOptions} from "@/lib/client/react-query/query-options/query-options";
 import {FeatureStatus, FeatureVoteType, isAtLeastRole, RoleType,} from "@/lib/utils/enums";
 import {Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle,} from "@/lib/client/components/ui/card";
@@ -166,6 +166,25 @@ function FeatureVotesPage() {
                         </CardContent>
                     </Card>
                 </div>
+
+                <Card className="border-app-rating">
+                    <CardHeader>
+                        <CardTitle>Discussions</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-2">
+                        <div>
+                            If you want to discuss a feature idea in more details and exchange with me,
+                            please do not hesitate to open a new discussion on GitHub discussions here:{" "}
+                        </div>
+                        <div className="text-center">
+                            <a href="https://github.com/Crossoufire/MyLists/discussions" target="_blank" rel="noreferrer">
+                                <Button variant="emeraldy">
+                                    Github Discussions <ExternalLink/>
+                                </Button>
+                            </a>
+                        </div>
+                    </CardContent>
+                </Card>
 
                 <div className="grid gap-6">
                     {filteredRequests.map((req) => {
