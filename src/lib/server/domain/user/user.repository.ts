@@ -1,11 +1,24 @@
 import {alias} from "drizzle-orm/sqlite-core";
-import {paginate, resolveSorting} from "@/lib/server/database/pagination";
 import {getDbClient} from "@/lib/server/database/async-storage";
+import {paginate, resolveSorting} from "@/lib/server/database/pagination";
 import {AdminUpdatePayload, SearchType} from "@/lib/types/zod.schema.types";
 import {and, asc, count, desc, eq, isNotNull, like, sql} from "drizzle-orm";
 import {followers, user, userMediaSettings} from "@/lib/server/database/schema";
 import {ProviderSearchResult, ProviderSearchResults} from "@/lib/types/provider.types";
 import {ApiProviderType, MediaType, PrivacyType, SocialState} from "@/lib/utils/enums";
+
+
+const orderByMediaType = sql`
+    CASE ${userMediaSettings.mediaType}
+        WHEN 'series' THEN 1
+        WHEN 'anime' THEN 2
+        WHEN 'movies' THEN 3
+        WHEN 'books' THEN 4
+        WHEN 'games' THEN 5
+        WHEN 'manga' THEN 6
+        ELSE 7
+    END
+`;
 
 
 export class UserRepository {
@@ -261,7 +274,7 @@ export class UserRepository {
     static async getAdminPaginatedUsers(data: SearchType) {
         const search = data.search ?? "";
         const sortDesc = data.sortDesc ?? true;
-        
+
         const allowedSorts = ["id", "name", "createdAt", "updatedAt", "privacy", "showUpdateModal", "role", "emailVerified"] as const;
         const sorting = resolveSorting(data.sorting, allowedSorts, "updatedAt");
 
@@ -330,10 +343,14 @@ export class UserRepository {
     static async findByUsername(username: string) {
         const userResult = await getDbClient().query.user.findFirst({
             where: eq(user.name, username),
-            with: { userMediaSettings: true },
+            with: {
+                userMediaSettings: {
+                    orderBy: () => [asc(orderByMediaType)],
+                },
+            },
         });
-        if (!userResult) return null;
 
+        if (!userResult) return null;
         return userResult;
     }
 
