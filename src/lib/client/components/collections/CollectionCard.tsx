@@ -11,11 +11,12 @@ import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger
 
 interface CollectionCardProps {
     showOwner?: boolean;
+    showMediaType?: boolean;
     collection: Awaited<ReturnType<NonNullable<ReturnType<typeof communityCollectionsOptions>["queryFn"]>>>["items"][number];
 }
 
 
-export const CollectionCard = ({ collection, showOwner = true }: CollectionCardProps) => {
+export const CollectionCard = ({ collection, showOwner = true, showMediaType = true }: CollectionCardProps) => {
     const { currentUser } = useAuth();
     const deleteMutation = useDeleteCollectionMutation(collection.id);
 
@@ -119,11 +120,13 @@ export const CollectionCard = ({ collection, showOwner = true }: CollectionCardP
                     <div className="pointer-events-none rounded-t-lg absolute inset-0 z-10 border border-transparent
                     group-hover/image:border-app-accent/80"/>
 
-                    <div className="absolute top-2 right-2 capitalize flex gap-1.5 items-center text-xs font-semibold
-                    px-2 py-1 text-muted-foreground bg-popover rounded-md">
-                        <MainThemeIcon type={collection.mediaType} className="size-3.5"/>
-                        {collection.mediaType}
-                    </div>
+                    {showMediaType &&
+                        <div className="absolute top-2 right-2 capitalize flex gap-1.5 items-center text-xs font-semibold
+                        px-2 py-1 text-muted-foreground bg-popover rounded-md">
+                            <MainThemeIcon type={collection.mediaType} className="size-3.5"/>
+                            {collection.mediaType}
+                        </div>
+                    }
                 </div>
             </Link>
             <div className="flex flex-col gap-2 p-4 pt-3">

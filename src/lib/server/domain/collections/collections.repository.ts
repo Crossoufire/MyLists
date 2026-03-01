@@ -159,6 +159,40 @@ export class CollectionsRepository {
         });
     }
 
+    static async getMediaCommunityCollections(mediaId: number, mediaType: MediaType) {
+        return getDbClient()
+            .select({
+                ownerName: user.name,
+                ownerImage: user.image,
+                itemsCount: sql<number>`(
+                    SELECT COUNT(*) 
+                    FROM ${collectionItems} ci 
+                    WHERE ci.collection_id = ${collections.id}
+                )`.as("itemsCount"),
+                previewItems: sql`(
+                    SELECT json_group_array(media_id)
+                    FROM (
+                        SELECT ${collectionItems.mediaId} as media_id
+                        FROM ${collectionItems}
+                        WHERE ${collectionItems.collectionId} = ${collections.id}
+                        ORDER BY ${collectionItems.orderIndex} ASC
+                        LIMIT 4
+                    )
+                )`.mapWith((val) => JSON.parse(val) as number[]).as("previewItems"),
+                ...getTableColumns(collections),
+            })
+            .from(collections)
+            .innerJoin(user, eq(collections.ownerId, user.id))
+            .innerJoin(collectionItems, and(
+                eq(collectionItems.mediaId, mediaId),
+                eq(collectionItems.mediaType, mediaType),
+                eq(collectionItems.collectionId, collections.id),
+            ))
+            .where(eq(collections.privacy, PrivacyType.PUBLIC))
+            .orderBy(desc(collections.likeCount))
+            .limit(6);
+    }
+
     static async findLikedCollection(userId: number, collectionId: number) {
         return getDbClient()
             .select()

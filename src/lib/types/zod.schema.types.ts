@@ -379,3 +379,9 @@ export const communityCollectionsSchema = paginationSchema.extend({
     search: z.string().optional().catch(undefined),
     mediaType: z.enum(MediaType).optional().catch(undefined),
 });
+
+
+export const mediaCommunityCollectionsSchema = z.object({
+    mediaId: z.coerce.number().int().positive(),
+    mediaType: z.enum(MediaType),
+});

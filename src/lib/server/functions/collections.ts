@@ -5,7 +5,14 @@ import {tryFormZodError, tryNotFound} from "@/lib/utils/try-not-found";
 import {transactionMiddleware} from "@/lib/server/middlewares/transaction";
 import {requiredAuthMiddleware} from "@/lib/server/middlewares/authentication";
 import {optionalAuthMiddleware, privateAuthZMiddleware} from "@/lib/server/middlewares/authorization";
-import {collectionIdSchema, communityCollectionsSchema, createCollectionSchema, updateCollectionSchema, userCollectionsSchema} from "@/lib/types/zod.schema.types";
+import {
+    collectionIdSchema,
+    communityCollectionsSchema,
+    createCollectionSchema,
+    mediaCommunityCollectionsSchema,
+    updateCollectionSchema,
+    userCollectionsSchema
+} from "@/lib/types/zod.schema.types";
 
 
 export const getUserCollections = createServerFn({ method: "GET" })
@@ -25,6 +32,16 @@ export const getCommunityCollections = createServerFn({ method: "GET" })
         const container = await getContainer();
         const collectionService = container.services.collections;
         return collectionService.getPublicCollections({ search, page, mediaType });
+    });
+
+
+export const getMediaCommunityCollections = createServerFn({ method: "GET" })
+    .middleware([requiredAuthMiddleware])
+    .inputValidator(tryNotFound(mediaCommunityCollectionsSchema))
+    .handler(async ({ data: { mediaId, mediaType } }) => {
+        const container = await getContainer();
+        const collectionService = container.services.collections;
+        return collectionService.getMediaCommunityCollections(mediaId, mediaType);
     });
 
 

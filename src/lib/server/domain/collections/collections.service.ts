@@ -77,6 +77,11 @@ export class CollectionsService {
         };
     }
 
+    async getMediaCommunityCollections(mediaId: number, mediaType: MediaType) {
+        const collections = await this.repository.getMediaCommunityCollections(mediaId, mediaType);
+        return this._enrichWithPreviews(collections);
+    }
+
     async createCollection(params: {
         title: string;
         ownerId: number;

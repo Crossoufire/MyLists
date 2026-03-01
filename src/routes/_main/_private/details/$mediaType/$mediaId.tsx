@@ -1,6 +1,6 @@
+import {Suspense} from "react";
 import {MediaType} from "@/lib/utils/enums";
 import {ExternalLink, Plus} from "lucide-react";
-import {capitalize} from "@/lib/utils/formating";
 import {useAuth} from "@/lib/client/hooks/use-auth";
 import {Card} from "@/lib/client/components/ui/card";
 import {useSuspenseQuery} from "@tanstack/react-query";
@@ -9,14 +9,14 @@ import {Button} from "@/lib/client/components/ui/button";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
 import {MediaHero} from "@/lib/client/components/media/base/MediaHero";
 import {MediaSynopsis} from "@/lib/client/components/media/base/MediaSynopsis";
-import {SimilarMediaCard} from "@/lib/client/components/media/base/SimilarMedia";
+import {SimilarMedia} from "@/lib/client/components/media/base/SimilarMedia";
 import {MediaComponent} from "@/lib/client/components/media/base/MediaComponent";
 import {RefreshAndEdit} from "@/lib/client/components/media/base/RefreshAndEdit";
 import {UserMediaDetails} from "@/lib/client/components/media/base/UserMediaDetails";
-import {MediaSectionTitle} from "@/lib/client/components/media/base/MediaDetailsComps";
-import {mediaDetailsOptions} from "@/lib/client/react-query/query-options/query-options";
 import {MediaFollowsSection} from "@/lib/client/components/media/base/MediaFollowsSection";
+import {MediaCommunityCollections} from "@/lib/client/components/media/base/MediaCommunityCollections";
 import {useAddMediaToListMutation} from "@/lib/client/react-query/query-mutations/user-media.mutations";
+import {mediaCommunityCollectionsOptions, mediaDetailsOptions} from "@/lib/client/react-query/query-options/query-options";
 
 
 export const Route = createFileRoute("/_main/_private/details/$mediaType/$mediaId")({
@@ -31,7 +31,8 @@ export const Route = createFileRoute("/_main/_private/details/$mediaType/$mediaI
     validateSearch: (search) => ({ external: Boolean(search?.external ?? false) }),
     loaderDeps: ({ search: { external } }) => ({ external }),
     loader: async ({ context: { queryClient }, params: { mediaType, mediaId }, deps: { external } }) => {
-        return queryClient.ensureQueryData(mediaDetailsOptions(mediaType, mediaId, external));
+        const details = await queryClient.ensureQueryData(mediaDetailsOptions(mediaType, mediaId, external));
+        void queryClient.prefetchQuery(mediaCommunityCollectionsOptions(details.media.id, mediaType));
     },
     component: MediaDetailsPage,
 });
@@ -76,20 +77,17 @@ function MediaDetailsPage() {
                         mediaType={mediaType}
                     />
 
-                    <section>
-                        <MediaSectionTitle
-                            title={`Similar ${capitalize(mediaType)}`}
+                    <SimilarMedia
+                        mediaType={mediaType}
+                        similarMedia={similarMedia}
+                    />
+
+                    <Suspense>
+                        <MediaCommunityCollections
+                            mediaId={media.id}
+                            mediaType={mediaType}
                         />
-                        <div className="grid grid-cols-5 gap-3 pb-4 max-sm:max-h-140 max-sm:grid-cols-2 max-sm:overflow-y-auto scrollbar-thin">
-                            {similarMedia.map((item) =>
-                                <SimilarMediaCard
-                                    item={item}
-                                    key={item.mediaId}
-                                    mediaType={mediaType}
-                                />
-                            )}
-                        </div>
-                    </section>
+                    </Suspense>
                 </div>
                 <div className="col-span-4 space-y-6 max-lg:col-span-1 max-lg:order-1">
                     <div className="space-y-6 max-lg:grid max-lg:grid-cols-2 max-md:grid-cols-1 max-lg:gap-6">

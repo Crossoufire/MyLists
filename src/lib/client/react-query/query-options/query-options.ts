@@ -17,9 +17,9 @@ import {getDailyMediadle, getMediadleSuggestions} from "@/lib/server/functions/m
 import {getNotifications, getNotificationsCount} from "@/lib/server/functions/notifications";
 import {getMonthlyActivity, getSectionActivity, getUserStats} from "@/lib/server/functions/user-stats";
 import {getJobDetails, getMediaDetails, getMediaDetailsToEdit} from "@/lib/server/functions/media-details";
-import {getCommunityCollections, getEditCollectionDetails, getReadCollectionDetails, getUserCollections} from "@/lib/server/functions/collections";
 import {getAllUpdatesHistory, getUserProfile, getUserProfileHeader, getUsersFollowers, getUsersFollows} from "@/lib/server/functions/user-profile";
 import {getMediaListFilters, getMediaListSearchFilters, getMediaListSF, getTagsViewFn, getUserListHeaderSF} from "@/lib/server/functions/media-lists";
+import {getCommunityCollections, getEditCollectionDetails, getMediaCommunityCollections, getReadCollectionDetails, getUserCollections} from "@/lib/server/functions/collections";
 
 
 export const authOptions = queryOptions({
@@ -273,6 +273,12 @@ export const collectionDetailsEditOptions = (collectionId: number) => queryOptio
 export const communityCollectionsOptions = (search: CommunitySearch) => queryOptions({
     queryKey: ["collections", "community", search] as const,
     queryFn: () => getCommunityCollections({ data: search }),
+});
+
+
+export const mediaCommunityCollectionsOptions = (mediaId: number, mediaType: MediaType) => queryOptions({
+    queryKey: ["details", "collections", "community", mediaType, mediaId],
+    queryFn: () => getMediaCommunityCollections({ data: { mediaId, mediaType } }),
 });
 
 
