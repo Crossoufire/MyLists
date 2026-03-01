@@ -208,7 +208,7 @@ const TagCard = ({ tag, isOwner, mediaType, username, onRename, onDelete }: TagC
                     <div className="flex items-baseline justify-between pl-1">
                         <div>
                             <h3 className="font-bold">
-                                {tag.tagName}
+                                # {tag.tagName}
                             </h3>
                             <span className="flex items-center gap-1 pt-1 text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
                                 <Layers className="size-3"/> {tag.totalCount} items

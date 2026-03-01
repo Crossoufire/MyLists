@@ -65,16 +65,16 @@ export const TagsLists = ({ queryOption, mediaType, mediaId, tags }: TagListsPro
                         Not tag added yet.
                     </div>
                     :
-                    tags.map((col) =>
+                    tags.map((tag) =>
                         <Link
-                            key={col.name}
-                            search={{ tags: [col.name] }}
+                            key={tag.name}
+                            search={{ tags: [tag.name] }}
                             to="/list/$mediaType/$username"
                             params={{ mediaType, username: currentUser!.name }}
                         >
-                            <Badge key={col.name} variant="emerald" className="max-w-50">
+                            <Badge key={tag.name} variant="emerald" className="max-w-50">
                                 <div className="flex justify-between gap-2">
-                                    {col.name}
+                                    # {tag.name}
                                 </div>
                             </Badge>
                         </Link>

@@ -24,8 +24,8 @@ interface TagsDialogProps {
 export const TagsDialog = ({ mediaType, mediaId, tags, updateTag }: TagsDialogProps) => {
     const { currentUser } = useAuth();
     const [isOpen, setIsOpen] = useState(false);
-    const [searchQuery, setSearchQuery] = useState("");
     const mutation = useEditTagMutation(mediaType, mediaId);
+    const [searchQuery, setSearchQuery] = useState("");
     const { data: allTags = [], isLoading } = useQuery(tagNamesOptions(mediaType, isOpen));
     const [toast, setToast] = useState<{ type: "error" | "success"; message: string } | null>(null);
 
@@ -155,7 +155,7 @@ export const TagsDialog = ({ mediaType, mediaId, tags, updateTag }: TagsDialogPr
                                                         {isActive && <Check className="size-3 text-popover stroke-4"/>}
                                                     </div>
                                                     <span className="font-medium">
-                                                        {col.name}
+                                                        # {col.name}
                                                     </span>
                                                 </div>
 
