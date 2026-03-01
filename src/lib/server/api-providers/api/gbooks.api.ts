@@ -1,11 +1,11 @@
 import {serverEnv} from "@/env/server";
 import {RateLimiterAbstract} from "rate-limiter-flexible";
 import {createRateLimiter} from "@/lib/server/core/rate-limiter";
-import {BaseClient} from "@/lib/server/api-providers/clients/base.client";
+import {BaseApi} from "@/lib/server/api-providers/api/base.api";
 import {GBooksDetails, GBooksSearchResults, SearchData} from "@/lib/types/provider.types";
 
 
-export class GBooksClient extends BaseClient {
+export class GbooksApi extends BaseApi {
     private static readonly consumeKey = "gBooks-API";
     private readonly baseUrl = "https://www.googleapis.com/books/v1/volumes";
     private static readonly throttleOptions = { points: 4, duration: 1, keyPrefix: "gBooksAPI" };
@@ -15,8 +15,8 @@ export class GBooksClient extends BaseClient {
     }
 
     public static async create() {
-        const gBooksLimiter = await createRateLimiter(GBooksClient.throttleOptions);
-        return new GBooksClient(gBooksLimiter, GBooksClient.consumeKey);
+        const gBooksLimiter = await createRateLimiter(GbooksApi.throttleOptions);
+        return new GbooksApi(gBooksLimiter, GbooksApi.consumeKey);
     }
 
     async search(query: string, page: number = 1): Promise<SearchData<GBooksSearchResults>> {

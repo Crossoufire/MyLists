@@ -1,5 +1,4 @@
 import {JSX} from "react";
-import {mail} from "@/lib/utils/helpers";
 import {ApiProviderType} from "@/lib/utils/enums";
 import {createFileRoute} from "@tanstack/react-router";
 import {BlockLink} from "@/lib/client/components/general/BlockLink";
@@ -13,16 +12,15 @@ import {
     Calendar,
     CheckCheck,
     ChevronDown,
-    Code2,
     Crop,
     Edit3,
     FileSpreadsheet,
     Filter,
     Gamepad2,
     GraduationCap,
-    Layers,
     LayoutList,
     LineChart,
+    ListOrdered,
     Lock,
     LucideIcon,
     Monitor,
@@ -30,6 +28,7 @@ import {
     Search,
     Share2,
     Shield,
+    Tags,
     Trash2,
     Trophy,
     Users,
@@ -113,6 +112,18 @@ type FeatureData = {
 
 const FEATURES_DATA: FeatureData[] = [
     {
+        icon: ListOrdered,
+        category: "New",
+        name: "New (real) Collections System",
+        description: (
+            <span>
+                Create, and rank collections of media. Keep your collections private for organization,
+                or publish them to the Community page to share with others.
+                (The previous `Collection` system is now called `Tags`).
+            </span>
+        )
+    },
+    {
         icon: CheckCheck,
         category: "New",
         name: "Features Voting!",
@@ -150,14 +161,14 @@ const FEATURES_DATA: FeatureData[] = [
         )
     },
     {
-        icon: Layers,
+        icon: Tags,
         category: "New",
-        name: "Labels become Collections",
+        name: "Labels become Tags",
         description: (
             <span>
-                Labels have a fresh new look and are now called 'collections'.
+                Labels have a fresh new look and are now called 'tags'.
                 Check out the new design on your lists page.
-                The collection management modal has also been updated.
+                The tags management modal has also been updated.
             </span>
         )
     },
@@ -171,17 +182,6 @@ const FEATURES_DATA: FeatureData[] = [
                 <BlockLink to="/walkthrough/search-media" className="inline-flex gap-1 items-center text-app-accent font-medium hover:text-app-accent/80">
                     here
                 </BlockLink>.
-            </span>
-        )
-    },
-    {
-        icon: Code2,
-        category: "New",
-        name: "New Backend Language",
-        description: (
-            <span>
-                MyLists is now powered by TypeScript. While this improves long-term stability, bugs are expected during the transition. If you spot one, please <a
-                className="text-app-accent font-medium hover:text-app-accent/80" href={`mailto:${mail}`}>contact me</a>.
             </span>
         )
     },
@@ -332,10 +332,10 @@ const FEATURES_DATA: FeatureData[] = [
         description: "Switch between Grid view and a data-dense Table layout for your lists."
     },
     {
-        icon: Layers,
+        icon: Tags,
+        name: "Custom Tags",
         category: "Customization",
-        name: "Custom Collections",
-        description: "Create and apply custom collections to organize your media list your way."
+        description: "Create and apply custom tags to organize your media list your way."
     },
     {
         name: "CSV Export",

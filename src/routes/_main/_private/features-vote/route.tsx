@@ -4,13 +4,16 @@ import {createFileRoute} from "@tanstack/react-router";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {Badge} from "@/lib/client/components/ui/badge";
 import {Input} from "@/lib/client/components/ui/input";
+import {getZodMutationError} from "@/lib/utils/helpers";
 import {Button} from "@/lib/client/components/ui/button";
 import {Textarea} from "@/lib/client/components/ui/textarea";
+import {capitalize, formatDateTime} from "@/lib/utils/formating";
+import {TabHeader} from "@/lib/client/components/general/TabHeader";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
-import {CalendarClock, CheckCircle2, Crown, Settings2} from "lucide-react";
 import {featureVotesOptions} from "@/lib/client/react-query/query-options/query-options";
 import {FeatureStatus, FeatureVoteType, isAtLeastRole, RoleType,} from "@/lib/utils/enums";
-import {Card, CardContent, CardDescription, CardHeader, CardTitle,} from "@/lib/client/components/ui/card";
+import {CalendarClock, ChevronUp, Crown, ExternalLink, Search, Settings2} from "lucide-react";
+import {Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle,} from "@/lib/client/components/ui/card";
 import {Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger} from "@/lib/client/components/ui/dialog";
 import {
     useCreateFeatureRequestMutation,
@@ -35,29 +38,39 @@ const STATUS_STYLES: Record<FeatureStatus, string> = {
 };
 
 
+const ACTIVE_STATUSES: FeatureStatus[] = [
+    FeatureStatus.PLANNED,
+    FeatureStatus.IN_PROGRESS,
+    FeatureStatus.UNDER_CONSIDERATION,
+];
+
+
 function FeatureVotesPage() {
     const { currentUser } = useAuth();
     const [newTitle, setNewTitle] = useState("");
     const toggleVoteMutation = useToggleFeatureVoteMutation();
     const apiData = useSuspenseQuery(featureVotesOptions).data;
+    const [searchQuery, setSearchQuery] = useState("");
     const createFeatureMutation = useCreateFeatureRequestMutation();
     const [newDescription, setNewDescription] = useState("");
     const isAdmin = isAtLeastRole(currentUser?.role ?? null, RoleType.ADMIN);
+    const [statusTab, setStatusTab] = useState<FeatureStatus | "active">("active");
     const availableSuperVotes = Math.max(0, apiData.superVoteLimit - apiData.superVotesUsed);
 
     const filteredRequests = useMemo(() => {
-        return [...apiData.items].sort((a, b) => b.totalVotes - a.totalVotes);
-    }, [apiData.items]);
+        return apiData.items
+            .filter((item) => {
+                if (searchQuery.trim()) {
+                    const search = searchQuery.toLowerCase();
+                    return item.title.toLowerCase().includes(search) || item.description?.toLowerCase().includes(search);
+                }
 
-    const getMutationError = (error: any) => {
-        if (!error) return null;
-
-        if (error.issues && Array.isArray(error.issues) && error.issues.length > 0) {
-            return error.issues[0].message;
-        }
-
-        return error.message || "An unexpected error occurred";
-    };
+                return statusTab === "active"
+                    ? ACTIVE_STATUSES.includes(item.status)
+                    : item.status.toLowerCase() === statusTab.toLowerCase();
+            })
+            .sort((a, b) => b.totalVotes - a.totalVotes);
+    }, [apiData.items, statusTab, searchQuery]);
 
     const handleAddNewFeature = () => {
         createFeatureMutation.mutate({ data: { title: newTitle.trim(), description: newDescription.trim() } }, {
@@ -71,6 +84,19 @@ function FeatureVotesPage() {
     const handleVote = (featureId: number, voteType: FeatureVoteType) => {
         toggleVoteMutation.mutate({ data: { featureId, voteType } });
     };
+
+    const statusTabs = [
+        {
+            id: "active",
+            isAccent: true,
+            label: "Active",
+        },
+        ...Object.keys(FeatureStatus).map((status) => ({
+            isAccent: true,
+            id: capitalize(status.toLowerCase().replace("_", " ")),
+            label: capitalize(status.toLowerCase().replace("_", " ")),
+        }))
+    ];
 
     return (
         <PageTitle title="Feature Voting Hub" subtitle="Submit ideas, search, and vote on what MyLists should have next.">
@@ -126,7 +152,7 @@ function FeatureVotesPage() {
                             />
                             {createFeatureMutation.isError &&
                                 <p className="text-xs text-red-400">
-                                    {getMutationError(createFeatureMutation.error)}
+                                    {getZodMutationError(createFeatureMutation.error)}
                                 </p>
                             }
                             <div className="flex items-center justify-center">
@@ -174,63 +200,92 @@ function FeatureVotesPage() {
                     </Card>
                 </div>
 
-                <div className="grid gap-4">
+                <Card className="border-app-rating">
+                    <CardHeader>
+                        <CardTitle>Discussions</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-2">
+                        <div>
+                            If you want to discuss a feature idea in more details and exchange with me,
+                            please do not hesitate to open a new discussion on GitHub discussions here:{" "}
+                        </div>
+                        <div className="text-center">
+                            <a href="https://github.com/Crossoufire/MyLists/discussions" target="_blank" rel="noreferrer">
+                                <Button variant="emeraldy">
+                                    Github Discussions <ExternalLink/>
+                                </Button>
+                            </a>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <div className="relative max-w-sm max-sm:w-full">
+                    <Search className="absolute left-2.5 top-2.5 size-4 text-muted-foreground"/>
+                    <Input
+                        type="search"
+                        className="pl-8"
+                        value={searchQuery}
+                        placeholder="Search by title or description..."
+                        onChange={(ev) => setSearchQuery(ev.target.value)}
+                    />
+                </div>
+
+                <TabHeader
+                    tabs={statusTabs}
+                    activeTab={statusTab}
+                    setActiveTab={setStatusTab as any}
+                />
+
+                <div className="grid gap-6">
                     {filteredRequests.map((req) => {
-                        const isLocked = req.status === FeatureStatus.REJECTED || req.status === FeatureStatus.COMPLETED;
                         const isNormalVote = req.userVote === FeatureVoteType.VOTE;
                         const isSuperVote = req.userVote === FeatureVoteType.SUPER;
                         const normalVoteLabel = isNormalVote ? "Rescind vote" : "Vote";
                         const superVoteLabel = isSuperVote ? "Rescind super-vote" : "Super Vote";
+                        const isLocked = req.status === FeatureStatus.REJECTED || req.status === FeatureStatus.COMPLETED;
 
                         return (
-                            <Card key={req.id} className="relative overflow-hidden">
+                            <Card key={req.id}>
                                 <CardHeader>
-                                    <div className="flex flex-wrap items-start justify-between gap-3">
-                                        <div className="space-y-1">
-                                            <CardTitle>{req.title}</CardTitle>
-                                            <CardDescription>{req.description}</CardDescription>
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                            <Badge className={STATUS_STYLES[req.status]}>
-                                                {req.status}
-                                            </Badge>
-                                            <div className="rounded-lg border px-3 py-1 text-xs text-muted-foreground">
-                                                {req.totalVotes} votes
-                                            </div>
-                                        </div>
-                                    </div>
+                                    <CardTitle>{req.title}</CardTitle>
+                                    <CardDescription className="text-xs flex items-center gap-1">
+                                        <CalendarClock className="size-3"/>
+                                        Created {formatDateTime(req.createdAt)}
+                                    </CardDescription>
+                                    <CardAction>
+
+                                    </CardAction>
                                 </CardHeader>
-                                <CardContent className="space-y-4">
-                                    <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
-                                        <div className="flex items-center gap-1">
-                                            <CalendarClock className="size-3"/>
-                                            Created {req.createdAt}
-                                        </div>
-                                        {req.userVote &&
-                                            <div className="flex items-center gap-1 text-emerald-300">
-                                                <CheckCircle2 className="size-3"/>
-                                                You cast a{" "}
-                                                {req.userVote === FeatureVoteType.SUPER ? "super-vote" : "vote"}
-                                            </div>
-                                        }
+                                <CardContent className="space-y-6">
+                                    <div className="flex gap-3">
+                                        <Badge className={STATUS_STYLES[req.status]}>
+                                            {req.status}
+                                        </Badge>
+                                        <Badge variant="outline">
+                                            <ChevronUp/> {req.totalVotes} votes
+                                        </Badge>
+                                    </div>
+
+                                    <div className="flex flex-wrap items-center gap-3 text-sm">
+                                        {req.description}
                                     </div>
 
                                     {req.adminComment &&
-                                        <div className="rounded-lg border border-dashed px-3 py-2 text-xs text-muted-foreground">
-                                            <span className="font-semibold text-primary">
+                                        <div className="rounded-lg border border-dashed px-3 py-2 text-sm">
+                                            <div className="text-sm font-semibold text-app-accent">
                                                 Admin note:
-                                            </span>{" "}
+                                            </div>
                                             {req.adminComment}
                                         </div>
                                     }
 
-                                    <div className="flex flex-wrap items-center justify-between">
+                                    <div className="flex flex-wrap gap-2 items-center justify-between">
                                         <div className="flex flex-wrap items-center gap-2">
                                             <Button
                                                 size="sm"
                                                 variant={isNormalVote ? "emeraldy" : "outline"}
-                                                onClick={() => handleVote(req.id, FeatureVoteType.VOTE)}
                                                 disabled={toggleVoteMutation.isPending || isLocked}
+                                                onClick={() => handleVote(req.id, FeatureVoteType.VOTE)}
                                             >
                                                 {normalVoteLabel}
                                             </Button>
@@ -275,7 +330,7 @@ interface AdminFeatureControlsProps {
 }
 
 
-export function AdminFeatureControls({ featureId, currentStatus, currentComment }: AdminFeatureControlsProps) {
+export const AdminFeatureControls = ({ featureId, currentStatus, currentComment }: AdminFeatureControlsProps) => {
     const [open, setOpen] = useState(false);
     const [note, setNote] = useState(currentComment ?? "");
     const updateStatusMutation = useUpdateFeatureStatusMutation();
@@ -345,11 +400,7 @@ export function AdminFeatureControls({ featureId, currentStatus, currentComment 
                             placeholder="Provide context on why this status was chosen..."
                         />
                     </div>
-                </div>
 
-                <div className="rounded-lg border border-dashed border-destructive/60 bg-destructive/10 px-4 py-3 text-xs text-muted-foreground">
-                    <p className="font-semibold text-destructive">Delete request</p>
-                    <p>This permanently removes the feature request and all votes.</p>
                     <Button
                         size="sm"
                         type="button"
@@ -382,4 +433,4 @@ export function AdminFeatureControls({ featureId, currentStatus, currentComment 
             </DialogContent>
         </Dialog>
     );
-}
+};

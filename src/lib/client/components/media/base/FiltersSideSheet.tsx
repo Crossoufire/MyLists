@@ -178,10 +178,10 @@ export const FiltersSideSheet = ({ filters, username, mediaType, isCurrent, onCl
                                         </div>
                                     </div>
                                     <CheckboxGroup
-                                        title="Collections"
-                                        items={listFilters?.collections ?? []}
-                                        onChange={(col) => handleRegisterChange("collections", [col])}
-                                        defaultChecked={(col) => filters.collections?.includes(col) ?? false}
+                                        title="Tags"
+                                        items={listFilters?.tags ?? []}
+                                        onChange={(col) => handleRegisterChange("tags", [col])}
+                                        defaultChecked={(col) => filters.tags?.includes(col) ?? false}
                                     />
                                 </div>
                         }

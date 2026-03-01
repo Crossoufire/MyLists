@@ -1,16 +1,16 @@
+import {MediaType, TagAction} from "@/lib/utils/enums";
 import {SearchType} from "@/lib/types/zod.schema.types";
-import {CollectionAction, MediaType} from "@/lib/utils/enums";
-import {Collection, UpdatePayload} from "@/lib/types/base.types";
+import {Tag, UpdatePayload} from "@/lib/types/base.types";
 import {useMutation, useQueryClient} from "@tanstack/react-query";
-import {postAddMediaToList, postDeleteUserUpdates, postEditUserCollection, postRemoveMediaFromList, postUpdateUserMedia} from "@/lib/server/functions/user-media";
+import {postAddMediaToList, postDeleteUserUpdates, postEditUserTag, postRemoveMediaFromList, postUpdateUserMedia} from "@/lib/server/functions/user-media";
 import {
     allUpdatesOptions,
-    collectionNamesOptions,
-    collectionsViewOptions,
     historyOptions,
     mediaDetailsOptions,
     mediaListOptions,
-    profileOptions
+    profileOptions,
+    tagNamesOptions,
+    tagsViewOptions
 } from "@/lib/client/react-query/query-options/query-options";
 import {useAuth} from "@/lib/client/hooks/use-auth";
 
@@ -164,18 +164,18 @@ export const useUpdateUserMediaMutation = (mediaType: MediaType, mediaId: number
 };
 
 
-export const useEditCollectionMutation = (mediaType: MediaType, mediaId?: number) => {
+export const useEditTagMutation = (mediaType: MediaType, mediaId?: number) => {
     const { currentUser } = useAuth();
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: ({ collection, action }: { collection: Collection, action: CollectionAction }) => {
-            return postEditUserCollection({ data: { mediaType, mediaId, collection, action } });
+        mutationFn: ({ tag, action }: { tag: Tag, action: TagAction }) => {
+            return postEditUserTag({ data: { mediaType, mediaId, tag, action } });
         },
         onSuccess: async (data) => {
-            await queryClient.invalidateQueries({ queryKey: collectionsViewOptions(mediaType, currentUser!.name).queryKey });
+            await queryClient.invalidateQueries({ queryKey: tagsViewOptions(mediaType, currentUser!.name).queryKey });
 
-            queryClient.setQueryData(collectionNamesOptions(mediaType, false).queryKey, (oldData) => {
+            queryClient.setQueryData(tagNamesOptions(mediaType, false).queryKey, (oldData) => {
                 if (!oldData || !data) return;
                 return oldData.map((c) => c?.name).includes(data?.name ?? "") ? oldData : [...oldData, data];
             });

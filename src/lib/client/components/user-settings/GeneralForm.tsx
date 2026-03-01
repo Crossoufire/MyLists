@@ -22,6 +22,10 @@ type FormValues = {
 };
 
 
+// A bit less than 10 Mb
+const MAX_FILE_SIZE = 10 * 1024 * 1000;
+
+
 export const GeneralForm = () => {
     const { currentUser, setCurrentUser } = useAuth();
     const generalSettingsMutation = useGeneralSettingsMutation();
@@ -119,6 +123,14 @@ export const GeneralForm = () => {
                     <FormField
                         name="profileImage"
                         control={form.control}
+                        rules={{
+                            validate: (file?: File) => {
+                                console.log({ file });
+                                if (!file) return true;
+                                if (file.size > MAX_FILE_SIZE) return "Image must be less than 10MB.";
+                                return true;
+                            },
+                        }}
                         render={({ field }) => (
                             <FormItem>
                                 <FormLabel>Profile image</FormLabel>
@@ -139,6 +151,13 @@ export const GeneralForm = () => {
                     <FormField
                         name="backgroundImage"
                         control={form.control}
+                        rules={{
+                            validate: (file?: File) => {
+                                if (!file) return true;
+                                if (file.size > MAX_FILE_SIZE) return "Image must be less than 10MB.";
+                                return true;
+                            },
+                        }}
                         render={({ field }) => (
                             <FormItem>
                                 <FormLabel>Background Image</FormLabel>

@@ -1,4 +1,4 @@
-import {TmdbClient} from "@/lib/server/api-providers/clients/tmdb.client";
+import {TmdbApi} from "@/lib/server/api-providers/api/tmdb.api";
 import {MoviesRepository} from "@/lib/server/domain/media/movies/movies.repository";
 import {UpsertMovieWithDetails} from "@/lib/server/domain/media/movies/movies.types";
 import {TmdbMovieDetails, TmdbTrendingMoviesResponse} from "@/lib/types/provider.types";
@@ -7,7 +7,7 @@ import {BaseTrendsProviderService} from "@/lib/server/domain/media/base/provider
 
 
 export class MoviesProviderService extends BaseTrendsProviderService<MoviesRepository, TmdbMovieDetails, UpsertMovieWithDetails> {
-    constructor(private client: TmdbClient, repository: MoviesRepository) {
+    constructor(private client: TmdbApi, repository: MoviesRepository) {
         super(repository);
     }
 

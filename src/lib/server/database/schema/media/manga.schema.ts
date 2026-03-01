@@ -2,7 +2,7 @@ import {MediaType} from "@/lib/utils/enums";
 import {relations} from "drizzle-orm/relations";
 import {user} from "@/lib/server/database/schema/auth.schema";
 import {integer, real, sqliteTable, text} from "drizzle-orm/sqlite-core";
-import {commonGenericCols, commonMediaCollectionsCols, commonMediaCols, commonMediaListCols} from "@/lib/server/database/schema/media/_helper";
+import {commonGenericCols, commonMediaCols, commonMediaListCols, commonMediaTagsCols} from "@/lib/server/database/schema/media/_helper";
 
 
 export const manga = sqliteTable("manga", {
@@ -39,8 +39,8 @@ export const mangaAuthors = sqliteTable("manga_authors", {
 });
 
 
-export const mangaCollections = sqliteTable("manga_collections", {
-    ...commonMediaCollectionsCols(manga.id),
+export const mangaTags = sqliteTable("manga_tags", {
+    ...commonMediaTagsCols(manga.id),
 });
 
 
@@ -48,7 +48,7 @@ export const mangaRelations = relations(manga, ({ many }) => ({
     mangaLists: many(mangaList),
     mangaAuthors: many(mangaAuthors),
     mangaGenres: many(mangaGenre),
-    mangaCollections: many(mangaCollections),
+    mangaTags: many(mangaTags),
 }));
 
 
@@ -80,13 +80,13 @@ export const mangaGenreRelations = relations(mangaGenre, ({ one }) => ({
 }));
 
 
-export const mangaCollectionsRelations = relations(mangaCollections, ({ one }) => ({
+export const mangaTagsRelations = relations(mangaTags, ({ one }) => ({
     user: one(user, {
-        fields: [mangaCollections.userId],
+        fields: [mangaTags.userId],
         references: [user.id]
     }),
     manga: one(manga, {
-        fields: [mangaCollections.mediaId],
+        fields: [mangaTags.mediaId],
         references: [manga.id]
     }),
 }));

@@ -1,7 +1,7 @@
 import {describe, expect, it} from "vitest";
 import type {Game, GamesList} from "./games.types";
 import {getContainer} from "@/lib/server/core/container";
-import type {UserMediaWithCollections} from "@/lib/types/base.types";
+import type {UserMediaWithTags} from "@/lib/types/base.types";
 import {MediaType, RatingSystemType, Status} from "@/lib/utils/enums";
 
 
@@ -46,9 +46,9 @@ describe("GamesService", async () => {
         ...overrides,
     });
 
-    const makeUserState = (overrides: Partial<UserMediaWithCollections<GamesList>>): UserMediaWithCollections<GamesList> => ({
+    const makeUserState = (overrides: Partial<UserMediaWithTags<GamesList>>): UserMediaWithTags<GamesList> => ({
         ...makeState(overrides),
-        collections: [],
+        tags: [],
         ratingSystem: RatingSystemType.SCORE,
     });
 

@@ -7,8 +7,19 @@ const RELATIVE_TIME_UNITS: { unit: Intl.RelativeTimeFormatUnit; seconds: number 
 ];
 
 const parseDate = (input: string | number) => {
-    if (typeof input === "number") return new Date(input * 1000);
-    return new Date(input.includes("T") ? input : `${input.replace(" ", "T")}Z`);
+    if (typeof input === "number") {
+        return new Date(input * 1000);
+    }
+
+    if (input.includes("T")) {
+        return new Date(input);
+    }
+
+    if (input.includes(" ")) {
+        return new Date(`${input.replace(" ", "T")}Z`);
+    }
+
+    return new Date(input);
 };
 
 const withFallback = <T>(value: T | null | undefined, formatter: (v: T) => string, fallback = "-") => {

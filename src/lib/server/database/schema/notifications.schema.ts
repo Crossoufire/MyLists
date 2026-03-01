@@ -23,11 +23,9 @@ export const mediaNotifications = sqliteTable("media_notifications", {
     name: text("name").notNull(),
     mediaId: integer("media_id").notNull(),
     mediaType: text("media_type").$type<MediaType>().notNull(),
-
     season: integer("season"),
     episode: integer("episode"),
     isSeasonFinale: integer({ mode: "boolean" }),
-
     releaseDate: text("release_date"),
     read: integer({ mode: "boolean" }).default(false).notNull(),
     createdAt: text("created_at").default(sql`(CURRENT_TIMESTAMP)`).notNull(),

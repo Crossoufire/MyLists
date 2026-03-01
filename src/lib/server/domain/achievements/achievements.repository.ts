@@ -119,6 +119,7 @@ export class AchievementsRepository {
     static async getAchievementsDetails(userId: number, limit = 6) {
         const results = await getDbClient()
             .select({
+                id: achievement.id,
                 name: achievement.name,
                 description: achievement.description,
                 difficulty: achievementTier.difficulty,
@@ -137,7 +138,7 @@ export class AchievementsRepository {
     static async countPlatinumAchievements(userId?: number) {
         const forUser = userId ? eq(userAchievement.userId, userId) : undefined;
 
-        const result = await getDbClient()
+        const result = getDbClient()
             .select({ count: count() })
             .from(userAchievement)
             .innerJoin(achievementTier, eq(userAchievement.tierId, achievementTier.id))
@@ -237,7 +238,7 @@ export class AchievementsRepository {
     }
 
     static async insertAchievement(tier: AchievementTier, cte: StatsCTE, completed: SQL, count: SQL, progress: SQL) {
-        await getDbClient().run(sql`
+        getDbClient().run(sql`
             INSERT INTO ${userAchievement} (
                 tier_id, 
                 user_id, 
@@ -268,7 +269,7 @@ export class AchievementsRepository {
     }
 
     static async calculateAllAchievementsRarity() {
-        const totalActiveUsers = await getDbClient()
+        const totalActiveUsers = getDbClient()
             .select({ count: count() })
             .from(user)
             .where(eq(user.emailVerified, true))

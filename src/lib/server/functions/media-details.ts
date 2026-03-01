@@ -4,7 +4,7 @@ import {FormattedError} from "@/lib/utils/error-classes";
 import {isAtLeastRole, MediaType, RoleType} from "@/lib/utils/enums";
 import {tryFormZodError, tryNotFound} from "@/lib/utils/try-not-found";
 import {transactionMiddleware} from "@/lib/server/middlewares/transaction";
-import {authMiddleware, managerAuthMiddleware} from "@/lib/server/middlewares/authentication";
+import {requiredAuthAndManagerRoleMiddleware, requiredAuthMiddleware} from "@/lib/server/middlewares/authentication";
 import {
     editMediaDetailsSchema,
     jobDetailsSchema,
@@ -16,7 +16,7 @@ import {
 
 
 export const getMediaDetails = createServerFn({ method: "GET" })
-    .middleware([authMiddleware, transactionMiddleware])
+    .middleware([requiredAuthMiddleware, transactionMiddleware])
     .inputValidator(tryNotFound(mediaDetailsSchema))
     .handler(async ({ data: { mediaType, mediaId, external }, context: { currentUser } }) => {
         const container = await getContainer();
@@ -35,7 +35,7 @@ export const getMediaDetails = createServerFn({ method: "GET" })
 
 
 export const refreshMediaDetails = createServerFn({ method: "POST" })
-    .middleware([authMiddleware, transactionMiddleware])
+    .middleware([requiredAuthMiddleware, transactionMiddleware])
     .inputValidator(refreshMediaDetailsSchema)
     .handler(async ({ data: { mediaType, apiId }, context: { currentUser } }) => {
         const container = await getContainer();
@@ -66,7 +66,7 @@ export const refreshMediaDetails = createServerFn({ method: "POST" })
 
 
 export const getMediaDetailsToEdit = createServerFn({ method: "GET" })
-    .middleware([managerAuthMiddleware, transactionMiddleware])
+    .middleware([requiredAuthAndManagerRoleMiddleware, transactionMiddleware])
     .inputValidator(tryNotFound(mediaDetailsToEditSchema))
     .handler(async ({ data: { mediaType, mediaId } }) => {
         const container = await getContainer();
@@ -76,7 +76,7 @@ export const getMediaDetailsToEdit = createServerFn({ method: "GET" })
 
 
 export const postEditMediaDetails = createServerFn({ method: "POST" })
-    .middleware([managerAuthMiddleware, transactionMiddleware])
+    .middleware([requiredAuthAndManagerRoleMiddleware, transactionMiddleware])
     .inputValidator(editMediaDetailsSchema)
     .handler(async ({ data: { mediaType, mediaId, payload } }) => {
         const container = await getContainer();
@@ -86,7 +86,7 @@ export const postEditMediaDetails = createServerFn({ method: "POST" })
 
 
 export const postUpdateBookCover = createServerFn({ method: "POST" })
-    .middleware([authMiddleware, transactionMiddleware])
+    .middleware([requiredAuthMiddleware, transactionMiddleware])
     .inputValidator(tryFormZodError(updateBookCoverSchema))
     .handler(async ({ data: { apiId, imageUrl, imageFile } }) => {
         const container = await getContainer();
@@ -96,7 +96,7 @@ export const postUpdateBookCover = createServerFn({ method: "POST" })
 
 
 export const getJobDetails = createServerFn({ method: "GET" })
-    .middleware([authMiddleware])
+    .middleware([requiredAuthMiddleware])
     .inputValidator(tryNotFound(jobDetailsSchema))
     .handler(async ({ data: { mediaType, job, name, search }, context: { currentUser } }) => {
         const container = await getContainer();

@@ -8,6 +8,13 @@ import {createServerOnlyFn} from "@tanstack/react-start";
 const sqlite = new Database(serverEnv.DATABASE_URL, { create: true });
 
 
+sqlite.run("PRAGMA foreign_keys = ON;");
+sqlite.run("PRAGMA foreign_keys = ON");
+sqlite.run("PRAGMA synchronous = NORMAL");
+sqlite.run("PRAGMA checkpoint(FULL)");
+sqlite.run("PRAGMA busy_timeout = 10000");
+
+
 const getDbConnection = createServerOnlyFn(() => {
     return drizzle(sqlite, { schema, casing: "snake_case" });
 });

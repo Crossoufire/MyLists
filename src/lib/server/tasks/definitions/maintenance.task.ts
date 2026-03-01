@@ -3,14 +3,14 @@ import {defineTask} from "@/lib/server/tasks/define-task";
 import {dbMaintenanceTask} from "@/lib/server/tasks/definitions/db-maintenance.task";
 import {lockOldMoviesTask} from "@/lib/server/tasks/definitions/lock-old-movies.task";
 import {bulkMediaRefreshTask} from "@/lib/server/tasks/definitions/bulk-media-refresh.task";
-import {removeNonListMediaTask} from "@/lib/server/tasks/definitions/remove-non-list-media.task";
 import {computeAllUsersStatsTask} from "@/lib/server/tasks/definitions/compute-all-users-stats.task";
 import {calculateAchievementsTask} from "@/lib/server/tasks/definitions/calculate-achievements.task";
-import {createMediaNotificationsTask} from "@/lib/server/tasks/definitions/create-media-notifications.task";
 import {addGenresToBooksUsingLlmTask} from "@/lib/server/tasks/definitions/add-books-genres-llm.task";
 import {removeUnusedMediaCoversTask} from "@/lib/server/tasks/definitions/remove-unused-media-covers.task";
 import {deleteNonActivatedUsersTask} from "@/lib/server/tasks/definitions/delete-non-activated-users.task";
+import {createMediaNotificationsTask} from "@/lib/server/tasks/definitions/create-media-notifications.task";
 import {removeUnusedProfileImagesTask} from "@/lib/server/tasks/definitions/remove-unused-profile-images.task";
+import {removeAllOrphansMediaTask} from "@/lib/server/tasks/definitions/remove-all-orphans-media";
 
 
 export const maintenanceTask = defineTask({
@@ -20,7 +20,7 @@ export const maintenanceTask = defineTask({
     inputSchema: z.object({}),
     handler: async (ctx, input) => {
         await ctx.step(deleteNonActivatedUsersTask.name, () => deleteNonActivatedUsersTask.handler(ctx, input));
-        await ctx.step(removeNonListMediaTask.name, () => removeNonListMediaTask.handler(ctx, input));
+        await ctx.step(removeAllOrphansMediaTask.name, () => removeAllOrphansMediaTask.handler(ctx, input));
         await ctx.step(removeUnusedMediaCoversTask.name, () => removeUnusedMediaCoversTask.handler(ctx, input));
         await ctx.step(removeUnusedProfileImagesTask.name, () => removeUnusedProfileImagesTask.handler(ctx, input));
         await ctx.step(bulkMediaRefreshTask.name, () => bulkMediaRefreshTask.handler(ctx, input));

@@ -3,7 +3,7 @@ import {getImageUrl} from "@/lib/utils/image-url";
 import {saveImageFromUrl} from "@/lib/utils/image-saver";
 import {gamesConfig} from "@/lib/server/domain/media/games/games.config";
 import {UpsertGameWithDetails} from "@/lib/server/domain/media/games/games.types";
-import {HltbGameEntry, IgdbGameDetails, IgdbSearchResponse, ProviderSearchResult, SearchData} from "@/lib/types/provider.types";
+import {HltbGameEntry, IgdbGameDetails, IgdbSearchResponse, IgdbTrendGamesResponse, ProviderSearchResult, SearchData, TrendsMedia} from "@/lib/types/provider.types";
 
 
 const maxGenres = gamesConfig.apiProvider.maxGenres;
@@ -92,7 +92,20 @@ const addHLTBDataToMainDetails = (hltbData: HltbGameEntry, mediaData: UpsertGame
 };
 
 
+const transformGamesTrends = (rawData: IgdbTrendGamesResponse[]): TrendsMedia[] => {
+    return rawData.map((item) => ({
+        apiId: item.game.id,
+        displayName: item.game.name,
+        mediaType: MediaType.GAMES,
+        overview: item.game.summary ?? "",
+        posterPath: item.game.cover?.image_id ? `${imageBaseUrl}${item.game.cover.image_id}.jpg` : "",
+        releaseDate: item.game.first_release_date ? new Date(item.game.first_release_date * 1000).toISOString() : "",
+    }));
+};
+
+
 export const igdbTransformer = {
+    transformGamesTrends,
     transformSearchResults,
     addHLTBDataToMainDetails,
     transformDetailsResults: transformGamesDetailsResults,

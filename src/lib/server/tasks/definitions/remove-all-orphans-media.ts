@@ -5,10 +5,10 @@ import {defineTask} from "@/lib/server/tasks/define-task";
 import {withTransaction} from "@/lib/server/database/async-storage";
 
 
-export const removeNonListMediaTask = defineTask({
-    name: "remove-non-list-media" as const,
+export const removeAllOrphansMediaTask = defineTask({
+    name: "remove-all-orphans-media" as const,
     visibility: "admin",
-    description: "Remove media items not in any user's list",
+    description: "Remove media items not in any user's list and collections",
     inputSchema: z.object({}),
     handler: async (ctx) => {
         const container = await getContainer();
@@ -22,15 +22,15 @@ export const removeNonListMediaTask = defineTask({
 
                 await withTransaction(async (_tx) => {
                     const mediaService = mediaRegistry.getService(mediaType);
-                    const mediaIds = await mediaService.getNonListMediaIds();
-                    ctx.metric(`${mediaType}.removed`, mediaIds.length);
+                    const mediaIdsToRemove = await mediaService.getOrphanedMediaIds(mediaType);
+                    ctx.metric(`${mediaType}.removed`, mediaIdsToRemove.length);
 
                     // Remove in other services
-                    await userUpdatesService.deleteMediaUpdates(mediaType, mediaIds);
-                    await notificationsService.deleteMediaNotifications(mediaType, mediaIds);
+                    await userUpdatesService.deleteMediaUpdates(mediaType, mediaIdsToRemove);
+                    await notificationsService.deleteMediaNotifications(mediaType, mediaIdsToRemove);
 
                     // Remove main media and associated tables: actors, genres, companies, authors...
-                    await mediaService.removeMediaByIds(mediaIds);
+                    await mediaService.removeMediaByIds(mediaIdsToRemove);
                 });
             });
         }

@@ -8,7 +8,7 @@ import {checkHltbWorksTask} from "@/lib/server/tasks/definitions/check-hltb-work
 import {backfillActivityTask} from "@/lib/server/tasks/definitions/backfill-activity.task";
 import {seedAchievementsTask} from "@/lib/server/tasks/definitions/seed-achievements.task";
 import {bulkMediaRefreshTask} from "@/lib/server/tasks/definitions/bulk-media-refresh.task";
-import {removeNonListMediaTask} from "@/lib/server/tasks/definitions/remove-non-list-media.task";
+import {removeAllOrphansMediaTask} from "@/lib/server/tasks/definitions/remove-all-orphans-media";
 import {calculateAchievementsTask} from "@/lib/server/tasks/definitions/calculate-achievements.task";
 import {computeAllUsersStatsTask} from "@/lib/server/tasks/definitions/compute-all-users-stats.task";
 import {addGenresToBooksUsingLlmTask} from "@/lib/server/tasks/definitions/add-books-genres-llm.task";
@@ -27,9 +27,9 @@ export const taskRegistry = {
     [bulkMediaRefreshTask.name]: bulkMediaRefreshTask,
     [backfillActivityTask.name]: backfillActivityTask,
     [seedAchievementsTask.name]: seedAchievementsTask,
-    [removeNonListMediaTask.name]: removeNonListMediaTask,
     [computeAllUsersStatsTask.name]: computeAllUsersStatsTask,
     [calculateAchievementsTask.name]: calculateAchievementsTask,
+    [removeAllOrphansMediaTask.name]: removeAllOrphansMediaTask,
     [deleteNonActivatedUsersTask.name]: deleteNonActivatedUsersTask,
     [removeUnusedMediaCoversTask.name]: removeUnusedMediaCoversTask,
     [createMediaNotificationsTask.name]: createMediaNotificationsTask,

@@ -1,13 +1,13 @@
 import {TvRepository} from "@/lib/server/domain/media/tv/tv.repository";
 import {UpsertTvWithDetails} from "@/lib/server/domain/media/tv/tv.types";
-import {JikanClient, TmdbClient} from "@/lib/server/api-providers/clients";
+import {JikanApi, TmdbApi} from "@/lib/server/api-providers/api";
 import {TmdbTrendingTvResponse, TmdbTvDetails} from "@/lib/types/provider.types";
 import {tmdbTransformer} from "@/lib/server/api-providers/transformers/tmdb.transformer";
 import {BaseTrendsProviderService} from "@/lib/server/domain/media/base/provider.service";
 
 
 export class TvProviderService extends BaseTrendsProviderService<TvRepository, TmdbTvDetails, UpsertTvWithDetails> {
-    constructor(private client: TmdbClient, repository: TvRepository, private readonly jikanClient: JikanClient) {
+    constructor(private client: TmdbApi, repository: TvRepository, private readonly jikanClient: JikanApi) {
         super(repository);
     }
 

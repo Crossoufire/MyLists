@@ -1,5 +1,5 @@
 import {JikanDetails} from "@/lib/types/provider.types";
-import {JikanClient} from "@/lib/server/api-providers/clients/jikan.client";
+import {JikanApi} from "@/lib/server/api-providers/api/jikan.api";
 import {MangaRepository} from "@/lib/server/domain/media/manga/manga.repository";
 import {UpsertMangaWithDetails} from "@/lib/server/domain/media/manga/manga.types";
 import {BaseProviderService} from "@/lib/server/domain/media/base/provider.service";
@@ -7,7 +7,7 @@ import {jikanTransformer} from "@/lib/server/api-providers/transformers/jikan.tr
 
 
 export class MangaProviderService extends BaseProviderService<MangaRepository, JikanDetails, UpsertMangaWithDetails> {
-    constructor(private client: JikanClient, repository: MangaRepository) {
+    constructor(private client: JikanApi, repository: MangaRepository) {
         super(repository);
     }
 

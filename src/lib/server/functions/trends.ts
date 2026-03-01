@@ -1,20 +1,22 @@
 import {MediaType} from "@/lib/utils/enums";
 import {createServerFn} from "@tanstack/react-start";
 import {getContainer} from "@/lib/server/core/container";
-import {authMiddleware} from "@/lib/server/middlewares/authentication";
 import {trendsCacheMiddleware} from "@/lib/server/middlewares/caching";
+import {requiredAuthMiddleware} from "@/lib/server/middlewares/authentication";
 
 
 export const getTrendsMedia = createServerFn({ method: "GET" })
-    .middleware([authMiddleware, trendsCacheMiddleware])
+    .middleware([requiredAuthMiddleware, trendsCacheMiddleware])
     .handler(async () => {
         const container = await getContainer();
+        const mediaProviderRegistry = container.registries.mediaProviderService;
+        const gamesProviderService = mediaProviderRegistry.getService(MediaType.GAMES);
+        const seriesProviderService = mediaProviderRegistry.getService(MediaType.SERIES);
+        const moviesProviderService = mediaProviderRegistry.getService(MediaType.MOVIES);
 
-        const seriesProviderService = container.registries.mediaProviderService.getService(MediaType.SERIES);
+        const gamesTrends = await gamesProviderService.fetchAndFormatTrends();
         const seriesTrends = await seriesProviderService.fetchAndFormatTrends();
-
-        const moviesProviderService = container.registries.mediaProviderService.getService(MediaType.MOVIES);
         const moviesTrends = await moviesProviderService.fetchAndFormatTrends();
 
-        return { seriesTrends, moviesTrends };
+        return { seriesTrends, moviesTrends, gamesTrends };
     });

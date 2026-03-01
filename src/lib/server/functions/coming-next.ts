@@ -1,11 +1,11 @@
 import {mediaTypeUtils} from "@/lib/utils/mapping";
 import {createServerFn} from "@tanstack/react-start";
 import {getContainer} from "@/lib/server/core/container";
-import {authMiddleware} from "@/lib/server/middlewares/authentication";
+import {requiredAuthMiddleware} from "@/lib/server/middlewares/authentication";
 
 
 export const getComingNextMedia = createServerFn({ method: "GET" })
-    .middleware([authMiddleware])
+    .middleware([requiredAuthMiddleware])
     .handler(async ({ context: { currentUser } }) => {
         const container = await getContainer()
         const mediaTypes = mediaTypeUtils.getComingNextTypes();

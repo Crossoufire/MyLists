@@ -1,8 +1,8 @@
 import {notFound} from "@tanstack/react-router";
 import {DeltaStats} from "@/lib/types/stats.types";
 import {Status, UpdateType} from "@/lib/utils/enums";
-import {saveImageFromUrl} from "@/lib/utils/image-saver";
 import {eq, getTableName, isNotNull} from "drizzle-orm";
+import {saveImageFromUrl} from "@/lib/utils/image-saver";
 import {FormattedError} from "@/lib/utils/error-classes";
 import {Achievement} from "@/lib/types/achievements.types";
 import {TvRepository} from "@/lib/server/domain/media/tv/tv.repository";
@@ -10,7 +10,7 @@ import {BaseService} from "@/lib/server/domain/media/base/base.service";
 import {AnimeSchemaConfig} from "@/lib/server/domain/media/tv/anime/anime.config";
 import {TvAchCodeName, TvList, TvType} from "@/lib/server/domain/media/tv/tv.types";
 import {SeriesSchemaConfig} from "@/lib/server/domain/media/tv/series/series.config";
-import {EpsSeasonPayload, LogPayload, RedoTvPayload, StatsCTE, StatusPayload, UserMediaWithCollections} from "@/lib/types/base.types";
+import {EpsSeasonPayload, LogPayload, RedoTvPayload, StatsCTE, StatusPayload, UserMediaWithTags} from "@/lib/types/base.types";
 
 
 export class TvService extends BaseService<AnimeSchemaConfig | SeriesSchemaConfig, TvRepository> {
@@ -51,7 +51,7 @@ export class TvService extends BaseService<AnimeSchemaConfig | SeriesSchemaConfi
 
     async calculateAdvancedMediaStats(mediaAvgRating: number | null, userId?: number) {
         // If userId not provided, calculations are platform-wide
-        const { ratings, genresStats, totalCollections, releaseDates } = await super.calculateAdvancedMediaStats(mediaAvgRating, userId);
+        const { ratings, genresStats, totalTags, releaseDates } = await super.calculateAdvancedMediaStats(mediaAvgRating, userId);
 
         // Specific stats
         const avgDuration = await this.repository.avgTvDuration(userId);
@@ -61,7 +61,7 @@ export class TvService extends BaseService<AnimeSchemaConfig | SeriesSchemaConfi
 
         return {
             ratings,
-            totalCollections,
+            totalTags,
             genresStats,
             releaseDates,
             totalSeasons,
@@ -118,7 +118,7 @@ export class TvService extends BaseService<AnimeSchemaConfig | SeriesSchemaConfi
         await this.repository.updateMediaWithDetails({ mediaData: fields as any });
     }
 
-    calculateDeltaStats(oldState: UserMediaWithCollections<TvList> | null, newState: TvList | null, media: TvType) {
+    calculateDeltaStats(oldState: UserMediaWithTags<TvList> | null, newState: TvList | null, media: TvType) {
         const delta: DeltaStats = {};
         const statusCounts: Partial<Record<Status, number>> = {};
 

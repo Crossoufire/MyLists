@@ -2,15 +2,15 @@ import UserAgent from "user-agents";
 import {closest} from "@/lib/utils/levenshtein";
 import {RateLimiterAbstract} from "rate-limiter-flexible";
 import {createRateLimiter} from "@/lib/server/core/rate-limiter";
-import {BaseClient} from "@/lib/server/api-providers/clients/base.client";
+import {BaseApi} from "@/lib/server/api-providers/api/base.api";
 import {HltbApiResponse, HltbGameEntry} from "@/lib/types/provider.types";
 
 
-export class HltbClient extends BaseClient {
+export class HltbApi extends BaseApi {
     private static readonly consumeKey = "hltb-API";
     private static readonly baseUrl = "https://howlongtobeat.com/";
-    private static searchUrl = HltbClient.baseUrl + "api/finder/"
-    private static tokenUrl = HltbClient.baseUrl + "api/finder/init";
+    private static searchUrl = HltbApi.baseUrl + "api/finder/"
+    private static tokenUrl = HltbApi.baseUrl + "api/finder/init";
     private static readonly throttleOptions = { points: 4, duration: 1, keyPrefix: "hltbAPI" };
 
     constructor(limiter: RateLimiterAbstract, consumeKey: string) {
@@ -18,8 +18,8 @@ export class HltbClient extends BaseClient {
     }
 
     public static async create() {
-        const hltbLimiter = await createRateLimiter(HltbClient.throttleOptions);
-        return new HltbClient(hltbLimiter, HltbClient.consumeKey);
+        const hltbLimiter = await createRateLimiter(HltbApi.throttleOptions);
+        return new HltbApi(hltbLimiter, HltbApi.consumeKey);
     }
 
     async search(gameName: string) {
@@ -71,7 +71,7 @@ export class HltbClient extends BaseClient {
         const headers: Record<string, string> = {
             "accept": "*/*",
             "User-Agent": ua.toString(),
-            "referer": HltbClient.baseUrl,
+            "referer": HltbApi.baseUrl,
             "content-type": "application/json",
         };
 
@@ -82,7 +82,7 @@ export class HltbClient extends BaseClient {
 
         try {
             const payload = this._getSearchPayload(gameName);
-            const response = await fetch(HltbClient.searchUrl, {
+            const response = await fetch(HltbApi.searchUrl, {
                 headers,
                 method: "POST",
                 body: JSON.stringify(payload),
@@ -101,11 +101,11 @@ export class HltbClient extends BaseClient {
         const ua = new UserAgent();
         const headers = {
             "User-Agent": ua.toString(),
-            "referer": HltbClient.baseUrl,
+            "referer": HltbApi.baseUrl,
         };
 
         try {
-            const response = await fetch(`${HltbClient.tokenUrl}?t=${Date.now()}`, { method: "GET", headers });
+            const response = await fetch(`${HltbApi.tokenUrl}?t=${Date.now()}`, { method: "GET", headers });
             if (response.ok) {
                 const data = await response.json();
                 const token = data?.token ?? data?.data?.token;

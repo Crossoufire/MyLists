@@ -2,7 +2,7 @@ import {relations} from "drizzle-orm/relations";
 import {user} from "@/lib/server/database/schema/auth.schema";
 import {GamesPlatformsEnum, MediaType} from "@/lib/utils/enums";
 import {integer, real, sqliteTable, text} from "drizzle-orm/sqlite-core";
-import {commonGenericCols, commonMediaCollectionsCols, commonMediaCols, commonMediaListCols} from "@/lib/server/database/schema/media/_helper";
+import {commonGenericCols, commonMediaCols, commonMediaListCols, commonMediaTagsCols} from "@/lib/server/database/schema/media/_helper";
 
 
 export const games = sqliteTable("games", {
@@ -45,8 +45,8 @@ export const gamesCompanies = sqliteTable("games_companies", {
 });
 
 
-export const gamesCollections = sqliteTable("games_collections", {
-    ...commonMediaCollectionsCols(games.id),
+export const gamesTags = sqliteTable("games_tags", {
+    ...commonMediaTagsCols(games.id),
 });
 
 
@@ -54,7 +54,7 @@ export const gamesRelations = relations(games, ({ many }) => ({
     gamesPlatforms: many(gamesPlatforms),
     gamesCompanies: many(gamesCompanies),
     gamesGenres: many(gamesGenre),
-    gamesCollections: many(gamesCollections),
+    gamesTags: many(gamesTags),
     gamesLists: many(gamesList),
 }));
 
@@ -95,13 +95,13 @@ export const gamesGenreRelations = relations(gamesGenre, ({ one }) => ({
 }));
 
 
-export const gamesCollectionsRelations = relations(gamesCollections, ({ one }) => ({
+export const gamesTagsRelations = relations(gamesTags, ({ one }) => ({
     game: one(games, {
-        fields: [gamesCollections.mediaId],
+        fields: [gamesTags.mediaId],
         references: [games.id]
     }),
     user: one(user, {
-        fields: [gamesCollections.userId],
+        fields: [gamesTags.userId],
         references: [user.id]
     }),
 }));

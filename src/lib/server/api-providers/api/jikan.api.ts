@@ -1,10 +1,10 @@
 import {RateLimiterAbstract} from "rate-limiter-flexible";
 import {createRateLimiter} from "@/lib/server/core/rate-limiter";
-import {BaseClient} from "@/lib/server/api-providers/clients/base.client";
+import {BaseApi} from "@/lib/server/api-providers/api/base.api";
 import {JikanAnimeSearchResponse, JikanDetails, JikanMangaSearchResponse, SearchData} from "@/lib/types/provider.types";
 
 
-export class JikanClient extends BaseClient {
+export class JikanApi extends BaseApi {
     private static readonly consumeKey = "jikan-API";
     private readonly animeUrl = "https://api.jikan.moe/v4/anime";
     private readonly mangaUrl = "https://api.jikan.moe/v4/manga";
@@ -17,11 +17,11 @@ export class JikanClient extends BaseClient {
 
     public static async create() {
         const [perSecondLimiter, perMinuteLimiter] = await Promise.all([
-            createRateLimiter(JikanClient.perSecThrottle),
-            createRateLimiter(JikanClient.perMinThrottle),
+            createRateLimiter(JikanApi.perSecThrottle),
+            createRateLimiter(JikanApi.perMinThrottle),
         ]);
 
-        return new JikanClient([perSecondLimiter, perMinuteLimiter], JikanClient.consumeKey);
+        return new JikanApi([perSecondLimiter, perMinuteLimiter], JikanApi.consumeKey);
     }
 
     async search(query: string, page: number = 1): Promise<SearchData<JikanMangaSearchResponse>> {

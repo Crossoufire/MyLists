@@ -4,11 +4,11 @@ import {tryNotFound} from "@/lib/utils/try-not-found";
 import {getContainer} from "@/lib/server/core/container";
 import {FormattedError} from "@/lib/utils/error-classes";
 import {AdvancedMediaStats} from "@/lib/types/stats.types";
-import {authMiddleware} from "@/lib/server/middlewares/authentication";
 import {transactionMiddleware} from "@/lib/server/middlewares/transaction";
-import {authorizationMiddleware} from "@/lib/server/middlewares/authorization";
+import {privateAuthZMiddleware} from "@/lib/server/middlewares/authorization";
 import {
     deleteActivitySchema,
+	getMonthlyActivitySchema,
     getSectionActivitySchema,
     getSpecificActivitySchema,
     getUserStatsSchema,
@@ -18,7 +18,7 @@ import {
 
 
 export const getUserStats = createServerFn({ method: "GET" })
-    .middleware([authorizationMiddleware])
+    .middleware([privateAuthZMiddleware])
     .inputValidator(tryNotFound(getUserStatsSchema))
     .handler(async ({ data: { mediaType }, context: { user } }) => {
         const userStatsService = await getContainer().then(c => c.services.userStats);
@@ -49,8 +49,8 @@ export const getUserStats = createServerFn({ method: "GET" })
 
 
 export const getMonthlyActivity = createServerFn({ method: "GET" })
-    .middleware([authorizationMiddleware])
-    .inputValidator(tryNotFound(monthlyActivitySchema))
+    .middleware([privateAuthZMiddleware])
+    .inputValidator(tryNotFound(getMonthlyActivitySchema))
     .handler(async ({ data: { year, month }, context: { user } }) => {
         const container = await getContainer();
 
@@ -62,7 +62,7 @@ export const getMonthlyActivity = createServerFn({ method: "GET" })
 
 
 export const getSectionActivity = createServerFn({ method: "GET" })
-    .middleware([authorizationMiddleware])
+    .middleware([privateAuthZMiddleware])
     .inputValidator(tryNotFound(getSectionActivitySchema))
     .handler(async ({ data, context: { user } }) => {
         const container = await getContainer();
@@ -73,7 +73,7 @@ export const getSectionActivity = createServerFn({ method: "GET" })
 
 
 export const getSpecificActivity = createServerFn({ method: "GET" })
-    .middleware([authorizationMiddleware])
+    .middleware([privateAuthZMiddleware])
     .inputValidator(tryNotFound(getSpecificActivitySchema))
     .handler(async ({ data: { year, month, mediaType, mediaId }, context: { user } }) => {
         const userStatsService = await getContainer().then(c => c.services.userStats);
@@ -82,7 +82,7 @@ export const getSpecificActivity = createServerFn({ method: "GET" })
 
 
 export const postUpdateSpecificActivity = createServerFn({ method: "POST" })
-    .middleware([authMiddleware, transactionMiddleware])
+    .middleware([requiredAuthMiddleware, transactionMiddleware])
     .inputValidator(updateActivitySchema)
     .handler(async ({ data: { activityId, payload }, context: { currentUser } }) => {
         const userStatsService = await getContainer().then(c => c.services.userStats);
@@ -91,7 +91,7 @@ export const postUpdateSpecificActivity = createServerFn({ method: "POST" })
 
 
 export const postDeleteSpecificActivity = createServerFn({ method: "POST" })
-    .middleware([authMiddleware, transactionMiddleware])
+    .middleware([requiredAuthMiddleware, transactionMiddleware])
     .inputValidator(deleteActivitySchema)
     .handler(async ({ data: { activityId }, context: { currentUser } }) => {
         const userStatsService = await getContainer().then(c => c.services.userStats);

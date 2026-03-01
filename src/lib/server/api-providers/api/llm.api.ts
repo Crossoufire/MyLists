@@ -3,10 +3,10 @@ import {serverEnv} from "@/env/server";
 import {LLMResponse} from "@/lib/types/provider.types";
 import {RateLimiterAbstract} from "rate-limiter-flexible";
 import {createRateLimiter} from "@/lib/server/core/rate-limiter";
-import {BaseClient} from "@/lib/server/api-providers/clients/base.client";
+import {BaseApi} from "@/lib/server/api-providers/api/base.api";
 
 
-export class LlmClient extends BaseClient {
+export class LlmApi extends BaseApi {
     private static readonly consumeKey = "llm-API";
     private readonly baseUrl = serverEnv.LLM_BASE_URL;
     private static readonly throttleOptions = { points: 5, duration: 1, keyPrefix: "llmAPI" };
@@ -16,8 +16,8 @@ export class LlmClient extends BaseClient {
     }
 
     public static async create() {
-        const llmLimiter = await createRateLimiter(LlmClient.throttleOptions);
-        return new LlmClient(llmLimiter, LlmClient.consumeKey);
+        const llmLimiter = await createRateLimiter(LlmApi.throttleOptions);
+        return new LlmApi(llmLimiter, LlmApi.consumeKey);
     }
 
     async llmBookGenresCall(content: string, schema: z.Schema): Promise<LLMResponse> {

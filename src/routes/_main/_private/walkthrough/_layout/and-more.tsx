@@ -25,7 +25,7 @@ function AndMoreOnboarding() {
                     icon={Trophy}
                     title="Hall of Fame"
                     description="See how you stack up against the community! The HoF ranks profiles by time spent and
-                    collection size. You can view global rankings or filter by specific media types to see your personal rank."
+                    lists size. You can view global rankings or filter by specific media types to see your personal rank."
                 />
                 <OnboardingFeatureCard
                     icon={Popcorn}
@@ -42,7 +42,7 @@ function AndMoreOnboarding() {
                 <OnboardingFeatureCard
                     icon={Award}
                     title="Achievements"
-                    description="Earn badges and awards as you grow your collection! From 'Movie Buff' to 'Manga Sage',
+                    description="Earn badges and awards as you grow your lists! From 'Movie Buff' to 'Manga Sage',
                     your profile showcases your dedication to your favorite hobbies."
                 />
             </OnboardingGrid>

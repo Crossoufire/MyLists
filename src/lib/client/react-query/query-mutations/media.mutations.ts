@@ -1,7 +1,8 @@
 import {MediaType} from "@/lib/utils/enums";
+import {ProviderSearchResult} from "@/lib/types/provider.types";
 import {useMutation, useQueryClient} from "@tanstack/react-query";
 import {mediaDetailsOptions} from "@/lib/client/react-query/query-options/query-options";
-import {postEditMediaDetails, postUpdateBookCover, refreshMediaDetails} from "@/lib/server/functions/media-details";
+import {getMediaDetails, postEditMediaDetails, postUpdateBookCover, refreshMediaDetails} from "@/lib/server/functions/media-details";
 
 
 export const useRefreshMediaMutation = (mediaType: MediaType, mediaOrApiId: number | string, external: boolean) => {
@@ -28,6 +29,15 @@ export const useUpdateBookCoverMutation = (mediaOrApiId: number | string, extern
         mutationFn: postUpdateBookCover,
         onSuccess: async () => {
             await queryClient.invalidateQueries({ queryKey: mediaDetailsOptions(MediaType.BOOKS, mediaOrApiId.toString(), external).queryKey });
+        },
+    });
+};
+
+
+export const useAddMediaToCollectionMutation = (mediaType: MediaType) => {
+    return useMutation({
+        mutationFn: (item: ProviderSearchResult) => {
+            return getMediaDetails({ data: { mediaType, external: true, mediaId: item.id } });
         },
     });
 };

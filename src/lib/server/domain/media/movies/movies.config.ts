@@ -3,22 +3,22 @@ import {JobType, MediaType, Status} from "@/lib/utils/enums";
 import {MediaSchemaConfig} from "@/lib/types/media.config.types";
 import {createArrayFilterDef} from "@/lib/server/domain/media/base/base.repository";
 import {moviesAchievements} from "@/lib/server/domain/media/movies/achievements.seed";
-import {movies, moviesActors, moviesCollections, moviesGenre, moviesList} from "@/lib/server/database/schema/media/movies.schema";
+import {movies, moviesActors, moviesGenre, moviesList, moviesTags} from "@/lib/server/database/schema/media/movies.schema";
 
 
 export type MovieSchemaConfig = MediaSchemaConfig<
     typeof movies,
     typeof moviesList,
     typeof moviesGenre,
-    typeof moviesCollections
+    typeof moviesTags
 >;
 
 
 export const moviesConfig: MovieSchemaConfig = {
     mediaTable: movies,
+    tagTable: moviesTags,
     listTable: moviesList,
     genreTable: moviesGenre,
-    collectionTable: moviesCollections,
     mediaType: MediaType.MOVIES,
     mediaList: {
         baseSelection: {
@@ -85,6 +85,6 @@ export const moviesConfig: MovieSchemaConfig = {
             nameColumn: movies.compositorName,
         },
     },
-    tablesForDeletion: [moviesActors, moviesGenre, moviesCollections],
+    tablesForDeletion: [moviesActors, moviesGenre, moviesTags],
     achievements: moviesAchievements,
 };

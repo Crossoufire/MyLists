@@ -9,7 +9,7 @@ import {BaseService} from "@/lib/server/domain/media/base/base.service";
 import {MangaSchemaConfig} from "@/lib/server/domain/media/manga/manga.config";
 import {MangaRepository} from "@/lib/server/domain/media/manga/manga.repository";
 import {Manga, MangaAchCodeName, MangaList} from "@/lib/server/domain/media/manga/manga.types";
-import {ChapterPayload, LogPayload, RedoPayload, StatsCTE, StatusPayload, UserMediaWithCollections} from "@/lib/types/base.types";
+import {ChapterPayload, LogPayload, RedoPayload, StatsCTE, StatusPayload, UserMediaWithTags} from "@/lib/types/base.types";
 
 
 export class MangaService extends BaseService<MangaSchemaConfig, MangaRepository> {
@@ -45,7 +45,7 @@ export class MangaService extends BaseService<MangaSchemaConfig, MangaRepository
     async calculateAdvancedMediaStats(mediaAvgRating: number | null, userId?: number) {
         // If userId not provided, calculations are platform-wide
 
-        const { ratings, genresStats, totalCollections, releaseDates } = await super.calculateAdvancedMediaStats(mediaAvgRating, userId);
+        const { ratings, genresStats, totalTags, releaseDates } = await super.calculateAdvancedMediaStats(mediaAvgRating, userId);
 
         // Specific stats
         const avgDuration = await this.repository.avgMangaDuration(userId);
@@ -54,7 +54,7 @@ export class MangaService extends BaseService<MangaSchemaConfig, MangaRepository
 
         return {
             ratings,
-            totalCollections,
+            totalTags,
             genresStats,
             releaseDates,
             avgDuration,
@@ -112,7 +112,7 @@ export class MangaService extends BaseService<MangaSchemaConfig, MangaRepository
         await this.repository.updateMediaWithDetails({ mediaData: fieldsToUpdate, genresData: genres });
     }
 
-    calculateDeltaStats(oldState: UserMediaWithCollections<MangaList> | null, newState: MangaList | null, _media: Manga) {
+    calculateDeltaStats(oldState: UserMediaWithTags<MangaList> | null, newState: MangaList | null, _media: Manga) {
         const delta: DeltaStats = {};
         const statusCounts: Partial<Record<Status, number>> = {};
 

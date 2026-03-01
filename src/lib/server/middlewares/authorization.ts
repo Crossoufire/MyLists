@@ -9,57 +9,55 @@ import {baseUsernameSchema} from "@/lib/types/zod.schema.types";
 import {PrivacyType, RoleType, SocialState} from "@/lib/utils/enums";
 
 
-export const headerMiddleware = createMiddleware({ type: "function" })
+export const optionalAuthMiddleware = createMiddleware({ type: "function" })
+    .server(async ({ next }) => {
+        const { headers } = getRequest();
+        const session = await auth.api.getSession({ headers, query: { disableCookieCache: true } });
+
+        const currentUser = session?.user ? { ...session.user, id: Number(session.user.id) } : undefined;
+        if (currentUser) {
+            void getContainer()
+                .then((c) => c.services.user.updateUserLastSeen(c.cacheManager, currentUser.id))
+                .catch()
+        }
+
+        return next({ context: { currentUser } });
+    });
+
+
+export const resolveTargetUserMiddleware = createMiddleware({ type: "function" })
+    .middleware([optionalAuthMiddleware])
     .inputValidator(tryNotFound(baseUsernameSchema))
-    .server(async ({ next, data: { username } }) => {
+    .server(async ({ next, data: { username }, context: { currentUser } }) => {
         const container = await getContainer();
         const userService = container.services.user;
 
-        const user = await userService.getUserByUsername(username);
-        if (!user) throw notFound();
+        const targetUser = await userService.getUserByUsername(username);
+        if (!targetUser) throw notFound();
 
-        const { headers } = getRequest()!;
-        const session = await auth.api.getSession({ headers, query: { disableCookieCache: true } });
-        const currentUser = session?.user ? { ...session.user, id: Number(session.user.id) } : undefined;
-
-        if (!currentUser && user.privacy !== PrivacyType.PUBLIC) {
+        // Guard non-authed access to non-public pages
+        if (!currentUser && targetUser.privacy !== PrivacyType.PUBLIC) {
             throw redirect({ to: "/", search: { authExpired: true } });
         }
 
         return next({
             context: {
-                user,
+                targetUser,
                 currentUser,
             }
         });
     });
 
 
-export const authorizationMiddleware = createMiddleware({ type: "function" })
-    .inputValidator(tryNotFound(baseUsernameSchema))
-    .server(async ({ next, data: { username } }) => {
+export const privateAuthZMiddleware = createMiddleware({ type: "function" })
+    .middleware([resolveTargetUserMiddleware])
+    .server(async ({ next, context: { targetUser, currentUser } }) => {
         const container = await getContainer();
         const userService = container.services.user;
 
-        const user = await userService.getUserByUsername(username);
-        if (!user) throw notFound();
-
-        const { headers } = getRequest();
-        const session = await auth.api.getSession({ headers, query: { disableCookieCache: true } });
-        const currentUser = session?.user ? { ...session.user, id: Number(session.user.id) } : undefined;
-
-        if (currentUser) {
-            await userService.updateUserLastSeen(container.cacheManager, currentUser.id);
-        }
-
-        // Guard: Unauthenticated access to non-public profiles
-        if (!currentUser && user.privacy !== PrivacyType.PUBLIC) {
-            throw redirect({ to: "/", search: { authExpired: true } });
-        }
-
-        // Guard: Private profile access requirements
-        if (user.privacy === PrivacyType.PRIVATE && currentUser?.id !== user.id && currentUser?.role !== RoleType.ADMIN) {
-            const followStatus = await userService.getFollowingStatus(currentUser!.id, user.id);
+        // Guard private pages access requirements
+        if (targetUser.privacy === PrivacyType.PRIVATE && currentUser?.id !== targetUser.id && currentUser?.role !== RoleType.ADMIN) {
+            const followStatus = await userService.getFollowingStatus(currentUser!.id, targetUser.id);
             if (followStatus?.status !== SocialState.ACCEPTED) {
                 throw new FormattedError("Unauthorized");
             }
@@ -67,8 +65,8 @@ export const authorizationMiddleware = createMiddleware({ type: "function" })
 
         return next({
             context: {
-                user,
                 currentUser,
+                user: targetUser,
             },
         });
     });

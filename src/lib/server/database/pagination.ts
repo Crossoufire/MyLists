@@ -1,4 +1,4 @@
-export type PaginationOptions = {
+type PaginationOptions = {
     page?: number;
     perPage?: number;
     maxPerPage?: number;
@@ -6,7 +6,7 @@ export type PaginationOptions = {
 };
 
 
-export type PaginationParams = {
+type PaginationParams = {
     page: number;
     limit: number;
     offset: number;
@@ -14,7 +14,7 @@ export type PaginationParams = {
 };
 
 
-export type PaginatedResult<T> = {
+type PaginatedResult<T> = {
     items: T[];
     page: number;
     total: number;
@@ -37,14 +37,6 @@ export const resolvePagination = (options: PaginationOptions): PaginationParams 
 };
 
 
-const buildPaginationMeta = (params: { page: number; perPage: number; total: number }) => ({
-    page: params.page,
-    total: params.total,
-    perPage: params.perPage,
-    pages: Math.ceil(params.total / params.perPage),
-});
-
-
 export const resolveSorting = <T extends string>(value: string | undefined, allowed: readonly T[], fallback: T) => {
     if (value && allowed.includes(value as T)) {
         return value as T;
@@ -63,6 +55,9 @@ export const paginate = async <T>(options: PaginationOptions & {
 
     return {
         items,
-        ...buildPaginationMeta({ page: pagination.page, perPage: pagination.perPage, total }),
+        total,
+        page: pagination.page,
+        perPage: pagination.perPage,
+        pages: Math.ceil(total / pagination.perPage),
     };
 };

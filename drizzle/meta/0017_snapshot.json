@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "3250b1f6-b0f8-4720-9ddf-cac16d63864b",
+  "id": "d1558159-2e51-4a5c-bdf0-964e14a478e5",
   "prevId": "5c4d6388-9692-4f26-8ed0-c6072838b010",
   "tables": {
     "account": {
@@ -479,71 +479,6 @@
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
-    "anime_collections": {
-      "name": "anime_collections",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "integer",
-          "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "user_id": {
-          "name": "user_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "media_id": {
-          "name": "media_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "name": {
-          "name": "name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "anime_collections_user_id_user_id_fk": {
-          "name": "anime_collections_user_id_user_id_fk",
-          "tableFrom": "anime_collections",
-          "tableTo": "user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "anime_collections_media_id_anime_id_fk": {
-          "name": "anime_collections_media_id_anime_id_fk",
-          "tableFrom": "anime_collections",
-          "tableTo": "anime",
-          "columnsFrom": [
-            "media_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraints": {}
-    },
     "anime_episodes_per_season": {
       "name": "anime_episodes_per_season",
       "columns": {
@@ -825,6 +760,71 @@
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
+    "anime_tags": {
+      "name": "anime_tags",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "media_id": {
+          "name": "media_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "anime_tags_user_id_user_id_fk": {
+          "name": "anime_tags_user_id_user_id_fk",
+          "tableFrom": "anime_tags",
+          "tableTo": "user",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "anime_tags_media_id_anime_id_fk": {
+          "name": "anime_tags_media_id_anime_id_fk",
+          "tableFrom": "anime_tags",
+          "tableTo": "anime",
+          "columnsFrom": [
+            "media_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
     "api_tokens": {
       "name": "api_tokens",
       "columns": {
@@ -1019,71 +1019,6 @@
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
-    "books_collections": {
-      "name": "books_collections",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "integer",
-          "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "user_id": {
-          "name": "user_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "media_id": {
-          "name": "media_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "name": {
-          "name": "name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "books_collections_user_id_user_id_fk": {
-          "name": "books_collections_user_id_user_id_fk",
-          "tableFrom": "books_collections",
-          "tableTo": "user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "books_collections_media_id_books_id_fk": {
-          "name": "books_collections_media_id_books_id_fk",
-          "tableFrom": "books_collections",
-          "tableTo": "books",
-          "columnsFrom": [
-            "media_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraints": {}
-    },
     "books_genre": {
       "name": "books_genre",
       "columns": {
@@ -1238,6 +1173,71 @@
         "books_list_media_id_books_id_fk": {
           "name": "books_list_media_id_books_id_fk",
           "tableFrom": "books_list",
+          "tableTo": "books",
+          "columnsFrom": [
+            "media_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "books_tags": {
+      "name": "books_tags",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "media_id": {
+          "name": "media_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "books_tags_user_id_user_id_fk": {
+          "name": "books_tags_user_id_user_id_fk",
+          "tableFrom": "books_tags",
+          "tableTo": "user",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "books_tags_media_id_books_id_fk": {
+          "name": "books_tags_media_id_books_id_fk",
+          "tableFrom": "books_tags",
           "tableTo": "books",
           "columnsFrom": [
             "media_id"
@@ -1749,71 +1749,6 @@
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
-    "games_collections": {
-      "name": "games_collections",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "integer",
-          "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "user_id": {
-          "name": "user_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "media_id": {
-          "name": "media_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "name": {
-          "name": "name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "games_collections_user_id_user_id_fk": {
-          "name": "games_collections_user_id_user_id_fk",
-          "tableFrom": "games_collections",
-          "tableTo": "user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "games_collections_media_id_games_id_fk": {
-          "name": "games_collections_media_id_games_id_fk",
-          "tableFrom": "games_collections",
-          "tableTo": "games",
-          "columnsFrom": [
-            "media_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraints": {}
-    },
     "games_companies": {
       "name": "games_companies",
       "columns": {
@@ -2079,6 +2014,71 @@
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
+    "games_tags": {
+      "name": "games_tags",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "media_id": {
+          "name": "media_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "games_tags_user_id_user_id_fk": {
+          "name": "games_tags_user_id_user_id_fk",
+          "tableFrom": "games_tags",
+          "tableTo": "user",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "games_tags_media_id_games_id_fk": {
+          "name": "games_tags_media_id_games_id_fk",
+          "tableFrom": "games_tags",
+          "tableTo": "games",
+          "columnsFrom": [
+            "media_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
     "manga": {
       "name": "manga",
       "columns": {
@@ -2276,71 +2276,6 @@
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
-    "manga_collections": {
-      "name": "manga_collections",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "integer",
-          "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "user_id": {
-          "name": "user_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "media_id": {
-          "name": "media_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "name": {
-          "name": "name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "manga_collections_user_id_user_id_fk": {
-          "name": "manga_collections_user_id_user_id_fk",
-          "tableFrom": "manga_collections",
-          "tableTo": "user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "manga_collections_media_id_manga_id_fk": {
-          "name": "manga_collections_media_id_manga_id_fk",
-          "tableFrom": "manga_collections",
-          "tableTo": "manga",
-          "columnsFrom": [
-            "media_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraints": {}
-    },
     "manga_genre": {
       "name": "manga_genre",
       "columns": {
@@ -2495,6 +2430,71 @@
         "manga_list_media_id_manga_id_fk": {
           "name": "manga_list_media_id_manga_id_fk",
           "tableFrom": "manga_list",
+          "tableTo": "manga",
+          "columnsFrom": [
+            "media_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "manga_tags": {
+      "name": "manga_tags",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "media_id": {
+          "name": "media_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "manga_tags_user_id_user_id_fk": {
+          "name": "manga_tags_user_id_user_id_fk",
+          "tableFrom": "manga_tags",
+          "tableTo": "user",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "manga_tags_media_id_manga_id_fk": {
+          "name": "manga_tags_media_id_manga_id_fk",
+          "tableFrom": "manga_tags",
           "tableTo": "manga",
           "columnsFrom": [
             "media_id"
@@ -2993,71 +2993,6 @@
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
-    "movies_collections": {
-      "name": "movies_collections",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "integer",
-          "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "user_id": {
-          "name": "user_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "media_id": {
-          "name": "media_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "name": {
-          "name": "name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "movies_collections_user_id_user_id_fk": {
-          "name": "movies_collections_user_id_user_id_fk",
-          "tableFrom": "movies_collections",
-          "tableTo": "user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "movies_collections_media_id_movies_id_fk": {
-          "name": "movies_collections_media_id_movies_id_fk",
-          "tableFrom": "movies_collections",
-          "tableTo": "movies",
-          "columnsFrom": [
-            "media_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraints": {}
-    },
     "movies_genre": {
       "name": "movies_genre",
       "columns": {
@@ -3205,6 +3140,71 @@
         "movies_list_media_id_movies_id_fk": {
           "name": "movies_list_media_id_movies_id_fk",
           "tableFrom": "movies_list",
+          "tableTo": "movies",
+          "columnsFrom": [
+            "media_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "movies_tags": {
+      "name": "movies_tags",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "media_id": {
+          "name": "media_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "movies_tags_user_id_user_id_fk": {
+          "name": "movies_tags_user_id_user_id_fk",
+          "tableFrom": "movies_tags",
+          "tableTo": "user",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "movies_tags_media_id_movies_id_fk": {
+          "name": "movies_tags_media_id_movies_id_fk",
+          "tableFrom": "movies_tags",
           "tableTo": "movies",
           "columnsFrom": [
             "media_id"
@@ -3437,71 +3437,6 @@
         "series_actors_media_id_series_id_fk": {
           "name": "series_actors_media_id_series_id_fk",
           "tableFrom": "series_actors",
-          "tableTo": "series",
-          "columnsFrom": [
-            "media_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraints": {}
-    },
-    "series_collections": {
-      "name": "series_collections",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "integer",
-          "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "user_id": {
-          "name": "user_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "media_id": {
-          "name": "media_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "name": {
-          "name": "name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "series_collections_user_id_user_id_fk": {
-          "name": "series_collections_user_id_user_id_fk",
-          "tableFrom": "series_collections",
-          "tableTo": "user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "series_collections_media_id_series_id_fk": {
-          "name": "series_collections_media_id_series_id_fk",
-          "tableFrom": "series_collections",
           "tableTo": "series",
           "columnsFrom": [
             "media_id"
@@ -3783,6 +3718,71 @@
         "series_network_media_id_series_id_fk": {
           "name": "series_network_media_id_series_id_fk",
           "tableFrom": "series_network",
+          "tableTo": "series",
+          "columnsFrom": [
+            "media_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "series_tags": {
+      "name": "series_tags",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "media_id": {
+          "name": "media_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "series_tags_user_id_user_id_fk": {
+          "name": "series_tags_user_id_user_id_fk",
+          "tableFrom": "series_tags",
+          "tableTo": "user",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "series_tags_media_id_series_id_fk": {
+          "name": "series_tags_media_id_series_id_fk",
+          "tableFrom": "series_tags",
           "tableTo": "series",
           "columnsFrom": [
             "media_id"
@@ -4338,135 +4338,6 @@
             "id"
           ],
           "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraints": {}
-    },
-    "user_media_activity": {
-      "name": "user_media_activity",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "integer",
-          "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "user_id": {
-          "name": "user_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "media_id": {
-          "name": "media_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "media_type": {
-          "name": "media_type",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "specific_gained": {
-          "name": "specific_gained",
-          "type": "real",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "is_completed": {
-          "name": "is_completed",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": false
-        },
-        "is_redo": {
-          "name": "is_redo",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": false
-        },
-        "month_bucket": {
-          "name": "month_bucket",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "last_update": {
-          "name": "last_update",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "(CURRENT_TIMESTAMP)"
-        }
-      },
-      "indexes": {
-        "ix_user_media_activity_user_id": {
-          "name": "ix_user_media_activity_user_id",
-          "columns": [
-            "user_id"
-          ],
-          "isUnique": false
-        },
-        "ix_user_media_activity_media_id": {
-          "name": "ix_user_media_activity_media_id",
-          "columns": [
-            "media_id"
-          ],
-          "isUnique": false
-        },
-        "ix_user_media_activity_media_type": {
-          "name": "ix_user_media_activity_media_type",
-          "columns": [
-            "media_type"
-          ],
-          "isUnique": false
-        },
-        "ix_user_media_activity_month_bucket": {
-          "name": "ix_user_media_activity_month_bucket",
-          "columns": [
-            "month_bucket"
-          ],
-          "isUnique": false
-        },
-        "user_media_month_idx": {
-          "name": "user_media_month_idx",
-          "columns": [
-            "user_id",
-            "media_id",
-            "media_type",
-            "month_bucket"
-          ],
-          "isUnique": true
-        }
-      },
-      "foreignKeys": {
-        "user_media_activity_user_id_user_id_fk": {
-          "name": "user_media_activity_user_id_user_id_fk",
-          "tableFrom": "user_media_activity",
-          "tableTo": "user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },
@@ -5060,7 +4931,14 @@
   "enums": {},
   "_meta": {
     "schemas": {},
-    "tables": {},
+    "tables": {
+      "\"anime_collections\"": "\"anime_tags\"",
+      "\"books_collections\"": "\"books_tags\"",
+      "\"games_collections\"": "\"games_tags\"",
+      "\"manga_collections\"": "\"manga_tags\"",
+      "\"movies_collections\"": "\"movies_tags\"",
+      "\"series_collections\"": "\"series_tags\""
+    },
     "columns": {}
   },
   "internal": {

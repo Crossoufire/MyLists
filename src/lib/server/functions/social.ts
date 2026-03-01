@@ -5,11 +5,11 @@ import {getContainer} from "@/lib/server/core/container";
 import {FormattedError} from "@/lib/utils/error-classes";
 import {PrivacyType, SocialNotifType} from "@/lib/utils/enums";
 import {respondToFollowRequest} from "@/lib/types/zod.schema.types";
-import {authMiddleware} from "@/lib/server/middlewares/authentication";
+import {requiredAuthMiddleware} from "@/lib/server/middlewares/authentication";
 
 
 export const postFollow = createServerFn({ method: "POST" })
-    .middleware([authMiddleware])
+    .middleware([requiredAuthMiddleware])
     .inputValidator(z.object({ targetUserId: z.coerce.number().int().positive() }))
     .handler(async ({ data: { targetUserId }, context: { currentUser } }) => {
         const container = await getContainer();
@@ -41,7 +41,7 @@ export const postFollow = createServerFn({ method: "POST" })
 
 
 export const postUnfollow = createServerFn({ method: "POST" })
-    .middleware([authMiddleware])
+    .middleware([requiredAuthMiddleware])
     .inputValidator(z.object({ targetUserId: z.coerce.number().int().positive() }))
     .handler(async ({ data: { targetUserId }, context: { currentUser } }) => {
         const container = await getContainer();
@@ -68,7 +68,7 @@ export const postUnfollow = createServerFn({ method: "POST" })
 
 
 export const postRespondToFollowRequest = createServerFn({ method: "POST" })
-    .middleware([authMiddleware])
+    .middleware([requiredAuthMiddleware])
     .inputValidator(respondToFollowRequest)
     .handler(async ({ data: { followerId, action }, context: { currentUser } }) => {
         const container = await getContainer();
@@ -96,7 +96,7 @@ export const postRespondToFollowRequest = createServerFn({ method: "POST" })
 
 
 export const postRemoveFollower = createServerFn({ method: "POST" })
-    .middleware([authMiddleware])
+    .middleware([requiredAuthMiddleware])
     .inputValidator(z.object({ followerId: z.coerce.number().int().positive() }))
     .handler(async ({ data: { followerId }, context: { currentUser } }) => {
         const container = await getContainer();

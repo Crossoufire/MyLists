@@ -1,8 +1,8 @@
-import {relations} from "drizzle-orm/relations";
 import {MediaType} from "@/lib/utils/enums";
+import {relations} from "drizzle-orm/relations";
 import {user} from "@/lib/server/database/schema/auth.schema";
 import {integer, real, sqliteTable, text} from "drizzle-orm/sqlite-core";
-import {commonGenericCols, commonMediaCollectionsCols, commonMediaCols, commonMediaListCols} from "@/lib/server/database/schema/media/_helper";
+import {commonGenericCols, commonMediaCols, commonMediaListCols, commonMediaTagsCols} from "@/lib/server/database/schema/media/_helper";
 
 
 export const movies = sqliteTable("movies", {
@@ -41,14 +41,14 @@ export const moviesActors = sqliteTable("movies_actors", {
 });
 
 
-export const moviesCollections = sqliteTable("movies_collections", {
-    ...commonMediaCollectionsCols(movies.id),
+export const moviesTags = sqliteTable("movies_tags", {
+    ...commonMediaTagsCols(movies.id),
 });
 
 
 export const moviesRelations = relations(movies, ({ many }) => ({
     moviesGenres: many(moviesGenre),
-    moviesCollections: many(moviesCollections),
+    moviesTags: many(moviesTags),
     moviesLists: many(moviesList),
     moviesActors: many(moviesActors),
 }));
@@ -82,13 +82,13 @@ export const moviesActorsRelations = relations(moviesActors, ({ one }) => ({
 }));
 
 
-export const moviesCollectionsRelations = relations(moviesCollections, ({ one }) => ({
+export const moviesTagsRelations = relations(moviesTags, ({ one }) => ({
     user: one(user, {
-        fields: [moviesCollections.userId],
+        fields: [moviesTags.userId],
         references: [user.id]
     }),
     movie: one(movies, {
-        fields: [moviesCollections.mediaId],
+        fields: [moviesTags.mediaId],
         references: [movies.id]
     }),
 }));

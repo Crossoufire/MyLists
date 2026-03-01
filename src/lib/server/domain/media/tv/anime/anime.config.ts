@@ -3,14 +3,14 @@ import {JobType, MediaType, Status} from "@/lib/utils/enums";
 import {TvSchemaConfig} from "@/lib/types/media.config.types";
 import {createArrayFilterDef} from "@/lib/server/domain/media/base/base.repository";
 import {animeAchievements} from "@/lib/server/domain/media/tv/anime/achievements.seed";
-import {anime, animeActors, animeCollections, animeEpisodesPerSeason, animeGenre, animeList, animeNetwork} from "@/lib/server/database/schema/media/anime.schema";
+import {anime, animeActors, animeEpisodesPerSeason, animeGenre, animeList, animeNetwork, animeTags} from "@/lib/server/database/schema/media/anime.schema";
 
 
 export type AnimeSchemaConfig = TvSchemaConfig<
     typeof anime,
     typeof animeList,
     typeof animeGenre,
-    typeof animeCollections,
+    typeof animeTags,
     typeof animeActors,
     typeof animeNetwork,
     typeof animeEpisodesPerSeason
@@ -21,7 +21,7 @@ export const animeConfig: AnimeSchemaConfig = {
     mediaTable: anime,
     listTable: animeList,
     genreTable: animeGenre,
-    collectionTable: animeCollections,
+    tagTable: animeTags,
     actorTable: animeActors,
     networkTable: animeNetwork,
     epsPerSeasonTable: animeEpisodesPerSeason,
@@ -117,6 +117,6 @@ export const animeConfig: AnimeSchemaConfig = {
             mediaIdColumn: animeNetwork.mediaId,
         }
     },
-    tablesForDeletion: [animeEpisodesPerSeason, animeNetwork, animeActors, animeGenre, animeCollections],
+    tablesForDeletion: [animeEpisodesPerSeason, animeNetwork, animeActors, animeGenre, animeTags],
     achievements: animeAchievements,
 };

@@ -4,13 +4,13 @@ import type {NavigateOptions} from "@tanstack/router-core";
 import {useDebounceCallback} from "@/lib/client/hooks/use-debounce";
 
 
-interface BaseSearchParams {
+type BaseSearchParams = {
     page?: number;
     search?: string;
 }
 
 
-interface UseSearchInputProps {
+type UseSearchInputProps = {
     search: string;
     delay?: number;
     options?: NavigateOptions;

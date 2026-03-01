@@ -3,7 +3,7 @@ import {FormattedError} from "@/lib/utils/error-classes";
 import {RateLimiterAbstract, RateLimiterQueue} from "rate-limiter-flexible";
 
 
-export class BaseClient {
+export class BaseApi {
     readonly resultsPerPage = 20;
     private queues: RateLimiterQueue[];
     private readonly consumeKey: string;

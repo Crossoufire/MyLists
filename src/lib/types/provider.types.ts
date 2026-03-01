@@ -68,6 +68,22 @@ export type IgdbMultiQueryResult<T> = {
 export type IgdbSearchResponse = [IgdbMultiQueryResult<{ count: number }>, IgdbMultiQueryResult<IgdbSearchResultItem>];
 
 
+export type IgdbTrendGamesResponse = {
+    id: number,
+    uid: string,
+    game: {
+        id: number,
+        name: string,
+        summary: string,
+        first_release_date: number,
+        cover: {
+            id: number,
+            image_id: string,
+        },
+    },
+}
+
+
 export interface IgdbGameDetails {
     id: number;
     url: string;
