@@ -47,8 +47,12 @@ export abstract class BaseService<TConfig extends MediaSchemaConfig, R extends B
         return this.repository.computeAllUsersStats();
     }
 
-    async searchByName(query: string) {
-        return this.repository.searchByName(query);
+    async searchMediadleSuggestion(query: string) {
+        return this.repository.searchMediadleSuggestion(query);
+    }
+
+    async searchByName(query: string, limit?: number) {
+        return this.repository.searchByName(query, limit);
     }
 
     async removeMediaByIds(mediaIds: number[]) {

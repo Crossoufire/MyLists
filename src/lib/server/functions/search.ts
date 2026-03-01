@@ -1,6 +1,6 @@
-import {ApiProviderType} from "@/lib/utils/enums";
 import {createServerFn} from "@tanstack/react-start";
 import {getContainer} from "@/lib/server/core/container";
+import {ApiProviderType, MediaType} from "@/lib/utils/enums";
 import {navbarSearchSchema} from "@/lib/types/zod.schema.types";
 import {requiredAuthMiddleware} from "@/lib/server/middlewares/authentication";
 import {tmdbTransformer} from "@/lib/server/api-providers/transformers/tmdb.transformer";
@@ -40,7 +40,22 @@ export const getSearchResults = createServerFn({ method: "GET" })
 
         if (apiProvider === ApiProviderType.BOOKS) {
             const rawResults = await gBookClient.search(query, page);
-            return gbooksTransformer.transformSearchResults(rawResults);
+            const apiResults = gbooksTransformer.transformSearchResults(rawResults);
+
+            if (page === 1) {
+                const booksService = container.registries.mediaService.getService(MediaType.BOOKS);
+                const dbResults = await booksService.searchByName(query);
+
+                const dbApiIds = new Set(dbResults.map((r) => String(r.id)));
+                const filteredApiResults = apiResults.data.filter((r) => !dbApiIds.has(String(r.id)));
+
+                return {
+                    hasNextPage: apiResults.hasNextPage,
+                    data: [...dbResults, ...filteredApiResults],
+                };
+            }
+
+            return apiResults;
         }
         else {
             const rawResults = await jikanClient.search(query, page);

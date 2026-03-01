@@ -24,6 +24,7 @@ import {
     UserTag,
 } from "@/lib/types/base.types";
 import {MediaInfo} from "@/lib/types/activity.types";
+import {ProviderSearchResult} from "@/lib/types/provider.types";
 
 
 const SIMILAR_MAX_GENRES = 10;
@@ -137,15 +138,33 @@ export abstract class BaseRepository<TConfig extends MediaSchemaConfig> {
             .where(inArray(mediaTable.id, mediaIds));
     }
 
-    async searchByName(query: string, limit: number = 20) {
+    async searchMediadleSuggestion(query: string, limit = 20) {
         const { mediaTable } = this.config;
 
         return getDbClient()
             .select({ name: sql<string>`${mediaTable.name}` })
             .from(mediaTable)
-            .where(like(mediaTable.name, `%${query}%`))
+            .where(like(mediaTable.name, `%${query.toLowerCase()}%`))
             .orderBy(mediaTable.name)
             .limit(limit);
+    }
+
+    async searchByName(query: string, limit = 5): Promise<ProviderSearchResult[]> {
+        const { mediaTable, mediaType } = this.config;
+
+        const results = await getDbClient()
+            .select({
+                id: mediaTable.apiId,
+                name: mediaTable.name,
+                image: mediaTable.imageCover,
+                date: mediaTable.releaseDate,
+            })
+            .from(mediaTable)
+            .where(like(mediaTable.name, `%${query.toLowerCase()}%`))
+            .orderBy(mediaTable.name)
+            .limit(limit);
+
+        return results.map((r) => ({ ...r, itemType: mediaType }));
     }
 
     async removeMediaFromUserList(userId: number, mediaId: number) {

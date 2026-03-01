@@ -25,7 +25,7 @@ export const getMediadleSuggestions = createServerFn({ method: "GET" })
 
         const container = await getContainer();
         const moviesService = container.registries.mediaService.getService(MediaType.MOVIES);
-        return moviesService.searchByName(query);
+        return moviesService.searchMediadleSuggestion(query);
     });
 
 
