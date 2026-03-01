@@ -8,7 +8,7 @@ import {ProviderSearchResult, ProviderSearchResults} from "@/lib/types/provider.
 import {ApiProviderType, MediaType, PrivacyType, SocialState} from "@/lib/utils/enums";
 
 
-const orderByMediaType = sql`
+export const orderByMediaType = sql`
     CASE ${userMediaSettings.mediaType}
         WHEN 'series' THEN 1
         WHEN 'anime' THEN 2

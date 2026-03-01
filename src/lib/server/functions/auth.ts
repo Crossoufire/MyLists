@@ -2,6 +2,7 @@ import {eq} from "drizzle-orm";
 import {auth} from "@/lib/server/core/auth";
 import {createServerFn} from "@tanstack/react-start";
 import {getRequest} from "@tanstack/react-start/server";
+import {orderByMediaType} from "@/lib/server/domain/user";
 import {userMediaSettings} from "@/lib/server/database/schema";
 import {getDbClient} from "@/lib/server/database/async-storage";
 import {ApiProviderType, PrivacyType, RatingSystemType, RoleType} from "@/lib/utils/enums";
@@ -19,7 +20,8 @@ export const getCurrentUser = createServerFn({ method: "GET" })
         const settings = await getDbClient()
             .select()
             .from(userMediaSettings)
-            .where(eq(userMediaSettings.userId, parseInt(session.user.id)));
+            .where(eq(userMediaSettings.userId, parseInt(session.user.id)))
+            .orderBy(orderByMediaType);
 
         return {
             ...session.user,
