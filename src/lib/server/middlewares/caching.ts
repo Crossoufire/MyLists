@@ -6,12 +6,12 @@ export const trendsCacheMiddleware = createMiddleware({ type: "function" })
     .server(async ({ next, data }) => {
         const cacheKey = `$trends:${JSON.stringify(data ?? null)}`;
 
-        // Cached for 1 hour
+        // Cached for 24 hour
         return getContainer()
             .then((c) => c.cacheManager.wrap(
                 cacheKey,
                 async () => next(),
-                { ttl: 60 * 60 * 1000 },
+                { ttl: 24 * 60 * 60 * 1000 },
             ));
     });
 

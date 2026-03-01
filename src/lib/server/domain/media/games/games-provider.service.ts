@@ -1,12 +1,12 @@
-import {IgdbGameDetails} from "@/lib/types/provider.types";
+import {IgdbGameDetails, IgdbTrendGamesResponse, TrendsMedia} from "@/lib/types/provider.types";
 import {HltbApi, IgdbApi} from "@/lib/server/api-providers/api";
 import {GamesRepository} from "@/lib/server/domain/media/games/games.repository";
 import {UpsertGameWithDetails} from "@/lib/server/domain/media/games/games.types";
-import {BaseProviderService} from "@/lib/server/domain/media/base/provider.service";
+import {BaseTrendsProviderService} from "@/lib/server/domain/media/base/provider.service";
 import {igdbTransformer} from "@/lib/server/api-providers/transformers/igdb.transformer";
 
 
-export class GamesProviderService extends BaseProviderService<GamesRepository, IgdbGameDetails, UpsertGameWithDetails> {
+export class GamesProviderService extends BaseTrendsProviderService<GamesRepository, IgdbGameDetails, UpsertGameWithDetails> {
     constructor(private client: IgdbApi, repository: GamesRepository, private readonly hltbClient: HltbApi) {
         super(repository);
     }
@@ -43,5 +43,13 @@ export class GamesProviderService extends BaseProviderService<GamesRepository, I
         }
 
         return details;
+    }
+
+    protected _fetchRawTrends() {
+        return this.client.getTrendingGames();
+    }
+
+    protected _transformTrends(rawData: IgdbTrendGamesResponse[]): Promise<TrendsMedia[]> {
+        return Promise.resolve(igdbTransformer.transformGamesTrends(rawData));
     }
 }

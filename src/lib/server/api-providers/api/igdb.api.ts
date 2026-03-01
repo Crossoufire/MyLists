@@ -8,7 +8,7 @@ import {RateLimiterAbstract} from "rate-limiter-flexible";
 import {getDbClient} from "@/lib/server/database/async-storage";
 import {createRateLimiter} from "@/lib/server/core/rate-limiter";
 import {BaseApi} from "@/lib/server/api-providers/api/base.api";
-import {IgdbGameDetails, IgdbSearchResponse, IgdbTokenResponse, SearchData} from "@/lib/types/provider.types";
+import {IgdbGameDetails, IgdbSearchResponse, IgdbTokenResponse, IgdbTrendGamesResponse, SearchData} from "@/lib/types/provider.types";
 
 
 export class IgdbApi extends BaseApi {
@@ -18,7 +18,9 @@ export class IgdbApi extends BaseApi {
     private static readonly tokenCacheKey = "igdb:accessToken";
     private readonly baseUrl = "https://api.igdb.com/v4/games";
     private readonly searchUrl = "https://api.igdb.com/v4/multiquery";
+    private readonly externalGamesUrl = "https://api.igdb.com/v4/external_games";
     private static readonly tokenCacheExpiryMs = 24 * 60 * 60 * 1000; // 1 day in ms
+    private readonly trendingUrl = "https://trendingnow.games/api/public/feeds/trending";
     private static readonly throttleOptions = { points: 3, duration: 1, keyPrefix: "igdbAPI" };
 
     constructor(limiter: RateLimiterAbstract, consumeKey: string) {
@@ -86,8 +88,30 @@ export class IgdbApi extends BaseApi {
         `;
 
         const headers = await this.getHeaders();
-        const response = await this.call(`${this.baseUrl}`, "post", { headers, body });
+        const response = await this.call(this.baseUrl, "post", { headers, body });
         return await response.json() as Promise<IgdbGameDetails[]>;
+    }
+
+    async getTrendingGames(): Promise<IgdbTrendGamesResponse[]> {
+        const trendRes = await this.call(this.trendingUrl);
+        const trendsData = await trendRes.json() as { games: { steam_appid: number }[] };
+        const steamIds = trendsData.games.map((game) => game.steam_appid);
+
+        const body = `
+            fields uid, game.name, game.summary, game.cover.image_id, game.first_release_date;
+            where external_game_source = 1 & uid = (${steamIds.join(",")});
+            limit ${steamIds.length};
+        `;
+
+        const headers = await this.getHeaders();
+        const response = await this.call(this.externalGamesUrl, "post", { headers, body });
+        const igdbResults = await response.json() as IgdbTrendGamesResponse[];
+
+        const resultsMap = new Map(igdbResults.map((item) => [Number(item.uid), item]));
+
+        return steamIds
+            .map((id) => resultsMap.get(id))
+            .filter((game): game is IgdbTrendGamesResponse => !!game);
     }
 
     async refreshAccessToken() {
