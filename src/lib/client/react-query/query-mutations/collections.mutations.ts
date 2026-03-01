@@ -1,6 +1,6 @@
 import {toast} from "sonner";
 import {useMutation, useQueryClient} from "@tanstack/react-query";
-import {collectionDetailsReadOptions} from "@/lib/client/react-query/query-options/query-options";
+import {collectionDetailsEditOptions, collectionDetailsReadOptions} from "@/lib/client/react-query/query-options/query-options";
 import {postCopyCollection, postCreateCollection, postDeleteCollection, postToggleCollectionLike, postUpdateCollection} from "@/lib/server/functions/collections";
 
 
@@ -27,6 +27,7 @@ export const useUpdateCollectionMutation = (collectionId: number) => {
         onSuccess: async () => {
             await queryClient.invalidateQueries({ queryKey: ["collections", "user"] });
             await queryClient.invalidateQueries({ queryKey: collectionDetailsReadOptions(collectionId).queryKey });
+            await queryClient.invalidateQueries({ queryKey: collectionDetailsEditOptions(collectionId).queryKey });
         },
     });
 };
