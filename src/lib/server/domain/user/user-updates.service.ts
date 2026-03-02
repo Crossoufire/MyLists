@@ -5,8 +5,6 @@ import {UserUpdatesRepository} from "@/lib/server/domain/user/user-updates.repos
 
 
 export class UserUpdatesService {
-
-
     constructor(private repository: typeof UserUpdatesRepository) {
     }
 

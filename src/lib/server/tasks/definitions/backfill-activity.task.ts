@@ -15,8 +15,8 @@ export const backfillActivityTask = defineTask({
         const userStatsRepository = await getContainer().then(c => c.repositories.userStats);
 
         const userIds = await db.select({ id: user.id }).from(user);
-        const start = new Date(Date.UTC(2026, 1, 0, 23, 59, 59));
-        const end = new Date(Date.UTC(2026, 2, 0, 23, 59, 59));
+        const start = new Date(Date.UTC(2026, 0, 0, 23, 59, 59));
+        const end = new Date(Date.UTC(2026, 1, 0, 23, 59, 59));
 
         function computeActivityEventsFromHistory(mediaType: MediaType, logEntries: any[], baseline?: any) {
             const events: any[] = [];

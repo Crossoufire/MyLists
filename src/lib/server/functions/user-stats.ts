@@ -6,9 +6,9 @@ import {FormattedError} from "@/lib/utils/error-classes";
 import {AdvancedMediaStats} from "@/lib/types/stats.types";
 import {transactionMiddleware} from "@/lib/server/middlewares/transaction";
 import {privateAuthZMiddleware} from "@/lib/server/middlewares/authorization";
+import {requiredAuthMiddleware} from "@/lib/server/middlewares/authentication";
 import {
     deleteActivitySchema,
-	getMonthlyActivitySchema,
     getSectionActivitySchema,
     getSpecificActivitySchema,
     getUserStatsSchema,
@@ -50,7 +50,7 @@ export const getUserStats = createServerFn({ method: "GET" })
 
 export const getMonthlyActivity = createServerFn({ method: "GET" })
     .middleware([privateAuthZMiddleware])
-    .inputValidator(tryNotFound(getMonthlyActivitySchema))
+    .inputValidator(tryNotFound(monthlyActivitySchema))
     .handler(async ({ data: { year, month }, context: { user } }) => {
         const container = await getContainer();
 

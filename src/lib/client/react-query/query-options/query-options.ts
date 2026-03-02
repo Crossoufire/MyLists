@@ -1,4 +1,5 @@
 import {NotifTab} from "@/lib/types/base.types";
+import {SectionParams} from "@/lib/types/activity.types";
 import {getCurrentUser} from "@/lib/server/functions/auth";
 import {getTrendsMedia} from "@/lib/server/functions/trends";
 import {CommunitySearch} from "@/lib/types/collections.types";
@@ -9,27 +10,17 @@ import {getComingNextMedia} from "@/lib/server/functions/coming-next";
 import {ApiProviderType, JobType, MediaType} from "@/lib/utils/enums";
 import {getPlatformStats} from "@/lib/server/functions/platform-stats";
 import {getAdminAllUpdatesHistory} from "@/lib/server/functions/admin";
-import {MediaListArgs, SearchType, SpecificActivityFilters} from "@/lib/types/zod.schema.types";
 import {infiniteQueryOptions, queryOptions} from "@tanstack/react-query";
 import {getUserAchievements} from "@/lib/server/functions/user-achievements";
 import {getUserMediaHistory, getUserTagNames} from "@/lib/server/functions/user-media";
 import {getDailyMediadle, getMediadleSuggestions} from "@/lib/server/functions/moviedle";
 import {getNotifications, getNotificationsCount} from "@/lib/server/functions/notifications";
-
-import {getUserCollectionNames, getUserMediaHistory} from "@/lib/server/functions/user-media";
-
-import {getMonthlyActivity, getSectionActivity, getUserStats} from "@/lib/server/functions/user-stats";
-
+import {MediaListArgs, SearchType, SpecificActivityFilters} from "@/lib/types/zod.schema.types";
 import {getJobDetails, getMediaDetails, getMediaDetailsToEdit} from "@/lib/server/functions/media-details";
 import {getMonthlyActivity, getSectionActivity, getSpecificActivity, getUserStats} from "@/lib/server/functions/user-stats";
 import {getAllUpdatesHistory, getUserProfile, getUserProfileHeader, getUsersFollowers, getUsersFollows} from "@/lib/server/functions/user-profile";
-
-import {getCollectionsViewFn, getMediaListFilters, getMediaListSearchFilters, getMediaListSF, getUserListHeaderSF} from "@/lib/server/functions/media-lists";
-import {SectionParams} from "@/lib/types/activity.types";
-
 import {getMediaListFilters, getMediaListSearchFilters, getMediaListSF, getTagsViewFn, getUserListHeaderSF} from "@/lib/server/functions/media-lists";
 import {getCommunityCollections, getEditCollectionDetails, getMediaCommunityCollections, getReadCollectionDetails, getUserCollections} from "@/lib/server/functions/collections";
-
 
 
 export const authOptions = queryOptions({

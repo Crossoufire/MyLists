@@ -141,6 +141,13 @@
       "when": 1772187405278,
       "tag": "0019_windy_praxagora",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "6",
+      "when": 1772401995577,
+      "tag": "0020_faithful_junta",
+      "breakpoints": true
     }
   ]
 }

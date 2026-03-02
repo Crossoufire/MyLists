@@ -9,8 +9,8 @@ import {Button} from "@/lib/client/components/ui/button";
 import {SectionParams} from "@/lib/types/activity.types";
 import {Checkbox} from "@/lib/client/components/ui/checkbox";
 import {specificActivityOptions} from "@/lib/client/react-query/query-options/query-options";
-import {Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle} from "@/lib/client/components/ui/dialog";
 import {useDeleteActivityMutation, useUpdateActivityMutation} from "@/lib/client/react-query/query-mutations/activity.mutations";
+import {Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle} from "@/lib/client/components/ui/dialog";
 
 
 interface ActivityEditDialogProps {
@@ -36,7 +36,6 @@ type FormValues = {
 
 export const ActivityEditDialog = (props: ActivityEditDialogProps) => {
     const { open, year, month, mediaId, username, mediaType, mediaName, onOpenChange, sectionParams } = props;
-
     const updateMutation = useUpdateActivityMutation(username, sectionParams);
     const deleteMutation = useDeleteActivityMutation(username, sectionParams);
     const { data: event, isLoading } = useQuery(specificActivityOptions({ username, year, month, mediaType, mediaId }, open));
@@ -76,6 +75,7 @@ export const ActivityEditDialog = (props: ActivityEditDialogProps) => {
 
     const handleOnDelete = () => {
         if (!event || !window.confirm("Delete this activity event?")) return;
+
         deleteMutation.mutate({ data: { activityId: event.id } }, {
             onSuccess: () => {
                 onOpenChange(false);
@@ -115,6 +115,7 @@ export const ActivityEditDialog = (props: ActivityEditDialogProps) => {
                     <div className="flex flex-wrap gap-4">
                         <label className="flex items-center gap-2 text-sm">
                             <Checkbox
+                                // eslint-disable-next-line react-hooks/incompatible-library
                                 checked={!form.watch().isCompleted && !form.watch().isRedo}
                                 onCheckedChange={() => {
                                     form.setValue("isRedo", false);
