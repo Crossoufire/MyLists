@@ -155,6 +155,7 @@ function MonthlyActivityPage() {
                 :
                 <EmptyState
                     iconSize={50}
+                    className="py-20"
                     icon={LayoutGrid}
                     message="No activity recorded."
                 />

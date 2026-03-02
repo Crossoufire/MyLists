@@ -430,8 +430,9 @@ export class UserStatsService {
         switch (mediaType) {
             case MediaType.SERIES:
             case MediaType.ANIME:
-            case MediaType.MOVIES:
                 return specificGained * (duration ?? 20);
+            case MediaType.MOVIES:
+                return specificGained * (duration ?? 100);
             case MediaType.GAMES:
                 return specificGained;
             case MediaType.BOOKS:
