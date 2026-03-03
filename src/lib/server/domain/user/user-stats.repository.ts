@@ -474,7 +474,7 @@ export class UserStatsRepository {
                 set: {
                     isRedo: sql`excluded.is_redo`,
                     lastUpdate: sql`excluded.last_update`,
-                    isCompleted: sql`MAX(${userMediaActivity.isCompleted}, excluded.is_completed)`,
+                    isCompleted: sql`excluded.is_completed`,
                     specificGained: sql`${userMediaActivity.specificGained} + excluded.specific_gained`,
                 },
             });
@@ -501,6 +501,7 @@ export class UserStatsRepository {
             .where(and(
                 eq(userMediaActivity.userId, userId),
                 eq(userMediaActivity.mediaType, mediaType),
+                gt(userMediaActivity.specificGained, 0),
                 eq(userMediaActivity.monthBucket, timeBucket),
             ))
             .orderBy(asc(userMediaActivity.lastUpdate));
@@ -538,8 +539,8 @@ export class UserStatsRepository {
                     set: {
                         isRedo: payload.isRedo ?? existing.isRedo,
                         lastUpdate: payload.lastUpdate ?? existing.lastUpdate,
+                        isCompleted: payload.isCompleted ?? existing.isCompleted,
                         specificGained: sql`${userMediaActivity.specificGained} + ${payload.specificGained ?? 0}`,
-                        isCompleted: sql`MAX(${userMediaActivity.isCompleted}, ${payload.isCompleted ?? existing.isCompleted})`,
                     },
                 })
                 .returning();

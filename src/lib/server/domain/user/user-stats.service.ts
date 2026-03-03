@@ -44,16 +44,6 @@ export class UserStatsService {
         await this.repository.updateUserPreComputedStatsWithDelta(userId, mediaType, mediaId, delta);
     }
 
-    async logActivityFromDelta(userId: number, mediaType: MediaType, mediaId: number, delta: DeltaStats) {
-        const specificGained = this._resolveSpecificGainedFromDelta(mediaType, delta);
-        if (!specificGained) return;
-
-        const isRedo = (delta.totalRedo ?? 0) > 0;
-        const isCompleted = (delta.statusCounts?.[Status.COMPLETED] ?? 0) > 0;
-
-        await this.repository.logActivity([{ userId, mediaId, mediaType, specificGained, isCompleted, isRedo }]);
-    }
-
     async updateAllUsersPreComputedStats(mediaType: MediaType, userStats: UserMediaStats[]) {
         await this.repository.updateAllUsersPreComputedStats(mediaType, userStats);
     }
@@ -290,6 +280,16 @@ export class UserStatsService {
     }
 
     // --- Activity Stats ----------------------------------------------------------
+
+    async logActivityFromDelta(userId: number, mediaType: MediaType, mediaId: number, delta: DeltaStats) {
+        const specificGained = this._resolveSpecificGainedFromDelta(mediaType, delta);
+        if (!specificGained) return;
+
+        const isRedo = (delta.totalRedo ?? 0) > 0;
+        const isCompleted = (delta.statusCounts?.[Status.COMPLETED] ?? 0) > 0;
+
+        await this.repository.logActivity([{ userId, mediaId, mediaType, specificGained, isCompleted, isRedo }]);
+    }
 
     async getMonthlyActivity(userId: number, timeBucket: string) {
         const mediaTypes = Object.values(MediaType);

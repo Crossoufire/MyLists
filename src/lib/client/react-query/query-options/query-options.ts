@@ -197,10 +197,10 @@ export const monthlyActivityOptions = (username: string, search: { year: string,
 }
 
 
-export const specificActivityOptions = (args: SpecificActivityFilters, open: boolean) => {
+export const specificActivityOptions = (params: SpecificActivityFilters, open: boolean) => {
     return queryOptions({
-        queryKey: ["specific-activity", args],
-        queryFn: () => getSpecificActivity({ data: { ...args } }),
+        queryKey: ["specific-activity", params],
+        queryFn: () => getSpecificActivity({ data: { ...params } }),
         enabled: open,
     })
 }
