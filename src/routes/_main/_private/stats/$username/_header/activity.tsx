@@ -1,19 +1,19 @@
-import {useMemo, useState} from "react";
+import {useMemo} from "react";
 import {MediaType} from "@/lib/utils/enums";
 import {useAuth} from "@/lib/client/hooks/use-auth";
 import {GridItem} from "@/lib/types/activity.types";
 import {createFileRoute} from "@tanstack/react-router";
 import {useSuspenseQuery} from "@tanstack/react-query";
-import {TabHeader} from "@/lib/client/components/general/TabHeader";
 import {EmptyState} from "@/lib/client/components/general/EmptyState";
 import {MainThemeIcon} from "@/lib/client/components/general/MainIcons";
 import {CheckCircle2, LayoutGrid, RotateCcw, TrendingUp} from "lucide-react";
 import {monthlyActivityOptions} from "@/lib/client/react-query/query-options/query-options";
 import {ActivityHeader, ActivitySectionGrid} from "@/lib/client/components/activity/ActivityShared";
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/lib/client/components/ui/select";
 
 
 export const Route = createFileRoute("/_main/_private/stats/$username/_header/activity")({
-    validateSearch: (search) => search as { year: string, month: string },
+    validateSearch: (search) => search as { year: string, month: string, activeTab?: MediaType | "all" },
     loaderDeps: ({ search }) => ({ search }),
     loader: async ({ context: { queryClient }, params: { username }, deps: { search } }) => {
         return queryClient.ensureQueryData(monthlyActivityOptions(username, search));
@@ -24,14 +24,17 @@ export const Route = createFileRoute("/_main/_private/stats/$username/_header/ac
 
 function MonthlyActivityPage() {
     const { currentUser } = useAuth();
-    const filters = Route.useSearch();
     const navigate = Route.useNavigate();
     const { username } = Route.useParams();
-    const [activeTab, setActiveTab] = useState<MediaType | "all">("all");
+    const { activeTab = "all", ...filters } = Route.useSearch();
     const apiData = useSuspenseQuery(monthlyActivityOptions(username, filters)).data;
 
     const canEdit = currentUser?.name === username;
     const mediaTypes = (Object.keys(apiData) as MediaType[]).filter((key) => apiData[key].count > 0);
+
+    const handleTabChange = (tab: string) => {
+        void navigate({ search: { ...filters, activeTab: tab as (MediaType | "all") } });
+    }
 
     const viewData = useMemo(() => {
         const mediaTypesToProcess = activeTab === "all" ? mediaTypes : [activeTab];
@@ -82,29 +85,10 @@ function MonthlyActivityPage() {
         };
     }, [apiData, activeTab, mediaTypes]);
 
-    const tabs = [
-        {
-            id: "all",
-            label: `All`,
-            isAccent: true,
-            icon: <MainThemeIcon size={15} type="all"/>,
-        },
-        ...mediaTypes.map((mediaType) => ({
-            id: mediaType,
-            label: `${mediaType}`,
-            icon: <MainThemeIcon size={15} type={mediaType}/>,
-        }))
-    ]
-
     const hasData = viewData.completed.length > 0 || viewData.progressed.length > 0 || viewData.redo.length > 0;
 
     return (
-        <div className="space-y-8">
-            <TabHeader
-                tabs={tabs}
-                activeTab={activeTab}
-                setActiveTab={setActiveTab as any}
-            />
+        <div className="space-y-6">
             <ActivityHeader
                 mediaType={activeTab}
                 count={viewData.totalCount}
@@ -113,6 +97,29 @@ function MonthlyActivityPage() {
                 dates={{ year: Number(filters.year), month: Number(filters.month) }}
                 onDateChange={(y, m) => navigate({ search: { year: String(y), month: String(m) } })}
             />
+            <div className="ml-auto w-50 max-sm:w-full">
+                <Select value={activeTab} onValueChange={handleTabChange}>
+                    <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Filter by Type"/>
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="all">
+                            <div className="flex items-center gap-2">
+                                <MainThemeIcon type="all"/>
+                                <span>All Types</span>
+                            </div>
+                        </SelectItem>
+                        {mediaTypes.map((type) =>
+                            <SelectItem key={type} value={type}>
+                                <div className="flex items-center gap-2 capitalize">
+                                    <MainThemeIcon type={type}/>
+                                    <span>{type}</span>
+                                </div>
+                            </SelectItem>
+                        )}
+                    </SelectContent>
+                </Select>
+            </div>
             {hasData ?
                 <div key={activeTab}>
                     <ActivitySectionGrid

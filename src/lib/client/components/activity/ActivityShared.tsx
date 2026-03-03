@@ -94,12 +94,12 @@ export const ActivitySectionGrid = (props: ActivitySectionGridProps) => {
 
     return (
         <div className="mb-8 space-y-4">
-            <div className="flex items-center gap-2 border-b border-border pb-2">
+            <div className="flex items-center gap-2">
                 <Icon size={18} className="text-app-accent"/>
                 <h3 className="text-lg font-semibold tracking-tight">
                     {title}
                 </h3>
-                <span className="ml-auto rounded-full bg-secondary px-2.5 py-0.5 text-xs font-medium text-secondary-foreground">
+                <span className="rounded-full bg-secondary px-2.5 py-0.5 text-xs font-medium text-secondary-foreground">
                     {items.length}
                 </span>
             </div>
