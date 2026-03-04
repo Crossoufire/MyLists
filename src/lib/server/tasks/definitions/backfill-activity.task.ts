@@ -10,13 +10,15 @@ export const backfillActivityTask = defineTask({
     name: "backfill-users-activity" as const,
     visibility: "admin",
     description: "Backfill Users Activity",
-    inputSchema: z.object({}),
-    handler: async (ctx) => {
+    inputSchema: z.object({
+        month: z.coerce.number().min(0).max(11).describe("Month"),
+    }),
+    handler: async (ctx, input) => {
         const userStatsRepository = await getContainer().then(c => c.repositories.userStats);
 
         const userIds = await db.select({ id: user.id }).from(user);
-        const start = new Date(Date.UTC(2026, 0, 0, 23, 59, 59));
-        const end = new Date(Date.UTC(2026, 1, 0, 23, 59, 59));
+        const start = new Date(Date.UTC(2026, input.month, 0, 23, 59, 59));
+        const end = new Date(Date.UTC(2026, input.month + 1, 0, 23, 59, 59));
 
         function computeActivityEventsFromHistory(mediaType: MediaType, logEntries: any[], baseline?: any) {
             const events: any[] = [];
@@ -52,7 +54,7 @@ export const backfillActivityTask = defineTask({
 
                 const baseline = await userStatsRepository.getLastEntryBefore(user.id, mediaType, logEntries[0].timestamp);
                 const events = computeActivityEventsFromHistory(mediaType, logEntries, baseline);
-                const eventsWithGain = events.filter((event) => event.specificGained > 0);
+                const eventsWithGain = events.filter((event) => event.specificGained !== 0);
 
                 await userStatsRepository.logActivity(eventsWithGain);
             });
