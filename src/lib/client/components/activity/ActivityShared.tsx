@@ -10,8 +10,8 @@ import {MediaCard} from "@/lib/client/components/media/base/MediaCard";
 import {CalendarNav} from "@/lib/client/components/activity/CalendarNav";
 import {Clock, LayoutGrid, LucideIcon, Settings2, TrendingUp} from "lucide-react";
 import {ActivityEditDialog} from "@/lib/client/components/activity/ActivityEditDialog";
-import {sectionActivityOptions} from "@/lib/client/react-query/query-options/query-options";
 import {MediaCornerCommon} from "@/lib/client/components/media/base/MediaCornerCommon";
+import {sectionActivityOptions} from "@/lib/client/react-query/query-options/query-options";
 
 
 interface ActivityHeaderProps {
@@ -173,9 +173,7 @@ export const ActivitySectionGrid = (props: ActivitySectionGridProps) => {
                     mediaId={editingItem.data.mediaId}
                     mediaName={editingItem.data.mediaName}
                     sectionParams={{ year, month, mediaType, section }}
-                    onOpenChange={(open) => {
-                        if (!open) setEditingItem(null);
-                    }}
+                    onOpenChange={() => setEditingItem(null)}
                 />
             }
         </div>

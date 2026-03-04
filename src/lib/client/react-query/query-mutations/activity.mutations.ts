@@ -4,14 +4,15 @@ import {sectionActivityOptions} from "@/lib/client/react-query/query-options/que
 import {postDeleteSpecificActivity, postUpdateSpecificActivity} from "@/lib/server/functions/user-stats";
 
 
-export const useUpdateActivityMutation = (username: string, sectionParams: SectionParams) => {
+export const useUpdateActivityMutation = (username: string) => {
     const queryClient = useQueryClient();
 
     return useMutation({
         mutationFn: postUpdateSpecificActivity,
         meta: { errorMessage: "Failed to update activity event." },
         onSuccess: async () => {
-            await queryClient.invalidateQueries({ queryKey: sectionActivityOptions(username, sectionParams).queryKey });
+            await queryClient.invalidateQueries({ queryKey: ["monthly-activity", username] });
+            await queryClient.invalidateQueries({ queryKey: ["section-activity", username] });
         },
     });
 };

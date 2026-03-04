@@ -36,7 +36,7 @@ type FormValues = {
 
 export const ActivityEditDialog = (props: ActivityEditDialogProps) => {
     const { open, year, month, mediaId, username, mediaType, mediaName, onOpenChange, sectionParams } = props;
-    const updateMutation = useUpdateActivityMutation(username, sectionParams);
+    const updateMutation = useUpdateActivityMutation(username);
     const deleteMutation = useDeleteActivityMutation(username, sectionParams);
     const { data: event, isLoading } = useQuery(specificActivityOptions({ username, year, month, mediaType, mediaId }, open));
     const form = useForm<FormValues>({
