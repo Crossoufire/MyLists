@@ -50,6 +50,24 @@ export const userMediaUpdate = sqliteTable("user_media_update", {
     index("ix_user_media_update_user_id").on(table.userId),
 ]);
 
+export const userMediaActivity = sqliteTable("user_media_activity", {
+    id: integer().primaryKey().notNull(),
+    userId: integer().notNull().references(() => user.id, { onDelete: "cascade" }),
+    mediaId: integer().notNull(),
+    mediaType: text().$type<MediaType>().notNull(),
+    specificGained: real().notNull(),
+    isCompleted: integer({ mode: "boolean" }).default(false).notNull(),
+    isRedo: integer({ mode: "boolean" }).default(false).notNull(),
+    monthBucket: text().notNull(),
+    lastUpdate: text().default(sql`(CURRENT_TIMESTAMP)`).notNull(),
+}, (table) => [
+    index("ix_user_media_activity_user_id").on(table.userId),
+    index("ix_user_media_activity_media_id").on(table.mediaId),
+    index("ix_user_media_activity_media_type").on(table.mediaType),
+    index("ix_user_media_activity_month_bucket").on(table.monthBucket),
+    uniqueIndex("user_media_month_idx").on(table.userId, table.mediaId, table.mediaType, table.monthBucket),
+]);
+
 
 export const userMediaSettings = sqliteTable("user_media_settings", {
     id: integer().primaryKey().notNull(),
@@ -115,6 +133,7 @@ export const userRelations = relations(user, ({ many }) => ({
     seriesTags: many(seriesTags),
     mediadleStats: many(mediadleStats),
     userMediaUpdates: many(userMediaUpdate),
+    userMediaActivity: many(userMediaActivity),
     userAchievements: many(userAchievement),
     userMediaSettings: many(userMediaSettings),
     userMediadleProgresses: many(userMediadleProgress),
@@ -146,6 +165,13 @@ export const followersRelations = relations(followers, ({ one }) => ({
 export const userMediaUpdateRelations = relations(userMediaUpdate, ({ one }) => ({
     user: one(user, {
         fields: [userMediaUpdate.userId],
+        references: [user.id]
+    }),
+}));
+
+export const userMediaActivityRelations = relations(userMediaActivity, ({ one }) => ({
+    user: one(user, {
+        fields: [userMediaActivity.userId],
         references: [user.id]
     }),
 }));

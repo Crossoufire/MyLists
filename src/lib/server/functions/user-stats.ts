@@ -1,10 +1,20 @@
+import {zeroPad} from "@/lib/utils/formating";
 import {createServerFn} from "@tanstack/react-start";
 import {tryNotFound} from "@/lib/utils/try-not-found";
 import {getContainer} from "@/lib/server/core/container";
 import {FormattedError} from "@/lib/utils/error-classes";
 import {AdvancedMediaStats} from "@/lib/types/stats.types";
+import {transactionMiddleware} from "@/lib/server/middlewares/transaction";
 import {privateAuthZMiddleware} from "@/lib/server/middlewares/authorization";
-import {getMonthlyActivitySchema, getSectionActivitySchema, getUserStatsSchema} from "@/lib/types/zod.schema.types";
+import {requiredAuthMiddleware} from "@/lib/server/middlewares/authentication";
+import {
+    deleteActivitySchema,
+    getSectionActivitySchema,
+    getSpecificActivitySchema,
+    getUserStatsSchema,
+    monthlyActivitySchema,
+    updateActivitySchema
+} from "@/lib/types/zod.schema.types";
 
 
 export const getUserStats = createServerFn({ method: "GET" })
@@ -40,15 +50,14 @@ export const getUserStats = createServerFn({ method: "GET" })
 
 export const getMonthlyActivity = createServerFn({ method: "GET" })
     .middleware([privateAuthZMiddleware])
-    .inputValidator(tryNotFound(getMonthlyActivitySchema))
+    .inputValidator(tryNotFound(monthlyActivitySchema))
     .handler(async ({ data: { year, month }, context: { user } }) => {
         const container = await getContainer();
+
+        const timeBucket = `${year}-${zeroPad(month)}`;
         const userStatsService = container.services.userStats;
 
-        const start = new Date(Date.UTC(year, month - 1, 0, 23, 59, 59));
-        const end = new Date(Date.UTC(year, month, 0, 23, 59, 59));
-
-        return userStatsService.getMonthlyActivity(user.id, start, end);
+        return userStatsService.getMonthlyActivity(user.id, timeBucket);
     });
 
 
@@ -60,4 +69,31 @@ export const getSectionActivity = createServerFn({ method: "GET" })
         const userStatsService = container.services.userStats;
 
         return userStatsService.getSectionActivity(user.id, data);
+    });
+
+
+export const getSpecificActivity = createServerFn({ method: "GET" })
+    .middleware([privateAuthZMiddleware])
+    .inputValidator(tryNotFound(getSpecificActivitySchema))
+    .handler(async ({ data: { year, month, mediaType, mediaId }, context: { user } }) => {
+        const userStatsService = await getContainer().then(c => c.services.userStats);
+        return userStatsService.getSpecificActivity(user.id, { year, month, mediaType, mediaId });
+    });
+
+
+export const postUpdateSpecificActivity = createServerFn({ method: "POST" })
+    .middleware([requiredAuthMiddleware, transactionMiddleware])
+    .inputValidator(updateActivitySchema)
+    .handler(async ({ data: { activityId, payload }, context: { currentUser } }) => {
+        const userStatsService = await getContainer().then(c => c.services.userStats);
+        return userStatsService.updateSpecificActivity(currentUser.id, activityId, payload);
+    });
+
+
+export const postDeleteSpecificActivity = createServerFn({ method: "POST" })
+    .middleware([requiredAuthMiddleware, transactionMiddleware])
+    .inputValidator(deleteActivitySchema)
+    .handler(async ({ data: { activityId }, context: { currentUser } }) => {
+        const userStatsService = await getContainer().then(c => c.services.userStats);
+        await userStatsService.deleteSpecificActivity(currentUser.id, activityId);
     });

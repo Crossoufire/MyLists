@@ -4,8 +4,9 @@ import {DeltaStats} from "@/lib/types/stats.types";
 import {UserMediaStats} from "@/lib/types/base.types";
 import {SearchType} from "@/lib/types/zod.schema.types";
 import {getDbClient} from "@/lib/server/database/async-storage";
+import {LogActivity, UpdateActivity} from "@/lib/types/activity.types";
 import {resolvePagination, resolveSorting} from "@/lib/server/database/pagination";
-import {user, userMediaSettings, userMediaStatsHistory} from "@/lib/server/database/schema";
+import {user, userMediaActivity, userMediaSettings, userMediaStatsHistory} from "@/lib/server/database/schema";
 import {and, asc, count, countDistinct, desc, eq, gt, gte, inArray, lt, lte, ne, SQL, sql, sum} from "drizzle-orm";
 
 
@@ -412,8 +413,6 @@ export class UserStatsRepository {
         };
     }
 
-    // --- Wrapped -----------------------------------------------
-
     static async getEntriesInRange(userId: number, mediaType: MediaType, start: Date, end: Date) {
         return getDbClient()
             .select()
@@ -439,5 +438,142 @@ export class UserStatsRepository {
             .orderBy(desc(userMediaStatsHistory.timestamp))
             .limit(1)
             .get();
+    }
+
+    // --- Activity System -------------------------------------------------------
+
+    static async logActivity(activities: LogActivity[]) {
+        if (activities.length === 0) return;
+
+        const values = activities.map((activity) => {
+            const date = activity.lastUpdate ? new Date(activity.lastUpdate) : new Date();
+            const monthBucket = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+
+            return {
+                monthBucket,
+                userId: activity.userId,
+                isRedo: activity.isRedo,
+                mediaId: activity.mediaId,
+                mediaType: activity.mediaType,
+                isCompleted: activity.isCompleted,
+                specificGained: activity.specificGained,
+                lastUpdate: activity.lastUpdate || new Date().toISOString(),
+            };
+        });
+
+        await getDbClient()
+            .insert(userMediaActivity)
+            .values(values)
+            .onConflictDoUpdate({
+                target: [
+                    userMediaActivity.userId,
+                    userMediaActivity.mediaId,
+                    userMediaActivity.mediaType,
+                    userMediaActivity.monthBucket,
+                ],
+                set: {
+                    isRedo: sql`excluded.is_redo`,
+                    lastUpdate: sql`excluded.last_update`,
+                    isCompleted: sql`excluded.is_completed`,
+                    specificGained: sql`${userMediaActivity.specificGained} + excluded.specific_gained`,
+                },
+            });
+    }
+
+    static async getSpecificActivity(userId: number, mediaType: MediaType, mediaId: number, timeBucket: string) {
+        return getDbClient()
+            .select()
+            .from(userMediaActivity)
+            .where(and(
+                eq(userMediaActivity.userId, userId),
+                eq(userMediaActivity.mediaId, mediaId),
+                eq(userMediaActivity.mediaType, mediaType),
+                eq(userMediaActivity.monthBucket, timeBucket),
+            ))
+            .orderBy(asc(userMediaActivity.lastUpdate))
+            .get();
+    }
+
+    static async getMediaTypeActivity(userId: number, mediaType: MediaType, timeBucket: string) {
+        return getDbClient()
+            .select()
+            .from(userMediaActivity)
+            .where(and(
+                eq(userMediaActivity.userId, userId),
+                eq(userMediaActivity.mediaType, mediaType),
+                gt(userMediaActivity.specificGained, 0),
+                eq(userMediaActivity.monthBucket, timeBucket),
+            ))
+            .orderBy(asc(userMediaActivity.lastUpdate));
+    }
+
+    static async updateSpecificActivity(userId: number, activityId: number, payload: UpdateActivity) {
+        const [existing] = await getDbClient()
+            .select()
+            .from(userMediaActivity)
+            .where(and(eq(userMediaActivity.id, activityId), eq(userMediaActivity.userId, userId)));
+
+        if (!existing) return null;
+
+        let newMonthBucket = existing.monthBucket;
+        if (payload.lastUpdate) {
+            const date = new Date(payload.lastUpdate);
+            newMonthBucket = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+        }
+
+        if (newMonthBucket !== existing.monthBucket) {
+            const [upserted] = await getDbClient()
+                .insert(userMediaActivity)
+                .values({
+                    ...existing,
+                    ...payload,
+                    monthBucket: newMonthBucket,
+                })
+                .onConflictDoUpdate({
+                    target: [
+                        userMediaActivity.userId,
+                        userMediaActivity.mediaId,
+                        userMediaActivity.mediaType,
+                        userMediaActivity.monthBucket,
+                    ],
+                    set: {
+                        isRedo: payload.isRedo ?? existing.isRedo,
+                        lastUpdate: payload.lastUpdate ?? existing.lastUpdate,
+                        isCompleted: payload.isCompleted ?? existing.isCompleted,
+                        specificGained: sql`${userMediaActivity.specificGained} + ${payload.specificGained ?? 0}`,
+                    },
+                })
+                .returning();
+
+            await getDbClient()
+                .delete(userMediaActivity)
+                .where(eq(userMediaActivity.id, activityId));
+
+            return upserted;
+        }
+
+        const [updated] = await getDbClient()
+            .update(userMediaActivity)
+            .set(payload)
+            .where(and(eq(userMediaActivity.id, activityId), eq(userMediaActivity.userId, userId)))
+            .returning();
+
+        return updated;
+    }
+
+    static async deleteSpecificActivity(userId: number, activityId: number) {
+        await getDbClient()
+            .delete(userMediaActivity)
+            .where(and(eq(userMediaActivity.id, activityId), eq(userMediaActivity.userId, userId)));
+    }
+
+    static async deleteAssociatedActivities(userId: number, mediaType: MediaType, mediaId: number) {
+        await getDbClient()
+            .delete(userMediaActivity)
+            .where(and(
+                eq(userMediaActivity.userId, userId),
+                eq(userMediaActivity.mediaId, mediaId),
+                eq(userMediaActivity.mediaType, mediaType),
+            ));
     }
 }

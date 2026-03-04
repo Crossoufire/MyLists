@@ -23,6 +23,7 @@ export type AdminUpdatePayload = z.infer<typeof adminUpdatePayloadSchema>;
 export type AchievementTier = z.infer<typeof tierAchievementSchema>;
 export type UpdateUserMedia = z.infer<typeof updateUserMediaSchema>;
 export type SectionActivity = z.infer<typeof getSectionActivitySchema>;
+export type SpecificActivityFilters = z.infer<typeof getSpecificActivitySchema>;
 export type CreateCollection = z.infer<typeof createCollectionSchema>;
 
 
@@ -237,12 +238,11 @@ export const getUserStatsSchema = z.object({
     mediaType: z.enum(MediaType).optional(),
 })
 
-export const getMonthlyActivitySchema = z.object({
+export const monthlyActivitySchema = z.object({
     username: z.string(),
     year: z.coerce.number().int().positive(),
     month: z.coerce.number().int().positive().min(1).max(12),
 })
-
 
 export const getSectionActivitySchema = z.object({
     username: z.string(),
@@ -254,6 +254,29 @@ export const getSectionActivitySchema = z.object({
     month: z.coerce.number().int().positive().min(1).max(12),
 });
 
+export const getSpecificActivitySchema = z.object({
+    username: z.string(),
+    mediaType: z.enum(MediaType),
+    year: z.coerce.number().int().positive(),
+    mediaId: z.coerce.number().int().positive(),
+    month: z.coerce.number().int().positive().min(1).max(12),
+});
+
+export const updateActivitySchema = z.object({
+    activityId: z.coerce.number().int().positive(),
+    payload: z.object({
+        isRedo: z.boolean().optional(),
+        lastUpdate: z.string().optional(),
+        isCompleted: z.boolean().optional(),
+        specificGained: z.number().min(0).optional(),
+    }).refine((data) => Object.values(data).some((val) => val !== undefined), {
+        message: "Provide at least one field to update.",
+    }),
+});
+
+export const deleteActivitySchema = z.object({
+    activityId: z.coerce.number().int().positive(),
+});
 
 const adminUpdatePayloadSchema = z.object({
     role: z.enum(RoleType).optional(),
