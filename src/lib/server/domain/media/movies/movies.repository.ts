@@ -4,7 +4,7 @@ import {AddedMediaDetails} from "@/lib/types/base.types";
 import {Achievement} from "@/lib/types/achievements.types";
 import {getDbClient} from "@/lib/server/database/async-storage";
 import {BaseRepository} from "@/lib/server/domain/media/base/base.repository";
-import {movies, moviesActors, moviesGenre, moviesList} from "@/lib/server/database/schema";
+import {movies, moviesActors, moviesGenre, moviesList, moviesVectors} from "@/lib/server/database/schema";
 import {Movie, UpsertMovieWithDetails} from "@/lib/server/domain/media/movies/movies.types";
 import {MovieSchemaConfig, moviesConfig} from "@/lib/server/domain/media/movies/movies.config";
 import {and, asc, count, countDistinct, eq, getTableColumns, gte, isNotNull, isNull, lte, max, ne, or, sql} from "drizzle-orm";
@@ -372,5 +372,37 @@ export class MoviesRepository extends BaseRepository<MovieSchemaConfig> {
             .where(and(eq(moviesList.userId, userId), isNotNull(movies.originalLanguage)));
 
         return { langs, genres, tags };
+    }
+
+    async getMediaToEmbed(includeRecentlyUpdated: boolean) {
+        const rows = await getDbClient()
+            .select({
+                name: movies.name,
+                mediaId: movies.id,
+                synopsis: movies.synopsis,
+                genres: sql<string | null>`group_concat(DISTINCT ${moviesGenre.name})`,
+            })
+            .from(movies)
+            .leftJoin(moviesGenre, eq(moviesGenre.mediaId, movies.id))
+            .leftJoin(moviesVectors, eq(moviesVectors.mediaId, movies.id))
+            .where(includeRecentlyUpdated
+                ? or(isNull(moviesVectors.mediaId), gte(movies.lastApiUpdate, sql`datetime('now', '-7 days')`))
+                : isNull(moviesVectors.mediaId)
+            )
+            .groupBy(movies.id)
+            .orderBy(movies.id);
+
+        return rows.map((row) => {
+            const parts = [
+                row.name ? `Title: ${row.name?.toLowerCase()?.trim()}` : null,
+                row.genres ? `Genres: ${row.genres?.toLowerCase()?.trim()}` : null,
+                row.synopsis ? `Description: ${row.synopsis?.toLowerCase()?.trim()}` : null,
+            ].filter(Boolean);
+
+            return {
+                mediaId: row.mediaId,
+                embeddingInput: parts.join(". "),
+            };
+        });
     }
 }

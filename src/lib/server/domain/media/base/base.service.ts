@@ -3,7 +3,7 @@ import {DeltaStats} from "@/lib/types/stats.types";
 import {FormattedError} from "@/lib/utils/error-classes";
 import {Achievement} from "@/lib/types/achievements.types";
 import {MediaSchemaConfig} from "@/lib/types/media.config.types";
-import {JobType, MediaType, Status, TagAction, UpdateType} from "@/lib/utils/enums";
+import {JobType, Status, TagAction, UpdateType} from "@/lib/utils/enums";
 import {BaseRepository} from "@/lib/server/domain/media/base/base.repository";
 import {BaseProviderService} from "@/lib/server/domain/media/base/provider.service";
 import {MediaListArgs, SearchType, UpdateUserMedia} from "@/lib/types/zod.schema.types";
@@ -35,8 +35,8 @@ export abstract class BaseService<TConfig extends MediaSchemaConfig, R extends B
         return this.repository.getUserFavorites(userId, limit);
     }
 
-    async getOrphanedMediaIds(mediaType: MediaType) {
-        return this.repository.getOrphanedMediaIds(mediaType);
+    async getOrphanedMediaIds() {
+        return this.repository.getOrphanedMediaIds();
     }
 
     async getUpcomingMedia(userId?: number, maxAWeek?: boolean) {
@@ -232,6 +232,16 @@ export abstract class BaseService<TConfig extends MediaSchemaConfig, R extends B
 
     async getUserMediaAddedAndUpdatedForAdmin() {
         return this.repository.getUserMediaAddedAndUpdatedForAdmin();
+    }
+
+    // --- Embedding methods -----------------------------------------------
+
+    async getMediaToEmbed(includeRecentlyUpdated: boolean) {
+        return this.repository.getMediaToEmbed(includeRecentlyUpdated);
+    }
+
+    async upsertEmbeddingVectors(data: { mediaId: number; vector: number[] }[]) {
+        return this.repository.upsertEmbeddingVectors(data);
     }
 
     // --- Abstract Methods ------------------------------------------------

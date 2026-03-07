@@ -1,9 +1,9 @@
 import z from "zod";
 import {serverEnv} from "@/env/server";
-import {LLMResponse} from "@/lib/types/provider.types";
 import {RateLimiterAbstract} from "rate-limiter-flexible";
-import {createRateLimiter} from "@/lib/server/core/rate-limiter";
 import {BaseApi} from "@/lib/server/api-providers/api/base.api";
+import {createRateLimiter} from "@/lib/server/core/rate-limiter";
+import {LLMCompletionResponse, LLMEmbeddingResponse} from "@/lib/types/provider.types";
 
 
 export class LlmApi extends BaseApi {
@@ -20,14 +20,14 @@ export class LlmApi extends BaseApi {
         return new LlmApi(llmLimiter, LlmApi.consumeKey);
     }
 
-    async llmBookGenresCall(content: string, schema: z.Schema): Promise<LLMResponse> {
+    async llmBookGenresCall(content: string, schema: z.Schema): Promise<LLMCompletionResponse> {
         const response = await this.call(`${this.baseUrl}/chat/completions`, "post", {
             headers: {
                 "Content-Type": "application/json",
                 "Authorization": `Bearer ${serverEnv.LLM_API_KEY}`,
             },
             body: JSON.stringify({
-                model: serverEnv.LLM_MODEL_ID,
+                model: serverEnv.LLM_BOOK_MODEL_ID,
                 messages: [{ role: "user", content: content }],
                 response_format: {
                     type: "json_schema",
@@ -39,6 +39,19 @@ export class LlmApi extends BaseApi {
                 }
             }),
         });
+
+        return response.json();
+    }
+
+    async llmEmbeddingCall(input: string | string[]): Promise<LLMEmbeddingResponse> {
+        const response = await this.call(`${this.baseUrl}/embeddings`, "post", {
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${serverEnv.LLM_API_KEY}`,
+            },
+            body: JSON.stringify({ input, model: serverEnv.LLM_EMBED_MODEL_ID }),
+        });
+
         return response.json();
     }
 }

@@ -1,7 +1,7 @@
 import {MediaType} from "@/lib/utils/enums";
 import {relations} from "drizzle-orm/relations";
 import {user} from "@/lib/server/database/schema/auth.schema";
-import {integer, real, sqliteTable, text} from "drizzle-orm/sqlite-core";
+import {blob, integer, real, sqliteTable, text} from "drizzle-orm/sqlite-core";
 import {commonGenericCols, commonMediaCols, commonMediaListCols, commonMediaTagsCols} from "@/lib/server/database/schema/media/_helper";
 
 
@@ -43,6 +43,12 @@ export const moviesActors = sqliteTable("movies_actors", {
 
 export const moviesTags = sqliteTable("movies_tags", {
     ...commonMediaTagsCols(movies.id),
+});
+
+
+export const moviesVectors = sqliteTable("movies_vectors", {
+    mediaId: integer("media_id").primaryKey(),
+    embedding: blob("embedding").notNull(),
 });
 
 

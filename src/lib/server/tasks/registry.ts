@@ -16,6 +16,7 @@ import {deleteNonActivatedUsersTask} from "@/lib/server/tasks/definitions/delete
 import {removeUnusedMediaCoversTask} from "@/lib/server/tasks/definitions/remove-unused-media-covers.task";
 import {createMediaNotificationsTask} from "@/lib/server/tasks/definitions/create-media-notifications.task";
 import {removeUnusedProfileImagesTask} from "@/lib/server/tasks/definitions/remove-unused-profile-images.task";
+import {createMediaEmbeddingsTask} from "@/lib/server/tasks/definitions/create-media-embeddings.task";
 
 
 export const taskRegistry = {
@@ -30,6 +31,7 @@ export const taskRegistry = {
     [computeAllUsersStatsTask.name]: computeAllUsersStatsTask,
     [calculateAchievementsTask.name]: calculateAchievementsTask,
     [removeAllOrphansMediaTask.name]: removeAllOrphansMediaTask,
+    [createMediaEmbeddingsTask.name]: createMediaEmbeddingsTask,
     [deleteNonActivatedUsersTask.name]: deleteNonActivatedUsersTask,
     [removeUnusedMediaCoversTask.name]: removeUnusedMediaCoversTask,
     [createMediaNotificationsTask.name]: createMediaNotificationsTask,

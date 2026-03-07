@@ -46,6 +46,12 @@ type GenreTableColumns = {
 }
 
 
+type VectorTableColumns = {
+    mediaId: Column<any, any, any>;
+    embedding: Column<any, any, any>;
+};
+
+
 type JobDefinition = {
     sourceTable: Table,
     nameColumn: Column<any, any, any>,
@@ -69,6 +75,7 @@ export type ListTable = Table & ListTableColumns;
 export type MediaTable = Table & MediaTableColumns;
 export type GenreTable = Table & GenreTableColumns;
 export type TagTable = Table & TagTableColumns;
+export type VectorTable = Table & VectorTableColumns;
 
 
 export interface MediaSchemaConfig<
@@ -76,11 +83,13 @@ export interface MediaSchemaConfig<
     TListTable extends ListTable = ListTable,
     TGenreTable extends GenreTable = GenreTable,
     TTagTable extends TagTable = TagTable,
+    TVectorTable extends VectorTable = VectorTable,
 > {
     mediaTable: TMediaTable,
     listTable: TListTable,
     genreTable: TGenreTable,
     tagTable: TTagTable,
+    vectorTable?: TVectorTable,
     mediaType: MediaType,
     mediaList: {
         defaultStatus: Status;

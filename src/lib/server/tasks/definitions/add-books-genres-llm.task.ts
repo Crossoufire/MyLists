@@ -20,7 +20,7 @@ export const addGenresToBooksUsingLlmTask = defineTask({
         const booksService = container.registries.mediaService.getService(MediaType.BOOKS);
         const booksProvider = container.registries.mediaProviderService.getService(MediaType.BOOKS);
 
-        ctx.metric("llm.model", serverEnv.LLM_MODEL_ID);
+        ctx.metric("llm.model", serverEnv.LLM_BOOK_MODEL_ID);
         ctx.metric("llm.endpoint", serverEnv.LLM_BASE_URL);
 
         const booksGenres = booksService.getAvailableGenres();

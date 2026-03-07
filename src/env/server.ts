@@ -43,7 +43,8 @@ export const serverEnv = createEnv({
 
         // LLM ROUTER
         LLM_API_KEY: z.string(),
-        LLM_MODEL_ID: z.string(),
+        LLM_BOOK_MODEL_ID: z.string(),
+        LLM_EMBED_MODEL_ID: z.string(),
         LLM_BASE_URL: z.string(),
     },
     runtimeEnv: process.env,

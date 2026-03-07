@@ -1,13 +1,15 @@
 import {notFound} from "@tanstack/react-router";
 import {statusUtils} from "@/lib/utils/mapping";
+import {MediaInfo} from "@/lib/types/activity.types";
 import {TopAffinityConfig} from "@/lib/types/stats.types";
 import {Achievement} from "@/lib/types/achievements.types";
 import {MediaListArgs} from "@/lib/types/zod.schema.types";
 import {getDbClient} from "@/lib/server/database/async-storage";
+import {ProviderSearchResult} from "@/lib/types/provider.types";
 import {MediaSchemaConfig} from "@/lib/types/media.config.types";
 import {JobType, MediaType, Status, TagAction} from "@/lib/utils/enums";
 import {resolvePagination, resolveSorting} from "@/lib/server/database/pagination";
-import {animeList, booksList, collectionItems, followers, gamesList, mangaList, moviesList, seriesList, user} from "@/lib/server/database/schema";
+import {animeList, booksList, collectionItems, followers, gamesList, mangaList, moviesList, moviesVectors, seriesList, user} from "@/lib/server/database/schema";
 import {and, asc, count, countDistinct, desc, eq, getTableColumns, gte, inArray, isNotNull, isNull, like, lt, lte, ne, notExists, notInArray, or, SQL, sql} from "drizzle-orm";
 import {
     AddedMediaDetails,
@@ -23,8 +25,6 @@ import {
     UserMediaWithTags,
     UserTag,
 } from "@/lib/types/base.types";
-import {MediaInfo} from "@/lib/types/activity.types";
-import {ProviderSearchResult} from "@/lib/types/provider.types";
 
 
 const SIMILAR_MAX_GENRES = 10;
@@ -93,8 +93,8 @@ export abstract class BaseRepository<TConfig extends MediaSchemaConfig> {
             .from(mediaTable);
     }
 
-    async getOrphanedMediaIds(mediaType: MediaType) {
-        const { mediaTable, listTable } = this.config;
+    async getOrphanedMediaIds() {
+        const { mediaTable, listTable, mediaType } = this.config;
 
         const tx = getDbClient();
         const mediaToDelete = await tx
@@ -956,6 +956,23 @@ export abstract class BaseRepository<TConfig extends MediaSchemaConfig> {
         }));
     }
 
+    async upsertEmbeddingVectors(data: { mediaId: number; vector: number[] }[]) {
+        if (data.length === 0) return;
+
+        const rows = data.map((item) => ({
+            mediaId: item.mediaId,
+            embedding: Buffer.from(new Float32Array(item.vector).buffer),
+        }));
+
+        await getDbClient()
+            .insert(moviesVectors)
+            .values(rows)
+            .onConflictDoUpdate({
+                target: moviesVectors.mediaId,
+                set: { embedding: sql`excluded.embedding` },
+            });
+    }
+
     // --- Abstract Methods -----------------------------------------------------------------
 
     abstract computeAllUsersStats(): Promise<UserMediaStats[]>;
@@ -965,6 +982,8 @@ export abstract class BaseRepository<TConfig extends MediaSchemaConfig> {
     abstract updateMediaWithDetails(params: any): Promise<boolean>;
 
     abstract getListFilters(userId: number): Promise<ExpandedListFilters>;
+
+    abstract getMediaToEmbed(includeRecentlyUpdated: boolean): Promise<{ mediaId: number, embeddingInput: string }[]>;
 
     abstract addMediaToUserList(userId: number, media: any, newStatus: Status): Promise<TConfig["listTable"]["$inferSelect"]>;
 

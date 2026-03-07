@@ -541,7 +541,22 @@ export type HltbGameEntry = {
 
 // --- LLM Response Type (Open Router) ----------------------------------
 
-export type LLMResponse = {
+export type LLMEmbeddingResponse = {
+    model: string;
+    object: "list";
+    data: {
+        index: number;
+        object: "embedding";
+        embedding: number[];
+    }[];
+    usage?: {
+        cost: number;
+        total_tokens: number;
+        prompt_tokens: number;
+    };
+};
+
+export type LLMCompletionResponse = {
     id: string;
     model: string;
     created: number;
