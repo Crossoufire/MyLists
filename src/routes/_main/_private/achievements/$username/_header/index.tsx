@@ -1,8 +1,9 @@
 import {useState} from "react";
 import {MediaType} from "@/lib/utils/enums";
-import {createFileRoute} from "@tanstack/react-router";
 import {useSuspenseQuery} from "@tanstack/react-query";
+import {createFileRoute} from "@tanstack/react-router";
 import {MainThemeIcon} from "@/lib/client/components/general/MainIcons";
+import {QuickActions} from "@/lib/client/components/general/QuickActions";
 import {TabHeader, TabItem} from "@/lib/client/components/general/TabHeader";
 import {AchievementCard} from "@/lib/client/components/achievements/AchievementCard";
 import {achievementOptions} from "@/lib/client/react-query/query-options/query-options";
@@ -41,15 +42,13 @@ function AchievementPage() {
     return (
         <>
             <div className="space-y-6">
-                <TabHeader
-                    tabs={mediaTabs}
-                    activeTab={activeTab}
-                    setActiveTab={setActiveTab}
-                />
+                <TabHeader tabs={mediaTabs} activeTab={activeTab} setActiveTab={setActiveTab}>
+                    <QuickActions
+                        username={username}
+                    />
+                </TabHeader>
 
-                <AchievementSummary
-                    summary={apiData.summary[activeTab]}
-                />
+                <AchievementSummary summary={apiData.summary[activeTab]}/>
 
                 <div className="grid grid-cols-3 gap-6 max-lg:grid-cols-2 max-sm:grid-cols-1">
                     {mediaAchievements.map((achievement) =>

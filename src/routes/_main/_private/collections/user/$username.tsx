@@ -1,13 +1,13 @@
-import {Award, ChartNoAxesColumn, EllipsisVertical, ListOrdered, Plus, User} from "lucide-react";
+import {ListOrdered, Plus} from "lucide-react";
 import {useAuth} from "@/lib/client/hooks/use-auth";
-import {createFileRoute, Link} from "@tanstack/react-router";
+import {createFileRoute} from "@tanstack/react-router";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {Button} from "@/lib/client/components/ui/button";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
 import {EmptyState} from "@/lib/client/components/general/EmptyState";
+import {QuickActions} from "@/lib/client/components/general/QuickActions";
 import {CollectionCard} from "@/lib/client/components/collections/CollectionCard";
 import {userCollectionsOptions} from "@/lib/client/react-query/query-options/query-options";
-import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger} from "@/lib/client/components/ui/dropdown-menu";
 
 
 export const Route = createFileRoute("/_main/_private/collections/user/$username")({
@@ -29,7 +29,7 @@ function UserCollectionsPage() {
             title={`${username} Collections`}
             subtitle={isOwner ? "Manage every collection in one place." : `Collections created by ${username}.`}
         >
-            <div className="space-y-6">
+            <div className="space-y-6 pt-1">
                 <div className="flex flex-wrap items-center justify-between gap-3 border-b">
                     {isOwner &&
                         <Button size="sm" variant="outline" className="mb-2" asChild>
@@ -38,8 +38,8 @@ function UserCollectionsPage() {
                             </Route.Link>
                         </Button>
                     }
-                    <div>
-                        <DotsOthers
+                    <div className="ml-auto pr-2">
+                        <QuickActions
                             username={username}
                         />
                     </div>
@@ -65,40 +65,3 @@ function UserCollectionsPage() {
         </PageTitle>
     );
 }
-
-
-const DotsOthers = ({ username }: { username: string }) => {
-    return (
-        <DropdownMenu>
-            <DropdownMenuTrigger className="opacity-70 hover:opacity-100">
-                <EllipsisVertical className="size-4"/>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-46">
-                <DropdownMenuItem asChild>
-                    <Link to="/stats/$username" params={{ username }}>
-                        <ChartNoAxesColumn className="size-4 text-muted-foreground"/>
-                        <span>User's Stats</span>
-                    </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                    <Link to="/profile/$username" params={{ username }}>
-                        <User className="size-4 text-muted-foreground"/>
-                        <span>User's Profile</span>
-                    </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                    <Link to="/collections/user/$username" params={{ username }}>
-                        <ListOrdered className="size-4 text-muted-foreground"/>
-                        <span>User's Collections</span>
-                    </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                    <Link to="/achievements/$username" params={{ username }}>
-                        <Award className="size-4 text-muted-foreground"/>
-                        <span>User's Achievements</span>
-                    </Link>
-                </DropdownMenuItem>
-            </DropdownMenuContent>
-        </DropdownMenu>
-    );
-};

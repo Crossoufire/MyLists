@@ -1,13 +1,12 @@
 import {MediaType} from "@/lib/utils/enums";
 import {TabValue} from "@/lib/types/stats.types";
 import {useSuspenseQuery} from "@tanstack/react-query";
-import {createFileRoute, Link} from "@tanstack/react-router";
-import {Award, EllipsisVertical, User, Zap} from "lucide-react";
+import {createFileRoute} from "@tanstack/react-router";
 import {MainThemeIcon} from "@/lib/client/components/general/MainIcons";
+import {QuickActions} from "@/lib/client/components/general/QuickActions";
 import {DashboardContent} from "@/lib/client/media-stats/DashboardContent";
 import {TabHeader, TabItem} from "@/lib/client/components/general/TabHeader";
 import {userStatsOptions} from "@/lib/client/react-query/query-options/query-options";
-import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger} from "@/lib/client/components/ui/dropdown-menu";
 
 
 export const Route = createFileRoute("/_main/_private/stats/$username/_header/")({
@@ -62,37 +61,3 @@ function UserStatsPage() {
         </>
     );
 }
-
-
-const QuickActions = ({ username }: { username: string }) => {
-    const year = String(new Date().getFullYear());
-    const month = String(new Date().getMonth() + 1);
-
-    return (
-        <DropdownMenu>
-            <DropdownMenuTrigger className="opacity-70 hover:opacity-100">
-                <EllipsisVertical className="size-4"/>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-44">
-                <Link to="/profile/$username" params={{ username }}>
-                    <DropdownMenuItem className="cursor-pointer">
-                        <User className="size-4 text-muted-foreground"/>
-                        <span>User's Profile</span>
-                    </DropdownMenuItem>
-                </Link>
-                <Link to="/stats/$username/activity" params={{ username }} search={{ year, month }}>
-                    <DropdownMenuItem className="cursor-pointer">
-                        <Zap className="size-4 text-muted-foreground"/>
-                        <span>User's Activity</span>
-                    </DropdownMenuItem>
-                </Link>
-                <Link to="/achievements/$username" params={{ username }}>
-                    <DropdownMenuItem className="cursor-pointer">
-                        <Award className="size-4 text-muted-foreground"/>
-                        <span>Achievements</span>
-                    </DropdownMenuItem>
-                </Link>
-            </DropdownMenuContent>
-        </DropdownMenu>
-    );
-};
