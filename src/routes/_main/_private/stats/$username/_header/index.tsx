@@ -1,8 +1,8 @@
 import {MediaType} from "@/lib/utils/enums";
 import {TabValue} from "@/lib/types/stats.types";
 import {useSuspenseQuery} from "@tanstack/react-query";
-import {Award, EllipsisVertical, User, Zap} from "lucide-react";
 import {createFileRoute, Link} from "@tanstack/react-router";
+import {Award, EllipsisVertical, User, Zap} from "lucide-react";
 import {MainThemeIcon} from "@/lib/client/components/general/MainIcons";
 import {DashboardContent} from "@/lib/client/media-stats/DashboardContent";
 import {TabHeader, TabItem} from "@/lib/client/components/general/TabHeader";

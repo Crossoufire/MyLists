@@ -6,7 +6,7 @@ import {RatingsChart} from "@/lib/client/media-stats/RatingsChart";
 import {getMediaNaming} from "@/lib/client/media-stats/stats-utils";
 import {MainThemeIcon} from "@/lib/client/components/general/MainIcons";
 import {TopAffinityCard} from "@/lib/client/media-stats/TopAffinityCard";
-import {ChartColumn, Clock, Heart, Play, Star, Tags} from "lucide-react";
+import {ChartColumn, Clock, DollarSign, Heart, Play, SquareStack, Star, Tags, XLineTop} from "lucide-react";
 import {DistributionChart} from "@/lib/client/media-stats/DistributionChart";
 import {StatusDistribution} from "@/lib/client/media-stats/StatusDistribution";
 import {capitalize, formatCurrency, formatHours, formatNumber} from "@/lib/utils/formating";
@@ -120,6 +120,7 @@ function MediaSpecificStats({ stats }: { stats: ExtractStatsByType<MediaType> })
             <>
                 <StatCard
                     title="Avg. Series Duration"
+                    icon={<XLineTop className="size-4"/>}
                     value={stats.specificMediaStats.avgDuration ?
                         `${(stats.specificMediaStats.avgDuration / 60).toFixed(1)} hours`
                         : "-"
@@ -127,6 +128,7 @@ function MediaSpecificStats({ stats }: { stats: ExtractStatsByType<MediaType> })
                 />
                 <StatCard
                     title="Total Seasons"
+                    icon={<SquareStack className="size-4"/>}
                     value={formatNumber(stats.specificMediaStats.totalSeasons)}
                 />
             </>
@@ -138,14 +140,17 @@ function MediaSpecificStats({ stats }: { stats: ExtractStatsByType<MediaType> })
             <>
                 <StatCard
                     title="Avg. Movie Duration"
+                    icon={<XLineTop className="size-4"/>}
                     value={stats.specificMediaStats.avgDuration ? `${stats.specificMediaStats.avgDuration.toFixed(0)} min` : "-"}
                 />
                 <StatCard
                     title="Total Budget"
+                    icon={<DollarSign className="size-4"/>}
                     value={formatCurrency(stats.specificMediaStats.totalBudget)}
                 />
                 <StatCard
                     title="Total Revenue"
+                    icon={<DollarSign className="size-4"/>}
                     value={formatCurrency(stats.specificMediaStats.totalRevenue)}
                 />
             </>
@@ -158,6 +163,7 @@ function MediaSpecificStats({ stats }: { stats: ExtractStatsByType<MediaType> })
                 <StatCard
                     title="Avg. Game Playtime"
                     subtitle="All games included"
+                    icon={<XLineTop className="size-4"/>}
                     value={stats.specificMediaStats.avgDuration ? `${stats.specificMediaStats.avgDuration.toFixed(0)} hours` : "-"}
                 />
             </>
@@ -169,6 +175,7 @@ function MediaSpecificStats({ stats }: { stats: ExtractStatsByType<MediaType> })
             <>
                 <StatCard
                     title="Avg. Books Pages"
+                    icon={<XLineTop className="size-4"/>}
                     value={formatNumber(stats.specificMediaStats.avgDuration)}
                 />
             </>
@@ -180,6 +187,7 @@ function MediaSpecificStats({ stats }: { stats: ExtractStatsByType<MediaType> })
             <>
                 <StatCard
                     title="Avg. Manga Chapters"
+                    icon={<XLineTop className="size-4"/>}
                     value={formatNumber(stats.specificMediaStats.avgDuration)}
                 />
             </>
