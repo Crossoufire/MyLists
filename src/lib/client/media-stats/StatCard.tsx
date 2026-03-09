@@ -19,7 +19,7 @@ export function StatCard({ title, value, subtitle, icon, className }: StatCardPr
                     {title}
                 </CardTitle>
                 {icon &&
-                    <div className="text-muted-foreground">
+                    <div className="text-app-accent">
                         {icon}
                     </div>
                 }

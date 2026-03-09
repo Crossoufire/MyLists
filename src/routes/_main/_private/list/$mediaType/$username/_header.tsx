@@ -1,7 +1,6 @@
 import {MediaType} from "@/lib/utils/enums";
 import {capitalize} from "@/lib/utils/formating";
 import {useSuspenseQuery} from "@tanstack/react-query";
-import {Button} from "@/lib/client/components/ui/button";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
 import {TabHeader} from "@/lib/client/components/general/TabHeader";
 import {MediaLevel} from "@/lib/client/components/general/MediaLevel";
@@ -120,7 +119,7 @@ function ListHeader() {
                         </p>
                     </div>
                 </div>
-                <div className="pt-4">
+                <div className="pt-5">
                     <TabHeader
                         tabs={tabs}
                         activeTab={activeTab}
@@ -144,10 +143,8 @@ function ListHeader() {
 const DotsOthers = ({ mediaType, username }: { mediaType: MediaType; username: string }) => {
     return (
         <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon">
-                    <EllipsisVertical className="size-4"/>
-                </Button>
+            <DropdownMenuTrigger className="opacity-70 hover:opacity-100">
+                <EllipsisVertical className="size-4"/>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-46">
                 <DropdownMenuItem asChild>
