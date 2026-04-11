@@ -1,16 +1,16 @@
 import UserAgent from "user-agents";
 import {closest} from "@/lib/utils/levenshtein";
 import {RateLimiterAbstract} from "rate-limiter-flexible";
-import {createRateLimiter} from "@/lib/server/core/rate-limiter";
 import {BaseApi} from "@/lib/server/api-providers/api/base.api";
+import {createRateLimiter} from "@/lib/server/core/rate-limiter";
 import {HltbApiResponse, HltbGameEntry} from "@/lib/types/provider.types";
 
 
 export class HltbApi extends BaseApi {
     private static readonly consumeKey = "hltb-API";
     private static readonly baseUrl = "https://howlongtobeat.com/";
-    private static searchUrl = HltbApi.baseUrl + "api/finder/"
-    private static tokenUrl = HltbApi.baseUrl + "api/finder/init";
+    private static searchUrl = HltbApi.baseUrl + "api/find"
+    private static tokenUrl = HltbApi.baseUrl + "api/find/init";
     private static readonly throttleOptions = { points: 4, duration: 1, keyPrefix: "hltbAPI" };
 
     constructor(limiter: RateLimiterAbstract, consumeKey: string) {
@@ -31,7 +31,9 @@ export class HltbApi extends BaseApi {
         };
 
         try {
-            const htmlResult = await this._sendWebRequest(gameName);
+            const ua = new UserAgent().toString();
+
+            const htmlResult = await this._sendWebRequest(gameName, ua);
             if (!htmlResult) return defaultEntry;
 
             const gamesList = this._parseGameResults(htmlResult);
@@ -66,22 +68,25 @@ export class HltbApi extends BaseApi {
         }
     }
 
-    private async _sendWebRequest(gameName: string) {
-        const ua = new UserAgent();
+    private async _sendWebRequest(gameName: string, ua: string) {
         const headers: Record<string, string> = {
             "accept": "*/*",
-            "User-Agent": ua.toString(),
-            "referer": HltbApi.baseUrl,
+            "User-Agent": ua,
+            "Origin": HltbApi.baseUrl,
+            "Referer": HltbApi.baseUrl,
             "content-type": "application/json",
         };
 
-        const authToken = await this._getAuthToken();
-        if (authToken) {
-            headers["x-auth-token"] = authToken;
+        const authData = await this._getAuthToken(ua);
+        if (authData) {
+            headers["x-hp-key"] = authData.hpKey;
+            headers["x-hp-val"] = authData.hpVal;
+            headers["x-auth-token"] = authData.token;
         }
 
         try {
-            const payload = this._getSearchPayload(gameName);
+            const payload = this._createPayload(gameName, authData);
+            console.log({ payload });
             const response = await fetch(HltbApi.searchUrl, {
                 headers,
                 method: "POST",
@@ -97,10 +102,9 @@ export class HltbApi extends BaseApi {
         }
     }
 
-    private async _getAuthToken() {
-        const ua = new UserAgent();
+    private async _getAuthToken(ua: string) {
         const headers = {
-            "User-Agent": ua.toString(),
+            "User-Agent": ua,
             "referer": HltbApi.baseUrl,
         };
 
@@ -109,7 +113,9 @@ export class HltbApi extends BaseApi {
             if (response.ok) {
                 const data = await response.json();
                 const token = data?.token ?? data?.data?.token;
-                return String(token);
+                const hpKey = data?.hpKey ?? data?.data?.hpKey;
+                const hpVal = data?.hpVal ?? data?.data?.hpVal;
+                return { token: String(token), hpKey: String(hpKey), hpVal: String(hpVal) };
             }
             else {
                 console.error("Request failed with status", response.status);
@@ -120,75 +126,8 @@ export class HltbApi extends BaseApi {
         }
     }
 
-    // private async _getSearchInfo(searchAll: boolean) {
-    //     const ua = new UserAgent();
-    //     const headers = {
-    //         "User-Agent": ua.toString(),
-    //         "referer": HltbClient.baseUrl,
-    //     }
-    //
-    //     try {
-    //         const response = await fetch(HltbClient.baseUrl, { method: "GET", headers });
-    //         if (!response.ok) return;
-    //
-    //         const htmlResult = await response.text();
-    //         console.log("Got HTML result:", htmlResult);
-    //
-    //         const $ = cheerio.load(htmlResult);
-    //         const scripts = $("script[src]");
-    //         console.log("Found scripts:", scripts.length);
-    //
-    //         const matchingScripts: string[] = [];
-    //         scripts.each((_, elem) => {
-    //             const src = $(elem).attr("src");
-    //             console.log("Found script:", src);
-    //             if (src && (searchAll || src.includes("_app-"))) {
-    //                 matchingScripts.push(src);
-    //             }
-    //         });
-    //
-    //         for (const scriptUrl of matchingScripts) {
-    //             try {
-    //                 const scriptResponse = await fetch(`${HltbClient.baseUrl}${scriptUrl}`, { headers, method: "GET" });
-    //                 if (scriptResponse.ok) {
-    //                     const scriptContent = await scriptResponse.text();
-    //                     let searchUrl = this._extractSearchUrlFromScript(scriptContent);
-    //                     if (searchUrl && HltbClient.baseUrl.endsWith("/")) {
-    //                         searchUrl = searchUrl.replace(/^\/+/, "");
-    //                     }
-    //                     return searchUrl;
-    //                 }
-    //             }
-    //             catch (err) {
-    //                 console.warn(`Failed to fetch script ${scriptUrl}:`, err);
-    //             }
-    //         }
-    //     }
-    //     catch (err) {
-    //         console.error("Error getting search info:", err);
-    //     }
-    // }
-
-    // private _extractSearchUrlFromScript(scriptContent: string) {
-    //     const pattern = new RegExp(
-    //         String.raw`fetch\s*\(\s*["']/api/([a-zA-Z0-9_/]+)[^"']*["']\s*,\s*{[^}]*method:\s*["']POST["'][^}]*}`,
-    //         "gis",
-    //     );
-    //
-    //     const match = pattern.exec(scriptContent);
-    //     if (match) {
-    //         const pathSuffix = match[1];
-    //         const basePath = pathSuffix.includes("/") ? pathSuffix.split("/")[0] : pathSuffix;
-    //         if (basePath !== "find") {
-    //             return `/api/${basePath}`;
-    //         }
-    //     }
-    //
-    //     return;
-    // }
-
-    private _getSearchPayload(gameName: string) {
-        const payload = {
+    private _createPayload(gameName: string, authData?: { token: string, hpKey?: string, hpVal?: string }) {
+        const payload: Record<string, any> = {
             size: 10,
             searchPage: 1,
             searchType: "games",
@@ -216,6 +155,10 @@ export class HltbApi extends BaseApi {
             },
             useCache: true,
         };
+
+        if (authData?.hpKey && authData?.hpVal) {
+            payload[authData.hpKey] = authData.hpVal;
+        }
 
         return payload;
     }
