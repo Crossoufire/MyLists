@@ -123,8 +123,8 @@ export class AchievementsService {
             const count = sql`calculation.value`;
             const completed = sql`calculation.value >= ${valueNeeded}`;
             const progress = sql`CASE
-                WHEN (calculation.value / ${valueNeeded}) * 100.0 < 100.0
-                THEN (calculation.value / ${valueNeeded}) * 100.0
+                WHEN (calculation.value * 100.0 / ${valueNeeded}) < 100.0
+                THEN (calculation.value * 100.0 / ${valueNeeded})
                 ELSE 100.0
             END`;
             const completedAt = sql`CASE 

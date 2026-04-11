@@ -1,5 +1,5 @@
 import {useMemo} from "react";
-import {Award} from "lucide-react";
+import {Award, Check} from "lucide-react";
 import {cn} from "@/lib/utils/helpers";
 import {Badge} from "@/lib/client/components/ui/badge";
 import {AchCard} from "@/lib/types/query.options.types";
@@ -34,6 +34,8 @@ export const AchievementCard = ({ achievement }: AchievementCardProps) => {
     const iconColorClass = diffColors(displayDifficulty);
     const borderColorClass = diffColors(displayDifficulty, "border");
 
+    console.log({ nextTier });
+
     const tierForProgressDisplay = nextTier ?? tiers[tiers.length - 1];
     const currentCount = tierForProgressDisplay?.count ?? 0;
     const progressValue = tierForProgressDisplay?.progress ?? 0;
@@ -65,7 +67,19 @@ export const AchievementCard = ({ achievement }: AchievementCardProps) => {
                 </CardDescription>
                 <div>
                     <div className="flex justify-between items-center mb-1 text-muted-foreground text-xs capitalize">
-                        <span>Next: {nextTier?.difficulty ?? "-"}</span>
+                        <span>
+                            {nextTier?.difficulty ?
+                                <div>
+                                    Next: {nextTier.difficulty}{" "}
+                                    <Award className={cn("size-3.5 inline-block", diffColors(nextTier.difficulty))}/>
+                                </div>
+                                :
+                                <div className="text-app-accent">
+                                    Completed{" "}
+                                    <Check className="size-3.5 inline-block"/>
+                                </div>
+                            }
+                        </span>
                         <p>{currentCount}/{criteriaCount} ({Math.round(currentCount / criteriaCount * 100)}%)</p>
                     </div>
                     <Progress

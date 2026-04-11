@@ -39,7 +39,7 @@ export const TiersDetails = ({ achievement }: TierDetailsProps) => {
                             return (
                                 <TableRow key={tier.id}>
                                     <TableCell className="text-xs">
-                                        <div className="flex items-center gap-2">
+                                        <div className="flex items-center gap-1">
                                             <Award className={cn("size-4", iconColorClass)}/>
                                             {capitalize(tier.difficulty)}
                                         </div>
