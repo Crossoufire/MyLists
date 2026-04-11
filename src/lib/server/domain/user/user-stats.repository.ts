@@ -522,10 +522,11 @@ export class UserStatsRepository {
         }
 
         if (newMonthBucket !== existing.monthBucket) {
+            const { id: _existingId, ...existingWithoutId } = existing;
             const [upserted] = await getDbClient()
                 .insert(userMediaActivity)
                 .values({
-                    ...existing,
+                    ...existingWithoutId,
                     ...payload,
                     monthBucket: newMonthBucket,
                 })
