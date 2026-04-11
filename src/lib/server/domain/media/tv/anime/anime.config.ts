@@ -71,7 +71,7 @@ export const animeConfig: AnimeSchemaConfig = {
             "Title A-Z": asc(anime.name),
             "Title Z-A": desc(anime.name),
             "Release Date +": [desc(anime.releaseDate), asc(anime.name)],
-            "Release Date -": [asc(anime.releaseDate), asc(anime.name)],
+            "Release Date -": [sql`${anime.releaseDate} ASC NULLS LAST`, asc(anime.name)],
             "TMDB Rating +": [desc(anime.voteAverage), asc(anime.name)],
             "TMDB Rating -": [asc(anime.voteAverage), asc(anime.name)],
             "Recently Added": [desc(animeList.addedAt), asc(anime.name)],

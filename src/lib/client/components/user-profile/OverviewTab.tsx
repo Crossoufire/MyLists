@@ -21,7 +21,8 @@ interface OverviewTabProps {
 
 export const OverviewTab = ({ username, globalStats, perMedia, ratingSystem }: OverviewTabProps) => {
     const favoritesList = useMemo(() => perMedia.flatMap((media) =>
-        media.favoritesList.map((fav) => ({ ...fav, mediaType: media.mediaType }))
+            media.favoritesList.map((fav) => ({ ...fav, mediaType: media.mediaType }))
+        // eslint-disable-next-line react-hooks/purity
     ).sort(() => Math.random() - 0.5), [perMedia]);
 
     const rating = globalStats.avgRated;
@@ -57,15 +58,20 @@ export const OverviewTab = ({ username, globalStats, perMedia, ratingSystem }: O
                         message="No time to display yet."
                     />
                     :
-                    <div className="flex gap-0.5 h-5 rounded-sm overflow-hidden bg-background">
+                    <div className="flex w-full gap-0.5 h-5 rounded-sm overflow-hidden bg-background">
                         {perMedia.map((media) => {
                             const percentage = (media.timeSpentDays / globalStats.totalDays) * 100;
+                            if (percentage <= 0) return null;
+
                             return (
                                 <div
                                     key={media.mediaType}
-                                    className="h-full flex items-center justify-center"
+                                    className="h-full flex items-center justify-center transition-all"
                                     title={`${media.mediaType}: ${percentage.toFixed(1)}%`}
-                                    style={{ flex: media.timeSpentDays, backgroundColor: getThemeColor(media.mediaType) }}
+                                    style={{
+                                        width: `${percentage}%`,
+                                        backgroundColor: getThemeColor(media.mediaType),
+                                    }}
                                 >
                                     {percentage > 5 &&
                                         <span className="text-xs truncate tracking-wider font-medium text-black px-0.5">
@@ -77,16 +83,20 @@ export const OverviewTab = ({ username, globalStats, perMedia, ratingSystem }: O
                         })}
                     </div>
                 }
-                <div className="flex gap-1 mt-1 pb-2">
-                    {perMedia.map((media) =>
-                        <div key={media.mediaType} className="overflow-hidden" style={{ flex: media.timeSpentDays }}>
-                            {(media.timeSpentDays / globalStats.totalDays) * 100 > 5 &&
-                                <span className="block font-medium text-xs text-muted-foreground uppercase tracking-wider truncate">
-                                    {media.mediaType}
-                                </span>
-                            }
-                        </div>
-                    )}
+                <div className="flex w-full gap-1 mt-1 pb-2">
+                    {perMedia.map((media) => {
+                        const percentage = (media.timeSpentDays / globalStats.totalDays) * 100;
+
+                        return (
+                            <div key={media.mediaType} className="overflow-hidden" style={{ width: `${percentage}%` }}>
+                                {percentage > 5 &&
+                                    <span className="block font-medium text-xs text-muted-foreground uppercase tracking-wider truncate">
+                                        {media.mediaType}
+                                    </span>
+                                }
+                            </div>
+                        );
+                    })}
                 </div>
             </DistributionContainer>
 

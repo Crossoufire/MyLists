@@ -1,4 +1,4 @@
-import {asc, desc, getTableColumns} from "drizzle-orm";
+import {asc, desc, getTableColumns, sql} from "drizzle-orm";
 import {JobType, MediaType, Status} from "@/lib/utils/enums";
 import {MediaSchemaConfig} from "@/lib/types/media.config.types";
 import {createArrayFilterDef} from "@/lib/server/domain/media/base/base.repository";
@@ -48,7 +48,7 @@ export const mangaConfig: MangaSchemaConfig = {
             "Rating +": [desc(mangaList.rating), asc(manga.name)],
             "Rating -": [asc(mangaList.rating), asc(manga.name)],
             "Published Date +": [desc(manga.releaseDate), asc(manga.name)],
-            "Published Date -": [asc(manga.releaseDate), asc(manga.name)],
+            "Published Date -": [sql`${manga.releaseDate} ASC NULLS LAST`, asc(manga.name)],
             "Recently Added": [desc(mangaList.addedAt), asc(manga.name)],
             "Re-Read": [desc(mangaList.redo), asc(manga.name)],
             "Chapters +": [desc(manga.chapters), asc(manga.name)],

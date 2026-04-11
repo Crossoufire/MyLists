@@ -71,7 +71,7 @@ export const seriesConfig: SeriesSchemaConfig = {
             "Title A-Z": asc(series.name),
             "Title Z-A": desc(series.name),
             "Release Date +": [desc(series.releaseDate), asc(series.name)],
-            "Release Date -": [asc(series.releaseDate), asc(series.name)],
+            "Release Date -": [sql`${series.releaseDate} ASC NULLS LAST`, asc(series.name)],
             "TMDB Rating +": [desc(series.voteAverage), asc(series.name)],
             "TMDB Rating -": [asc(series.voteAverage), asc(series.name)],
             "Recently Added": [desc(seriesList.addedAt), asc(series.name)],
