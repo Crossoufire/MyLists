@@ -10,9 +10,7 @@ export function PostHogAuthSync() {
         if (isLoading) return;
 
         if (currentUser && currentUser.id) {
-            posthog.identify(String(currentUser.id), {
-                username: currentUser.name,
-            });
+            posthog.identify(String(currentUser.id), { username: currentUser.name });
         }
         else {
             posthog.reset();

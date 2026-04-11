@@ -1,7 +1,9 @@
 /// <reference types="vite/client"/>
 import React from "react";
 import appCSS from "@/styles.css?url";
+import {clientEnv} from "@/env/client";
 import {addSeo} from "@/lib/utils/add-seo";
+import {PostHogProvider} from "posthog-js/react";
 import {QueryClient} from "@tanstack/react-query";
 import {Toaster} from "@/lib/client/components/ui/sonner";
 import {TanStackDevtools} from "@tanstack/react-devtools";
@@ -20,16 +22,16 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     ssr: false,
     beforeLoad: ({ context: { queryClient } }) => queryClient.fetchQuery(authOptions),
     head: () => ({
+        links: [{ rel: "stylesheet", href: appCSS }],
         meta: [
             { charSet: "utf-8" },
             { name: "viewport", content: "width=device-width, initial-scale=1" },
             ...addSeo({
-                image: "logo512.png",
                 title: "Mylists",
+                image: "logo512.png",
                 description: "MyLists is your all-in-one platform to organize your favorite series, movies, games, anime, books and manga.",
             }),
         ],
-        links: [{ rel: "stylesheet", href: appCSS }],
     }),
     component: RootComponent,
     shellComponent: RootComponent,
@@ -39,6 +41,17 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 function RootComponent() {
     useNProgress();
 
+    const children = (
+        <>
+            <PostHogAuthSync/>
+            <Toaster/>
+            <Navbar/>
+            <Outlet/>
+            <Footer/>
+            <FeatureVoteLink/>
+        </>
+    );
+
     return (
         <html lang="en" className="dark" suppressHydrationWarning>
         <head>
@@ -46,32 +59,40 @@ function RootComponent() {
         </head>
         <body>
 
-        <PostHogAuthSync/>
-
-        <Toaster/>
-        <Navbar/>
-        <Outlet/>
-        <Footer/>
-
-        <FeatureVoteLink/>
-
-        {import.meta.env.DEV &&
-            <TanStackDevtools
-                eventBusConfig={{
-                    debug: false,
-                    connectToServerBus: true,
+        {import.meta.env.DEV ?
+            <>
+                {children}
+                <TanStackDevtools
+                    eventBusConfig={{
+                        debug: false,
+                        connectToServerBus: true,
+                    }}
+                    plugins={[
+                        {
+                            name: "TanStack Query",
+                            render: <ReactQueryDevtoolsPanel/>,
+                        },
+                        {
+                            name: "TanStack Router",
+                            render: <TanStackRouterDevtoolsPanel/>,
+                        },
+                    ]}
+                />
+            </>
+            :
+            <PostHogProvider
+                apiKey={clientEnv.VITE_PUBLIC_POSTHOG_KEY}
+                options={{
+                    defaults: "2025-11-30",
+                    capture_exceptions: true,
+                    capture_pageview: "history_change",
+                    person_profiles: "identified_only",
+                    api_host: clientEnv.VITE_PUBLIC_POSTHOG_HOST,
+                    ui_host: clientEnv.VITE_PUBLIC_POSTHOG_UI_HOST,
                 }}
-                plugins={[
-                    {
-                        name: "TanStack Query",
-                        render: <ReactQueryDevtoolsPanel/>,
-                    },
-                    {
-                        name: "TanStack Router",
-                        render: <TanStackRouterDevtoolsPanel/>,
-                    },
-                ]}
-            />
+            >
+                {children}
+            </PostHogProvider>
         }
 
         <Scripts/>

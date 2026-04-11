@@ -181,7 +181,7 @@ const getAuthConfig = createServerOnlyFn(() => betterAuth({
     advanced: {
         cookiePrefix: "mylists",
         database: {
-            useNumberId: true,
+            generateId: false,
         },
     },
     plugins: [

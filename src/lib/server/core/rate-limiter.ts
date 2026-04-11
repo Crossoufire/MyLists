@@ -1,9 +1,14 @@
 import {serverEnv} from "@/env/server";
 import {getRedisConnection} from "@/lib/server/core/redis-client";
-import {IRateLimiterOptions, RateLimiterMemory, RateLimiterRedis} from "rate-limiter-flexible";
+import {IRateLimiterRedisOptions, RateLimiterMemory, RateLimiterRedis} from "rate-limiter-flexible";
 
 
-export const createRateLimiter = async (options: Partial<IRateLimiterOptions>) => {
+// Type requires core fields but allows other Redis options
+type RateLimiterOptions = Pick<IRateLimiterRedisOptions, "points" | "duration" | "keyPrefix">
+    & Partial<Omit<IRateLimiterRedisOptions, "points" | "duration" | "keyPrefix">>;
+
+
+export const createRateLimiter = async (options: RateLimiterOptions) => {
     if (serverEnv.REDIS_ENABLED) {
         try {
             const connection = await getRedisConnection();
@@ -11,7 +16,7 @@ export const createRateLimiter = async (options: Partial<IRateLimiterOptions>) =
             return new RateLimiterRedis({ ...options, storeClient: connection });
         }
         catch (err) {
-            throw new Error(`Failed to create rate limiter: ${err}`);
+            throw new Error(`Failed to create rate limiter: ${err}`, { cause: err });
         }
     }
     else {

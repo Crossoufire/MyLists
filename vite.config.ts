@@ -1,20 +1,20 @@
 import path from "path";
 import {defineConfig} from "vite";
+import babel from "@rolldown/plugin-babel";
 import tailwindcss from "@tailwindcss/vite";
-import viteReact from "@vitejs/plugin-react";
 import {devtools} from "@tanstack/devtools-vite";
-import viteTsConfigPaths from "vite-tsconfig-paths";
 import {tanstackStart} from "@tanstack/react-start/plugin/vite";
+import react, {reactCompilerPreset} from "@vitejs/plugin-react";
 
 
 export default defineConfig({
     resolve: {
+        tsconfigPaths: true,
         alias: {
             "@": path.resolve(__dirname, "./src"),
         },
     },
     plugins: [
-        viteTsConfigPaths({ projects: ["./tsconfig.json"] }),
         devtools(),
         tanstackStart({
             spa: {
@@ -25,11 +25,8 @@ export default defineConfig({
                 quoteStyle: "double",
             },
         }),
-        viteReact({
-            babel: {
-                plugins: ["babel-plugin-react-compiler"],
-            },
-        }),
+        react(),
+        babel({ presets: [reactCompilerPreset()] }),
         tailwindcss(),
     ],
 })
