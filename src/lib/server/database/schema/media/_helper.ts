@@ -1,8 +1,8 @@
 import {sql} from "drizzle-orm";
 import {user} from "@/lib/server/database/schema";
 import {MediaType, Status} from "@/lib/utils/enums";
-import {imageUrl} from "@/lib/server/database/custom-types";
 import {integer, real, SQLiteColumn, text} from "drizzle-orm/sqlite-core";
+import {imageUrl, nullableImageUrl} from "@/lib/server/database/custom-types";
 
 
 export const commonMediaCols = (mediaTypeName: MediaType) => {
@@ -19,7 +19,7 @@ export const commonMediaCols = (mediaTypeName: MediaType) => {
 };
 
 
-export const commonMediaListCols = (modelMediaId: SQLiteColumn) => {
+export const commonMediaListCols = (modelMediaId: SQLiteColumn, mediaTypeName: MediaType) => {
     return {
         id: integer("id").primaryKey().notNull(),
         userId: integer("user_id").notNull().references(() => user.id, { onDelete: "cascade" }),
@@ -28,6 +28,7 @@ export const commonMediaListCols = (modelMediaId: SQLiteColumn) => {
         favorite: integer("favorite", { mode: "boolean" }),
         comment: text("comment"),
         rating: real("rating"),
+        customCover: nullableImageUrl("custom_cover", `${mediaTypeName}-covers`),
         addedAt: text("added_at").default(sql`(CURRENT_TIMESTAMP)`),
         lastUpdated: text("last_updated"),
     };

@@ -24,7 +24,7 @@ export const games = sqliteTable("games", {
 export const gamesList = sqliteTable("games_list", {
     playtime: integer().default(0),
     platform: text().$type<GamesPlatformsEnum>(),
-    ...commonMediaListCols(games.id),
+    ...commonMediaListCols(games.id, MediaType.GAMES),
 });
 
 

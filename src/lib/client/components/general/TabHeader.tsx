@@ -13,12 +13,13 @@ export interface TabItem<T> {
 interface TabHeaderProps<T extends string> {
     activeTab: T;
     tabs: TabItem<T>[];
+    className?: string;
     children?: ReactNode;
     setActiveTab: (value: T) => void;
 }
 
 
-export const TabHeader = <T extends string>({ tabs, activeTab, setActiveTab, children }: TabHeaderProps<T>) => {
+export const TabHeader = <T extends string>({ tabs, activeTab, setActiveTab, children, className }: TabHeaderProps<T>) => {
     return (
         <div className="flex items-center justify-between border-b">
             <div className="scrollbar-thin flex flex-1 items-center gap-1 overflow-x-auto">
@@ -32,6 +33,7 @@ export const TabHeader = <T extends string>({ tabs, activeTab, setActiveTab, chi
                             className={cn(
                                 "relative flex shrink-0 items-center gap-2 rounded-t-lg px-5 py-3 text-sm font-medium transition-all",
                                 isActive ? tab.isAccent ? "text-app-accent" : "text-primary" : "text-muted-foreground hover:text-primary",
+                                className,
                             )}
                         >
                             {tab.icon &&

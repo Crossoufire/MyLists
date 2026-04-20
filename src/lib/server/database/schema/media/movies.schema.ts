@@ -27,7 +27,7 @@ export const movies = sqliteTable("movies", {
 export const moviesList = sqliteTable("movies_list", {
     redo: integer().default(0).notNull(),
     total: integer("total").default(0).notNull(),
-    ...commonMediaListCols(movies.id),
+    ...commonMediaListCols(movies.id, MediaType.MOVIES),
 });
 
 

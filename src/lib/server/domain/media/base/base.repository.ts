@@ -93,6 +93,15 @@ export abstract class BaseRepository<TConfig extends MediaSchemaConfig> {
             .from(mediaTable);
     }
 
+    async getCustomCoverFilenames() {
+        const { listTable } = this.config;
+
+        return getDbClient()
+            .select({ customCover: listTable.customCover })
+            .from(listTable)
+            .where(isNotNull(listTable.customCover));
+    }
+
     async getOrphanedMediaIds(mediaType: MediaType) {
         const { mediaTable, listTable } = this.config;
 
@@ -486,10 +495,11 @@ export abstract class BaseRepository<TConfig extends MediaSchemaConfig> {
             commonIdsSet = new Set(commonMediaIdsResult.map(m => m.mediaId));
         }
 
-        // Process results by adding common flag
+        // Process results - add `common` field and replace `imageCover` by user's `customCover`
         const processedResults = results.map((item: any) => ({
             ...item,
             common: commonIdsSet.has(item.mediaId),
+            imageCover: item.customCover ?? item.imageCover,
         }));
 
         return {

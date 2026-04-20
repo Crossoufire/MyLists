@@ -1,9 +1,18 @@
 import {UpdateType} from "@/lib/utils/enums";
 import {createServerFn} from "@tanstack/react-start";
 import {getContainer} from "@/lib/server/core/container";
-import {requiredAuthMiddleware} from "@/lib/server/middlewares/authentication";
 import {transactionMiddleware} from "@/lib/server/middlewares/transaction";
-import {addMediaToListSchema, deleteUserUpdatesSchema, editUserTagSchema, mediaActionSchema, updateUserMediaSchema, userTagNamesSchema} from "@/lib/types/zod.schema.types";
+import {requiredAuthMiddleware} from "@/lib/server/middlewares/authentication";
+import {
+    addMediaToListSchema,
+    deleteUserUpdatesSchema,
+    editUserTagSchema,
+    mediaActionSchema,
+    updateUserCustomCoverSchema,
+    updateUserMediaSchema,
+    userTagNamesSchema
+} from "@/lib/types/zod.schema.types";
+import {tryFormZodError} from "@/lib/utils/try-not-found";
 
 
 export const getUserMediaHistory = createServerFn({ method: "GET" })
@@ -67,6 +76,19 @@ export const postUpdateUserMedia = createServerFn({ method: "POST" })
         }
 
         return newState;
+    });
+
+
+export const postUpdateUserCustomCover = createServerFn({ method: "POST" })
+    .middleware([requiredAuthMiddleware, transactionMiddleware])
+    .inputValidator(tryFormZodError(updateUserCustomCoverSchema))
+    .handler(async ({ data, context: { currentUser } }) => {
+        const { mediaType, mediaId } = data;
+
+        const container = await getContainer();
+        const mediaService = container.registries.mediaService.getService(mediaType);
+
+        return mediaService.updateUserCustomCover(currentUser.id, mediaId, data);
     });
 
 

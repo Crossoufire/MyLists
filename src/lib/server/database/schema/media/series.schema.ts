@@ -34,7 +34,7 @@ export const seriesList = sqliteTable("series_list", {
     redo: integer().default(0).notNull(),
     total: integer("total").default(0).notNull(),
     redo2: customJson<number[]>("redo2").default(sql`'[]'`).notNull(),
-    ...commonMediaListCols(series.id),
+    ...commonMediaListCols(series.id, MediaType.SERIES),
 });
 
 

@@ -25,6 +25,7 @@ type ListTableColumns = {
     favorite: Column<any, any, any>;
     comment: Column<any, any, any>;
     rating: Column<any, any, any>;
+    customCover: Column<any, any, any>;
     addedAt: Column<any, any, any>;
     lastUpdated: Column<any, any, any>;
     redo?: Column<any, any, any>;

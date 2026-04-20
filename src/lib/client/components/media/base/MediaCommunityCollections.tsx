@@ -7,7 +7,8 @@ import {mediaCommunityCollectionsOptions} from "@/lib/client/react-query/query-o
 
 export const MediaCommunityCollections = ({ mediaId, mediaType }: { mediaId: number, mediaType: MediaType }) => {
     const collections = useSuspenseQuery(mediaCommunityCollectionsOptions(mediaId, mediaType)).data;
-
+    if (!collections.length) return null;
+    
     return (
         <section>
             <MediaSectionTitle title="Popular Collections"/>

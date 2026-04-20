@@ -3,10 +3,11 @@ import {DeltaStats} from "@/lib/types/stats.types";
 import {FormattedError} from "@/lib/utils/error-classes";
 import {Achievement} from "@/lib/types/achievements.types";
 import {MediaSchemaConfig} from "@/lib/types/media.config.types";
-import {JobType, MediaType, Status, TagAction, UpdateType} from "@/lib/utils/enums";
+import {saveImageFromUrl, saveUploadedImage} from "@/lib/utils/image-saver";
 import {BaseRepository} from "@/lib/server/domain/media/base/base.repository";
 import {BaseProviderService} from "@/lib/server/domain/media/base/provider.service";
-import {MediaListArgs, SearchType, UpdateUserMedia} from "@/lib/types/zod.schema.types";
+import {JobType, MediaType, Status, TagAction, UpdateType} from "@/lib/utils/enums";
+import {MediaListArgs, SearchType, UpdateUserCustomCover, UpdateUserMedia} from "@/lib/types/zod.schema.types";
 import {StatsCTE, Tag, UpdateHandlerFn, UpdateUserMediaDetails, UserMediaWithTags} from "@/lib/types/base.types";
 
 
@@ -29,6 +30,13 @@ export abstract class BaseService<TConfig extends MediaSchemaConfig, R extends B
     async getCoverFilenames() {
         const coverFilenames = await this.repository.getCoverFilenames();
         return coverFilenames.map(({ imageCover }) => imageCover.split("/").pop() as string);
+    }
+
+    async getCustomCoverFilenames() {
+        const coverFilenames = await this.repository.getCustomCoverFilenames();
+        return coverFilenames
+            .map(({ customCover }) => customCover?.split("/").pop() as string | undefined)
+            .filter((cover): cover is string => !!cover);
     }
 
     async getUserFavorites(userId: number, limit = 8) {
@@ -159,12 +167,41 @@ export abstract class BaseService<TConfig extends MediaSchemaConfig, R extends B
         const newState = await this.repository.updateUserMediaDetails(userId, mediaId, completeNewData);
         const delta = this.calculateDeltaStats(oldState, newState, media);
 
-        return {
-            media,
-            delta,
-            newState,
-            logPayload,
-        };
+        return { media, delta, newState, logPayload };
+    }
+
+    async updateUserCustomCover(userId: number, mediaId: number, payload: UpdateUserCustomCover) {
+        const media = await this.repository.findById(mediaId);
+        if (!media) throw notFound();
+
+        const userMedia = await this.repository.findUserMedia(userId, mediaId);
+        if (!userMedia) throw new FormattedError("Media not in your list");
+
+        let imageName: string | null = null;
+        if (!payload.remove) {
+            const dirSaveName = `${this.repository.config.mediaType}-covers` as const;
+
+            if (payload.imageFile) {
+                imageName = await saveUploadedImage({
+                    file: payload.imageFile,
+                    dirSaveName,
+                    resize: { width: 300, height: 450 },
+                });
+            }
+            else if (payload.imageUrl) {
+                imageName = await saveImageFromUrl({
+                    imageUrl: payload.imageUrl,
+                    dirSaveName,
+                    resize: { width: 300, height: 450 },
+                });
+            }
+
+            if (!imageName || imageName === "default.jpg") {
+                throw new FormattedError("Could not update the custom cover. Please choose another one.");
+            }
+        }
+
+        return this.repository.updateUserMediaDetails(userId, mediaId, { customCover: imageName });
     }
 
     async removeMediaFromUserList(userId: number, mediaId: number) {

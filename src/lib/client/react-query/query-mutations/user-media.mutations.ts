@@ -1,8 +1,16 @@
+import {useAuth} from "@/lib/client/hooks/use-auth";
 import {MediaType, TagAction} from "@/lib/utils/enums";
 import {SearchType} from "@/lib/types/zod.schema.types";
 import {Tag, UpdatePayload} from "@/lib/types/base.types";
 import {useMutation, useQueryClient} from "@tanstack/react-query";
-import {postAddMediaToList, postDeleteUserUpdates, postEditUserTag, postRemoveMediaFromList, postUpdateUserMedia} from "@/lib/server/functions/user-media";
+import {
+    postAddMediaToList,
+    postDeleteUserUpdates,
+    postEditUserTag,
+    postRemoveMediaFromList,
+    postUpdateUserCustomCover,
+    postUpdateUserMedia
+} from "@/lib/server/functions/user-media";
 import {
     allUpdatesOptions,
     historyOptions,
@@ -12,7 +20,6 @@ import {
     tagNamesOptions,
     tagsViewOptions
 } from "@/lib/client/react-query/query-options/query-options";
-import {useAuth} from "@/lib/client/hooks/use-auth";
 
 
 export type UserMediaQueryOption = ReturnType<typeof mediaDetailsOptions> | ReturnType<typeof mediaListOptions>;
@@ -159,6 +166,19 @@ export const useUpdateUserMediaMutation = (mediaType: MediaType, mediaId: number
                     };
                 });
             }
+        },
+    });
+};
+
+
+export const useUpdateCustomCoverMutation = (queryOption: UserMediaQueryOption) => {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: postUpdateUserCustomCover,
+        meta: { errorMessage: "Failed to update this custom cover. Please try again later." },
+        onSuccess: async () => {
+            await queryClient.invalidateQueries({ queryKey: queryOption.queryKey });
         },
     });
 };

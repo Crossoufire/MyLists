@@ -10,7 +10,7 @@ import {defineTask} from "@/lib/server/tasks/define-task";
 export const removeUnusedMediaCoversTask = defineTask({
     name: "remove-unused-media-covers" as const,
     visibility: "admin",
-    description: "Delete cover image files not referenced in db",
+    description: "Delete cover files not referenced in db",
     inputSchema: z.object({
         dryRun: z.boolean().optional().describe("Log files to delete without actually deleting"),
         mediaTypes: z.array(z.enum(MediaType)).optional().describe("Media types to clean (all if omitted)"),
@@ -37,7 +37,8 @@ export const removeUnusedMediaCoversTask = defineTask({
 
                 const mediaService = mediaRegistry.getService(mediaType);
                 const dbCoverFilenames = await mediaService.getCoverFilenames();
-                const dbCoverSet = new Set(dbCoverFilenames);
+                const dbCustomCoverFilenames = await mediaService.getCustomCoverFilenames();
+                const dbCoverSet = new Set([...dbCoverFilenames, ...dbCustomCoverFilenames]);
 
                 const filesOnDisk = await fs.promises.readdir(coversDirectoryPath);
 
@@ -70,7 +71,7 @@ export const removeUnusedMediaCoversTask = defineTask({
                     }
                 }
 
-                // @ts-expect-error: metric is not typed correctly
+                // @ts-expect-error: metric type is finicky
                 const deletedCount = (ctx.metric[`${mediaType}.deleted`] as number) || 0;
                 ctx.info(`Finished cleanup for ${mediaType}. Deleted ${deletedCount} files.`);
             });

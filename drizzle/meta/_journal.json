@@ -148,6 +148,13 @@
       "when": 1772401995577,
       "tag": "0020_faithful_junta",
       "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "6",
+      "when": 1776687635757,
+      "tag": "0021_custom_covers",
+      "breakpoints": true
     }
   ]
 }

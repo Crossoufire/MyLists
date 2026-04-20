@@ -25,7 +25,7 @@ export const mangaList = sqliteTable("manga_list", {
     currentChapter: integer().notNull(),
     redo: integer().default(0).notNull(),
     total: integer("total").default(0).notNull(),
-    ...commonMediaListCols(manga.id),
+    ...commonMediaListCols(manga.id, MediaType.MANGA),
 });
 
 

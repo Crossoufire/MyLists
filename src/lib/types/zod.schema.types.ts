@@ -22,6 +22,7 @@ export type ListSettings = z.infer<typeof mediaListSettingsSchema>;
 export type AdminUpdatePayload = z.infer<typeof adminUpdatePayloadSchema>;
 export type AchievementTier = z.infer<typeof tierAchievementSchema>;
 export type UpdateUserMedia = z.infer<typeof updateUserMediaSchema>;
+export type UpdateUserCustomCover = z.infer<typeof updateUserCustomCoverSchema>;
 export type SectionActivity = z.infer<typeof getSectionActivitySchema>;
 export type SpecificActivityFilters = z.infer<typeof getSpecificActivitySchema>;
 export type CreateCollection = z.infer<typeof createCollectionSchema>;
@@ -70,6 +71,24 @@ export const updateBookCoverSchema = z.object({
 }).refine((data) => !(data.imageUrl && data.imageFile), {
     message: "Please, choose only one cover option.",
 });
+
+export const updateUserCustomCoverSchema = z.object({
+    mediaType: z.enum(MediaType),
+    mediaId: z.coerce.number().int().positive(),
+    imageUrl: z.url().trim().optional(),
+    imageFile: z.instanceof(File).optional(),
+    remove: z.coerce.boolean().optional().default(false),
+}).refine((data) => {
+    if (data.remove) {
+        return !data.imageUrl && !data.imageFile;
+    }
+    return !!data.imageUrl || !!data.imageFile;
+}, {
+    message: "Provide an image link, upload a file, or choose remove.",
+}).refine((data) => {
+    if (data.remove) return true;
+    return !(data.imageUrl && data.imageFile);
+}, { message: "Please, choose only one cover option." });
 
 export const jobDetailsSchema = z.object({
     name: z.string(),

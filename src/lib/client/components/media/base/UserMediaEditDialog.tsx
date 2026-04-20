@@ -19,7 +19,7 @@ export const UserMediaEditDialog = ({ dialogOpen, userMedia, mediaType, queryOpt
 
     return (
         <Credenza open={dialogOpen} onOpenChange={onOpenChange}>
-            <CredenzaContent className="w-100 max-sm:w-full">
+            <CredenzaContent className="w-108 max-sm:w-full">
                 <CredenzaHeader>
                     <CredenzaTitle>
                         {userMedia.mediaName}
@@ -28,7 +28,7 @@ export const UserMediaEditDialog = ({ dialogOpen, userMedia, mediaType, queryOpt
                         Here you can edit your media details
                     </CredenzaDescription>
                 </CredenzaHeader>
-                <div className="w-full max-sm:mb-8">
+                <div className="w-full flex items-center justify-center max-sm:mb-8">
                     <UserMediaDetails
                         userMedia={userMedia}
                         mediaType={mediaType}
