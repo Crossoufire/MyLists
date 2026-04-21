@@ -350,9 +350,9 @@ export const llmResponseSchema = z.array(z.object({
 }));
 
 export const adminRefreshSchema = z.object({
-    days: z.coerce.number().int().min(1).max(90).default(30),
-    topLimit: z.coerce.number().int().min(1).max(20).default(8),
-    recentLimit: z.coerce.number().int().min(1).max(30).default(12),
+    recentPage: z.coerce.number().int().min(1).default(1),
+    topRange: z.enum(["30d", "90d", "1y", "all"]).default("all"),
+    dailyRange: z.enum(["30d", "90d", "1y", "all"]).default("30d"),
 })
 
 export const postFeatureRequestSchema = z.object({

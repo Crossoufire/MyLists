@@ -2,8 +2,33 @@ import {MediaType} from "@/lib/utils/enums";
 import {ErrorLog} from "@/lib/types/base.types";
 import {SaveTaskToDb} from "@/lib/types/tasks.types";
 import {SearchType} from "@/lib/types/zod.schema.types";
+import {MediaRefreshStatsParams} from "@/lib/types/admin.types";
 import {AdminRepository} from "@/lib/server/domain/admin/admin.repository";
 import {MediaServiceRegistry} from "@/lib/server/domain/media/media.registries";
+
+
+const buildDailySeriesByType = (startDate: Date, endDate: Date, mediaTypes: MediaType[], countsMap: Map<string, number>) => {
+    const days = Math.max(1, Math.floor((endDate.getTime() - startDate.getTime()) / (24 * 60 * 60 * 1000)) + 1);
+
+    return Array.from({ length: days }, (_value, idx) => {
+        const date = new Date(startDate);
+        date.setUTCDate(startDate.getUTCDate() + idx);
+        const key = date.toISOString().slice(0, 10);
+
+        const entry: Record<string, number | string> = {
+            date: key,
+            total: 0,
+        };
+
+        for (const mediaType of mediaTypes) {
+            const value = countsMap.get(`${key}|${mediaType}`) ?? 0;
+            entry[mediaType] = value;
+            entry.total = Number(entry.total) + value;
+        }
+
+        return entry as { date: string; total: number } & Record<MediaType, number>;
+    });
+};
 
 
 export class AdminService {
@@ -59,62 +84,56 @@ export class AdminService {
         return this.repository.logMediaRefresh(params);
     }
 
-    async getMediaRefreshStats(days = 30, topLimit = 8, recentLimit = 12) {
-        const [dailyByType, topUsers, totalsByRole, recentRefreshes] = await Promise.all([
-            this.repository.getMediaRefreshDailyCountsByType(days),
-            this.repository.getMediaRefreshTopUsers(days, topLimit),
-            this.repository.getMediaRefreshTotalsByRole(days),
-            this.repository.getRecentMediaRefreshes(recentLimit),
-        ]);
-
-        const buildDailySeriesByType = (days: number, mediaTypes: MediaType[], countsMap: Map<string, number>) => {
-            const today = new Date();
-            const utcBase = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()));
-
-            return Array.from({ length: days }, (_value, idx) => {
-                const date = new Date(utcBase);
-                date.setUTCDate(utcBase.getUTCDate() - (days - 1 - idx));
-                const key = date.toISOString().slice(0, 10);
-
-                const entry: Record<string, number | string> = {
-                    date: key,
-                    total: 0,
-                };
-
-                for (const mediaType of mediaTypes) {
-                    const value = countsMap.get(`${key}|${mediaType}`) ?? 0;
-                    entry[mediaType] = value;
-                    entry.total = Number(entry.total) + value;
-                }
-
-                return entry as { date: string; total: number } & Record<MediaType, number>;
-            });
-        };
+    async getMediaRefreshStats({ dailyRange = "30d", topRange = "all", recentPage = 1 }: MediaRefreshStatsParams = {}) {
+        const mediaRefreshRangeDays = { "30d": 30, "90d": 90, "1y": 365, all: null };
 
         const mediaTypes = Object.values(MediaType);
+        const topDays = mediaRefreshRangeDays[topRange];
+        const dailyDays = mediaRefreshRangeDays[dailyRange];
+        const today = new Date(new Date().setUTCHours(0, 0, 0, 0));
+
+        const [dailyByType, topUsers, totalsByRole, totalsByType, summary, recentRefreshes] = await Promise.all([
+            this.repository.getMediaRefreshDailyCountsByType(dailyDays),
+            this.repository.getMediaRefreshTopUsers(topDays),
+            this.repository.getMediaRefreshTotalsByRole(),
+            this.repository.getMediaRefreshTotalsByType(),
+            this.repository.getMediaRefreshSummary(),
+            this.repository.getRecentMediaRefreshes(recentPage),
+        ]);
+
         const countsByKey = new Map(dailyByType.map((row) => [`${row.date}|${row.mediaType}`, Number(row.count)]));
-        const daily = buildDailySeriesByType(days, mediaTypes, countsByKey);
-        const totalsByType = mediaTypes.map((mediaType) => ({
-            mediaType,
-            count: daily.reduce((sum, row) => sum + row[mediaType], 0),
-        })).filter((row) => row.count > 0).sort((a, b) => b.count - a.count);
-        const total = totalsByType.reduce((sum, row) => sum + row.count, 0);
-        const uniqueUsers = totalsByRole.reduce((sum, row) => sum + Number(row.userCount ?? 0), 0);
-        const busiest = daily.reduce((acc, row) => row.total > acc.total ? row : acc, daily[0] ?? { date: "", total: 0 });
+
+        const dailyStartDate = (dailyRange === "all")
+            ? (summary.firstRefreshDate ? new Date(`${summary.firstRefreshDate}T00:00:00.000Z`) : null)
+            : new Date(today.getTime() - ((dailyDays ?? 1) - 1) * 24 * 60 * 60 * 1000);
+        const daily = dailyStartDate ? buildDailySeriesByType(dailyStartDate, today, mediaTypes, countsByKey) : [];
+
+        const normalizedTotalsByType = mediaTypes
+            .map((mediaType) => ({
+                mediaType,
+                count: Number(totalsByType.find((row) => row.mediaType === mediaType)?.count ?? 0),
+            }))
+            .filter((row) => row.count > 0).sort((a, b) => b.count - a.count);
+
+        const activeDays = summary.firstRefreshDate
+            ? Math.max(1, Math.floor((today.getTime() - new Date(`${summary.firstRefreshDate}T00:00:00.000Z`).getTime()) / (24 * 60 * 60 * 1000)) + 1)
+            : 0;
 
         return {
-            days,
             daily,
+            topRange,
             topUsers,
-            totalsByType,
+            dailyRange,
             totalsByRole,
             recentRefreshes,
+            dailyWindowDays: daily.length,
+            totalsByType: normalizedTotalsByType,
             summary: {
-                total,
-                busiestDay: busiest.date,
-                busiestCount: busiest.total,
-                uniqueUsers,
-                avgPerDay: total ? Number((total / days).toFixed(1)) : 0,
+                total: summary.total,
+                busiestDay: summary.busiestDay,
+                uniqueUsers: summary.uniqueUsers,
+                busiestCount: summary.busiestCount,
+                avgPerDay: summary.total && activeDays ? Number((summary.total / activeDays).toFixed(1)) : 0,
             },
         };
     }

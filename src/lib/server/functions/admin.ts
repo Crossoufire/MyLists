@@ -182,9 +182,9 @@ export const postAdminDeleteErrorLog = createServerFn({ method: "POST" })
 export const getAdminMediaRefreshStats = createServerFn({ method: "GET" })
     .middleware([requiredAuthAndAdminTokenMiddleware])
     .inputValidator(adminRefreshSchema)
-    .handler(async ({ data: { days, topLimit, recentLimit } }) => {
+    .handler(async ({ data }) => {
         const adminService = await getContainer().then((c) => c.services.admin);
-        return adminService.getMediaRefreshStats(days, topLimit, recentLimit);
+        return adminService.getMediaRefreshStats(data);
     });
 
 

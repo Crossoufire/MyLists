@@ -1,19 +1,26 @@
 import {MediaType} from "@/lib/utils/enums";
-import {createFileRoute} from "@tanstack/react-router";
+import {createFileRoute, Link} from "@tanstack/react-router";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {BarChart3, Flame, RefreshCw, Users} from "lucide-react";
+import {MediaRefreshStatsParams} from "@/lib/types/admin.types";
 import {UserStats} from "@/lib/client/components/admin/UserStats";
+import {Pagination} from "@/lib/client/components/general/Pagination";
 import {DashboardShell} from "@/lib/client/components/admin/DashboardShell";
 import {DashboardHeader} from "@/lib/client/components/admin/DashboardHeader";
 import {formatDateTime, formatNumber, formatRelativeTime} from "@/lib/utils/formating";
-import {Bar, BarChart, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis} from "recharts";
+import {Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis} from "recharts";
 import {adminMediaRefreshOptions} from "@/lib/client/react-query/query-options/admin-options";
-import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/lib/client/components/ui/card";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/lib/client/components/ui/table";
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/lib/client/components/ui/select";
+import {Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle} from "@/lib/client/components/ui/card";
 
 
 export const Route = createFileRoute("/_admin/admin/media-refresh")({
-    loader: async ({ context: { queryClient } }) => queryClient.ensureQueryData(adminMediaRefreshOptions()),
+    validateSearch: (search) => search as MediaRefreshStatsParams,
+    loaderDeps: ({ search }) => ({ search }),
+    loader: async ({ context: { queryClient }, deps: { search } }) => {
+        return queryClient.ensureQueryData(adminMediaRefreshOptions(search));
+    },
     component: MediaRefreshPage,
 });
 
@@ -28,29 +35,38 @@ const chartColors: Record<MediaType, string> = {
 };
 
 
-function MediaRefreshPage() {
-    const apiData = useSuspenseQuery(adminMediaRefreshOptions()).data;
-    const { summary, days } = apiData;
-    const total = summary.total || 0;
+const rangeOptions = [
+    { value: "30d", label: "30 days" },
+    { value: "90d", label: "90 days" },
+    { value: "1y", label: "1 year" },
+    { value: "all", label: "All time" },
+] as const;
 
+
+type RefreshRange = (typeof rangeOptions)[number]["value"];
+
+
+function MediaRefreshPage() {
+    const filters = Route.useSearch();
+    const navigate = Route.useNavigate();
+    const apiData = useSuspenseQuery(adminMediaRefreshOptions(filters)).data;
+
+    const mediaTypes = Object.values(MediaType);
+    const { topRange = "all", dailyRange = "30d" } = filters;
     const totalsByRoleMap = new Map(apiData.totalsByRole.map((row) => [row.role, Number(row.count)]));
     const totalsByTypeMap = new Map(apiData.totalsByType.map((row) => [row.mediaType, Number(row.count)]));
 
-    const mediaTypeRows = Object.values(MediaType).map((mediaType) => ({
-        mediaType,
-        count: totalsByTypeMap.get(mediaType) ?? 0,
-    })).sort((a, b) => b.count - a.count);
+    const mediaTypeRows = mediaTypes
+        .map((mt) => ({ mediaType: mt, count: totalsByTypeMap.get(mt) ?? 0 }))
+        .sort((a, b) => b.count - a.count);
 
     const roleRows = Array.from(totalsByRoleMap.entries())
         .map(([role, count]) => ({ role, count }))
         .sort((a, b) => b.count - a.count);
 
-    const formatDay = (value: string) => {
-        if (!value) return "-";
-        const date = new Date(`${value}T00:00:00Z`);
-        if (isNaN(date.getTime())) return value;
-        return date.toLocaleDateString("en", { month: "short", day: "numeric" });
-    };
+    const onNavigate = (params: MediaRefreshStatsParams) => {
+        navigate({ search: params, resetScroll: false });
+    }
 
     return (
         <DashboardShell>
@@ -59,27 +75,27 @@ function MediaRefreshPage() {
                 <div className="grid gap-4 grid-cols-4 max-sm:grid-cols-2">
                     <UserStats
                         icon={RefreshCw}
+                        description="All time"
                         title="Total Refreshes"
-                        value={formatNumber(total)}
-                        description={`Last ${days} days`}
+                        value={formatNumber(apiData.summary.total)}
                     />
                     <UserStats
                         icon={Users}
                         title="Unique Users"
-                        description="Triggered refreshes"
-                        value={formatNumber(summary.uniqueUsers)}
+                        description="All-time refreshers"
+                        value={formatNumber(apiData.summary.uniqueUsers)}
                     />
                     <UserStats
                         icon={BarChart3}
                         title="Avg / Day"
-                        description="Rolling average"
-                        value={formatNumber(summary.avgPerDay)}
+                        description="All-time average"
+                        value={formatNumber(apiData.summary.avgPerDay)}
                     />
                     <UserStats
                         icon={Flame}
                         title="Busiest Day"
-                        description="Highest daily volume"
-                        value={summary.busiestDay ? `${formatDay(summary.busiestDay)} (${summary.busiestCount})` : "-"}
+                        value={formatDateTime(apiData.summary.busiestDay, { noTime: true })}
+                        description={`Highest Daily Volume - ${apiData.summary.busiestCount}`}
                     />
                 </div>
 
@@ -87,9 +103,21 @@ function MediaRefreshPage() {
                     <Card className="col-span-4 max-sm:col-span-5">
                         <CardHeader>
                             <CardTitle>Daily Refreshes</CardTitle>
-                            <CardDescription>
-                                Stacked by media type (last {days} days)
-                            </CardDescription>
+                            <CardDescription>Stacked by media type</CardDescription>
+                            <CardAction>
+                                <Select value={dailyRange} onValueChange={(value: RefreshRange) => onNavigate({ dailyRange: value })}>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select Range"/>
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {rangeOptions.map((opt) =>
+                                            <SelectItem key={opt.value} value={opt.value}>
+                                                {opt.label}
+                                            </SelectItem>
+                                        )}
+                                    </SelectContent>
+                                </Select>
+                            </CardAction>
                         </CardHeader>
                         <CardContent className="mt-2">
                             <ResponsiveContainer width="100%" height={340} className="-ml-4">
@@ -97,12 +125,11 @@ function MediaRefreshPage() {
                                     <XAxis
                                         fontSize={12}
                                         dataKey="date"
-                                        stroke="#888888"
+                                        stroke="#e2e2e2"
                                         tickLine={false}
                                         axisLine={false}
-                                        tickFormatter={(value) => value.slice(5)}
                                     />
-                                    <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false}/>
+                                    <YAxis stroke="#e2e2e2" fontSize={12} tickLine={false} axisLine={false}/>
                                     <Tooltip
                                         labelFormatter={(label) => `Day: ${label}`}
                                         formatter={(value) => formatNumber(Number(value))}
@@ -112,14 +139,12 @@ function MediaRefreshPage() {
                                             border: "1px solid var(--border)",
                                         }}
                                     />
-                                    <Legend wrapperStyle={{ fontSize: "12px" }}/>
-                                    {Object.values(MediaType).map((mediaType) =>
+                                    {mediaTypes.map((mt) =>
                                         <Bar
-                                            key={mediaType}
-                                            dataKey={mediaType}
+                                            key={mt}
+                                            dataKey={mt}
                                             stackId="refreshes"
-                                            radius={[3, 3, 0, 0]}
-                                            fill={chartColors[mediaType]}
+                                            fill={chartColors[mt]}
                                         />
                                     )}
                                 </BarChart>
@@ -129,25 +154,28 @@ function MediaRefreshPage() {
 
                     <Card className="col-span-3 max-sm:col-span-5">
                         <CardHeader>
-                            <CardTitle>Media Type Mix</CardTitle>
-                            <CardDescription>Share of refreshes by media type</CardDescription>
+                            <CardTitle>MediaType Mix</CardTitle>
+                            <CardDescription>All Time Share of refreshes per MediaType</CardDescription>
                         </CardHeader>
                         <CardContent className="mt-2">
                             <div className="space-y-3">
                                 {mediaTypeRows.map((row) => {
-                                    const percentage = total ? Math.round((row.count / total) * 100) : 0;
+                                    const pct = apiData.summary.total ? Math.round((row.count / apiData.summary.total) * 100) : 0;
+
                                     return (
                                         <div key={row.mediaType} className="space-y-1 text-sm">
                                             <div className="flex items-center justify-between">
-                                                <span className="font-medium capitalize">{row.mediaType}</span>
+                                                <span className="font-medium capitalize">
+                                                    {row.mediaType}
+                                                </span>
                                                 <span className="text-xs text-muted-foreground">
-                                                    {formatNumber(row.count)} ({percentage}%)
+                                                    {formatNumber(row.count)} ({pct}%)
                                                 </span>
                                             </div>
                                             <div className="h-2 rounded-full bg-muted">
                                                 <div
                                                     className="h-2 rounded-full"
-                                                    style={{ width: `${percentage}%`, backgroundColor: chartColors[row.mediaType] }}
+                                                    style={{ width: `${pct}%`, backgroundColor: chartColors[row.mediaType] }}
                                                 />
                                             </div>
                                         </div>
@@ -162,7 +190,7 @@ function MediaRefreshPage() {
                     <Card className="col-span-3 max-sm:col-span-5">
                         <CardHeader>
                             <CardTitle>Role Breakdown</CardTitle>
-                            <CardDescription>Refresh volume by role</CardDescription>
+                            <CardDescription>Refresh Volume by Role</CardDescription>
                         </CardHeader>
                         <CardContent>
                             <Table>
@@ -193,10 +221,22 @@ function MediaRefreshPage() {
 
                     <Card className="col-span-4 max-sm:col-span-5">
                         <CardHeader>
-                            <CardTitle>Top Refreshers</CardTitle>
-                            <CardDescription>
-                                Most active users in the last {days} days
-                            </CardDescription>
+                            <CardTitle>Top 8 Refreshers</CardTitle>
+                            <CardDescription>Most Active Users</CardDescription>
+                            <CardAction>
+                                <Select value={topRange} onValueChange={(value: RefreshRange) => onNavigate({ topRange: value })}>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select Range"/>
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {rangeOptions.map((opt) =>
+                                            <SelectItem key={opt.value} value={opt.value}>
+                                                {opt.label}
+                                            </SelectItem>
+                                        )}
+                                    </SelectContent>
+                                </Select>
+                            </CardAction>
                         </CardHeader>
                         <CardContent>
                             <Table>
@@ -211,17 +251,17 @@ function MediaRefreshPage() {
                                     {apiData.topUsers.length === 0 &&
                                         <TableRow>
                                             <TableCell colSpan={3} className="text-center text-muted-foreground">
-                                                No refresh activity yet
+                                                No Refresh Activity Yet
                                             </TableCell>
                                         </TableRow>
                                     }
-                                    {apiData.topUsers.map((user) => (
+                                    {apiData.topUsers.map((user) =>
                                         <TableRow key={user.userId}>
                                             <TableCell className="font-medium">{user.name}</TableCell>
                                             <TableCell className="capitalize">{user.role}</TableCell>
                                             <TableCell className="text-right">{formatNumber(user.count)}</TableCell>
                                         </TableRow>
-                                    ))}
+                                    )}
                                 </TableBody>
                             </Table>
                         </CardContent>
@@ -231,7 +271,9 @@ function MediaRefreshPage() {
                 <Card>
                     <CardHeader>
                         <CardTitle>Recent Refreshes</CardTitle>
-                        <CardDescription>Latest metadata refresh activity</CardDescription>
+                        <CardDescription>
+                            Latest Metadata Refresh Activity
+                        </CardDescription>
                     </CardHeader>
                     <CardContent>
                         <Table>
@@ -241,18 +283,18 @@ function MediaRefreshPage() {
                                     <TableHead>User</TableHead>
                                     <TableHead>Role</TableHead>
                                     <TableHead>Media Type</TableHead>
-                                    <TableHead className="text-right">API ID</TableHead>
+                                    <TableHead className="text-right">Media Details</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {apiData.recentRefreshes.length === 0 &&
+                                {apiData.recentRefreshes.items.length === 0 &&
                                     <TableRow>
                                         <TableCell colSpan={5} className="text-center text-muted-foreground">
-                                            No refresh activity yet
+                                            No Refresh Activity Yet
                                         </TableCell>
                                     </TableRow>
                                 }
-                                {apiData.recentRefreshes.map((row, idx) => (
+                                {apiData.recentRefreshes.items.map((row, idx) =>
                                     <TableRow key={`${row.userId}-${row.apiId}-${idx}`}>
                                         <TableCell className="text-muted-foreground">
                                             <span title={formatDateTime(row.refreshedAt)}>
@@ -262,11 +304,24 @@ function MediaRefreshPage() {
                                         <TableCell className="font-medium">{row.name}</TableCell>
                                         <TableCell className="capitalize">{row.role}</TableCell>
                                         <TableCell className="capitalize">{row.mediaType}</TableCell>
-                                        <TableCell className="text-right">{row.apiId}</TableCell>
+                                        <TableCell className="text-right underline">
+                                            <Link
+                                                search={{ external: true }}
+                                                to="/details/$mediaType/$mediaId"
+                                                params={{ mediaType: row.mediaType, mediaId: row.apiId }}
+                                            >
+                                                Go to details
+                                            </Link>
+                                        </TableCell>
                                     </TableRow>
-                                ))}
+                                )}
                             </TableBody>
                         </Table>
+                        <Pagination
+                            currentPage={apiData.recentRefreshes.page}
+                            totalPages={apiData.recentRefreshes.pages}
+                            onChangePage={(page) => onNavigate({ recentPage: page })}
+                        />
                     </CardContent>
                 </Card>
             </div>

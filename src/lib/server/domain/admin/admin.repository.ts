@@ -93,24 +93,44 @@ export class AdminRepository {
             });
     }
 
-    static async getMediaRefreshDailyCountsByType(days: number) {
-        const startOffset = `-${Math.max(days - 1, 0)} day`;
+    static async getMediaRefreshDailyCountsByType(days?: number | null) {
+        const dateFilter = this._buildMediaRefreshDateFilter(days);
 
-        return getDbClient()
+        const query = getDbClient()
             .select({
                 mediaType: mediaRefreshLog.mediaType,
                 count: count(mediaRefreshLog.id).as("count"),
                 date: sql<string>`date(${mediaRefreshLog.refreshedAt})`.as("date"),
             })
             .from(mediaRefreshLog)
-            .where(gte(sql`date(${mediaRefreshLog.refreshedAt})`, sql`date('now', ${startOffset})`))
+            .$dynamic();
+
+        return (dateFilter ? query.where(dateFilter) : query)
             .groupBy(sql`date(${mediaRefreshLog.refreshedAt})`, mediaRefreshLog.mediaType)
             .orderBy(sql`date(${mediaRefreshLog.refreshedAt})`);
     }
 
-    static async getMediaRefreshTotalsByRole(days: number) {
-        const startOffset = `-${Math.max(days - 1, 0)} day`;
+    static async getMediaRefreshTopUsers(days: number | null) {
+        const dateFilter = this._buildMediaRefreshDateFilter(days);
 
+        const query = getDbClient()
+            .select({
+                name: user.name,
+                role: user.role,
+                userId: mediaRefreshLog.userId,
+                count: count(mediaRefreshLog.id).as("count"),
+            })
+            .from(mediaRefreshLog)
+            .innerJoin(user, eq(user.id, mediaRefreshLog.userId))
+            .$dynamic();
+
+        return (dateFilter ? query.where(dateFilter) : query)
+            .groupBy(mediaRefreshLog.userId, user.name, user.role)
+            .orderBy(desc(count(mediaRefreshLog.id).as("count")))
+            .limit(8);
+    }
+
+    static async getMediaRefreshTotalsByRole() {
         return getDbClient()
             .select({
                 role: user.role,
@@ -119,43 +139,86 @@ export class AdminRepository {
             })
             .from(mediaRefreshLog)
             .innerJoin(user, eq(user.id, mediaRefreshLog.userId))
-            .where(gte(sql`date(${mediaRefreshLog.refreshedAt})`, sql`date('now', ${startOffset})`))
             .groupBy(user.role)
             .orderBy(desc(sql`count(${mediaRefreshLog.id})`));
     }
 
-    static async getMediaRefreshTopUsers(days: number, limit: number) {
-        const startOffset = `-${Math.max(days - 1, 0)} day`;
-        const refreshCount = count(mediaRefreshLog.id).as("count");
-
+    static async getMediaRefreshTotalsByType() {
         return getDbClient()
             .select({
-                name: user.name,
-                role: user.role,
-                count: refreshCount,
-                userId: mediaRefreshLog.userId,
-            })
-            .from(mediaRefreshLog)
-            .innerJoin(user, eq(user.id, mediaRefreshLog.userId))
-            .where(gte(sql`date(${mediaRefreshLog.refreshedAt})`, sql`date('now', ${startOffset})`))
-            .groupBy(mediaRefreshLog.userId, user.name, user.role)
-            .orderBy(desc(refreshCount))
-            .limit(limit);
-    }
-
-    static async getRecentMediaRefreshes(limit: number) {
-        return getDbClient()
-            .select({
-                name: user.name,
-                role: user.role,
-                apiId: mediaRefreshLog.apiId,
-                userId: mediaRefreshLog.userId,
                 mediaType: mediaRefreshLog.mediaType,
-                refreshedAt: mediaRefreshLog.refreshedAt,
+                count: count(mediaRefreshLog.id).as("count"),
             })
             .from(mediaRefreshLog)
-            .innerJoin(user, eq(user.id, mediaRefreshLog.userId))
-            .orderBy(desc(mediaRefreshLog.refreshedAt))
-            .limit(limit);
+            .groupBy(mediaRefreshLog.mediaType)
+            .orderBy(desc(count(mediaRefreshLog.id)));
     }
+
+    static async getMediaRefreshSummary() {
+        const [summary, busiestDay] = await Promise.all([
+            getDbClient()
+                .select({
+                    total: count(mediaRefreshLog.id).as("total"),
+                    uniqueUsers: countDistinct(mediaRefreshLog.userId).as("uniqueUsers"),
+                    firstRefreshDate: sql<string | null>`min(date(${mediaRefreshLog.refreshedAt}))`.as("firstRefreshDate"),
+                })
+                .from(mediaRefreshLog)
+                .get(),
+            getDbClient()
+                .select({
+                    count: count(mediaRefreshLog.id).as("count"),
+                    date: sql<string>`date(${mediaRefreshLog.refreshedAt})`.as("date"),
+                })
+                .from(mediaRefreshLog)
+                .groupBy(sql`date(${mediaRefreshLog.refreshedAt})`)
+                .orderBy(desc(sql`count(${mediaRefreshLog.id})`), desc(sql`date(${mediaRefreshLog.refreshedAt})`))
+                .limit(1)
+                .get(),
+        ]);
+
+        return {
+            total: Number(summary?.total ?? 0),
+            busiestDay: busiestDay?.date ?? "",
+            busiestCount: Number(busiestDay?.count ?? 0),
+            uniqueUsers: Number(summary?.uniqueUsers ?? 0),
+            firstRefreshDate: summary?.firstRefreshDate ?? null,
+        };
+    }
+
+    static async getRecentMediaRefreshes(page: number) {
+        return paginate({
+            page,
+            maxPerPage: 30,
+            defaultPerPage: 12,
+            getTotal: async () => {
+                return getDbClient()
+                    .select({ count: count() })
+                    .from(mediaRefreshLog)
+                    .get()?.count ?? 0;
+            },
+            getItems: ({ limit, offset }) => {
+                return getDbClient()
+                    .select({
+                        name: user.name,
+                        role: user.role,
+                        apiId: mediaRefreshLog.apiId,
+                        userId: mediaRefreshLog.userId,
+                        mediaType: mediaRefreshLog.mediaType,
+                        refreshedAt: mediaRefreshLog.refreshedAt,
+                    })
+                    .from(mediaRefreshLog)
+                    .innerJoin(user, eq(user.id, mediaRefreshLog.userId))
+                    .orderBy(desc(mediaRefreshLog.refreshedAt))
+                    .offset(offset)
+                    .limit(limit);
+            },
+        });
+    }
+
+    private static _buildMediaRefreshDateFilter(days?: number | null) {
+        if (!days) return undefined;
+
+        const startOffset = `-${Math.max(days - 1, 0)} day`;
+        return gte(sql`date(${mediaRefreshLog.refreshedAt})`, sql`date('now', ${startOffset})`);
+    };
 }
