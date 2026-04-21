@@ -12,6 +12,7 @@ program
     .version("1.0.0");
 
 const tasks = getAllTasks();
+
 for (const task of tasks) {
     const cmd = program
         .command(task.name)
@@ -44,6 +45,8 @@ for (const task of tasks) {
                 triggeredBy: "cron/cli",
                 stdoutAsJson: options.json,
             });
+
+            process.exit(0);
         }
         catch (error) {
             console.error("Failed to run task:", error);
@@ -54,7 +57,7 @@ for (const task of tasks) {
 
 
 if (process.argv.slice(2).length) {
-    program.parse(process.argv);
+    await program.parseAsync(process.argv);
 }
 else {
     program.outputHelp();
@@ -105,7 +108,7 @@ function parseCliOptions(options: Record<string, any>, definitions: CLIOption[])
                 }
                 result[camelKey] = value;
                 break;
-            case "array":
+            case "array": {
                 const arr = Array.isArray(value) ? value : [value];
                 if (def.arrayItemType === "number") {
                     result[camelKey] = arr.map(Number);
@@ -121,6 +124,7 @@ function parseCliOptions(options: Record<string, any>, definitions: CLIOption[])
                     }
                 }
                 break;
+            }
             default:
                 result[camelKey] = value;
         }
