@@ -17,7 +17,7 @@ export const DisplayComment = ({ content, size = 15 }: DisplayCommentProps) => {
                     className="text-blue-500"
                 />
             </PopoverTrigger>
-            <PopoverContent align="center" side="top" className="max-h-50 overflow-y-auto">
+            <PopoverContent align="center" side="top" className="max-h-50 overflow-y-auto scrollbar-thin">
                 {content}
             </PopoverContent>
         </Popover>

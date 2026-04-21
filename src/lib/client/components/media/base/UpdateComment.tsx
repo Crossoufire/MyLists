@@ -45,9 +45,9 @@ export const UpdateComment = ({ content, updateComment }: CommentaryProps) => {
                 <>
                     <Textarea
                         value={comment ?? ""}
-                        className="w-full h-35"
                         disabled={updateComment.isPending}
                         placeholder="Enter your comment..."
+                        className="w-full h-35 scrollbar-thin"
                         onChange={(ev) => setComment(ev.target.value)}
                     />
                     <div className="flex justify-end gap-2 mt-2">
@@ -60,7 +60,7 @@ export const UpdateComment = ({ content, updateComment }: CommentaryProps) => {
                     </div>
                 </>
                 :
-                <div className="text-muted-foreground text-sm wrap-break-word max-h-37 overflow-y-auto">
+                <div className="text-muted-foreground text-sm wrap-break-word max-h-37 overflow-y-auto scrollbar-thin pr-1">
                     {content ? `${content}` : "No comments added yet."}
                 </div>
             }
