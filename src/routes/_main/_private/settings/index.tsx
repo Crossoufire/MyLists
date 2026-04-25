@@ -7,7 +7,7 @@ import {GeneralForm} from "@/lib/client/components/user-settings/GeneralForm";
 import {MediaListForm} from "@/lib/client/components/user-settings/MediaListForm";
 import {FeaturesWalkthrough} from "@/lib/client/components/user-settings/FeaturesWalkthrough";
 import {EmailAndPasswordForm} from "@/lib/client/components/user-settings/EmailAndPasswordForm";
-import {ProfileCustomizationForm} from "@/lib/client/components/user-settings/ProfileCustomizationForm";
+import {ProfileCustomForm} from "../../../../lib/client/components/user-settings/ProfileCustomForm";
 
 
 export const Route = createFileRoute("/_main/_private/settings/")({
@@ -18,7 +18,7 @@ export const Route = createFileRoute("/_main/_private/settings/")({
 const tabConfig = [
     { sidebarTitle: "General", component: <GeneralForm/> },
     { sidebarTitle: "Content & Lists", component: <MediaListForm/> },
-    { sidebarTitle: "Profile Customization", component: <ProfileCustomizationForm/> },
+    { sidebarTitle: "Profile Customization", component: <ProfileCustomForm/> },
     { sidebarTitle: "Email & Password", component: <EmailAndPasswordForm/> },
     { sidebarTitle: "Features Walkthrough", component: <FeaturesWalkthrough/> },
     { sidebarTitle: "Danger", component: <DangerForm/> },
