@@ -8,7 +8,14 @@ import {tryFormZodError} from "@/lib/utils/try-not-found";
 import {saveUploadedImage} from "@/lib/utils/image-saver";
 import {requiredAuthMiddleware} from "@/lib/server/middlewares/authentication";
 import {transactionMiddleware} from "@/lib/server/middlewares/transaction";
-import {downloadListAsCsvSchema, generalSettingsSchema, mediaListSettingsSchema, passwordSettingsSchema} from "@/lib/types/zod.schema.types";
+import {
+    downloadListAsCsvSchema,
+    generalSettingsSchema,
+    highlightedMediaSearchSchema,
+    highlightedMediaSettingsSchema,
+    mediaListSettingsSchema,
+    passwordSettingsSchema
+} from "@/lib/types/zod.schema.types";
 
 
 export const postGeneralSettings = createServerFn({ method: "POST" })
@@ -67,6 +74,38 @@ export const postMediaListSettings = createServerFn({ method: "POST" })
 
         await userService.updateUserSettings(currentUser.id, toUpdateInUser);
         await userStatsService.updateUserMediaListSettings(currentUser.id, toUpdateInUserStats);
+    });
+
+
+export const getProfileCustomSettings = createServerFn({ method: "GET" })
+    .middleware([requiredAuthMiddleware])
+    .handler(async ({ context: { currentUser } }) => {
+        const userProfileService = await getContainer().then((c) => c.services.userProfile);
+
+        const [previews, settings] = await Promise.all([
+            userProfileService.resolveHighlightedMedia(currentUser.id),
+            userProfileService.getHighlightedMediaSettings(currentUser.id),
+        ]);
+
+        return { previews, settings };
+    });
+
+
+export const getProfileCustomSearch = createServerFn({ method: "GET" })
+    .middleware([requiredAuthMiddleware])
+    .inputValidator(tryFormZodError(highlightedMediaSearchSchema))
+    .handler(async ({ data, context: { currentUser } }) => {
+        const userProfileService = await getContainer().then((c) => c.services.userProfile);
+        return userProfileService.searchHighlightedMedia(currentUser.id, data.tab, data.query);
+    });
+
+
+export const postProfileCustomSettings = createServerFn({ method: "POST" })
+    .middleware([requiredAuthMiddleware, transactionMiddleware])
+    .inputValidator(tryFormZodError(highlightedMediaSettingsSchema))
+    .handler(async ({ data, context: { currentUser } }) => {
+        const userProfileService = await getContainer().then((c) => c.services.userProfile);
+        return userProfileService.saveHighlightedMediaSettings(currentUser.id, data);
     });
 
 

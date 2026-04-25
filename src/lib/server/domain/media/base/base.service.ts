@@ -43,6 +43,10 @@ export abstract class BaseService<TConfig extends MediaSchemaConfig, R extends B
         return this.repository.getUserFavorites(userId, limit);
     }
 
+    async searchUserListByName(userId: number, query: string, limit?: number) {
+        return this.repository.searchUserListByName(userId, query, limit);
+    }
+
     async getOrphanedMediaIds(mediaType: MediaType) {
         return this.repository.getOrphanedMediaIds(mediaType);
     }

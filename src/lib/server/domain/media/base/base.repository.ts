@@ -271,6 +271,22 @@ export abstract class BaseRepository<TConfig extends MediaSchemaConfig> {
             .limit(limit)
     }
 
+    async searchUserListByName(userId: number, query: string, limit = 10) {
+        const { listTable, mediaTable } = this.config;
+
+        return getDbClient()
+            .selectDistinct({
+                mediaCover: mediaTable.imageCover,
+                mediaId: sql<number>`${mediaTable.id}`,
+                mediaName: sql<string>`${mediaTable.name}`,
+            })
+            .from(listTable)
+            .innerJoin(mediaTable, eq(listTable.mediaId, mediaTable.id))
+            .where(and(eq(listTable.userId, userId), like(mediaTable.name, `%${query}%`)))
+            .orderBy(asc(mediaTable.name))
+            .limit(limit);
+    }
+
     async editUserTag(userId: number, tag: Tag, action: TagAction, mediaId?: number) {
         const { tagTable } = this.config;
 

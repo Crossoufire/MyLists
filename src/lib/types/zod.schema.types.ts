@@ -1,4 +1,5 @@
 import * as z from "zod";
+import {createDefaultHighlightedMediaSettings, HIGHLIGHTED_MEDIA_DEFAULT_TITLE, HIGHLIGHTED_MEDIA_TABS, PROFILE_MAX_HIGHLIGHTED_MEDIA} from "@/lib/types/profile-custom.types";
 import {
     AchievementDifficulty,
     ApiProviderType,
@@ -26,6 +27,7 @@ export type UpdateUserCustomCover = z.infer<typeof updateUserCustomCoverSchema>;
 export type SectionActivity = z.infer<typeof getSectionActivitySchema>;
 export type SpecificActivityFilters = z.infer<typeof getSpecificActivitySchema>;
 export type CreateCollection = z.infer<typeof createCollectionSchema>;
+export type HighlightedMediaSettingsInput = z.infer<typeof highlightedMediaSettingsSchema>;
 
 
 const paginationSchema = z.object({
@@ -240,8 +242,63 @@ export const mediaListSettingsSchema = z.object({
     manga: z.boolean(),
     books: z.boolean(),
     gridListView: z.boolean(),
-    searchSelector: z.enum(ApiProviderType),
     ratingSystem: z.enum(RatingSystemType),
+    searchSelector: z.enum(ApiProviderType),
+});
+
+const highlightedMediaRefSchema = z.object({
+    mediaType: z.enum(MediaType),
+    mediaId: z.coerce.number().int().positive(),
+});
+
+const highlightedMediaTabConfigSchema = z.object({
+    mode: z.enum(["random", "curated", "disabled"]),
+    items: z.array(highlightedMediaRefSchema).max(PROFILE_MAX_HIGHLIGHTED_MEDIA).default([]),
+    title: z.string().trim().max(50)
+        .transform((value) => value || HIGHLIGHTED_MEDIA_DEFAULT_TITLE)
+        .default(HIGHLIGHTED_MEDIA_DEFAULT_TITLE),
+});
+
+const highlightedMediaSettingsShape = HIGHLIGHTED_MEDIA_TABS.reduce((acc, tab) => {
+    acc[tab] = highlightedMediaTabConfigSchema.default({
+        items: [],
+        mode: "random",
+        title: HIGHLIGHTED_MEDIA_DEFAULT_TITLE,
+    });
+    return acc;
+}, {} as Record<(typeof HIGHLIGHTED_MEDIA_TABS)[number], any>);
+
+export const highlightedMediaSettingsSchema = z.object(highlightedMediaSettingsShape)
+    .default(createDefaultHighlightedMediaSettings())
+    .superRefine((settings, ctx) => {
+        for (const tab of HIGHLIGHTED_MEDIA_TABS) {
+            const tabConfig = settings[tab];
+
+            if (tabConfig.mode === "curated" && tabConfig.items.length === 0) {
+                ctx.addIssue({
+                    code: "custom",
+                    path: [tab, "items"],
+                    message: "Add at least 1 item or switch this tab back to Random or Disabled.",
+                });
+            }
+
+            if (tab !== "overview") {
+                tabConfig.items.forEach((item: { mediaType: MediaType }, index: number) => {
+                    if (item.mediaType !== tab) {
+                        ctx.addIssue({
+                            code: "custom",
+                            path: [tab, "items", index, "mediaType"],
+                            message: "Items must match the media type of this tab.",
+                        });
+                    }
+                });
+            }
+        }
+    });
+
+export const highlightedMediaSearchSchema = z.object({
+    tab: z.enum(HIGHLIGHTED_MEDIA_TABS),
+    query: z.string().trim().min(2).max(100),
 });
 
 export const passwordSettingsSchema = z.object({

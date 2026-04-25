@@ -1,7 +1,7 @@
 import {and, eq, sql} from "drizzle-orm";
 import {profileCustom} from "@/lib/server/database/schema";
 import {getDbClient} from "@/lib/server/database/async-storage";
-import {HighlightedMediaSettings, ProfileCustomKey} from "@/lib/types/profile-custom.types";
+import {HighlightedMediaSettings} from "@/lib/types/profile-custom.types";
 
 
 export class UserProfileRepository {
@@ -15,10 +15,10 @@ export class UserProfileRepository {
         return settings?.value as HighlightedMediaSettings | undefined;
     }
 
-    static async upsertProfileCustom(userId: number, key: ProfileCustomKey, value: unknown) {
+    static async upsertHighlightedMediaSettings(userId: number, value: HighlightedMediaSettings) {
         await getDbClient()
             .insert(profileCustom)
-            .values({ userId, key, value })
+            .values({ userId, key: "highlightedMedia", value })
             .onConflictDoUpdate({
                 target: [profileCustom.userId, profileCustom.key],
                 set: {

@@ -6,6 +6,7 @@ import {CommunitySearch} from "@/lib/types/collections.types";
 import {getSearchResults} from "@/lib/server/functions/search";
 import {getHallOfFame} from "@/lib/server/functions/hall-of-fame";
 import {getFeatureVotes} from "@/lib/server/functions/feature-votes";
+import {HighlightedMediaTab} from "@/lib/types/profile-custom.types";
 import {getComingNextMedia} from "@/lib/server/functions/coming-next";
 import {ApiProviderType, JobType, MediaType} from "@/lib/utils/enums";
 import {getPlatformStats} from "@/lib/server/functions/platform-stats";
@@ -17,6 +18,7 @@ import {getDailyMediadle, getMediadleSuggestions} from "@/lib/server/functions/m
 import {getNotifications, getNotificationsCount} from "@/lib/server/functions/notifications";
 import {MediaListArgs, SearchType, SpecificActivityFilters} from "@/lib/types/zod.schema.types";
 import {getJobDetails, getMediaDetails, getMediaDetailsToEdit} from "@/lib/server/functions/media-details";
+import {getProfileCustomSearch, getProfileCustomSettings} from "@/lib/server/functions/user-settings";
 import {getMonthlyActivity, getSectionActivity, getSpecificActivity, getUserStats} from "@/lib/server/functions/user-stats";
 import {getAllUpdatesHistory, getUserProfile, getUserProfileHeader, getUsersFollowers, getUsersFollows} from "@/lib/server/functions/user-profile";
 import {getMediaListFilters, getMediaListSearchFilters, getMediaListSF, getTagsViewFn, getUserListHeaderSF} from "@/lib/server/functions/media-lists";
@@ -74,6 +76,20 @@ export const profileHeaderOptions = (username: string) => queryOptions({
 export const profileOptions = (username: string) => queryOptions({
     queryKey: ["profile", username],
     queryFn: () => getUserProfile({ data: { username } }),
+});
+
+
+export const profileCustomOptions = queryOptions({
+    queryKey: ["settings", "profile-custom"],
+    queryFn: getProfileCustomSettings,
+});
+
+
+export const profileCustomSearchOptions = (tab: HighlightedMediaTab, query: string) => queryOptions({
+    queryKey: ["settings", "profile-custom", "search", tab, query],
+    queryFn: () => getProfileCustomSearch({ data: { tab, query } }),
+    enabled: query.trim().length >= 2,
+    staleTime: 60 * 1000,
 });
 
 
@@ -289,7 +305,7 @@ export const mediaCommunityCollectionsOptions = (mediaId: number, mediaType: Med
 
 export const suggestBookCoverOptions = (mediaName: string, coverUrl: string, enabled: boolean) => {
     return queryOptions({
-        queryKey: ["openLibraryCover", mediaName] as const,
+        queryKey: ["openLibraryCover", mediaName, coverUrl] as const,
         queryFn: () => {
             return new Promise<"available" | "missing">((resolve) => {
                 const img = new Image();

@@ -4,13 +4,22 @@ import {ListSettings} from "@/lib/types/zod.schema.types";
 import {postUpdateShowOnboarding} from "@/lib/server/functions/user-profile";
 import {QueryClient, useMutation, useQueryClient} from "@tanstack/react-query";
 import {postFollow, postRemoveFollower, postRespondToFollowRequest, postUnfollow} from "@/lib/server/functions/social";
-import {followersOptions, followsOptions, notificationsCountOptions, notificationsOptions, profileHeaderOptions} from "@/lib/client/react-query/query-options/query-options";
+import {
+    followersOptions,
+    followsOptions,
+    notificationsCountOptions,
+    notificationsOptions,
+    profileCustomOptions,
+    profileHeaderOptions,
+    profileOptions
+} from "@/lib/client/react-query/query-options/query-options";
 import {
     getDownloadListAsCSV,
     postDeleteUserAccount,
     postGeneralSettings,
     postMediaListSettings,
     postPasswordSettings,
+    postProfileCustomSettings,
     postUpdateFeatureFlag
 } from "@/lib/server/functions/user-settings";
 import {markAllNotifAsRead, postDeleteSocialNotif} from "@/lib/server/functions/notifications";
@@ -104,6 +113,21 @@ export const useGeneralSettingsMutation = () => {
 export const useListSettingsMutation = () => {
     return useMutation({
         mutationFn: ({ data }: { data: ListSettings }) => postMediaListSettings({ data })
+    });
+};
+
+
+export const useProfileCustomMutation = () => {
+    const { currentUser } = useAuth();
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: postProfileCustomSettings,
+        onSuccess: async () => {
+            await queryClient.invalidateQueries({ queryKey: profileCustomOptions.queryKey });
+            await queryClient.invalidateQueries({ queryKey: profileOptions(currentUser!.name).queryKey });
+            await queryClient.invalidateQueries({ queryKey: profileHeaderOptions(currentUser!.name).queryKey });
+        },
     });
 };
 

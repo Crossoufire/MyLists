@@ -2,15 +2,16 @@ import {MediaType} from "@/lib/utils/enums";
 import {MediaServiceRegistry} from "@/lib/server/domain/media/media.registries";
 import {UserProfileRepository} from "@/lib/server/domain/user/user-profile.repository";
 import {
+    createDefaultHighlightedMediaSettings,
+    HIGHLIGHTED_MEDIA_DEFAULT_TITLE,
     HighlightedMediaRef,
     HighlightedMediaResolvedItem,
     HighlightedMediaResolvedSettings,
+    HighlightedMediaSearchItem,
     HighlightedMediaSettings,
     HighlightedMediaTab,
+    PROFILE_MAX_HIGHLIGHTED_MEDIA,
 } from "@/lib/types/profile-custom.types";
-
-
-const PROFILE_MAX_HIGHLIGHTED_MEDIA = 7;
 
 
 export class UserProfileService {
@@ -20,9 +21,20 @@ export class UserProfileService {
     ) {
     }
 
-    async resolveHighlightedMedia(userId: number) {
+    async getHighlightedMediaSettings(userId: number) {
         const savedSettings = await this.repository.getHighlightedMediaSettings(userId);
-        const settings = this._resolveSettingsDefaults(savedSettings);
+        return this._resolveSettingsDefaults(savedSettings);
+    }
+
+    async saveHighlightedMediaSettings(userId: number, settings: HighlightedMediaSettings) {
+        const normalizedSettings = this._resolveSettingsDefaults(settings);
+        await this.repository.upsertHighlightedMediaSettings(userId, normalizedSettings);
+
+        return normalizedSettings;
+    }
+
+    async resolveHighlightedMedia(userId: number) {
+        const settings = await this.getHighlightedMediaSettings(userId);
 
         const mediaTypes = Object.values(MediaType);
         const overviewPool: HighlightedMediaResolvedItem[] = [];
@@ -35,7 +47,7 @@ export class UserProfileService {
             let poolItems: HighlightedMediaResolvedItem[] = [];
 
             if (tabConfig.mode === "curated") {
-                tabItems = await this.resolveCuratedItems(mediaType, tabConfig.items);
+                tabItems = await this._resolveCuratedItems(mediaType, tabConfig.items);
                 poolItems = tabItems;
             }
             else {
@@ -64,13 +76,49 @@ export class UserProfileService {
             overviewItems = this._shuffle(overviewPool).slice(0, PROFILE_MAX_HIGHLIGHTED_MEDIA);
         }
         else if (overviewConfig.mode === "curated") {
-            overviewItems = await this.resolveCuratedItems("overview", overviewConfig.items);
+            overviewItems = await this._resolveCuratedItems("overview", overviewConfig.items);
         }
 
         return { overview: { ...overviewConfig, items: overviewItems }, ...resolvedTabs } as HighlightedMediaResolvedSettings;
     }
 
-    private async resolveCuratedItems(tab: HighlightedMediaTab, items: HighlightedMediaRef[]): Promise<HighlightedMediaResolvedItem[]> {
+    async searchHighlightedMedia(userId: number, tab: HighlightedMediaTab, query: string): Promise<HighlightedMediaSearchItem[]> {
+        const perTypeLimit = tab === "overview" ? 4 : 10;
+        const targetMediaTypes = tab === "overview" ? Object.values(MediaType) : [tab];
+
+        const results = await Promise.all(targetMediaTypes.map(async (mediaType) => {
+            const mediaService = this.mediaServiceRegistry.getService(mediaType);
+            const items = await mediaService.searchUserListByName(userId, query, perTypeLimit);
+
+            return items.map((item) => ({ ...item, mediaType }));
+        }));
+
+        return results
+            .flat()
+            .sort((a, b) => a.mediaName.localeCompare(b.mediaName))
+            .slice(0, 10);
+    }
+
+    private _resolveSettingsDefaults(settings?: HighlightedMediaSettings): HighlightedMediaSettings {
+        const defaultSettings = createDefaultHighlightedMediaSettings();
+
+        return Object.entries(defaultSettings).reduce((acc, [tab]) => {
+            const typedTab = tab as HighlightedMediaTab;
+            const userTab = settings?.[typedTab];
+
+            acc[typedTab] = {
+                mode: userTab?.mode || "random",
+                title: userTab?.title.trim() || HIGHLIGHTED_MEDIA_DEFAULT_TITLE,
+                items: (userTab?.items || [])
+                    .filter((item: HighlightedMediaRef) => typedTab === "overview" || item.mediaType === typedTab)
+                    .slice(0, PROFILE_MAX_HIGHLIGHTED_MEDIA),
+            };
+
+            return acc;
+        }, {} as HighlightedMediaSettings);
+    }
+
+    private async _resolveCuratedItems(tab: HighlightedMediaTab, items: HighlightedMediaRef[]): Promise<HighlightedMediaResolvedItem[]> {
         if (items.length === 0) return [];
 
         const groupedByMediaType = items.reduce((acc, item) => {
@@ -101,21 +149,6 @@ export class UserProfileService {
             })
             .filter((item): item is HighlightedMediaResolvedItem => item !== null)
             .slice(0, PROFILE_MAX_HIGHLIGHTED_MEDIA);
-    }
-
-    private _resolveSettingsDefaults(settings?: HighlightedMediaSettings): HighlightedMediaSettings {
-        const allTabs: HighlightedMediaTab[] = ["overview", ...Object.values(MediaType)];
-
-        return Object.fromEntries(
-            allTabs.map((tab) => {
-                const userTab = settings?.[tab];
-                return [tab, {
-                    mode: userTab?.mode || "random",
-                    title: userTab?.title.trim() || "Highlighted Media",
-                    items: userTab?.items.slice(0, PROFILE_MAX_HIGHLIGHTED_MEDIA) || [],
-                }];
-            }),
-        ) as HighlightedMediaSettings;
     }
 
     private _shuffle<T>(items: T[]) {
