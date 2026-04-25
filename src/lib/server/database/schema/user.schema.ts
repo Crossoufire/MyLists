@@ -1,6 +1,7 @@
 import {sql} from "drizzle-orm";
 import {relations} from "drizzle-orm/relations";
 import {customJson} from "@/lib/server/database/custom-types";
+import {ProfileCustomKey} from "@/lib/types/profile-custom.types";
 import {taskHistory} from "@/lib/server/database/schema/admin.schema";
 import {MediaType, SocialState, Status, UpdateType} from "@/lib/utils/enums";
 import {index, integer, real, sqliteTable, text, uniqueIndex} from "drizzle-orm/sqlite-core";
@@ -116,6 +117,19 @@ export const userMediaStatsHistory = sqliteTable("user_media_stats_history", {
 ]);
 
 
+export const profileCustom = sqliteTable("profile_custom", {
+    id: integer().primaryKey().notNull(),
+    userId: integer().notNull().references(() => user.id, { onDelete: "cascade" }),
+    key: text().$type<ProfileCustomKey>().notNull(),
+    value: customJson<any>("value").notNull(),
+    createdAt: text().default(sql`(CURRENT_TIMESTAMP)`).notNull(),
+    updatedAt: text().default(sql`(CURRENT_TIMESTAMP)`).notNull(),
+}, (table) => [
+    index("ix_profile_custom_user_id").on(table.userId),
+    uniqueIndex("ux_profile_custom_user_id_key").on(table.userId, table.key),
+]);
+
+
 export const userRelations = relations(user, ({ many }) => ({
     mangaLists: many(mangaList),
     gamesLists: many(gamesList),
@@ -136,6 +150,7 @@ export const userRelations = relations(user, ({ many }) => ({
     userMediaActivity: many(userMediaActivity),
     userAchievements: many(userAchievement),
     userMediaSettings: many(userMediaSettings),
+    profileCustom: many(profileCustom),
     userMediadleProgresses: many(userMediadleProgress),
     collections: many(collections),
     collectionLikes: many(collectionLikes),
@@ -146,7 +161,6 @@ export const userRelations = relations(user, ({ many }) => ({
         relationName: "followers_followerId_user_id"
     }),
 }));
-
 
 export const followersRelations = relations(followers, ({ one }) => ({
     user_followedId: one(user, {
@@ -160,7 +174,6 @@ export const followersRelations = relations(followers, ({ one }) => ({
         relationName: "followers_followerId_user_id"
     }),
 }));
-
 
 export const userMediaUpdateRelations = relations(userMediaUpdate, ({ one }) => ({
     user: one(user, {
@@ -176,10 +189,16 @@ export const userMediaActivityRelations = relations(userMediaActivity, ({ one })
     }),
 }));
 
-
 export const userMediaSettingsRelations = relations(userMediaSettings, ({ one }) => ({
     user: one(user, {
         fields: [userMediaSettings.userId],
+        references: [user.id]
+    }),
+}));
+
+export const profileCustomRelations = relations(profileCustom, ({ one }) => ({
+    user: one(user, {
+        fields: [profileCustom.userId],
         references: [user.id]
     }),
 }));

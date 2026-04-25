@@ -36,6 +36,7 @@ describe("BooksService", async () => {
         favorite: false,
         addedAt: new Date().toISOString(),
         lastUpdated: new Date().toISOString(),
+        customCover: null,
         redo: 0,
         total: 100,
         actualPage: 100,

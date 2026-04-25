@@ -1,12 +1,12 @@
 import {Award} from "lucide-react";
 import {cn} from "@/lib/utils/helpers";
 import {Link} from "@tanstack/react-router";
+import {diffColors} from "@/lib/utils/colors-and-icons";
 import {Button} from "@/lib/client/components/ui/button";
-import {formatDateTime, formatRelativeTime} from "@/lib/utils/formating";
 import {AchievementsType} from "@/lib/types/query.options.types";
 import {EmptyState} from "@/lib/client/components/general/EmptyState";
+import {formatDateTime, formatRelativeTime} from "@/lib/utils/formating";
 import {Card, CardContent, CardHeader, CardTitle} from "@/lib/client/components/ui/card";
-import {diffColors} from "@/lib/utils/colors-and-icons";
 
 
 interface AchievementsProps {
@@ -17,7 +17,7 @@ interface AchievementsProps {
 
 export const AchievementsCard = ({ username, achievements }: AchievementsProps) => {
     return (
-        <Card className={cn("h-fit", achievements.details.length === 0 && "h-fit")}>
+        <Card className={cn("h-fit", achievements.length === 0 && "h-fit")}>
             <CardHeader>
                 <CardTitle>
                     Recent Achievements
@@ -25,13 +25,13 @@ export const AchievementsCard = ({ username, achievements }: AchievementsProps) 
             </CardHeader>
             <CardContent>
                 <div className="space-y-3">
-                    {achievements.details.length === 0 ?
+                    {achievements.length === 0 ?
                         <EmptyState
                             icon={Award}
                             message="No achievements earned yet."
                         />
                         :
-                        achievements.details.slice(0, 3).map((ach) =>
+                        achievements.map((ach) =>
                             <div key={`${ach.id}-${ach.difficulty}`} className={`p-2 rounded-lg border ${diffColors(ach.difficulty, "border")}`}>
                                 <div className="flex justify-between">
                                     <div className="flex gap-2 items-center mb-1">
@@ -51,7 +51,7 @@ export const AchievementsCard = ({ username, achievements }: AchievementsProps) 
                         )
                     }
                 </div>
-                {achievements.details.length !== 0 &&
+                {achievements.length !== 0 &&
                     <Button className="mt-4" variant="dashed" asChild>
                         <Link to="/achievements/$username" params={{ username }}>
                             View all 63 achievements

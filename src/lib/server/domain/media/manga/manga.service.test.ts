@@ -40,6 +40,7 @@ describe("MangaService", async () => {
         rating: null,
         comment: null,
         favorite: false,
+        customCover: null,
         addedAt: new Date().toISOString(),
         lastUpdated: new Date().toISOString(),
         currentChapter: 100,

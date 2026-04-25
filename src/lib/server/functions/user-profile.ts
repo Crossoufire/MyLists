@@ -44,6 +44,7 @@ export const getUserProfile = createServerFn({ method: "GET" })
         const container = await getContainer();
         const userService = container.services.user;
         const userStatsService = container.services.userStats;
+        const userProfileService = container.services.userProfile;
         const userUpdatesService = container.services.userUpdates;
         const achievementsService = container.services.achievements;
 
@@ -55,12 +56,10 @@ export const getUserProfile = createServerFn({ method: "GET" })
         const userFollows = await userService.getUserFollows(undefined, targetUserId);
         const userUpdates = await userUpdatesService.getUserUpdates(targetUserId);
         const followsUpdates = await userUpdatesService.getFollowsUpdates(targetUserId, currentUser?.id);
-        const preComputedStatsSummary = await userStatsService.userPreComputedStatsSummary(targetUserId);
+        const mediaGlobalSummary = await userStatsService.userPreComputedStatsSummary(targetUserId);
         const perMediaSummary = await userStatsService.userPerMediaSummaryStats(targetUserId);
-        const achievements = {
-            summary: await achievementsService.getDifficultySummary(targetUserId),
-            details: await achievementsService.getAchievementsDetails(targetUserId),
-        };
+        const highlightedMedia = await userProfileService.resolveHighlightedMedia(targetUserId);
+        const achievements = await achievementsService.getAchievementsDetails(targetUserId);
 
         return {
             userUpdates,
@@ -69,7 +68,8 @@ export const getUserProfile = createServerFn({ method: "GET" })
             followsCount,
             followsUpdates,
             perMediaSummary,
-            mediaGlobalSummary: preComputedStatsSummary,
+            highlightedMedia,
+            mediaGlobalSummary,
             userData: {
                 id: user.id,
                 name: user.name,

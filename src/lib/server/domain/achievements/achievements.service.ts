@@ -31,7 +31,7 @@ export class AchievementsService {
         return this.repository.getDifficultySummary(userId);
     }
 
-    async getAchievementsDetails(userId: number, limit = 6) {
+    async getAchievementsDetails(userId: number, limit = 3) {
         return this.repository.getAchievementsDetails(userId, limit);
     }
 

@@ -81,11 +81,13 @@ function ProfileMain() {
                             perMedia={apiData.perMediaSummary}
                             globalStats={apiData.mediaGlobalSummary}
                             ratingSystem={apiData.userData.ratingSystem}
+                            highlightedMedia={apiData.highlightedMedia.overview}
                         />
                         :
                         <MediaStatsTab
                             username={username}
                             ratingSystem={apiData.userData.ratingSystem}
+                            highlightedMedia={apiData.highlightedMedia[activeTab]}
                             mediaSummary={apiData.perMediaSummary.find((p) => p.mediaType === activeTab)!}
                         />
                     }

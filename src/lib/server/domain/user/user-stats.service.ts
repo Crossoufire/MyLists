@@ -108,7 +108,7 @@ export class UserStatsService {
         return this._getComputedStatsSummary({ userId });
     }
 
-    async userPerMediaSummaryStats(userId: number, limit = 10) {
+    async userPerMediaSummaryStats(userId: number) {
         const excludedStatuses = statusUtils.getNoPlanTo();
         const activeSettings = await this.repository.userActiveMediaSettings(userId);
 
@@ -121,18 +121,15 @@ export class UserStatsService {
                 }
             });
 
-            const mediaService = this.mediaServiceRegistry.getService(setting.mediaType);
-            const favoritesMedia = await mediaService.getUserFavorites(userId, limit);
-
-            const statusList = Object.entries(setting.statusCounts).map(([status, count]) =>
-                ({ status: status as Status, count, percent: (count / setting.totalEntries) * 100 })
-            );
+            const statusList = Object.entries(setting.statusCounts)
+                .map(([status, count]) =>
+                    ({ status: status as Status, count, percent: (count / setting.totalEntries) * 100 })
+                );
 
             const summary = {
                 statusList: statusList,
                 totalNoPlan: totalNoPlan,
                 mediaType: setting.mediaType,
-                favoritesList: favoritesMedia,
                 avgRated: setting.averageRating,
                 timeSpent: setting.timeSpent / 60,
                 noData: setting.totalEntries === 0,
@@ -140,7 +137,7 @@ export class UserStatsService {
                 entriesRated: setting.entriesRated,
                 totalSpecific: setting.totalSpecific,
                 timeSpentDays: setting.timeSpent / 1440,
-                EntriesFavorites: setting.entriesFavorites,
+                entriesFavorites: setting.entriesFavorites,
                 percentRated: (setting.entriesRated === 0) ? null : (setting.entriesRated / totalNoPlan) * 100,
             };
 

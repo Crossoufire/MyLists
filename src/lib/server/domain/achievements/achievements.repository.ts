@@ -116,7 +116,7 @@ export class AchievementsRepository {
         return results;
     }
 
-    static async getAchievementsDetails(userId: number, limit = 6) {
+    static async getAchievementsDetails(userId: number, limit = 3) {
         const results = await getDbClient()
             .select({
                 id: achievement.id,

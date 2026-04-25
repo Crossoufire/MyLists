@@ -1,12 +1,12 @@
-import {useMemo} from "react";
 import {Link} from "@tanstack/react-router";
 import {RatingSystemType} from "@/lib/utils/enums";
 import {getFeelingIcon} from "@/lib/utils/ratings";
 import {getThemeColor} from "@/lib/utils/colors-and-icons";
 import {Clock, ClockAlert, MoveRight, Star} from "lucide-react";
 import {EmptyState} from "@/lib/client/components/general/EmptyState";
+import {ResolvedHighlightedMediaTabConfig} from "@/lib/types/profile-custom.types";
 import {SimpleStatCard} from "@/lib/client/components/user-profile/SimpleStatCard";
-import {MediaFavoritesGrid} from "@/lib/client/components/user-profile/FavoritesGrid";
+import {HighlightedMedia} from "@/lib/client/components/user-profile/HighlightedMedia";
 import {DistributionContainer} from "@/lib/client/components/user-profile/ProfileDistrib";
 import {MediaGlobalSummaryType, PerMediaSummaryType} from "@/lib/types/query.options.types";
 
@@ -16,18 +16,15 @@ interface OverviewTabProps {
     perMedia: PerMediaSummaryType,
     ratingSystem: RatingSystemType,
     globalStats: MediaGlobalSummaryType,
+    highlightedMedia: ResolvedHighlightedMediaTabConfig,
 }
 
 
-export const OverviewTab = ({ username, globalStats, perMedia, ratingSystem }: OverviewTabProps) => {
-    const favoritesList = useMemo(() => perMedia.flatMap((media) =>
-            media.favoritesList.map((fav) => ({ ...fav, mediaType: media.mediaType }))
-        // eslint-disable-next-line react-hooks/purity
-    ).sort(() => Math.random() - 0.5), [perMedia]);
-
+export const OverviewTab = ({ username, globalStats, perMedia, ratingSystem, highlightedMedia }: OverviewTabProps) => {
     const rating = globalStats.avgRated;
-    const ratingDisplay = ratingSystem === "score" ?
-        rating?.toFixed(2) ?? "-" : getFeelingIcon(rating, { size: 28, className: "mt-1" });
+    const ratingDisplay = ratingSystem === "score"
+        ? rating?.toFixed(2) ?? "-"
+        : getFeelingIcon(rating, { size: 28, className: "mt-1" });
 
     return (
         <div className="space-y-6">
@@ -100,9 +97,8 @@ export const OverviewTab = ({ username, globalStats, perMedia, ratingSystem }: O
                 </div>
             </DistributionContainer>
 
-            <MediaFavoritesGrid
-                title="Media Favorites"
-                favorites={favoritesList}
+            <HighlightedMedia
+                config={highlightedMedia}
             />
 
             <div className="flex justify-end items-center gap-2 -mt-4 font-semibold text-muted-foreground">

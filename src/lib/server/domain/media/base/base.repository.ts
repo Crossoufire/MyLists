@@ -256,7 +256,7 @@ export abstract class BaseRepository<TConfig extends MediaSchemaConfig> {
         return { genres, tags };
     }
 
-    async getUserFavorites(userId: number, limit = 8) {
+    async getUserFavorites(userId: number, limit = 7) {
         const { listTable, mediaTable } = this.config;
 
         return getDbClient()

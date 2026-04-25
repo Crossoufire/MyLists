@@ -1,12 +1,13 @@
 import {Link} from "@tanstack/react-router";
 import {getFeelingIcon} from "@/lib/utils/ratings";
-import {RatingSystemType, Status} from "@/lib/utils/enums";
 import {getThemeColor} from "@/lib/utils/colors-and-icons";
+import {RatingSystemType, Status} from "@/lib/utils/enums";
 import {PerMediaSummaryType} from "@/lib/types/query.options.types";
 import {EmptyState} from "@/lib/client/components/general/EmptyState";
 import {BarChart3, ChartNoAxesColumn, MoveRight, Star} from "lucide-react";
+import {ResolvedHighlightedMediaTabConfig} from "@/lib/types/profile-custom.types";
 import {SimpleStatCard} from "@/lib/client/components/user-profile/SimpleStatCard";
-import {MediaFavoritesGrid} from "@/lib/client/components/user-profile/FavoritesGrid";
+import {HighlightedMedia} from "@/lib/client/components/user-profile/HighlightedMedia";
 import {DistributionContainer} from "@/lib/client/components/user-profile/ProfileDistrib";
 
 
@@ -14,20 +15,17 @@ interface MediaStatsTabProps {
     username: string,
     ratingSystem: RatingSystemType,
     mediaSummary: PerMediaSummaryType[number],
+    highlightedMedia: ResolvedHighlightedMediaTabConfig,
 }
 
 
-export const MediaStatsTab = ({ username, mediaSummary, ratingSystem }: MediaStatsTabProps) => {
+export const MediaStatsTab = ({ username, mediaSummary, ratingSystem, highlightedMedia }: MediaStatsTabProps) => {
     if (!mediaSummary) return null;
 
     const rating = mediaSummary.avgRated;
-    const ratingDisplay = ratingSystem === "score" ?
-        rating?.toFixed(2) ?? "-" : getFeelingIcon(rating, { size: 28, className: "mt-1" });
-
-    const favoritesList = mediaSummary.favoritesList.map((favorite) => ({
-        ...favorite,
-        mediaType: mediaSummary.mediaType,
-    }));
+    const ratingDisplay = ratingSystem === "score"
+        ? rating?.toFixed(2) ?? "-"
+        : getFeelingIcon(rating, { size: 28, className: "mt-1" });
 
     return (
         <div className="space-y-6">
@@ -90,14 +88,8 @@ export const MediaStatsTab = ({ username, mediaSummary, ratingSystem }: MediaSta
                 </div>
             </DistributionContainer>
 
-            <MediaFavoritesGrid
-                favorites={favoritesList}
-                title={`Favorites (${mediaSummary.EntriesFavorites})`}
-                linkProps={{
-                    search: { favorite: true },
-                    to: "/list/$mediaType/$username",
-                    params: { mediaType: mediaSummary.mediaType, username }
-                }}
+            <HighlightedMedia
+                config={highlightedMedia}
             />
 
             <div className="flex justify-end items-center gap-2 -mt-4 font-semibold text-muted-foreground">

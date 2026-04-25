@@ -39,7 +39,7 @@ export abstract class BaseService<TConfig extends MediaSchemaConfig, R extends B
             .filter((cover): cover is string => !!cover);
     }
 
-    async getUserFavorites(userId: number, limit = 8) {
+    async getUserFavorites(userId: number, limit = 7) {
         return this.repository.getUserFavorites(userId, limit);
     }
 
