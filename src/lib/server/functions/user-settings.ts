@@ -87,8 +87,6 @@ export const getProfileCustomSettings = createServerFn({ method: "GET" })
             userProfileService.getHighlightedMediaSettings(currentUser.id),
         ]);
 
-        console.dir({ previews, settings }, { depth: null });
-
         return { previews, settings };
     });
 

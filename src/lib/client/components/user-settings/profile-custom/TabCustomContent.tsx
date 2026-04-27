@@ -42,7 +42,7 @@ export const TabCustomContent = ({ activeTab, previewCache, setPreviewCache, roo
                 <CardDescription>
                     {activeTab === "overview"
                         ? <>Mix media from any of your activated lists.</>
-                        : <>Only ${activeTab} from your ${activeTab} list.</>
+                        : <>Only {activeTab} from your {activeTab} list.</>
                     }
                 </CardDescription>
             </CardHeader>

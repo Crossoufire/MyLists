@@ -18,6 +18,8 @@ import {
     Filter,
     Gamepad2,
     GraduationCap,
+    Highlighter,
+    ImageUp,
     LayoutList,
     LineChart,
     ListOrdered,
@@ -112,9 +114,31 @@ type FeatureData = {
 
 const FEATURES_DATA: FeatureData[] = [
     {
+        category: "New",
+        icon: Highlighter,
+        name: "Custom Profile Highlights",
+        description: (
+            <span>
+                Customize the Highlighted Media block on your profile for each tab. Pick a random selection,
+                curate the exact media to show, or disable the section entirely from your settings.
+            </span>
+        )
+    },
+    {
+        icon: ImageUp,
+        category: "New",
+        name: "Custom Covers Per Media",
+        description: (
+            <span>
+                Override the cover of any media already in your list. Add your own cover from an image link
+                or upload a file directly, and remove it anytime from the 'custom' tab media edit panel.
+            </span>
+        )
+    },
+    {
         icon: ListOrdered,
         category: "New",
-        name: "New (real) Collections System",
+        name: "New (real) Collection System",
         description: (
             <span>
                 Create, and rank collections of media. Keep your collections private for organization,
@@ -161,20 +185,8 @@ const FEATURES_DATA: FeatureData[] = [
         )
     },
     {
-        icon: Tags,
-        category: "New",
-        name: "Labels become Tags",
-        description: (
-            <span>
-                Labels have a fresh new look and are now called 'tags'.
-                Check out the new design on your lists page.
-                The tags management modal has also been updated.
-            </span>
-        )
-    },
-    {
         icon: GraduationCap,
-        category: "New",
+        category: "Library & Management",
         name: "New Walkthrough Tutorial",
         description: (
             <span>
@@ -288,6 +300,18 @@ const FEATURES_DATA: FeatureData[] = [
         name: "New Manga List",
         category: "Library & Management",
         description: "Manga is officially supported! Enable it in your settings to start tracking your reading."
+    },
+    {
+        icon: Tags,
+        category: "Customization",
+        name: "Labels become Tags",
+        description: (
+            <span>
+                Labels have a fresh new look and are now called 'tags'.
+                Check out the new design on your lists page.
+                The tags management modal has also been updated.
+            </span>
+        )
     },
     {
         icon: Crop,
