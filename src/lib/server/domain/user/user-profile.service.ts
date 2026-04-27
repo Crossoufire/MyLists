@@ -47,7 +47,7 @@ export class UserProfileService {
             let poolItems: HighlightedMediaResolvedItem[] = [];
 
             if (tabConfig.mode === "curated") {
-                tabItems = await this._resolveCuratedItems(mediaType, tabConfig.items);
+                tabItems = await this._resolveCuratedItems(mediaType, tabConfig.items, userId);
                 poolItems = tabItems;
             }
             else {
@@ -57,7 +57,11 @@ export class UserProfileService {
                 if (needsRandomForTab || needsRandomForOverview) {
                     const mediaService = this.mediaServiceRegistry.getService(mediaType);
                     const favorites = await mediaService.getUserFavorites(userId, 3 * PROFILE_MAX_HIGHLIGHTED_MEDIA);
-                    const mapFavorites = favorites.map((fav) => ({ ...fav, mediaType }));
+                    const mapFavorites = favorites.map((fav) => ({
+                        ...fav,
+                        mediaType,
+                        mediaCover: fav.customCover ?? fav.mediaCover,
+                    }));
 
                     poolItems = mapFavorites;
                     if (needsRandomForTab) tabItems = mapFavorites;
@@ -76,10 +80,16 @@ export class UserProfileService {
             overviewItems = this._shuffle(overviewPool).slice(0, PROFILE_MAX_HIGHLIGHTED_MEDIA);
         }
         else if (overviewConfig.mode === "curated") {
-            overviewItems = await this._resolveCuratedItems("overview", overviewConfig.items);
+            overviewItems = await this._resolveCuratedItems("overview", overviewConfig.items, userId);
         }
 
-        return { overview: { ...overviewConfig, items: overviewItems }, ...resolvedTabs } as HighlightedMediaResolvedSettings;
+        return {
+            overview: {
+                ...overviewConfig,
+                items: overviewItems,
+            },
+            ...resolvedTabs,
+        } as HighlightedMediaResolvedSettings;
     }
 
     async searchHighlightedMedia(userId: number, tab: HighlightedMediaTab, query: string): Promise<HighlightedMediaSearchItem[]> {
@@ -88,9 +98,12 @@ export class UserProfileService {
 
         const results = await Promise.all(targetMediaTypes.map(async (mediaType) => {
             const mediaService = this.mediaServiceRegistry.getService(mediaType);
-            const items = await mediaService.searchUserListByName(userId, query, perTypeLimit);
-
-            return items.map((item) => ({ ...item, mediaType }));
+            const mediaDetails = await mediaService.searchUserListByName(userId, query, perTypeLimit);
+            return mediaDetails.map((media) => ({
+                ...media,
+                mediaType,
+                mediaCover: media.customCover ?? media.mediaCover,
+            }));
         }));
 
         return results
@@ -118,7 +131,7 @@ export class UserProfileService {
         }, {} as HighlightedMediaSettings);
     }
 
-    private async _resolveCuratedItems(tab: HighlightedMediaTab, items: HighlightedMediaRef[]): Promise<HighlightedMediaResolvedItem[]> {
+    private async _resolveCuratedItems(tab: HighlightedMediaTab, items: HighlightedMediaRef[], userId: number): Promise<HighlightedMediaResolvedItem[]> {
         if (items.length === 0) return [];
 
         const groupedByMediaType = items.reduce((acc, item) => {
@@ -132,12 +145,12 @@ export class UserProfileService {
 
         await Promise.all(Object.entries(groupedByMediaType).map(async ([mediaType, mediaIds]) => {
             const mediaService = this.mediaServiceRegistry.getService(mediaType as MediaType);
-            const mediaDetails = await mediaService.getMediaDetailsByIds(mediaIds);
+            const mediaDetails = await mediaService.getMediaDetailsByIds(mediaIds, userId);
             for (const md of mediaDetails) {
                 lookupMap.set(`${mediaType}|${md.id}`, {
                     mediaId: md.id,
                     mediaName: md.name,
-                    mediaCover: md.imageCover,
+                    mediaCover: md.customCover ?? md.imageCover,
                 });
             }
         }));

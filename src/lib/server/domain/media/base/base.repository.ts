@@ -222,9 +222,10 @@ export abstract class BaseRepository<TConfig extends MediaSchemaConfig> {
     async getMediaDetailsByIds(mediaIds: number[], userId?: number): Promise<MediaInfo[]> {
         const { mediaTable, listTable } = this.config;
 
-        return (await getDbClient()
+        return getDbClient()
             .select({
                 ...getTableColumns(mediaTable),
+                customCover: listTable.customCover,
                 inUserList: isNotNull(listTable.userId).mapWith(Boolean).as("inUserList"),
             })
             .from(mediaTable)
@@ -232,7 +233,7 @@ export abstract class BaseRepository<TConfig extends MediaSchemaConfig> {
                 eq(listTable.mediaId, mediaTable.id),
                 userId === undefined ? sql`FALSE` : eq(listTable.userId, userId),
             ))
-            .where(inArray(mediaTable.id, mediaIds))) as MediaInfo[];
+            .where(inArray(mediaTable.id, mediaIds)) as unknown as MediaInfo[];
     }
 
     async getCommonListFilters(userId: number) {
@@ -262,13 +263,14 @@ export abstract class BaseRepository<TConfig extends MediaSchemaConfig> {
         return getDbClient()
             .select({
                 mediaCover: mediaTable.imageCover,
+                customCover: listTable.customCover,
                 mediaId: sql<number>`${mediaTable.id}`,
                 mediaName: sql<string>`${mediaTable.name}`,
             })
             .from(listTable)
             .where(and(eq(listTable.userId, userId), eq(listTable.favorite, true)))
             .leftJoin(mediaTable, eq(listTable.mediaId, mediaTable.id))
-            .limit(limit)
+            .limit(limit);
     }
 
     async searchUserListByName(userId: number, query: string, limit = 10) {
@@ -279,6 +281,7 @@ export abstract class BaseRepository<TConfig extends MediaSchemaConfig> {
                 mediaCover: mediaTable.imageCover,
                 mediaId: sql<number>`${mediaTable.id}`,
                 mediaName: sql<string>`${mediaTable.name}`,
+                customCover: sql<string>`${listTable.customCover}`,
             })
             .from(listTable)
             .innerJoin(mediaTable, eq(listTable.mediaId, mediaTable.id))

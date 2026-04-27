@@ -74,7 +74,7 @@ function ProfileMain() {
                     setActiveTab={setActiveTab}
                     activeTab={effectiveActiveTab}
                 />
-                <div className="min-h-113 animate-in fade-in duration-300">
+                <div className="animate-in fade-in duration-300">
                     {effectiveActiveTab === "overview" ?
                         <OverviewTab
                             username={username}

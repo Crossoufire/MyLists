@@ -187,3 +187,7 @@ export const getMonthName = (month: string) => {
 
     return month;
 };
+
+export const toItemKey = (item: { mediaId: number; mediaType: string }) => {
+    return `${item.mediaType}-${item.mediaId}`;
+};

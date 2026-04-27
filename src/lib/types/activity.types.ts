@@ -43,6 +43,7 @@ export type MediaInfo = {
     imageCover: string;
     releaseDate: string;
     inUserList?: boolean;
+    customCover: string | null;
 }
 
 

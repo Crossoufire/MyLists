@@ -1,4 +1,4 @@
-import {HeartOff, Sparkles} from "lucide-react";
+import {HeartOff, Highlighter} from "lucide-react";
 import {useBreakpoint} from "@/lib/client/hooks/use-breakpoint";
 import {EmptyState} from "@/lib/client/components/general/EmptyState";
 import {MediaCard} from "@/lib/client/components/media/base/MediaCard";
@@ -21,7 +21,7 @@ export const HighlightedMedia = ({ config }: HighlightedMediaProps) => {
         <Card>
             <CardHeader>
                 <CardTitle className="text-sm text-primary font-semibold flex items-center gap-2">
-                    <Sparkles className="size-4 text-app-accent"/>
+                    <Highlighter className="size-4 text-app-accent"/>
                     {config.title}
                 </CardTitle>
             </CardHeader>
@@ -36,7 +36,7 @@ export const HighlightedMedia = ({ config }: HighlightedMediaProps) => {
                     itemsToDisplay.map((item) =>
                         <MediaCard key={`${item.mediaType}-${item.mediaId}`} item={item} mediaType={item.mediaType}>
                             <div className="absolute bottom-0 w-full rounded-b-sm p-3 pb-2">
-                                <h3 className="text-[10px] font-bold text-primary line-clamp-2" title={item.mediaName}>
+                                <h3 className="text-[10px] font-bold text-primary line-clamp-1" title={item.mediaName}>
                                     {item.mediaName}
                                 </h3>
                             </div>
