@@ -1,8 +1,8 @@
 import {toast} from "sonner";
-import {useEffect, useState} from "react";
 import {useQuery} from "@tanstack/react-query";
 import {toItemKey} from "@/lib/utils/formating";
 import {useForm, useWatch} from "react-hook-form";
+import {useMemo, useState} from "react";
 import {Form} from "@/lib/client/components/ui/form";
 import {FormZodError} from "@/lib/utils/error-classes";
 import {Skeleton} from "@/lib/client/components/ui/skeleton";
@@ -15,24 +15,22 @@ import {HIGHLIGHTED_MEDIA_TABS, HighlightedMediaSearchItem, HighlightedMediaSett
 
 export const ProfileCustomForm = () => {
     const mutation = useProfileCustomMutation();
-    const form = useForm<HighlightedMediaSettings>();
     const { data, isPending, error } = useQuery(profileCustomOptions);
     const [rootError, setRootError] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState<HighlightedMediaTab>("overview");
-    const [previewCache, setPreviewCache] = useState<Record<string, HighlightedMediaSearchItem>>({});
+    const [localPreviewCache, setLocalPreviewCache] = useState<Record<string, HighlightedMediaSearchItem>>({});
+    const form = useForm<HighlightedMediaSettings>({ values: data?.settings ? cloneSettings(data.settings) : undefined });
+
+    const combinedPreviewCache = useMemo(() => {
+        const remoteCache = data?.previews ? buildPreviewCache(data.previews) : {};
+        return { ...remoteCache, ...localPreviewCache };
+    }, [data?.previews, localPreviewCache]);
 
     const allFormValues = useWatch({ control: form.control });
 
-    useEffect(() => {
-        if (!data) return;
-        const defaultValues = cloneSettings(data.settings);
-        form.reset(defaultValues);
-        // eslint-disable-next-line @eslint-react/set-state-in-effect,react-hooks/set-state-in-effect
-        setPreviewCache(buildPreviewCache(data.previews));
-    }, [data, form, form.reset]);
-
     const onSubmit = (formData: HighlightedMediaSettings) => {
         setRootError(null);
+
         mutation.mutate({ data: formData }, {
             onError: (err) => {
                 if (err instanceof FormZodError && err.issues.length > 0) {
@@ -46,8 +44,8 @@ export const ProfileCustomForm = () => {
                 }
                 setRootError(err?.message ?? "Customization could not be saved.");
             },
-            onSuccess: (savedData) => {
-                form.reset(cloneSettings(savedData));
+            onSuccess: () => {
+                setLocalPreviewCache({});
                 toast.success("Customization updated");
             },
         });
@@ -93,10 +91,10 @@ export const ProfileCustomForm = () => {
                         key={activeTab}
                         rootError={rootError}
                         activeTab={activeTab}
-                        previewCache={previewCache}
                         setRootError={setRootError}
                         isPending={mutation.isPending}
-                        setPreviewCache={setPreviewCache}
+                        previewCache={combinedPreviewCache}
+                        setPreviewCache={setLocalPreviewCache}
                     />
                 </div>
             </form>
@@ -111,8 +109,8 @@ const cloneSettings = (settings: HighlightedMediaSettings) => {
 
 
 const buildPreviewCache = (previews: Record<string, { items: HighlightedMediaSearchItem[] }>) => {
-    return Object.values(previews)
-        .reduce<Record<string, HighlightedMediaSearchItem>>((acc, tabPreview) => {
+    return Object.values(previews).reduce<Record<string, HighlightedMediaSearchItem>>(
+        (acc, tabPreview) => {
             tabPreview.items.forEach((item) => {
                 acc[toItemKey(item)] = item;
             });

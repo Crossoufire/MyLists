@@ -1,7 +1,7 @@
 import {Input} from "@/lib/client/components/ui/input";
 import {Label} from "@/lib/client/components/ui/label";
 import {Button} from "@/lib/client/components/ui/button";
-import {Controller, useFormContext, useWatch} from "react-hook-form";
+import {Controller, useFormContext, useFormState, useWatch} from "react-hook-form";
 import {MainThemeIcon} from "@/lib/client/components/general/MainIcons";
 import {RadioGroup, RadioGroupItem} from "@/lib/client/components/ui/radio-group";
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/lib/client/components/ui/card";
@@ -26,10 +26,12 @@ const modeOptions = [
 ] as const;
 
 
-export const TabCustomContent = ({ activeTab, previewCache, setPreviewCache, setRootError, rootError, isPending }: TabCustomContentProps) => {
-    const { register, control, formState: { isDirty } } = useFormContext<HighlightedMediaSettings>();
-    const activeMode = useWatch({ control, name: `${activeTab}.mode` });
+export const TabCustomContent = ({ activeTab, previewCache, setPreviewCache, rootError, setRootError, isPending }: TabCustomContentProps) => {
+    const { register, control } = useFormContext<HighlightedMediaSettings>();
 
+    const { isDirty } = useFormState({ control });
+    const activeMode = useWatch({ control, name: `${activeTab}.mode` });
+    
     return (
         <Card>
             <CardHeader>

@@ -119,15 +119,15 @@ export const CuratedMediaManager = ({ activeTab, previewCache, setPreviewCache, 
                     </div>
                     :
                     <div className="space-y-2">
-                        {fields.map((field: any, index) => {
+                        {fields.map((field: any, idx) => {
                             const itemKey = toItemKey(field);
                             const preview = previewCache[itemKey] || searchResults?.find(r => toItemKey(r) === itemKey);
 
                             return (
                                 <CuratedItemRow
+                                    idx={idx}
                                     item={field}
                                     onMove={swap}
-                                    idx={index}
                                     key={field.id}
                                     preview={preview}
                                     onRemove={remove}
@@ -156,8 +156,8 @@ interface CuratedItemRowProps {
 const CuratedItemRow = ({ idx, total, item, preview, onMove, onRemove }: CuratedItemRowProps) => {
     return (
         <div className="flex items-center gap-3 rounded-lg border p-3">
-            <div className="flex h-14 w-10 items-center justify-center rounded bg-accent text-xs text-muted-foreground">
-                {idx + 1}
+            <div className="flex items-center justify-center text-muted-foreground">
+                #{idx + 1}
             </div>
             <div className="min-w-0 flex-1">
                 <div className="line-clamp-1 font-medium">
