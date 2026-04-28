@@ -69,6 +69,23 @@ export const getAdminMediaOverview = createServerFn({ method: "GET" })
     });
 
 
+export const getAdminCollectionsOverview = createServerFn({ method: "GET" })
+    .middleware([requiredAuthAndAdminTokenMiddleware])
+    .handler(async () => {
+        const adminService = await getContainer().then((c) => c.services.admin);
+        return adminService.getCollectionsOverviewForAdmin();
+    });
+
+
+export const getAdminAllCollections = createServerFn({ method: "GET" })
+    .middleware([requiredAuthAndAdminTokenMiddleware])
+    .inputValidator(searchTypeSchema)
+    .handler(async ({ data }) => {
+        const adminService = await getContainer().then((c) => c.services.admin);
+        return adminService.getPaginatedCollectionsForAdmin(data);
+    });
+
+
 export const getAdminAllUsers = createServerFn({ method: "GET" })
     .middleware([requiredAuthAndAdminTokenMiddleware])
     .inputValidator(searchTypeSchema)

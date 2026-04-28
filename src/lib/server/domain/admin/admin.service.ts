@@ -7,30 +7,6 @@ import {AdminRepository} from "@/lib/server/domain/admin/admin.repository";
 import {MediaServiceRegistry} from "@/lib/server/domain/media/media.registries";
 
 
-const buildDailySeriesByType = (startDate: Date, endDate: Date, mediaTypes: MediaType[], countsMap: Map<string, number>) => {
-    const days = Math.max(1, Math.floor((endDate.getTime() - startDate.getTime()) / (24 * 60 * 60 * 1000)) + 1);
-
-    return Array.from({ length: days }, (_value, idx) => {
-        const date = new Date(startDate);
-        date.setUTCDate(startDate.getUTCDate() + idx);
-        const key = date.toISOString().slice(0, 10);
-
-        const entry: Record<string, number | string> = {
-            date: key,
-            total: 0,
-        };
-
-        for (const mediaType of mediaTypes) {
-            const value = countsMap.get(`${key}|${mediaType}`) ?? 0;
-            entry[mediaType] = value;
-            entry.total = Number(entry.total) + value;
-        }
-
-        return entry as { date: string; total: number } & Record<MediaType, number>;
-    });
-};
-
-
 export class AdminService {
     constructor(private repository: typeof AdminRepository) {
     }
@@ -80,6 +56,34 @@ export class AdminService {
         };
     }
 
+    async getCollectionsOverviewForAdmin() {
+        const [summary, collectionsPerPrivacy, collectionsPerMediaType, createdPerMonth] = await Promise.all([
+            this.repository.getCollectionsSummary(),
+            this.repository.getCollectionsPerPrivacy(),
+            this.repository.getCollectionsPerMediaType(),
+            this.repository.getCollectionsCreatedPerMonth(),
+        ]);
+
+        return {
+            createdPerMonth,
+            collectionsPerPrivacy,
+            collectionsPerMediaType,
+            totalViews: summary.totalViews,
+            totalLikes: summary.totalLikes,
+            totalCollections: summary.total,
+            totalCopies: summary.totalCopies,
+            uniqueOwners: summary.uniqueOwners,
+            createdThisMonth: {
+                count: summary.createdThisMonth,
+                comparedToLastMonth: summary.createdThisMonth - summary.createdPreviousMonth,
+            },
+        };
+    }
+
+    async getPaginatedCollectionsForAdmin(data: SearchType) {
+        return this.repository.getPaginatedCollectionsForAdmin(data);
+    }
+
     async logMediaRefresh(params: { userId: number; mediaType: MediaType; apiId: number | string }) {
         return this.repository.logMediaRefresh(params);
     }
@@ -106,6 +110,7 @@ export class AdminService {
         const dailyStartDate = (dailyRange === "all")
             ? (summary.firstRefreshDate ? new Date(`${summary.firstRefreshDate}T00:00:00.000Z`) : null)
             : new Date(today.getTime() - ((dailyDays ?? 1) - 1) * 24 * 60 * 60 * 1000);
+
         const daily = dailyStartDate ? buildDailySeriesByType(dailyStartDate, today, mediaTypes, countsByKey) : [];
 
         const normalizedTotalsByType = mediaTypes
@@ -138,3 +143,23 @@ export class AdminService {
         };
     }
 }
+
+
+const buildDailySeriesByType = (startDate: Date, endDate: Date, mediaTypes: MediaType[], countsMap: Map<string, number>) => {
+    const days = Math.max(1, Math.floor((endDate.getTime() - startDate.getTime()) / (24 * 60 * 60 * 1000)) + 1);
+
+    return Array.from({ length: days }, (_value, idx) => {
+        const date = new Date(startDate);
+        date.setUTCDate(startDate.getUTCDate() + idx);
+        const key = date.toISOString().slice(0, 10);
+        const entry: Record<string, number | string> = { date: key, total: 0 };
+
+        for (const mediaType of mediaTypes) {
+            const value = countsMap.get(`${key}|${mediaType}`) ?? 0;
+            entry[mediaType] = value;
+            entry.total = Number(entry.total) + value;
+        }
+
+        return entry as { date: string; total: number } & Record<MediaType, number>;
+    });
+};

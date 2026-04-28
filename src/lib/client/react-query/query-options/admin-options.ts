@@ -3,8 +3,10 @@ import {SearchType} from "@/lib/types/zod.schema.types";
 import {MediaRefreshStatsParams} from "@/lib/types/admin.types";
 import {
     getAdminAchievements,
+    getAdminAllCollections,
     getAdminAllUsers,
     getAdminArchivedTasks,
+    getAdminCollectionsOverview,
     getAdminErrorLogs,
     getAdminMediadleStats,
     getAdminMediaOverview,
@@ -29,6 +31,18 @@ export const adminOverviewOptions = queryOptions({
 export const adminMediaOverviewOptions = queryOptions({
     queryKey: ["admin", "media-overview"],
     queryFn: () => getAdminMediaOverview(),
+});
+
+
+export const adminCollectionsOverviewOptions = queryOptions({
+    queryKey: ["admin", "collections-overview"],
+    queryFn: () => getAdminCollectionsOverview(),
+});
+
+
+export const adminCollectionsOptions = (search: SearchType) => queryOptions({
+    queryKey: ["admin", "collections", search],
+    queryFn: () => getAdminAllCollections({ data: search }),
 });
 
 

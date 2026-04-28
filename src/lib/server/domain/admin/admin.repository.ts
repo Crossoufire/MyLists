@@ -1,14 +1,175 @@
-import {MediaType} from "@/lib/utils/enums";
 import {ErrorLog} from "@/lib/types/base.types";
 import {SaveTaskToDb} from "@/lib/types/tasks.types";
 import {SearchType} from "@/lib/types/zod.schema.types";
-import {paginate} from "@/lib/server/database/pagination";
+import {MediaType, PrivacyType} from "@/lib/utils/enums";
 import {getDbClient} from "@/lib/server/database/async-storage";
-import {count, countDistinct, desc, eq, gte, inArray, sql} from "drizzle-orm";
-import {errorLogs, mediaRefreshLog, taskHistory, user} from "@/lib/server/database/schema";
+import {paginate, resolveSorting} from "@/lib/server/database/pagination";
+import {asc, count, countDistinct, desc, eq, gte, inArray, like, or, sql} from "drizzle-orm";
+import {collections, errorLogs, mediaRefreshLog, taskHistory, user} from "@/lib/server/database/schema";
 
 
 export class AdminRepository {
+    static async getCollectionsSummary() {
+        const now = new Date();
+        const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+        const previousMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString();
+
+        const result = getDbClient()
+            .select({
+                total: count(collections.id).as("total"),
+                uniqueOwners: countDistinct(collections.ownerId).as("uniqueOwners"),
+                totalViews: sql<number>`coalesce(sum(${collections.viewCount}), 0)`.as("totalViews"),
+                totalLikes: sql<number>`coalesce(sum(${collections.likeCount}), 0)`.as("totalLikes"),
+                totalCopies: sql<number>`coalesce(sum(${collections.copiedCount}), 0)`.as("totalCopies"),
+                createdThisMonth: sql<number>`sum(case when ${collections.createdAt} >= ${currentMonthStart} then 1 else 0 end)`.as("createdThisMonth"),
+                createdPreviousMonth: sql<number>`sum(case when ${collections.createdAt} >= ${previousMonthStart} and ${collections.createdAt} < ${currentMonthStart} then 1 else 0 end)`.as("createdPreviousMonth"),
+            })
+            .from(collections)
+            .get();
+
+        return {
+            total: Number(result?.total ?? 0),
+            totalViews: Number(result?.totalViews ?? 0),
+            totalLikes: Number(result?.totalLikes ?? 0),
+            totalCopies: Number(result?.totalCopies ?? 0),
+            uniqueOwners: Number(result?.uniqueOwners ?? 0),
+            createdThisMonth: Number(result?.createdThisMonth ?? 0),
+            createdPreviousMonth: Number(result?.createdPreviousMonth ?? 0),
+        };
+    }
+
+    static async getCollectionsPerPrivacy() {
+        const privacyValues = Object.values(PrivacyType);
+
+        const result = await getDbClient()
+            .select({
+                privacy: collections.privacy,
+                count: count(collections.id).as("count"),
+            })
+            .from(collections)
+            .groupBy(collections.privacy);
+
+        return privacyValues.map((privacy) => ({
+            privacy: privacy,
+            count: Number(result.find(r => r.privacy === privacy)?.count ?? 0),
+        }));
+    }
+
+    static async getCollectionsPerMediaType() {
+        const mediaTypes = Object.values(MediaType);
+
+        const result = await getDbClient()
+            .select({
+                mediaType: collections.mediaType,
+                count: count(collections.id).as("count"),
+            })
+            .from(collections)
+            .groupBy(collections.mediaType);
+
+        return mediaTypes.map((mediaType) => ({
+            mediaType: mediaType,
+            count: Number(result.find(r => r.mediaType === mediaType)?.count ?? 0),
+        }));
+    }
+
+    static async getCollectionsCreatedPerMonth() {
+        const results = getDbClient()
+            .all<{ month: string; count: number }>(sql`
+                SELECT 
+                    COUNT(*) as count,
+                    strftime('%Y-%m', ${collections.createdAt}) as month
+                FROM ${collections}
+                GROUP BY strftime('%Y-%m', ${collections.createdAt})
+                ORDER BY month ASC
+            `);
+
+        return results.map((row) => ({
+            count: Number(row.count),
+            month: new Date(`${row.month}-01T00:00:00.000Z`).toLocaleString("en-US", { month: "short", year: "numeric" }),
+        }));
+    }
+
+    static async getPaginatedCollectionsForAdmin(data: SearchType) {
+        const sortDesc = data.sortDesc ?? true;
+        const search = data.search?.trim() ?? "";
+
+        const allowedSorts = ["id", "title", "createdAt", "privacy", "mediaType", "viewCount", "likeCount", "copiedCount", "ownerName"] as const;
+        const sorting = resolveSorting(data.sorting, allowedSorts, "createdAt");
+
+        const searchCondition = search
+            ? or(like(collections.title, `%${search}%`), like(user.name, `%${search}%`))
+            : undefined;
+
+        const orderColumn = (() => {
+            switch (sorting) {
+                case "id":
+                    return collections.id;
+                case "title":
+                    return collections.title;
+                case "privacy":
+                    return collections.privacy;
+                case "mediaType":
+                    return collections.mediaType;
+                case "viewCount":
+                    return collections.viewCount;
+                case "likeCount":
+                    return collections.likeCount;
+                case "copiedCount":
+                    return collections.copiedCount;
+                case "ownerName":
+                    return user.name;
+                case "createdAt":
+                default:
+                    return collections.createdAt;
+            }
+        })();
+
+        return paginate({
+            page: data.page,
+            defaultPerPage: 12,
+            perPage: data.perPage,
+            getTotal: async () => {
+                return getDbClient()
+                    .select({ count: count() })
+                    .from(collections)
+                    .innerJoin(user, eq(user.id, collections.ownerId))
+                    .where(searchCondition)
+                    .get()?.count ?? 0;
+            },
+            getItems: ({ limit, offset }) => {
+                const query = getDbClient()
+                    .select({
+                        ownerId: user.id,
+                        ownerName: user.name,
+                        ownerImage: user.image,
+                        id: collections.id,
+                        title: collections.title,
+                        ordered: collections.ordered,
+                        privacy: collections.privacy,
+                        mediaType: collections.mediaType,
+                        viewCount: collections.viewCount,
+                        likeCount: collections.likeCount,
+                        createdAt: collections.createdAt,
+                        updatedAt: collections.updatedAt,
+                        copiedCount: collections.copiedCount,
+                        itemsCount: sql<number>`(
+                            SELECT COUNT(*)
+                            FROM collection_items
+                            WHERE collection_items.collection_id = ${collections.id}
+                        )`.as("itemsCount"),
+                    })
+                    .from(collections)
+                    .innerJoin(user, eq(user.id, collections.ownerId))
+                    .$dynamic();
+
+                return (searchCondition ? query.where(searchCondition) : query)
+                    .orderBy(sortDesc ? desc(orderColumn) : asc(orderColumn))
+                    .offset(offset)
+                    .limit(limit);
+            },
+        });
+    }
+
     static async saveErrorToDb(error: ErrorLog) {
         await getDbClient()
             .insert(errorLogs)

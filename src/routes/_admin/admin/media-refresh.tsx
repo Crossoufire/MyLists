@@ -1,7 +1,7 @@
 import {MediaType} from "@/lib/utils/enums";
 import {createFileRoute, Link} from "@tanstack/react-router";
 import {useSuspenseQuery} from "@tanstack/react-query";
-import {BarChart3, Flame, RefreshCw, Users} from "lucide-react";
+import {BarChart3, ExternalLink, Flame, RefreshCw, Users} from "lucide-react";
 import {MediaRefreshStatsParams} from "@/lib/types/admin.types";
 import {UserStats} from "@/lib/client/components/admin/UserStats";
 import {Pagination} from "@/lib/client/components/general/Pagination";
@@ -13,6 +13,7 @@ import {adminMediaRefreshOptions} from "@/lib/client/react-query/query-options/a
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/lib/client/components/ui/table";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/lib/client/components/ui/select";
 import {Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle} from "@/lib/client/components/ui/card";
+import {MainThemeIcon} from "@/lib/client/components/general/MainIcons";
 
 
 export const Route = createFileRoute("/_admin/admin/media-refresh")({
@@ -279,11 +280,11 @@ function MediaRefreshPage() {
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead>When</TableHead>
+                                    <TableHead>MediaType</TableHead>
                                     <TableHead>User</TableHead>
                                     <TableHead>Role</TableHead>
-                                    <TableHead>Media Type</TableHead>
-                                    <TableHead className="text-right">Media Details</TableHead>
+                                    <TableHead>Media Details</TableHead>
+                                    <TableHead className="text-right">When</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -296,22 +297,26 @@ function MediaRefreshPage() {
                                 }
                                 {apiData.recentRefreshes.items.map((row, idx) =>
                                     <TableRow key={`${row.userId}-${row.apiId}-${idx}`}>
-                                        <TableCell className="text-muted-foreground">
-                                            <span title={formatDateTime(row.refreshedAt)}>
-                                                {formatRelativeTime(row.refreshedAt)}
-                                            </span>
+                                        <TableCell className="capitalize flex items-center gap-3">
+                                            <MainThemeIcon type={row.mediaType} size={16}/>
+                                            {row.mediaType}
                                         </TableCell>
                                         <TableCell className="font-medium">{row.name}</TableCell>
                                         <TableCell className="capitalize">{row.role}</TableCell>
-                                        <TableCell className="capitalize">{row.mediaType}</TableCell>
-                                        <TableCell className="text-right underline">
+                                        <TableCell>
                                             <Link
                                                 search={{ external: true }}
                                                 to="/details/$mediaType/$mediaId"
+                                                className="flex items-center gap-2"
                                                 params={{ mediaType: row.mediaType, mediaId: row.apiId }}
                                             >
-                                                Go to details
+                                                Details <ExternalLink className="size-3.5"/>
                                             </Link>
+                                        </TableCell>
+                                        <TableCell className="text-right text-muted-foreground">
+                                            <span title={formatDateTime(row.refreshedAt)}>
+                                                {formatRelativeTime(row.refreshedAt)}
+                                            </span>
                                         </TableCell>
                                     </TableRow>
                                 )}
