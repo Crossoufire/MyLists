@@ -9,7 +9,7 @@ import {collections, errorLogs, mediaRefreshLog, taskHistory, user} from "@/lib/
 
 
 export class AdminRepository {
-    static async getCollectionsSummary() {
+    static async getCollectionsOverview() {
         const now = new Date();
         const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
         const previousMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString();
@@ -21,55 +21,47 @@ export class AdminRepository {
                 totalViews: sql<number>`coalesce(sum(${collections.viewCount}), 0)`.as("totalViews"),
                 totalLikes: sql<number>`coalesce(sum(${collections.likeCount}), 0)`.as("totalLikes"),
                 totalCopies: sql<number>`coalesce(sum(${collections.copiedCount}), 0)`.as("totalCopies"),
+                animeCount: sql<number>`sum(case when ${collections.mediaType} = ${MediaType.ANIME} then 1 else 0 end)`.as("animeCount"),
+                booksCount: sql<number>`sum(case when ${collections.mediaType} = ${MediaType.BOOKS} then 1 else 0 end)`.as("booksCount"),
+                gamesCount: sql<number>`sum(case when ${collections.mediaType} = ${MediaType.GAMES} then 1 else 0 end)`.as("gamesCount"),
+                mangaCount: sql<number>`sum(case when ${collections.mediaType} = ${MediaType.MANGA} then 1 else 0 end)`.as("mangaCount"),
+                publicCount: sql<number>`sum(case when ${collections.privacy} = ${PrivacyType.PUBLIC} then 1 else 0 end)`.as("publicCount"),
+                seriesCount: sql<number>`sum(case when ${collections.mediaType} = ${MediaType.SERIES} then 1 else 0 end)`.as("seriesCount"),
+                moviesCount: sql<number>`sum(case when ${collections.mediaType} = ${MediaType.MOVIES} then 1 else 0 end)`.as("moviesCount"),
+                privateCount: sql<number>`sum(case when ${collections.privacy} = ${PrivacyType.PRIVATE} then 1 else 0 end)`.as("privateCount"),
+                restrictedCount: sql<number>`sum(case when ${collections.privacy} = ${PrivacyType.RESTRICTED} then 1 else 0 end)`.as("restrictedCount"),
                 createdThisMonth: sql<number>`sum(case when ${collections.createdAt} >= ${currentMonthStart} then 1 else 0 end)`.as("createdThisMonth"),
-                createdPreviousMonth: sql<number>`sum(case when ${collections.createdAt} >= ${previousMonthStart} and ${collections.createdAt} < ${currentMonthStart} then 1 else 0 end)`.as("createdPreviousMonth"),
+                createdPreviousMonth: sql<number>`sum(case 
+                    when ${collections.createdAt} >= ${previousMonthStart} 
+                    and ${collections.createdAt} < ${currentMonthStart} 
+                    then 1 else 0 end
+                )`.as("createdPreviousMonth"),
             })
             .from(collections)
             .get();
 
         return {
-            total: Number(result?.total ?? 0),
-            totalViews: Number(result?.totalViews ?? 0),
-            totalLikes: Number(result?.totalLikes ?? 0),
-            totalCopies: Number(result?.totalCopies ?? 0),
-            uniqueOwners: Number(result?.uniqueOwners ?? 0),
-            createdThisMonth: Number(result?.createdThisMonth ?? 0),
-            createdPreviousMonth: Number(result?.createdPreviousMonth ?? 0),
+            total: result?.total ?? 0,
+            totalViews: result?.totalViews ?? 0,
+            totalLikes: result?.totalLikes ?? 0,
+            totalCopies: result?.totalCopies ?? 0,
+            uniqueOwners: result?.uniqueOwners ?? 0,
+            createdThisMonth: result?.createdThisMonth ?? 0,
+            createdPreviousMonth: result?.createdPreviousMonth ?? 0,
+            collectionsPerPrivacy: [
+                { privacy: PrivacyType.PUBLIC, count: result?.publicCount ?? 0 },
+                { privacy: PrivacyType.PRIVATE, count: result?.privateCount ?? 0 },
+                { privacy: PrivacyType.RESTRICTED, count: result?.restrictedCount ?? 0 },
+            ],
+            collectionsPerMediaType: [
+                { mediaType: MediaType.SERIES, count: result?.seriesCount ?? 0 },
+                { mediaType: MediaType.ANIME, count: result?.animeCount ?? 0 },
+                { mediaType: MediaType.MOVIES, count: result?.moviesCount ?? 0 },
+                { mediaType: MediaType.GAMES, count: result?.gamesCount ?? 0 },
+                { mediaType: MediaType.BOOKS, count: result?.booksCount ?? 0 },
+                { mediaType: MediaType.MANGA, count: result?.mangaCount ?? 0 },
+            ],
         };
-    }
-
-    static async getCollectionsPerPrivacy() {
-        const privacyValues = Object.values(PrivacyType);
-
-        const result = await getDbClient()
-            .select({
-                privacy: collections.privacy,
-                count: count(collections.id).as("count"),
-            })
-            .from(collections)
-            .groupBy(collections.privacy);
-
-        return privacyValues.map((privacy) => ({
-            privacy: privacy,
-            count: Number(result.find(r => r.privacy === privacy)?.count ?? 0),
-        }));
-    }
-
-    static async getCollectionsPerMediaType() {
-        const mediaTypes = Object.values(MediaType);
-
-        const result = await getDbClient()
-            .select({
-                mediaType: collections.mediaType,
-                count: count(collections.id).as("count"),
-            })
-            .from(collections)
-            .groupBy(collections.mediaType);
-
-        return mediaTypes.map((mediaType) => ({
-            mediaType: mediaType,
-            count: Number(result.find(r => r.mediaType === mediaType)?.count ?? 0),
-        }));
     }
 
     static async getCollectionsCreatedPerMonth() {

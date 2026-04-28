@@ -57,25 +57,23 @@ export class AdminService {
     }
 
     async getCollectionsOverviewForAdmin() {
-        const [summary, collectionsPerPrivacy, collectionsPerMediaType, createdPerMonth] = await Promise.all([
-            this.repository.getCollectionsSummary(),
-            this.repository.getCollectionsPerPrivacy(),
-            this.repository.getCollectionsPerMediaType(),
+        const [overview, createdPerMonth] = await Promise.all([
+            this.repository.getCollectionsOverview(),
             this.repository.getCollectionsCreatedPerMonth(),
         ]);
 
         return {
             createdPerMonth,
-            collectionsPerPrivacy,
-            collectionsPerMediaType,
-            totalViews: summary.totalViews,
-            totalLikes: summary.totalLikes,
-            totalCollections: summary.total,
-            totalCopies: summary.totalCopies,
-            uniqueOwners: summary.uniqueOwners,
+            totalViews: overview.totalViews,
+            totalLikes: overview.totalLikes,
+            totalCollections: overview.total,
+            totalCopies: overview.totalCopies,
+            uniqueOwners: overview.uniqueOwners,
+            collectionsPerPrivacy: overview.collectionsPerPrivacy,
+            collectionsPerMediaType: overview.collectionsPerMediaType,
             createdThisMonth: {
-                count: summary.createdThisMonth,
-                comparedToLastMonth: summary.createdThisMonth - summary.createdPreviousMonth,
+                count: overview.createdThisMonth,
+                comparedToLastMonth: overview.createdThisMonth - overview.createdPreviousMonth,
             },
         };
     }

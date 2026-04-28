@@ -75,7 +75,7 @@ function AdminCollectionsOverviewPage() {
                 </Button>
             ),
             cell: ({ row: { original } }) => (
-                <div className="flex items-center gap-2 space-y-1">
+                <div className="truncate line-clamp-1">
                     <Link to="/collections/$collectionId" params={{ collectionId: original.id }}>
                         {original.title}
                     </Link>
@@ -262,7 +262,7 @@ function AdminCollectionsOverviewPage() {
                                         dataKey="count"
                                         fill="currentColor"
                                         radius={[4, 4, 0, 0]}
-                                        className="fill-gray-500"
+                                        className="fill-gray-400"
                                     />
                                 </BarChart>
                             </ResponsiveContainer>
