@@ -35,20 +35,25 @@ export class IgdbApi extends BaseApi {
     async search(query: string, page: number = 1): Promise<SearchData<IgdbSearchResponse>> {
         const offset = (page - 1) * this.resultsPerPage;
 
+        const escapedQuery = query.replace(/\\/g, "\\\\")
+            .replace(/"/g, '\\"')
+            .replace(/\r?\n/g, " ")
+            .trim();
+
         const data = `
             query games/count "totalResults" {
-                where name ~ *"${query}"*;
+                where name ~ *"${escapedQuery}"*;
             };
             query games "results" {
                 fields id, name, cover.image_id, first_release_date;
                 limit ${this.resultsPerPage};
                 offset ${offset};
                 sort first_release_date asc;
-                where name ~ *"${query}"*;
+                where name ~ *"${escapedQuery}"*;
             };
         `;
 
-        const headers = await this.getHeaders();
+        const headers = await this._getHeaders();
         const response = await this.call(this.searchUrl, "post", { headers, body: data });
         return {
             page,
@@ -66,7 +71,7 @@ export class IgdbApi extends BaseApi {
             where id = ${apiId};
         `;
 
-        const headers = await this.getHeaders();
+        const headers = await this._getHeaders();
         const response = await this.call(`${this.baseUrl}`, "post", { headers, body });
 
         const rawData = await response.json() as IgdbGameDetails[];
@@ -87,7 +92,7 @@ export class IgdbApi extends BaseApi {
             limit ${apiIds.length};
         `;
 
-        const headers = await this.getHeaders();
+        const headers = await this._getHeaders();
         const response = await this.call(this.baseUrl, "post", { headers, body });
         return await response.json() as Promise<IgdbGameDetails[]>;
     }
@@ -103,7 +108,7 @@ export class IgdbApi extends BaseApi {
             limit ${steamIds.length};
         `;
 
-        const headers = await this.getHeaders();
+        const headers = await this._getHeaders();
         const response = await this.call(this.externalGamesUrl, "post", { headers, body });
         const igdbResults = await response.json() as IgdbTrendGamesResponse[];
 
@@ -148,8 +153,8 @@ export class IgdbApi extends BaseApi {
         return response.json();
     }
 
-    private async getHeaders() {
-        const accessToken = await this.getAccessToken();
+    private async _getHeaders() {
+        const accessToken = await this._getAccessToken();
 
         return {
             "Client-ID": this.clientId,
@@ -159,7 +164,7 @@ export class IgdbApi extends BaseApi {
         };
     }
 
-    private async getAccessToken() {
+    private async _getAccessToken() {
         const cacheStore = await getContainer().then((c) => c.cacheManager);
 
         const cachedToken = await cacheStore.get<string>(IgdbApi.tokenCacheKey);

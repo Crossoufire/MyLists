@@ -34,10 +34,6 @@ export class BaseApi {
             if (err instanceof DOMException && err.name === "TimeoutError") {
                 throw new FormattedError("Request timed out. API probably down. Please try again later.");
             }
-            if (err instanceof FormattedError) {
-                throw err;
-            }
-
             throw err;
         }
     }
