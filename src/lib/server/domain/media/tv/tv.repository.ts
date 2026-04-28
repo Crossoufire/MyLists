@@ -418,8 +418,6 @@ export class TvRepository extends BaseRepository<AnimeSchemaConfig | SeriesSchem
         }
 
         const newEpsList = seasonsData.map((s) => s.episodes);
-
-        // Fetch all users with media in list
         const usersWithMediaInTheirList = await this._getAllUsersWithMediaInTheirList(mediaId);
 
         // Process in batches to avoid overwhelming db
@@ -432,27 +430,32 @@ export class TvRepository extends BaseRepository<AnimeSchemaConfig | SeriesSchem
         // Process each batch
         for (const batch of batches) {
             const updatePromises = batch.map(async (userMedia) => {
-                const totEpsWatched = oldSeasonsData
-                    .slice(0, userMedia.currentSeason - 1)
-                    .reduce((a, b) => a + b.episodes, 0) + userMedia.currentEpisode;
+                // Calculate how many eps watched in re-watches (oldSeasonsData)
+                const oldRedoTotal = userMedia.redo2.reduce((acc, count, idx) => {
+                    const epsInSeason = oldSeasonsData[idx]?.episodes || 0;
+                    return acc + (count * epsInSeason);
+                }, 0);
 
-                const newPosition = this._reorderSeasEps(totEpsWatched, newEpsList)!;
+                // Calculate Absolute Progress
+                const absoluteProgress = Math.max(0, userMedia.total - oldRedoTotal);
 
-                const newSeasonsSize = seasonsData.length;
-                const oldSeasonsSize = oldSeasonsData.length;
-
-                let newRedo2 = [...userMedia.redo2];
-                if (newSeasonsSize < oldSeasonsSize) {
-                    newRedo2 = newRedo2.slice(0, newSeasonsSize);
-                }
-                else if (newSeasonsSize > oldSeasonsSize) {
-                    newRedo2.push(...Array(newSeasonsSize - oldSeasonsSize).fill(0));
+                // Adjust Redo2 Array length
+                const newRedo2 = [...userMedia.redo2];
+                if (seasonsData.length > newRedo2.length) {
+                    newRedo2.push(...Array(seasonsData.length - newRedo2.length).fill(0));
                 }
 
-                // Update total
-                const newRedo2Total = newRedo2.map((val, i) => val * seasonsData[i].episodes).reduce((a, b) => a + b, 0);
-                const oldRedo2Total = userMedia.redo2.map((val, i) => val * oldSeasonsData[i].episodes).reduce((a, b) => a + b, 0);
-                const newTotal = userMedia.total + (newRedo2Total - oldRedo2Total);
+                // Calculate new Redo Total (seasonsData)
+                const newRedoTotal = newRedo2.reduce((acc, count, index) => {
+                    const epsInSeason = seasonsData[index]?.episodes || 0;
+                    return acc + (count * epsInSeason);
+                }, 0);
+
+                // Calculate New Total
+                const newTotal = absoluteProgress + newRedoTotal;
+
+                // Map Absolute Progress to new Season/Episode structure
+                const newPosition = this._reorderSeasEps(absoluteProgress, newEpsList);
 
                 return getDbClient()
                     .update(listTable)
@@ -479,26 +482,33 @@ export class TvRepository extends BaseRepository<AnimeSchemaConfig | SeriesSchem
             .where(eq(listTable.mediaId, mediaId));
     }
 
-    private _reorderSeasEps(totEpsWatched: number, epsList: number[]) {
-        const totalEps = epsList.reduce((a, b) => a + b, 0);
+    private _reorderSeasEps(absoluteProgress: number, epsList: number[]) {
+        const totalEpsAvailable = epsList.reduce((a, b) => a + b, 0);
 
-        if (totEpsWatched > totalEps) {
+        // If series empty / progress exceeds series length, cap at last possible episode
+        if (totalEpsAvailable === 0 || epsList.length === 0) {
+            return { season: 1, episode: 0 };
+        }
+
+        if (absoluteProgress >= totalEpsAvailable) {
             return {
                 season: epsList.length,
                 episode: epsList[epsList.length - 1],
             };
         }
 
-        let count = 0;
-        for (let season = 0; season < epsList.length; season++) {
-            count += epsList[season];
-            if (count >= totEpsWatched) {
-                const lastEpisode = epsList[season] - (count - totEpsWatched);
+        let accumulated = 0;
+        for (let i = 0; i < epsList.length; i += 1) {
+            const seasonEps = epsList[i];
+            if (accumulated + seasonEps >= absoluteProgress) {
                 return {
-                    season: season + 1,
-                    episode: lastEpisode,
+                    season: i + 1,
+                    episode: Math.max(0, absoluteProgress - accumulated),
                 };
             }
+            accumulated += seasonEps;
         }
+
+        return { season: 1, episode: 0 };
     }
 }

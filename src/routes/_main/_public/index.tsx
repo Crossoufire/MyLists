@@ -9,39 +9,6 @@ export const Route = createFileRoute("/_main/_public/")({
 })
 
 
-const features = [
-    {
-        icon: <Monitor className="size-6"/>,
-        title: "Fully Responsive",
-        description: "Perfect experience across all devices: desktop, tablet, and mobile.",
-    },
-    {
-        icon: <Code className="size-6"/>,
-        title: "Open Source",
-        description: "Completely open source built with modern technologies. Contribute on GitHub and help improve the platform.",
-    },
-    {
-        icon: <Shield className="size-6"/>,
-        title: "100% Free",
-        description: "No ads, no premium tiers, no hidden costs. Just create an account and access everything for free.",
-    },
-    {
-        icon: <Bug className="size-6"/>,
-        title: "Community Support",
-        description: "Found an issue? Have suggestions? We're here to help and constantly improving based on feedback.",
-    },
-    {
-        icon: <Heart className="size-6"/>,
-        title: "Passion Project",
-        description: "Made by one person, I hope you will like it. If you have any suggestions, do not hesitate to contact me.",
-    },
-    {
-        icon: <Sprout className="size-6"/>,
-        title: "Always Evolving",
-        description: "Regular updates with new features, improvements, and integrations. Stay tuned!",
-    },
-];
-
 const faqs = [
     {
         question: "Will you add importers from Letterboxd, MAL, IMDb, and similar platforms?",
@@ -85,6 +52,39 @@ const faqs = [
     },
 ];
 
+const features = [
+    {
+        icon: <Monitor className="size-6"/>,
+        title: "Fully Responsive",
+        description: "Perfect experience across all devices: desktop, tablet, and mobile.",
+    },
+    {
+        icon: <Code className="size-6"/>,
+        title: "Open Source",
+        description: "Completely open source built with modern technologies. Contribute on GitHub and help improve the platform.",
+    },
+    {
+        icon: <Shield className="size-6"/>,
+        title: "100% Free",
+        description: "No ads, no premium tiers, no hidden costs. Just create an account and access everything for free.",
+    },
+    {
+        icon: <Bug className="size-6"/>,
+        title: "Community Support",
+        description: "Found an issue? Have suggestions? We're here to help and constantly improving based on feedback.",
+    },
+    {
+        icon: <Heart className="size-6"/>,
+        title: "Passion Project",
+        description: "Made by one person, I hope you will like it. If you have any suggestions, do not hesitate to contact me.",
+    },
+    {
+        icon: <Sprout className="size-6"/>,
+        title: "Always Evolving",
+        description: "Regular updates with new features, improvements, and integrations. Stay tuned!",
+    },
+];
+
 
 function HomePage() {
     return (
@@ -96,6 +96,7 @@ function HomePage() {
                             {Array.from({ length: 32 }).map((_, i) =>
                                 <div
                                     key={i}
+                                    // eslint-disable-next-line react-hooks/purity
                                     style={{ animationDelay: `${i * Math.random()}s` }}
                                     className="bg-linear-to-br from-primary/20 to-accent/20 rounded-lg float-animation"
                                 />
