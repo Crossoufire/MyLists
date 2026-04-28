@@ -55,7 +55,6 @@ function ListsOnboarding() {
                         onGridClick={() => undefined}
                         onSortChange={() => undefined}
                         onFilterClick={() => undefined}
-                        onSearchChange={() => undefined}
                         onStatusChange={() => undefined}
                         allStatuses={statusUtils.byMediaType(MediaType.MOVIES)}
                     />

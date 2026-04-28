@@ -57,7 +57,7 @@ function AdminCollectionsOverviewPage() {
         updateFilters({ page: 1, sortDesc: newSorting[0]?.desc ?? true, sorting: newSorting[0]?.id ?? DEFAULT.sorting });
     };
 
-    const columns: ColumnDef<typeof apiData.items[0]>[] = useMemo(() => [
+    const columns: ColumnDef<typeof apiData.items[number]>[] = useMemo(() => [
         {
             accessorKey: "mediaType",
             header: ({ column }) => (

@@ -55,7 +55,7 @@ function AllUpdates() {
         setRowSelected({});
     };
 
-    const historyColumns: ColumnDef<typeof apiData.items[number]>[] = useMemo(() => [
+    const columns: ColumnDef<typeof apiData.items[number]>[] = useMemo(() => [
         {
             id: "select",
             header: ({ table }) => (
@@ -123,10 +123,11 @@ function AllUpdates() {
         },
     ], []);
 
+    // eslint-disable-next-line react-hooks/incompatible-library
     const table = useReactTable({
         manualFiltering: true,
         manualPagination: true,
-        columns: historyColumns,
+        columns: columns,
         data: apiData?.items ?? [],
         rowCount: apiData?.total ?? 0,
         getCoreRowModel: getCoreRowModel(),
@@ -188,7 +189,7 @@ function AllUpdates() {
                                 })
                                 :
                                 <TableRow>
-                                    <TableCell colSpan={historyColumns.length} className="h-24 text-center">
+                                    <TableCell colSpan={columns.length} className="h-24 text-center">
                                         No results.
                                     </TableCell>
                                 </TableRow>

@@ -91,7 +91,6 @@ function MediaList() {
                 pagination={apiData.results.pagination}
                 onFilterClick={() => setFiltersPanelOpen(true)}
                 onSortChange={({ sorting }) => handleFilterChange({ sorting })}
-                onSearchChange={({ search }) => handleFilterChange({ search })}
                 onStatusChange={({ status }) => handleFilterChange({ status })}
             />
             <AppliedFilters

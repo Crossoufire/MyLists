@@ -26,7 +26,6 @@ interface HeaderProps {
     onFilterClick: () => void;
     pagination: ListPagination;
     onSortChange: ({ sorting }: { sorting: string }) => void;
-    onSearchChange: ({ search }: { search: string }) => void;
     onStatusChange: ({ status }: { status: Status[] }) => void;
 }
 

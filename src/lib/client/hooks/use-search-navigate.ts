@@ -1,4 +1,4 @@
-import {useEffect, useState} from "react";
+import {useRef, useState} from "react";
 import {useNavigate} from "@tanstack/react-router";
 import type {NavigateOptions} from "@tanstack/router-core";
 import {useDebounceCallback} from "@/lib/client/hooks/use-debounce";
@@ -14,32 +14,31 @@ type UseSearchInputProps = {
     search: string;
     delay?: number;
     options?: NavigateOptions;
-}
+};
 
 
-export const useSearchNavigate = <T extends BaseSearchParams>({ search, delay = 400, options = {} }: UseSearchInputProps) => {
+export const useSearchNavigate = <T extends BaseSearchParams>({ search, delay = 400, options }: UseSearchInputProps) => {
     const navigate = useNavigate();
+    const lastNavigatedRef = useRef(search);
     const [localSearch, setLocalSearch] = useState(search);
 
-    useEffect(() => {
-        setLocalSearch(search);
-    }, [search]);
-
     const handleInputChange = (ev: React.ChangeEvent<HTMLInputElement>) => {
-        const inputValue = ev.target.value;
-        setLocalSearch(inputValue);
+        const value = ev.target.value;
+        setLocalSearch(value);
 
-        if (inputValue === "") {
-            updateFilters({ search: "", page: 1 } as Partial<T>);
+        if (value === "") {
+            lastNavigatedRef.current = "";
+            updateFilters({ search: undefined, page: 1 } as Partial<T>);
         }
     };
 
     const updateFilters = (updater: Partial<T>) => {
-        void navigate({ search: (prev) => ({ ...prev, ...updater }), replace: true, ...options });
+        void navigate({ search: prev => ({ ...prev, ...updater }), replace: true, ...options });
     };
 
     useDebounceCallback(localSearch, delay, () => {
-        if (localSearch !== search && localSearch !== "") {
+        if (localSearch !== lastNavigatedRef.current && localSearch !== "") {
+            lastNavigatedRef.current = localSearch;
             updateFilters({ search: localSearch, page: 1 } as Partial<T>);
         }
     });
