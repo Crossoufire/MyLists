@@ -42,10 +42,12 @@ export class TvRepository extends BaseRepository<AnimeSchemaConfig | SeriesSchem
             ? and(inArray(mediaTable.apiId, apiIds), lte(mediaTable.lastApiUpdate, sql`datetime('now', '-1 day')`))
             : undefined;
 
+        const refreshCriteria = staleListCondition ? or(staleListCondition, airedCondition) : airedCondition;
+
         return getDbClient()
             .select({ apiId: mediaTable.apiId })
             .from(mediaTable)
-            .where(staleListCondition ? or(staleListCondition, airedCondition) : airedCondition)
+            .where(and(eq(mediaTable.lockStatus, true), refreshCriteria))
             .then((res) => res.map((m) => m.apiId));
     }
 
