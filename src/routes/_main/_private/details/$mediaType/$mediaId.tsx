@@ -94,11 +94,12 @@ function MediaDetailsPage() {
                         <div className="space-y-6 max-lg:mb-0">
                             {currentUser &&
                                 <RefreshAndEdit
+                                    mediaId={media.id}
+                                    apiId={media.apiId}
                                     external={external}
                                     mediaType={mediaType}
-                                    mediaId={apiData.media.id}
-                                    apiId={apiData.media.apiId}
-                                    lastUpdate={apiData.media.lastApiUpdate}
+                                    lastUpdate={media.lastApiUpdate}
+                                    providerName={media.providerData.name}
                                 />
                             }
 

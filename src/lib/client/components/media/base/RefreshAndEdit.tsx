@@ -13,12 +13,13 @@ interface RefreshAndEditProps {
     mediaId: number;
     external: boolean;
     mediaType: MediaType;
+    providerName: string;
     apiId: number | string;
     lastUpdate: string | null;
 }
 
 
-export const RefreshAndEdit = ({ mediaType, mediaId, apiId, external, lastUpdate }: RefreshAndEditProps) => {
+export const RefreshAndEdit = ({ mediaType, mediaId, apiId, providerName, external, lastUpdate }: RefreshAndEditProps) => {
     const { currentUser } = useAuth();
     const isBook = (mediaType === MediaType.BOOKS);
     const lastUpdateDate = lastUpdate ? new Date(lastUpdate) : null;
@@ -35,6 +36,7 @@ export const RefreshAndEdit = ({ mediaType, mediaId, apiId, external, lastUpdate
     const canRefreshThisType = isManagerOrAbove || !isBook;
 
     // Cooldown only applies to users below MANAGER
+    // eslint-disable-next-line react-hooks/purity,@eslint-react/purity
     const isRefreshCooldown = !isManagerOrAbove && !!nextRefreshAt && Date.now() < nextRefreshAt.getTime();
 
     // Check availability of refresh
@@ -45,7 +47,14 @@ export const RefreshAndEdit = ({ mediaType, mediaId, apiId, external, lastUpdate
 
     const handleRefresh = () => {
         refreshMutation.mutate({ data: { mediaType, apiId } }, {
-            onError: () => toast.error("An error occurred while refreshing the metadata"),
+            onError: (error: any) => {
+                if (error?.isNotFound) {
+                    toast.error(`Media not available anymore on ${providerName}.`);
+                }
+                else {
+                    toast.error("An error occurred while refreshing the metadata");
+                }
+            },
             onSuccess: () => toast.success("Metadata successfully refreshed"),
         });
     };

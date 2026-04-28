@@ -6,7 +6,7 @@ import {BaseRepository} from "@/lib/server/domain/media/base/base.repository";
 import {TvType, UpsertTvWithDetails} from "@/lib/server/domain/media/tv/tv.types";
 import {AnimeSchemaConfig} from "@/lib/server/domain/media/tv/anime/anime.config";
 import {SeriesSchemaConfig} from "@/lib/server/domain/media/tv/series/series.config";
-import {and, asc, count, countDistinct, eq, getTableColumns, gte, inArray, isNotNull, lte, max, ne, notInArray, or, sql} from "drizzle-orm";
+import {and, asc, count, countDistinct, eq, getTableColumns, gte, inArray, isNotNull, isNull, lte, max, ne, notInArray, or, sql} from "drizzle-orm";
 
 
 export class TvRepository extends BaseRepository<AnimeSchemaConfig | SeriesSchemaConfig> {
@@ -47,7 +47,7 @@ export class TvRepository extends BaseRepository<AnimeSchemaConfig | SeriesSchem
         return getDbClient()
             .select({ apiId: mediaTable.apiId })
             .from(mediaTable)
-            .where(and(eq(mediaTable.lockStatus, true), refreshCriteria))
+            .where(and(or(eq(mediaTable.lockStatus, false), isNull(mediaTable.lockStatus)), refreshCriteria))
             .then((res) => res.map((m) => m.apiId));
     }
 
