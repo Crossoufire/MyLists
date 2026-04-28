@@ -1,7 +1,7 @@
 import {Button} from "@/lib/client/components/ui/button";
 import {createFileRoute, Link} from "@tanstack/react-router";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
-import {ArrowRight, Bug, Code, Heart, LayoutGrid, Monitor, Popcorn, Shield, Sprout, Trophy, Users} from "lucide-react";
+import {ArrowRight, Bug, ChevronDown, Code, Heart, LayoutGrid, Lightbulb, Monitor, Popcorn, Shield, Sprout, Trophy, Users} from "lucide-react";
 
 
 export const Route = createFileRoute("/_main/_public/")({
@@ -39,6 +39,49 @@ const features = [
         icon: <Sprout className="size-6"/>,
         title: "Always Evolving",
         description: "Regular updates with new features, improvements, and integrations. Stay tuned!",
+    },
+];
+
+const faqs = [
+    {
+        question: "Will you add importers from Letterboxd, MAL, IMDb, and similar platforms?",
+        answer:
+            "Not for now. MyLists is a solo project, and I would rather build imports properly than ship something fragile. " +
+            "Some third-party services also have rate-limit and data-mapping constraints, so this needs more work " +
+            "before it is worth releasing.",
+    },
+    {
+        question: "Can I suggest features I would like to see?",
+        answer: (
+            <>
+                Yes. There is a dedicated feature request and voting system, so you can suggest ideas and vote on what should be built next.
+                Check the <b>Lightbulb on the bottom right corner</b> of the page (accessible once logged in).
+            </>
+        ),
+    },
+    {
+        question: "Is MyLists free?",
+        answer: "Yes. There are no ads, no premium tier, and no locked core features.",
+    },
+    {
+        question: "What can I track on MyLists?",
+        answer: "Movies, series, anime, games, books, and manga in one account.",
+    },
+    {
+        question: "Can I keep my profile private?",
+        answer: "Yes. You can control profile visibility and limit access to approved followers.",
+    },
+    {
+        question: "Can I export my data?",
+        answer: "Yes. You can export your media lists as CSV files.",
+    },
+    {
+        question: "Is MyLists still actively developed?",
+        answer: "Yes. It is actively maintained, but as a solo project features are prioritized carefully and shipped progressively.",
+    },
+    {
+        question: "Do I need to use the social or gamification features?",
+        answer: "No. You can use MyLists as a simple personal tracker, or also use the community, achievements, and leaderboards if that is your thing.",
     },
 ];
 
@@ -150,7 +193,43 @@ function HomePage() {
                 </div>
             </div>
 
-            <section className="bg-muted/10 py-12 border-y border-border/50">
+            <section className="border-y border-border/50 bg-muted/10 py-10">
+                <div className="container mx-auto px-6">
+                    <div className="mx-auto max-w-4xl">
+                        <div className="mb-10 space-y-4 text-center">
+                            <div className="inline-flex items-center gap-2 rounded-full bg-app-accent/15 px-3 py-1 text-sm font-medium">
+                                <Lightbulb className="size-4"/>
+                                <span>FAQ</span>
+                            </div>
+                            <h2 className="text-3xl font-bold text-balance md:text-4xl">
+                                Frequently Asked Questions
+                            </h2>
+                            <p className="mx-auto max-w-2xl text-lg leading-relaxed text-muted-foreground text-balance">
+                                Quick answers about imports, privacy, exports, and how feature requests work.
+                            </p>
+                        </div>
+
+                        <div className="space-y-3">
+                            {faqs.map((faq) =>
+                                <details
+                                    key={faq.question}
+                                    className="group rounded-xl border bg-background/80 px-5 py-4"
+                                >
+                                    <summary className="flex list-none items-center justify-between gap-4 text-left font-semibold marker:hidden">
+                                        <span>{faq.question}</span>
+                                        <ChevronDown className="size-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180"/>
+                                    </summary>
+                                    <div className="pt-3 pr-7 text-sm leading-relaxed text-muted-foreground">
+                                        {faq.answer}
+                                    </div>
+                                </details>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section className="bg-muted/10 py-12 border-y border-border/50 mt-10">
                 <div className="container mx-auto px-6">
                     <div className="text-center mb-16">
                         <h2 className="text-3xl md:text-4xl font-bold mb-4 text-balance">
