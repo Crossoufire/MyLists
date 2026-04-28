@@ -461,23 +461,44 @@ export class UserStatsRepository {
             };
         });
 
-        await getDbClient()
-            .insert(userMediaActivity)
-            .values(values)
-            .onConflictDoUpdate({
-                target: [
-                    userMediaActivity.userId,
-                    userMediaActivity.mediaId,
-                    userMediaActivity.mediaType,
-                    userMediaActivity.monthBucket,
-                ],
-                set: {
-                    isRedo: sql`excluded.is_redo`,
-                    lastUpdate: sql`excluded.last_update`,
-                    isCompleted: sql`excluded.is_completed`,
-                    specificGained: sql`${userMediaActivity.specificGained} + excluded.specific_gained`,
-                },
-            });
+        const gainValues = values.filter((activity) => activity.specificGained !== 0);
+        const zeroGainValues = values.filter((activity) => activity.specificGained === 0);
+
+        if (gainValues.length > 0) {
+            await getDbClient()
+                .insert(userMediaActivity)
+                .values(gainValues)
+                .onConflictDoUpdate({
+                    target: [
+                        userMediaActivity.userId,
+                        userMediaActivity.mediaId,
+                        userMediaActivity.mediaType,
+                        userMediaActivity.monthBucket,
+                    ],
+                    set: {
+                        isRedo: sql`excluded.is_redo`,
+                        lastUpdate: sql`excluded.last_update`,
+                        isCompleted: sql`excluded.is_completed`,
+                        specificGained: sql`${userMediaActivity.specificGained} + excluded.specific_gained`,
+                    },
+                });
+        }
+
+        for (const activity of zeroGainValues) {
+            await getDbClient()
+                .update(userMediaActivity)
+                .set({
+                    isRedo: activity.isRedo,
+                    lastUpdate: activity.lastUpdate,
+                    isCompleted: activity.isCompleted,
+                })
+                .where(and(
+                    eq(userMediaActivity.userId, activity.userId),
+                    eq(userMediaActivity.mediaId, activity.mediaId),
+                    eq(userMediaActivity.mediaType, activity.mediaType),
+                    eq(userMediaActivity.monthBucket, activity.monthBucket),
+                ));
+        }
     }
 
     static async getSpecificActivity(userId: number, mediaType: MediaType, mediaId: number, timeBucket: string) {

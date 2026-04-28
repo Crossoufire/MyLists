@@ -280,8 +280,6 @@ export class UserStatsService {
 
     async logActivityFromDelta(userId: number, mediaType: MediaType, mediaId: number, delta: DeltaStats) {
         const specificGained = this._resolveSpecificGainedFromDelta(mediaType, delta);
-        if (!specificGained) return;
-
         const isRedo = (delta.totalRedo ?? 0) > 0;
         const isCompleted = (delta.statusCounts?.[Status.COMPLETED] ?? 0) > 0;
 
