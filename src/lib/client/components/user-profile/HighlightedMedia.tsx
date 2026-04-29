@@ -1,4 +1,4 @@
-import {HeartOff, Highlighter} from "lucide-react";
+import {HeartOff, TrendingUp} from "lucide-react";
 import {useBreakpoint} from "@/lib/client/hooks/use-breakpoint";
 import {EmptyState} from "@/lib/client/components/general/EmptyState";
 import {MediaCard} from "@/lib/client/components/media/base/MediaCard";
@@ -21,7 +21,7 @@ export const HighlightedMedia = ({ config }: HighlightedMediaProps) => {
         <Card>
             <CardHeader>
                 <CardTitle className="text-sm text-primary font-semibold flex items-center gap-2">
-                    <Highlighter className="size-4 text-app-accent"/>
+                    <TrendingUp className="size-4 text-app-accent"/>
                     {config.title}
                 </CardTitle>
             </CardHeader>

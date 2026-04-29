@@ -1,4 +1,5 @@
 import {MessageCircle} from "lucide-react";
+import {StructuredComment} from "@/lib/client/components/media/base/StructuredComment";
 import {Popover, PopoverContent, PopoverTrigger} from "@/lib/client/components/ui/popover";
 
 
@@ -18,7 +19,11 @@ export const DisplayComment = ({ content, size = 15 }: DisplayCommentProps) => {
                 />
             </PopoverTrigger>
             <PopoverContent align="center" side="top" className="max-h-50 overflow-y-auto scrollbar-thin">
-                {content}
+                {content &&
+                    <StructuredComment
+                        content={content}
+                    />
+                }
             </PopoverContent>
         </Popover>
     );

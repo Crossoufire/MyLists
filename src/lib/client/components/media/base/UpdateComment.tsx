@@ -3,6 +3,7 @@ import {UpdateType} from "@/lib/utils/enums";
 import {Button} from "@/lib/client/components/ui/button";
 import {Textarea} from "@/lib/client/components/ui/textarea";
 import {Separator} from "@/lib/client/components/ui/separator";
+import {StructuredComment} from "@/lib/client/components/media/base/StructuredComment";
 import {useUpdateUserMediaMutation} from "@/lib/client/react-query/query-mutations/user-media.mutations";
 
 
@@ -46,9 +47,9 @@ export const UpdateComment = ({ content, updateComment }: CommentaryProps) => {
                     <Textarea
                         value={comment ?? ""}
                         disabled={updateComment.isPending}
-                        placeholder="Enter your comment..."
                         className="w-full h-35 scrollbar-thin"
                         onChange={(ev) => setComment(ev.target.value)}
+                        placeholder={"Enter your comment, you can:\n\n- Add bullet points\n- Leave blank lines between paragraphs"}
                     />
                     <div className="flex justify-end gap-2 mt-2">
                         <Button variant="outline" size="sm" onClick={handleEditToggle} disabled={updateComment.isPending}>
@@ -61,7 +62,10 @@ export const UpdateComment = ({ content, updateComment }: CommentaryProps) => {
                 </>
                 :
                 <div className="text-muted-foreground text-sm wrap-break-word max-h-37 overflow-y-auto scrollbar-thin pr-1">
-                    {content ? `${content}` : "No comments added yet."}
+                    {content
+                        ? <StructuredComment content={content}/>
+                        : "No comments added yet."
+                    }
                 </div>
             }
         </>
