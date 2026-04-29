@@ -2,7 +2,7 @@ import {toast} from "sonner";
 import {routeTree} from "@/routeTree.gen";
 import {createRouter} from "@tanstack/react-router";
 import {NotFound} from "@/lib/client/components/general/NotFound";
-import {InitialLoader} from "@/lib/client/components/general/InitialLoader";
+import {NavLoader} from "./lib/client/components/general/NavLoader";
 import {MutationCache, QueryCache, QueryClient} from "@tanstack/react-query";
 import {setupRouterSsrQueryIntegration} from "@tanstack/react-router-ssr-query";
 import {ErrorCatchBoundary} from "@/lib/client/components/general/ErrorCatchBoundary";
@@ -51,7 +51,7 @@ export function getRouter() {
         defaultPreloadStaleTime: 0,
         defaultErrorComponent: ErrorCatchBoundary,
         defaultNotFoundComponent: NotFound,
-        defaultPendingComponent: InitialLoader,
+        defaultPendingComponent: NavLoader,
         defaultPendingMs: 1000,
         defaultPendingMinMs: 200,
         scrollRestoration: true,
