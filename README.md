@@ -138,10 +138,4 @@ If you’d like to improve MyLists, fork the repo, create a feature branch, and 
 
 ---
 
-### License
-
-This project is licensed under the MIT License.
-
----
-
 **Built with ❤️ using Bun, Drizzle, Better-Auth, React, TypeScript, and TanStack.**
