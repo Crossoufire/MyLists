@@ -2,9 +2,9 @@
 import React from "react";
 import appCSS from "@/styles.css?url";
 import {clientEnv} from "@/env/client";
-import {addSeo} from "@/lib/utils/add-seo";
 import {PostHogProvider} from "posthog-js/react";
 import {QueryClient} from "@tanstack/react-query";
+import {addSeo, addSeoLinks} from "@/lib/utils/add-seo";
 import {Toaster} from "@/lib/client/components/ui/sonner";
 import {TanStackDevtools} from "@tanstack/react-devtools";
 import {Navbar} from "@/lib/client/components/navbar/Navbar";
@@ -22,13 +22,20 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     ssr: false,
     beforeLoad: ({ context: { queryClient } }) => queryClient.fetchQuery(authOptions),
     head: () => ({
-        links: [{ rel: "stylesheet", href: appCSS }],
+        links: [
+            { rel: "stylesheet", href: appCSS },
+            { rel: "icon", href: "/favicon.ico" },
+            { rel: "manifest", href: "/manifest.json" },
+            ...addSeoLinks({ canonical: "/" }),
+        ],
         meta: [
             { charSet: "utf-8" },
+            { name: "theme-color", content: "#020617" },
             { name: "viewport", content: "width=device-width, initial-scale=1" },
             ...addSeo({
-                title: "Mylists",
-                image: "logo512.png",
+                canonical: "/",
+                image: "/logo512.png",
+                title: "MyLists - Track movies, series, anime, games, books and manga",
                 description: "MyLists is your all-in-one platform to organize your favorite series, movies, games, anime, books and manga.",
             }),
         ],

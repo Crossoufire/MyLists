@@ -1,5 +1,6 @@
 import {mail} from "@/lib/utils/helpers";
 import {createFileRoute} from "@tanstack/react-router";
+import {addSeo, addSeoLinks} from "@/lib/utils/add-seo";
 import {Separator} from "@/lib/client/components/ui/separator";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
 import {Code2, Database, ExternalLink, Info, Mail, Palette} from "lucide-react";
@@ -7,6 +8,15 @@ import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/lib/c
 
 
 export const Route = createFileRoute("/_main/_universal/about")({
+    head: () => ({
+        links: addSeoLinks({ canonical: "/about" }),
+        meta: addSeo({
+            canonical: "/about",
+            image: "/logo512.png",
+            title: "About MyLists - Open source media tracking",
+            description: "Learn about MyLists, an open source media tracking project for organizing series, anime, movies, games, books and manga.",
+        }),
+    }),
     component: AboutPage,
 });
 

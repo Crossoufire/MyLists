@@ -13,6 +13,7 @@ export const Route = createFileRoute("/_admin")({
             throw notFound();
         }
     },
+    head: () => ({ meta: [{ name: "robots", content: "noindex, nofollow" }] }),
     component: AdminLayout,
 });
 

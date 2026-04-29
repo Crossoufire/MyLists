@@ -1,3 +1,5 @@
 # This allows all bots to crawl the entire site
 User-agent: *
 Disallow:
+
+Sitemap: https://mylists.info/sitemap.xml

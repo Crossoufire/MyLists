@@ -1,3 +1,4 @@
+import {addSeo, addSeoLinks} from "@/lib/utils/add-seo";
 import {Button} from "@/lib/client/components/ui/button";
 import {createFileRoute, Link} from "@tanstack/react-router";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
@@ -5,6 +6,16 @@ import {ArrowRight, Bug, ChevronDown, Code, Heart, LayoutGrid, Lightbulb, Monito
 
 
 export const Route = createFileRoute("/_main/_public/")({
+    head: () => ({
+        links: addSeoLinks({ canonical: "/" }),
+        meta: addSeo({
+            canonical: "/",
+            image: "/logo512.png",
+            title: "MyLists - Track movies, series, anime, games, books and manga",
+            description: "Organize every movie, series, anime, game, book and manga list in one place with stats, " +
+                "achievements, collections, privacy controls and social discovery.",
+        }),
+    }),
     component: HomePage,
 })
 

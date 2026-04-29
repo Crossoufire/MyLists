@@ -1,8 +1,17 @@
 import {createFileRoute} from "@tanstack/react-router";
+import {addSeo, addSeoLinks} from "@/lib/utils/add-seo";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
 
 
 export const Route = createFileRoute("/_main/_universal/privacy-policy")({
+    head: () => ({
+        links: addSeoLinks({ canonical: "/privacy-policy" }),
+        meta: addSeo({
+            canonical: "/privacy-policy",
+            title: "Privacy Policy - MyLists",
+            description: "Read the MyLists privacy policy covering account data, analytics, cookies, user rights and contact information.",
+        }),
+    }),
     component: PrivacyPolicyPage,
 });
 

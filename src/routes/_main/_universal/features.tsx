@@ -1,6 +1,7 @@
 import {JSX} from "react";
 import {ApiProviderType} from "@/lib/utils/enums";
 import {createFileRoute} from "@tanstack/react-router";
+import {addSeo, addSeoLinks} from "@/lib/utils/add-seo";
 import {BlockLink} from "@/lib/client/components/general/BlockLink";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
 import {Popover, PopoverContent, PopoverTrigger} from "@/lib/client/components/ui/popover";
@@ -39,6 +40,15 @@ import {
 
 
 export const Route = createFileRoute("/_main/_universal/features")({
+    head: () => ({
+        links: addSeoLinks({ canonical: "/features" }),
+        meta: addSeo({
+            image: "/logo512.png",
+            canonical: "/features",
+            title: "MyLists Features - Lists, stats, follows, achievements and collections",
+            description: "Explore MyLists features for media lists, advanced stats, achievements, custom collections, social updates, privacy controls and CSV exports.",
+        }),
+    }),
     component: FeaturesPage,
 });
 
