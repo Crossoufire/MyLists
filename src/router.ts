@@ -52,7 +52,7 @@ export function getRouter() {
         defaultErrorComponent: ErrorCatchBoundary,
         defaultNotFoundComponent: NotFound,
         defaultPendingComponent: NavLoader,
-        defaultPendingMs: 1000,
+        defaultPendingMs: 5000,
         defaultPendingMinMs: 200,
         scrollRestoration: true,
         defaultStructuralSharing: true,
