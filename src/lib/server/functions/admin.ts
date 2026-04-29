@@ -7,7 +7,6 @@ import {FormattedError} from "@/lib/utils/error-classes";
 import {getContainer} from "@/lib/server/core/container";
 import {setSignedCookie} from "@/lib/utils/auth-cookies";
 import {tryFormZodError} from "@/lib/utils/try-not-found";
-import {VISITS_CACHE_KEY} from "@/lib/server/domain/user";
 import {deleteCookie} from "@tanstack/react-start/server";
 import {getAllTasksMetadata, getTask} from "@/lib/server/tasks/registry";
 import {ADMIN_COOKIE_NAME, isAdminAuthenticated, setAdminCookie} from "@/lib/utils/admin-token";
@@ -49,13 +48,7 @@ export const getAdminOverview = createServerFn({ method: "GET" })
     .handler(async () => {
         const container = await getContainer();
         const userService = container.services.user;
-        const cacheManager = container.cacheManager;
-
-        const visitCounterKey = `${VISITS_CACHE_KEY}:${new Date().getFullYear()}-${new Date().getMonth() + 1}`;
-        const visitsThisMonth = await cacheManager.get<number>(visitCounterKey) ?? 0;
-        const data = await userService.getUserOverviewForAdmin();
-
-        return { ...data, visitsThisMonth };
+        return userService.getUserOverviewForAdmin();
     });
 
 

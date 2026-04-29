@@ -5,7 +5,7 @@ import {AdminUpdatePayload, SearchType} from "@/lib/types/zod.schema.types";
 import {and, asc, count, desc, eq, isNotNull, like, sql} from "drizzle-orm";
 import {followers, user, userMediaSettings} from "@/lib/server/database/schema";
 import {ProviderSearchResult, ProviderSearchResults} from "@/lib/types/provider.types";
-import {ApiProviderType, MediaType, PrivacyType, SocialState} from "@/lib/utils/enums";
+import {ApiProviderType, MediaType, PrivacyType, RatingSystemType, SocialState} from "@/lib/utils/enums";
 
 
 export const orderByMediaType = sql`
@@ -43,6 +43,8 @@ export class UserRepository {
                 totalUsers: count(),
                 usersSeenThisMonth: sql<number>`SUM(CASE WHEN ${user.updatedAt} > ${currentMonthStart} THEN 1 ELSE 0 END)`,
                 newUsersThisMonth: sql<number>`SUM(CASE WHEN ${user.createdAt} >= ${currentMonthStart} THEN 1 ELSE 0 END)`,
+                scoreRatingUsers: sql<number>`SUM(CASE WHEN ${user.ratingSystem} = ${RatingSystemType.SCORE} THEN 1 ELSE 0 END)`,
+                feelingRatingUsers: sql<number>`SUM(CASE WHEN ${user.ratingSystem} = ${RatingSystemType.FEELING} THEN 1 ELSE 0 END)`,
                 newUsersPreviousMonth: sql<number>`SUM(CASE WHEN ${user.createdAt} >= ${previousMonthStart} AND ${user.createdAt} < ${currentMonthStart} THEN 1 ELSE 0 END)`,
             })
             .from(user)
@@ -50,6 +52,8 @@ export class UserRepository {
 
         return {
             totalUsers: { count: res?.totalUsers || 0 },
+            scoreRatingUsers: { count: res?.scoreRatingUsers || 0 },
+            feelingRatingUsers: { count: res?.feelingRatingUsers || 0 },
             usersSeenThisMonth: { count: res?.usersSeenThisMonth || 0 },
             newUsers: {
                 count: res?.newUsersThisMonth || 0,

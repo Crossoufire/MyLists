@@ -7,7 +7,6 @@ import {AdminUpdatePayload, SearchType} from "@/lib/types/zod.schema.types";
 
 
 const LAST_SEEN_CACHE_KEY = "lastSeen";
-export const VISITS_CACHE_KEY = "visits";
 const UPDATE_THRESHOLD_MS = 5 * 60 * 1000;
 
 
@@ -105,9 +104,6 @@ export class UserService {
     // ----------------------------------------------------------------
 
     async updateUserLastSeen(cacheManager: CacheManager, userId: number) {
-        const visitCounterKey = `${VISITS_CACHE_KEY}:${new Date().getFullYear()}-${new Date().getMonth() + 1}`;
-        await cacheManager.increment(visitCounterKey);
-
         const cacheKey = `${LAST_SEEN_CACHE_KEY}:${userId}`;
         if (await cacheManager.get(cacheKey)) return;
         await cacheManager.set(cacheKey, true, UPDATE_THRESHOLD_MS);

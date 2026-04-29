@@ -27,7 +27,6 @@ export type UpdateUserCustomCover = z.infer<typeof updateUserCustomCoverSchema>;
 export type SectionActivity = z.infer<typeof getSectionActivitySchema>;
 export type SpecificActivityFilters = z.infer<typeof getSpecificActivitySchema>;
 export type CreateCollection = z.infer<typeof createCollectionSchema>;
-export type HighlightedMediaSettingsInput = z.infer<typeof highlightedMediaSettingsSchema>;
 
 
 const paginationSchema = z.object({

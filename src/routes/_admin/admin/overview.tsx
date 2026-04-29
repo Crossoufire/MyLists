@@ -1,8 +1,8 @@
 import {capitalize} from "@/lib/utils/formating";
 import {createFileRoute} from "@tanstack/react-router";
 import {useSuspenseQuery} from "@tanstack/react-query";
-import {Activity, UserCheck, UserPlus, Users} from "lucide-react";
 import {UserStats} from "@/lib/client/components/admin/UserStats";
+import {Smile, Star, UserCheck, UserPlus, Users} from "lucide-react";
 import {RecentUsers} from "@/lib/client/components/admin/RecentUsers";
 import {PrivacyIcon} from "@/lib/client/components/general/MainIcons";
 import {DashboardShell} from "@/lib/client/components/admin/DashboardShell";
@@ -37,12 +37,6 @@ function OverviewPage() {
                         description="Users that registered"
                     />
                     <UserStats
-                        title="Interaction This Month"
-                        value={apiData.visitsThisMonth}
-                        icon={<Activity className="text-app-accent"/>}
-                        description="Total authed interaction this month"
-                    />
-                    <UserStats
                         icon={UserPlus}
                         title="New Users"
                         value={apiData.newUsers.count}
@@ -53,6 +47,18 @@ function OverviewPage() {
                         title="Unique Users This Month"
                         value={apiData.usersSeenThisMonth.count}
                         description="Unique users seen this month"
+                    />
+                    <UserStats
+                        icon={Star}
+                        title="Score Rating Users"
+                        value={apiData.scoreRatingUsers.count}
+                        description="Users using the score rating system"
+                    />
+                    <UserStats
+                        icon={Smile}
+                        title="Feeling Rating Users"
+                        value={apiData.feelingRatingUsers.count}
+                        description="Users using the feeling rating system"
                     />
                     {apiData.usersPerPrivacy.map((privacyValue, idx) =>
                         <UserStats
