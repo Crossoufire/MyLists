@@ -146,9 +146,12 @@ export const UpdateType = {
     STATUS: "status",
     CHAPTER: "chapter",
     COMMENT: "comment",
+    LANGUAGE: "language",
     PLAYTIME: "playtime",
     FAVORITE: "favorite",
+    PUBLISHER: "publisher",
     PLATFORM: "platform",
+    PAGE_COUNT: "pageCount",
 } as const;
 export type UpdateType = (typeof UpdateType)[keyof typeof UpdateType];
 

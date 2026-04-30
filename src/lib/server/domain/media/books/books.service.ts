@@ -9,7 +9,7 @@ import {saveImageFromUrl, saveUploadedImage} from "@/lib/utils/image-saver";
 import {MangaSchemaConfig} from "@/lib/server/domain/media/books/books.config";
 import {BooksRepository} from "@/lib/server/domain/media/books/books.repository";
 import {Book, BooksAchCodeName, BooksList} from "@/lib/server/domain/media/books/books.types";
-import {LogPayload, PagePayload, RedoPayload, StatsCTE, StatusPayload, UserMediaWithTags} from "@/lib/types/base.types";
+import {LogPayload, PageCountPayload, PagePayload, RedoPayload, StatsCTE, StatusPayload, UserMediaWithTags} from "@/lib/types/base.types";
 
 
 export class BooksService extends BaseService<MangaSchemaConfig, BooksRepository> {
@@ -39,6 +39,9 @@ export class BooksService extends BaseService<MangaSchemaConfig, BooksRepository
             [UpdateType.PAGE]: this.updatePageHandler.bind(this),
             [UpdateType.REDO]: this.updateRedoHandler.bind(this),
             [UpdateType.STATUS]: this.updateStatusHandler.bind(this),
+            [UpdateType.PAGE_COUNT]: this.updatePageCountHandler.bind(this),
+            [UpdateType.LANGUAGE]: this.createSimpleUpdateHandler("language"),
+            [UpdateType.PUBLISHER]: this.createSimpleUpdateHandler("publisher"),
         }
     }
 
@@ -290,22 +293,22 @@ description: ${book.synopsis}
         return delta;
     }
 
-    updateRedoHandler(currentState: BooksList, payload: RedoPayload, media: Book): [BooksList, LogPayload] {
+    updateRedoHandler(currentState: BooksList, payload: RedoPayload): [BooksList, LogPayload] {
         const newState = { ...currentState, redo: payload.redo };
         const logPayload = { oldValue: currentState.redo, newValue: payload.redo };
 
-        newState.total = media.pages + (payload.redo * media.pages);
+        newState.total = (newState.actualPage ?? 0) + (payload.redo * currentState.pageCount);
 
         return [newState, logPayload];
     }
 
-    updateStatusHandler(currentState: BooksList, payload: StatusPayload, media: Book): [BooksList, LogPayload] {
+    updateStatusHandler(currentState: BooksList, payload: StatusPayload): [BooksList, LogPayload] {
         const newState = { ...currentState, status: payload.status };
         const logPayload = { oldValue: currentState.status, newValue: payload.status };
 
         if (payload.status === Status.COMPLETED) {
-            newState.total = media.pages;
-            newState.actualPage = media.pages;
+            newState.total = currentState.pageCount + (currentState.redo * currentState.pageCount);
+            newState.actualPage = currentState.pageCount;
         }
         else if (payload.status === Status.PLAN_TO_READ) {
             newState.redo = 0;
@@ -316,16 +319,30 @@ description: ${book.synopsis}
         return [newState, logPayload];
     }
 
-    updatePageHandler(currentState: BooksList, payload: PagePayload, media: Book): [BooksList, LogPayload] {
-        if (payload.actualPage > media.pages) {
-            throw new FormattedError("Invalid page");
+    updatePageHandler(currentState: BooksList, payload: PagePayload): [BooksList, LogPayload] {
+        if (payload.actualPage > currentState.pageCount) {
+            throw new FormattedError("Current pages read cannot be greater than total pages.");
         }
 
         const newState = { ...currentState, actualPage: payload.actualPage };
         const logPayload = { oldValue: currentState.actualPage, newValue: payload.actualPage };
 
-        newState.total = payload.actualPage + (currentState.redo * media.pages);
+        newState.total = payload.actualPage + (currentState.redo * currentState.pageCount);
 
         return [newState, logPayload];
+    }
+
+    updatePageCountHandler(currentState: BooksList, payload: PageCountPayload): [BooksList, null] {
+        const newState = { ...currentState, pageCount: payload.pageCount };
+
+        if (currentState.status === Status.COMPLETED || (newState.actualPage ?? 0) > payload.pageCount) {
+            newState.actualPage = payload.pageCount;
+        }
+
+        newState.total = (newState.status === Status.PLAN_TO_READ)
+            ? 0
+            : (newState.actualPage ?? 0) + (newState.redo * payload.pageCount);
+
+        return [newState, null];
     }
 }

@@ -22,7 +22,6 @@ export const booksConfig: MangaSchemaConfig = {
     mediaType: MediaType.BOOKS,
     mediaList: {
         baseSelection: {
-            pages: books.pages,
             mediaName: books.name,
             imageCover: books.imageCover,
             ...getTableColumns(booksList),
@@ -31,7 +30,12 @@ export const booksConfig: MangaSchemaConfig = {
             langs: createArrayFilterDef({
                 argName: "langs",
                 mediaTable: books,
-                filterColumn: books.language,
+                filterColumn: booksList.language,
+            }),
+            publishers: createArrayFilterDef({
+                argName: "publishers",
+                mediaTable: books,
+                filterColumn: booksList.publisher,
             }),
             authors: createArrayFilterDef({
                 argName: "authors",
@@ -51,8 +55,8 @@ export const booksConfig: MangaSchemaConfig = {
             "Published Date -": [sql`${books.releaseDate} ASC NULLS LAST`, asc(books.name)],
             "Recently Added": [desc(booksList.addedAt), asc(books.name)],
             "Re-Read": [desc(booksList.redo), asc(books.name)],
-            "Pages +": [desc(books.pages), asc(books.name)],
-            "Pages -": [asc(books.pages), asc(books.name)],
+            "Pages +": [desc(booksList.pageCount), asc(books.name)],
+            "Pages -": [asc(booksList.pageCount), asc(books.name)],
         },
     },
     apiProvider: {
@@ -60,7 +64,7 @@ export const booksConfig: MangaSchemaConfig = {
         name: "GoogleBooks",
         mediaUrl: "https://books.google.com/books?id=",
     },
-    editableFields: ["name", "releaseDate", "pages", "language", "publishers", "synopsis", "lockStatus"],
+    editableFields: ["name", "releaseDate", "synopsis", "lockStatus"],
     jobDefinitions: {
         [JobType.CREATOR]: {
             sourceTable: booksAuthors,

@@ -14,7 +14,7 @@ export type UpdatePayload = {
         type: UpdateType;
     } & (CommentPayload | PlatformPayload | RatingPayload | FavoritePayload |
         PlaytimePayload | StatusPayload | PagePayload | ChapterPayload | RedoPayload |
-        RedoTvPayload | EpsSeasonPayload);
+        RedoTvPayload | EpsSeasonPayload | PageCountPayload | LanguagePayload | PublisherPayload);
 }
 
 export type CommentPayload = {
@@ -43,6 +43,18 @@ export type StatusPayload = {
 
 export type PagePayload = {
     actualPage: number,
+}
+
+export type PageCountPayload = {
+    pageCount: number,
+}
+
+export type LanguagePayload = {
+    language: string | null,
+}
+
+export type PublisherPayload = {
+    publisher: string | null,
 }
 
 export type ChapterPayload = {
@@ -123,7 +135,6 @@ export type UserFollowsMediaData<TList> = {
 
 export type MediaListData<TList> = {
     items: (TList & {
-        pages?: number;
         common: boolean;
         mediaName: string;
         chapters?: number;

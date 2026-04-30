@@ -4,8 +4,8 @@ import {Achievement} from "@/lib/types/achievements.types";
 import {getDbClient} from "@/lib/server/database/async-storage";
 import {BaseRepository} from "@/lib/server/domain/media/base/base.repository";
 import {books, booksAuthors, booksGenre, booksList} from "@/lib/server/database/schema";
-import {Book, InsertBooksWithDetails, UpdateBooksWithDetails} from "@/lib/server/domain/media/books/books.types";
 import {booksConfig, MangaSchemaConfig} from "@/lib/server/domain/media/books/books.config";
+import {Book, InsertBooksWithDetails, UpdateBooksWithDetails} from "@/lib/server/domain/media/books/books.types";
 import {and, asc, count, countDistinct, eq, getTableColumns, gte, isNotNull, isNull, lte, max, ne, sql} from "drizzle-orm";
 
 
@@ -37,16 +37,17 @@ export class BooksRepository extends BaseRepository<MangaSchemaConfig> {
     getDurationAchievementCte(achievement: Achievement, userId?: number) {
         const value = parseInt(achievement.value!, 10);
         const isLong = achievement.codeName.includes("long");
-        const condition = isLong ? gte(books.pages, value) : lte(books.pages, value);
 
         const baseCTE = getDbClient()
             .select({
                 userId: booksList.userId,
                 value: count(booksList.mediaId).as("value"),
             }).from(booksList)
-            .innerJoin(books, eq(booksList.mediaId, books.id))
 
-        const conditions = [eq(booksList.status, Status.COMPLETED), condition]
+        const conditions = [
+            eq(booksList.status, Status.COMPLETED),
+            isLong ? gte(booksList.pageCount, value) : lte(booksList.pageCount, value),
+        ]
 
         return this.applyWhereConditionsAndGrouping(baseCTE, conditions, userId);
     }
@@ -75,9 +76,8 @@ export class BooksRepository extends BaseRepository<MangaSchemaConfig> {
         const baseCTE = getDbClient()
             .select({
                 userId: booksList.userId,
-                value: countDistinct(books.language).as("value"),
+                value: countDistinct(booksList.language).as("value"),
             }).from(booksList)
-            .innerJoin(books, eq(booksList.mediaId, books.id))
 
         const conditions = [eq(booksList.status, Status.COMPLETED)]
 
@@ -91,11 +91,10 @@ export class BooksRepository extends BaseRepository<MangaSchemaConfig> {
 
         const avgDuration = getDbClient()
             .select({
-                average: sql<number | null>`avg(${books.pages})`
+                average: sql<number | null>`avg(${booksList.pageCount})`
             })
-            .from(books)
-            .innerJoin(booksList, eq(booksList.mediaId, books.id))
-            .where(and(forUser, ne(booksList.status, Status.PLAN_TO_READ), isNotNull(books.pages)))
+            .from(booksList)
+            .where(and(forUser, ne(booksList.status, Status.PLAN_TO_READ), isNotNull(booksList.pageCount)))
             .get();
 
         return avgDuration?.average ?? null;
@@ -106,28 +105,27 @@ export class BooksRepository extends BaseRepository<MangaSchemaConfig> {
 
         return getDbClient()
             .select({
-                name: sql`floor(${books.pages} / 100.0) * 100`.mapWith(String),
-                value: sql`cast(count(${books.id}) as int)`.mapWith(Number).as("count"),
+                name: sql`floor(${booksList.pageCount} / 100.0) * 100`.mapWith(String),
+                value: sql`cast(count(${booksList.id}) as int)`.mapWith(Number).as("count"),
             })
-            .from(books)
-            .innerJoin(booksList, eq(booksList.mediaId, books.id))
-            .where(and(forUser, ne(booksList.status, Status.PLAN_TO_READ), isNotNull(books.pages)))
-            .groupBy(sql<number>`floor(${books.pages} / 100.0) * 100`)
-            .orderBy(asc(sql<number>`floor(${books.pages} / 100.0) * 100`));
+            .from(booksList)
+            .where(and(forUser, ne(booksList.status, Status.PLAN_TO_READ), isNotNull(booksList.pageCount)))
+            .groupBy(sql<number>`floor(${booksList.pageCount} / 100.0) * 100`)
+            .orderBy(asc(sql<number>`floor(${booksList.pageCount} / 100.0) * 100`));
     }
 
     async specificTopMetrics(mediaAvgRating: number | null, userId?: number) {
         const langsConfig = {
-            metricTable: books,
-            metricIdCol: books.id,
-            metricNameCol: books.language,
+            metricTable: booksList,
+            metricIdCol: booksList.mediaId,
+            metricNameCol: booksList.language,
             mediaLinkCol: booksList.mediaId,
             filters: [ne(booksList.status, Status.PLAN_TO_READ)],
         };
         const publishersConfig = {
-            metricTable: books,
-            metricNameCol: books.publishers,
-            metricIdCol: books.id,
+            metricTable: booksList,
+            metricNameCol: booksList.publisher,
+            metricIdCol: booksList.mediaId,
             mediaLinkCol: booksList.mediaId,
             filters: [ne(booksList.status, Status.PLAN_TO_READ)],
         };
@@ -157,16 +155,13 @@ export class BooksRepository extends BaseRepository<MangaSchemaConfig> {
     }
 
     async addMediaToUserList(userId: number, media: Book, newStatus: Status) {
-        const newTotal = (newStatus === Status.COMPLETED) ? media.pages : 0;
-
         const [newMedia] = await getDbClient()
             .insert(booksList)
             .values({
                 userId,
-                total: newTotal,
+                actualPage: 0,
                 status: newStatus,
                 mediaId: media.id,
-                actualPage: newTotal,
             })
             .returning();
 
@@ -260,11 +255,19 @@ export class BooksRepository extends BaseRepository<MangaSchemaConfig> {
         const { genres, tags } = await super.getCommonListFilters(userId);
 
         const langs = await getDbClient()
-            .selectDistinct({ name: sql<string>`${books.language}` })
-            .from(books)
-            .innerJoin(booksList, eq(booksList.mediaId, books.id))
-            .where(and(eq(booksList.userId, userId), isNotNull(books.language)));
+            .selectDistinct({
+                name: sql<string>`${booksList.language}`,
+            })
+            .from(booksList)
+            .where(and(eq(booksList.userId, userId), isNotNull(booksList.language)));
 
-        return { langs, genres, tags };
+        const publishers = await getDbClient()
+            .selectDistinct({
+                name: sql<string>`${booksList.publisher}`,
+            })
+            .from(booksList)
+            .where(and(eq(booksList.userId, userId), isNotNull(booksList.publisher)));
+
+        return { langs, genres, tags, publishers };
     }
 }

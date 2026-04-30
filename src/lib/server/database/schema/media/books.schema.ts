@@ -15,8 +15,11 @@ export const books = sqliteTable("books", {
 
 
 export const booksList = sqliteTable("books_list", {
-    actualPage: integer(),
+    language: text(),
+    publisher: text(),
+    actualPage: integer().default(0),
     redo: integer().default(0).notNull(),
+    pageCount: integer().default(0).notNull(),
     total: integer("total").default(0).notNull(),
     ...commonMediaListCols(books.id, MediaType.BOOKS),
 });

@@ -5,19 +5,20 @@ import {useUpdateUserMediaMutation} from "@/lib/client/react-query/query-mutatio
 
 
 interface UpdateInputProps {
+    showTotal?: boolean;
     initValue: number | null;
-    total: number | null | undefined;
-    payloadName: "actualPage" | "currentChapter";
+    total?: number | null | undefined;
+    payloadName: "actualPage" | "currentChapter" | "pageCount";
     updateInput: ReturnType<typeof useUpdateUserMediaMutation>;
-    updateType: typeof UpdateType.PAGE | typeof UpdateType.CHAPTER;
+    updateType: typeof UpdateType.PAGE | typeof UpdateType.CHAPTER | typeof UpdateType.PAGE_COUNT;
 }
 
 
-export const UpdateInput = ({ total, initValue, updateInput, payloadName, updateType }: UpdateInputProps) => {
+export const UpdateInput = ({ total, initValue, updateInput, payloadName, updateType, showTotal = true }: UpdateInputProps) => {
     const [currentValue, setCurrentValue] = useState(initValue?.toString() ?? "0");
 
     useEffect(() => {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
+        // eslint-disable-next-line react-hooks/set-state-in-effect,@eslint-react/set-state-in-effect
         setCurrentValue(initValue?.toString() ?? "0");
     }, [initValue]);
 
@@ -35,7 +36,7 @@ export const UpdateInput = ({ total, initValue, updateInput, payloadName, update
 
         if (parsed === initValue) return;
 
-        if (total !== undefined && total !== null && (parsed > total || parsed < 0)) {
+        if (parsed < 0 || (payloadName === "pageCount" && parsed <= 0) || (total !== undefined && total !== null && parsed > total)) {
             setCurrentValue(initValue?.toString() ?? "0");
             return;
         }
@@ -72,7 +73,9 @@ export const UpdateInput = ({ total, initValue, updateInput, payloadName, update
                 onChange={(ev) => setCurrentValue(ev.target.value)}
                 className="w-18 h-8 border-none cursor-pointer inline-block dark:bg-transparent"
             />
-            <span>{" "}/{" "}{total ?? "?"}</span>
+            {showTotal &&
+                <span>{" "}/{" "}{total ?? "?"}</span>
+            }
         </div>
     );
 };

@@ -39,6 +39,9 @@ describe("BooksService", async () => {
         customCover: null,
         redo: 0,
         total: 100,
+        language: "en",
+        publisher: "Test Publisher",
+        pageCount: 100,
         actualPage: 100,
         ...overrides,
     });
@@ -253,6 +256,23 @@ describe("BooksService", async () => {
             expect(next.total).toBe(180);
             expect(log?.oldValue).toBe(50);
             expect(log?.newValue).toBe(80);
+        });
+
+        it("updatePageCountHandler should update completed progress and total", () => {
+            const current = makeState({ status: Status.COMPLETED, actualPage: 100, total: 200, redo: 1, pageCount: 100 });
+            const [next, log] = booksService.updatePageCountHandler(current, { pageCount: 120 }, baseBook);
+
+            expect(next.pageCount).toBe(120);
+            expect(next.actualPage).toBe(120);
+            expect(next.total).toBe(240);
+            expect(log?.oldValue).toBe(100);
+            expect(log?.newValue).toBe(120);
+        });
+
+        it("updatePageHandler should reject pages above the user edition page count", () => {
+            const current = makeState({ pageCount: 80, actualPage: 50, total: 50 });
+
+            expect(() => booksService.updatePageHandler(current, { actualPage: 100 }, baseBook)).toThrow("Invalid page");
         });
     });
 });

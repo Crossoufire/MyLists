@@ -20,8 +20,8 @@ export const BookListItem = (props: BookListItemProps<typeof MediaType.BOOKS>) =
             }
             mediaDetailsDisplay={
                 <DisplayPages
-                    total={props.userMedia.pages}
                     status={props.userMedia.status}
+                    total={props.userMedia.pageCount}
                     currentPage={props.userMedia.actualPage}
                 />
             }
