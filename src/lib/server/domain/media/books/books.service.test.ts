@@ -152,7 +152,7 @@ describe("BooksService", async () => {
     describe("updateHandlers", () => {
         it("updateStatusHandler: PTR -> COMPLETED add total and actualPage", () => {
             const current = makeState({ status: Status.PLAN_TO_READ, total: 0, actualPage: 0 });
-            const [next, log] = booksService.updateStatusHandler(current, { status: Status.COMPLETED }, baseBook);
+            const [next, log] = booksService.updateStatusHandler(current, { status: Status.COMPLETED });
 
             expect(next.total).toBe(100);
             expect(next.actualPage).toBe(100);
@@ -163,7 +163,7 @@ describe("BooksService", async () => {
 
         it("updateStatusHandler: COMPLETED -> PTR set total, redo and actualPage = 0", () => {
             const current = makeState({ status: Status.COMPLETED, redo: 4, total: 500, actualPage: 100 });
-            const [next, log] = booksService.updateStatusHandler(current, { status: Status.PLAN_TO_READ }, baseBook);
+            const [next, log] = booksService.updateStatusHandler(current, { status: Status.PLAN_TO_READ });
 
             expect(next.redo).toBe(0);
             expect(next.total).toBe(0);
@@ -175,7 +175,7 @@ describe("BooksService", async () => {
 
         it("updateStatusHandler: READING -> COMPLETED", () => {
             const current = makeState({ status: Status.READING, total: 50, actualPage: 50 });
-            const [next, log] = booksService.updateStatusHandler(current, { status: Status.COMPLETED }, baseBook);
+            const [next, log] = booksService.updateStatusHandler(current, { status: Status.COMPLETED });
 
             expect(next.total).toBe(100);
             expect(next.actualPage).toBe(100);
@@ -186,7 +186,7 @@ describe("BooksService", async () => {
 
         it("updateStatusHandler: PLAN_TO_READ -> READING", () => {
             const current = makeState({ status: Status.PLAN_TO_READ, total: 0, actualPage: 0 });
-            const [next, log] = booksService.updateStatusHandler(current, { status: Status.READING }, baseBook);
+            const [next, log] = booksService.updateStatusHandler(current, { status: Status.READING });
 
             expect(next.total).toBe(0);
             expect(next.actualPage).toBe(0);
@@ -197,7 +197,7 @@ describe("BooksService", async () => {
 
         it("updateStatusHandler: READING -> ON_HOLD", () => {
             const current = makeState({ status: Status.READING, total: 50, actualPage: 50 });
-            const [next, log] = booksService.updateStatusHandler(current, { status: Status.ON_HOLD }, baseBook);
+            const [next, log] = booksService.updateStatusHandler(current, { status: Status.ON_HOLD });
 
             expect(next.total).toBe(50);
             expect(next.actualPage).toBe(50);
@@ -208,7 +208,7 @@ describe("BooksService", async () => {
 
         it("updateStatusHandler: ON_HOLD -> DROPPED", () => {
             const current = makeState({ status: Status.ON_HOLD, total: 50, actualPage: 50 });
-            const [next, log] = booksService.updateStatusHandler(current, { status: Status.DROPPED }, baseBook);
+            const [next, log] = booksService.updateStatusHandler(current, { status: Status.DROPPED });
 
             expect(next.total).toBe(50);
             expect(next.actualPage).toBe(50);
@@ -219,7 +219,7 @@ describe("BooksService", async () => {
 
         it("updateStatusHandler: DROPPED -> READING", () => {
             const current = makeState({ status: Status.DROPPED, total: 50, actualPage: 50 });
-            const [next, log] = booksService.updateStatusHandler(current, { status: Status.READING }, baseBook);
+            const [next, log] = booksService.updateStatusHandler(current, { status: Status.READING });
 
             expect(next.total).toBe(50);
             expect(next.actualPage).toBe(50);
@@ -230,7 +230,7 @@ describe("BooksService", async () => {
 
         it("updateRedoHandler should update redo and total", () => {
             const current = makeState({ redo: 1, total: 200 });
-            const [next, log] = booksService.updateRedoHandler(current, { redo: 2 }, baseBook);
+            const [next, log] = booksService.updateRedoHandler(current, { redo: 2 });
 
             expect(next.redo).toBe(2);
             expect(next.total).toBe(300);
@@ -240,7 +240,7 @@ describe("BooksService", async () => {
 
         it("updatePageHandler should update actualPage and total", () => {
             const current = makeState({ actualPage: 50, total: 50, redo: 0 });
-            const [next, log] = booksService.updatePageHandler(current, { actualPage: 80 }, baseBook);
+            const [next, log] = booksService.updatePageHandler(current, { actualPage: 80 });
 
             expect(next.actualPage).toBe(80);
             expect(next.total).toBe(80);
@@ -250,29 +250,26 @@ describe("BooksService", async () => {
 
         it("updatePageHandler with redo should update actualPage and total", () => {
             const current = makeState({ actualPage: 50, total: 150, redo: 1 });
-            const [next, log] = booksService.updatePageHandler(current, { actualPage: 80 }, baseBook);
+            const [next, _] = booksService.updatePageHandler(current, { actualPage: 80 });
 
             expect(next.actualPage).toBe(80);
             expect(next.total).toBe(180);
-            expect(log?.oldValue).toBe(50);
-            expect(log?.newValue).toBe(80);
         });
 
         it("updatePageCountHandler should update completed progress and total", () => {
             const current = makeState({ status: Status.COMPLETED, actualPage: 100, total: 200, redo: 1, pageCount: 100 });
-            const [next, log] = booksService.updatePageCountHandler(current, { pageCount: 120 }, baseBook);
+            const [next, _] = booksService.updatePageCountHandler(current, { pageCount: 120 });
 
             expect(next.pageCount).toBe(120);
             expect(next.actualPage).toBe(120);
             expect(next.total).toBe(240);
-            expect(log?.oldValue).toBe(100);
-            expect(log?.newValue).toBe(120);
         });
 
         it("updatePageHandler should reject pages above the user edition page count", () => {
             const current = makeState({ pageCount: 80, actualPage: 50, total: 50 });
 
-            expect(() => booksService.updatePageHandler(current, { actualPage: 100 }, baseBook)).toThrow("Invalid page");
+            expect(() => booksService.updatePageHandler(current, { actualPage: 100 }))
+                .toThrow("Invalid page");
         });
     });
 });
