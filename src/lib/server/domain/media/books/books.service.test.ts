@@ -265,11 +265,11 @@ describe("BooksService", async () => {
             expect(next.total).toBe(240);
         });
 
-        it("updatePageHandler should reject pages above the user edition page count", () => {
+        it("updatePageHandler should reject total pages above user page count", () => {
             const current = makeState({ pageCount: 80, actualPage: 50, total: 50 });
 
             expect(() => booksService.updatePageHandler(current, { actualPage: 100 }))
-                .toThrow("Invalid page");
+                .toThrow("Current pages read cannot be greater than total pages.");
         });
     });
 });
