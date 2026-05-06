@@ -8,7 +8,7 @@ import {RateLimiterAbstract} from "rate-limiter-flexible";
 import {getDbClient} from "@/lib/server/database/async-storage";
 import {createRateLimiter} from "@/lib/server/core/rate-limiter";
 import {BaseApi} from "@/lib/server/api-providers/api/base.api";
-import {IgdbGameDetails, IgdbSearchResponse, IgdbTokenResponse, IgdbTrendGamesResponse, SearchData} from "@/lib/types/provider.types";
+import {IgdbGameDetails, IgdbSearchResponse, IgdbSearchResultItem, IgdbTokenResponse, IgdbTrendGamesResponse, SearchData} from "@/lib/types/provider.types";
 
 
 export class IgdbApi extends BaseApi {
@@ -17,7 +17,6 @@ export class IgdbApi extends BaseApi {
     private readonly secretId = serverEnv.IGDB_CLIENT_SECRET;
     private static readonly tokenCacheKey = "igdb:accessToken";
     private readonly baseUrl = "https://api.igdb.com/v4/games";
-    private readonly searchUrl = "https://api.igdb.com/v4/multiquery";
     private readonly externalGamesUrl = "https://api.igdb.com/v4/external_games";
     private static readonly tokenCacheExpiryMs = 24 * 60 * 60 * 1000; // 1 day in ms
     private readonly trendingUrl = "https://trendingnow.games/api/public/feeds/trending";
@@ -34,30 +33,31 @@ export class IgdbApi extends BaseApi {
 
     async search(query: string, page: number = 1): Promise<SearchData<IgdbSearchResponse>> {
         const offset = (page - 1) * this.resultsPerPage;
-
         const escapedQuery = query.replace(/\\/g, "\\\\")
             .replace(/"/g, '\\"')
             .replace(/\r?\n/g, " ")
             .trim();
 
-        const data = `
-            query games/count "totalResults" {
-                where name ~ *"${escapedQuery}"*;
-            };
-            query games "results" {
-                fields id, name, cover.image_id, first_release_date;
-                limit ${this.resultsPerPage};
-                offset ${offset};
-                sort first_release_date asc;
-                where name ~ *"${escapedQuery}"*;
-            };
-        `;
-
         const headers = await this._getHeaders();
-        const response = await this.call(this.searchUrl, "post", { headers, body: data });
+        const response = await this.call(this.baseUrl, "post", {
+            headers,
+            body: `
+                fields id, name, cover.image_id, first_release_date;
+                search "${escapedQuery}";
+                where version_parent = null;
+                limit ${this.resultsPerPage + 1};
+                offset ${offset};
+            `,
+        });
+
+        const rawResults = await response.json() as IgdbSearchResultItem[];
+
+        const result = rawResults.slice(0, this.resultsPerPage);
+        const count = offset + result.length + (rawResults.length > this.resultsPerPage ? 1 : 0);
+
         return {
             page,
-            rawData: await response.json(),
+            rawData: { count, result },
             resultsPerPage: this.resultsPerPage,
         }
     }

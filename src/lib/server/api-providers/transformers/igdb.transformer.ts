@@ -11,8 +11,8 @@ const imageBaseUrl = "https://images.igdb.com/igdb/image/upload/t_1080p/";
 
 
 const transformSearchResults = (searchData: SearchData<IgdbSearchResponse>) => {
-    const results = searchData.rawData?.[1]?.result ?? [];
-    const hasNextPage = (searchData.rawData?.[0]?.count ?? 0) > (searchData.page * searchData.resultsPerPage);
+    const results = searchData.rawData?.result ?? [];
+    const hasNextPage = (searchData.rawData?.count ?? 0) > (searchData.page * searchData.resultsPerPage);
 
     const transformedResults = results.map((item): ProviderSearchResult => {
         return {

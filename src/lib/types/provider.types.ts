@@ -59,13 +59,10 @@ export interface IgdbSearchResultItem {
 }
 
 
-export type IgdbMultiQueryResult<T> = {
-    result: T[];
-    name: string;
-    count?: number;
-};
-
-export type IgdbSearchResponse = [IgdbMultiQueryResult<{ count: number }>, IgdbMultiQueryResult<IgdbSearchResultItem>];
+export type IgdbSearchResponse = {
+    count: number,
+    result: IgdbSearchResultItem[],
+}
 
 
 export type IgdbTrendGamesResponse = {
