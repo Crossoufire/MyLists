@@ -2,6 +2,7 @@ import {AddedMediaDetails} from "@/lib/types/base.types";
 import {Achievement} from "@/lib/types/achievements.types";
 import {GamesPlatformsEnum, Status} from "@/lib/utils/enums";
 import {getDbClient} from "@/lib/server/database/async-storage";
+import {normalizeGamePlatforms} from "@/lib/utils/game-platforms";
 import {BaseRepository} from "@/lib/server/domain/media/base/base.repository";
 import {Game, UpsertGameWithDetails} from "@/lib/server/domain/media/games/games.types";
 import {gamesConfig, GamesSchemaConfig} from "@/lib/server/domain/media/games/games.config";
@@ -244,6 +245,17 @@ export class GamesRepository extends BaseRepository<GamesSchemaConfig> {
             .returning();
 
         return newMedia;
+    }
+
+    async getCompatiblePlatforms(mediaId: number) {
+        // Get IGDB platforms names and then normalize then considering my GameEnum
+
+        const igdbPlatforms = await getDbClient()
+            .select({ name: gamesPlatforms.name })
+            .from(gamesPlatforms)
+            .where(eq(gamesPlatforms.mediaId, mediaId));
+
+        return normalizeGamePlatforms(igdbPlatforms);
     }
 
     async findAllAssociatedDetails(mediaId: number) {

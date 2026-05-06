@@ -7,8 +7,8 @@ import {Achievement} from "@/lib/types/achievements.types";
 import {BaseService} from "@/lib/server/domain/media/base/base.service";
 import {GamesSchemaConfig} from "@/lib/server/domain/media/games/games.config";
 import {GamesRepository} from "@/lib/server/domain/media/games/games.repository";
-import {LogPayload, PlaytimePayload, StatsCTE, StatusPayload, UserMediaWithTags} from "@/lib/types/base.types";
 import {Game, GamesAchCodeName, GamesList} from "@/lib/server/domain/media/games/games.types";
+import {LogPayload, PlaytimePayload, StatsCTE, StatusPayload, UserMediaWithTags} from "@/lib/types/base.types";
 
 
 export class GamesService extends BaseService<GamesSchemaConfig, GamesRepository> {
@@ -84,6 +84,13 @@ export class GamesService extends BaseService<GamesSchemaConfig, GamesRepository
         });
 
         return { fields };
+    }
+
+    async getCompatiblePlatforms(mediaId: number) {
+        const media = await this.repository.findById(mediaId);
+        if (!media) throw notFound();
+
+        return this.repository.getCompatiblePlatforms(mediaId);
     }
 
     async updateMediaEditableFields(mediaId: number, payload: Record<string, any>) {

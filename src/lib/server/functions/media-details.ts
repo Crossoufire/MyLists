@@ -8,6 +8,7 @@ import {requiredAuthAndManagerRoleMiddleware, requiredAuthMiddleware} from "@/li
 import {
     editMediaDetailsSchema,
     jobDetailsSchema,
+    mediaActionSchema,
     mediaDetailsSchema,
     mediaDetailsToEditSchema,
     refreshMediaDetailsSchema,
@@ -72,6 +73,21 @@ export const getMediaDetailsToEdit = createServerFn({ method: "GET" })
         const container = await getContainer();
         const mediaService = container.registries.mediaService.getService(mediaType);
         return mediaService.getMediaEditableFields(mediaId);
+    });
+
+
+export const getGameCompatiblePlatforms = createServerFn({ method: "GET" })
+    .middleware([requiredAuthMiddleware])
+    .inputValidator(tryNotFound(mediaActionSchema))
+    .handler(async ({ data: { mediaType, mediaId } }) => {
+        const container = await getContainer();
+        const gamesService = container.registries.mediaService.getService(MediaType.GAMES);
+
+        if (mediaType !== MediaType.GAMES) {
+            throw new FormattedError("Platform lookup is only available for games ;).");
+        }
+
+        return gamesService.getCompatiblePlatforms(mediaId);
     });
 
 

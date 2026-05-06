@@ -17,9 +17,9 @@ import {getUserMediaHistory, getUserTagNames} from "@/lib/server/functions/user-
 import {getDailyMediadle, getMediadleSuggestions} from "@/lib/server/functions/moviedle";
 import {getNotifications, getNotificationsCount} from "@/lib/server/functions/notifications";
 import {MediaListArgs, SearchType, SpecificActivityFilters} from "@/lib/types/zod.schema.types";
-import {getJobDetails, getMediaDetails, getMediaDetailsToEdit} from "@/lib/server/functions/media-details";
 import {getProfileCustomSearch, getProfileCustomSettings} from "@/lib/server/functions/user-settings";
 import {getMonthlyActivity, getSectionActivity, getSpecificActivity, getUserStats} from "@/lib/server/functions/user-stats";
+import {getGameCompatiblePlatforms, getJobDetails, getMediaDetails, getMediaDetailsToEdit} from "@/lib/server/functions/media-details";
 import {getAllUpdatesHistory, getUserProfile, getUserProfileHeader, getUsersFollowers, getUsersFollows} from "@/lib/server/functions/user-profile";
 import {getMediaListFilters, getMediaListSearchFilters, getMediaListSF, getTagsViewFn, getUserListHeaderSF} from "@/lib/server/functions/media-lists";
 import {getCommunityCollections, getEditCollectionDetails, getMediaCommunityCollections, getReadCollectionDetails, getUserCollections} from "@/lib/server/functions/collections";
@@ -111,6 +111,14 @@ export const mediaDetailsOptions = (mediaType: MediaType, mediaId: number | stri
 export const mediaListOptions = (mediaType: MediaType, username: string, search: MediaListArgs) => queryOptions({
     queryKey: ["userList", mediaType, username, search] as const,
     queryFn: () => getMediaListSF({ data: { mediaType, username, args: search } }),
+});
+
+
+export const gameCompatiblePlatformsOptions = (mediaId: number, enabled: boolean) => queryOptions({
+    queryKey: ["gameCompatiblePlatforms", mediaId] as const,
+    queryFn: () => getGameCompatiblePlatforms({ data: { mediaType: MediaType.GAMES, mediaId } }),
+    staleTime: 10 * 60 * 1000,
+    enabled,
 });
 
 

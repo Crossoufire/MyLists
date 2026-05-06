@@ -22,6 +22,7 @@ export const GamesUserDetails = ({ userMedia, mediaType, queryOption }: GamesUse
                 updateStatus={updateUserMediaMutation}
             />
             <UpdatePlatform
+                mediaId={userMedia.mediaId}
                 platform={userMedia.platform}
                 updatePlatform={updateUserMediaMutation}
             />
