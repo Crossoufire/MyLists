@@ -184,7 +184,7 @@ function FeatureVotesPage() {
                                 </div>
                             </div>
                             <div className="text-xs text-muted-foreground">
-                                Super-votes are refund automatically when a feature ships or gets rejected.
+                                Super-votes are refunded automatically when a feature ships or gets rejected.
                             </div>
                             <div className="grid grid-cols-2 gap-3 text-xs text-muted-foreground">
                                 <div className="rounded-lg border px-3 py-2">
