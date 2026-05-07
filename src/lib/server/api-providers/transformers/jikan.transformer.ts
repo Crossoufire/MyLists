@@ -6,15 +6,15 @@ import {JikanDetails, JikanMangaSearchResponse, ProviderSearchResult, SearchData
 
 const transformSearchResults = (searchData: SearchData<JikanMangaSearchResponse>) => {
     const results = searchData.rawData?.data ?? [];
-    const hasNextPage = searchData.rawData.pagination.has_next_page;
+    const hasNextPage = searchData.rawData?.pagination?.has_next_page ?? false;
 
     const transformedResults = results.map((item): ProviderSearchResult => {
         return {
             id: item.mal_id,
-            date: item.published.from,
             itemType: MediaType.MANGA,
+            date: item.published?.from,
             name: item.title_english ?? item.title,
-            image: item.images.jpg.image_url ?? getImageUrl("manga-covers"),
+            image: item.images?.jpg?.image_url ?? getImageUrl("manga-covers"),
         };
     });
 
