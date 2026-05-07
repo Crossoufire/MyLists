@@ -9,8 +9,8 @@ import {HltbApiResponse, HltbGameEntry} from "@/lib/types/provider.types";
 export class HltbApi extends BaseApi {
     private static readonly consumeKey = "hltb-API";
     private static readonly baseUrl = "https://howlongtobeat.com/";
-    private static searchUrl = HltbApi.baseUrl + "api/find"
-    private static tokenUrl = HltbApi.baseUrl + "api/find/init";
+    private static searchUrl = HltbApi.baseUrl + "api/bleed"
+    private static tokenUrl = HltbApi.baseUrl + "api/bleed/init";
     private static readonly throttleOptions = { points: 4, duration: 1, keyPrefix: "hltbAPI" };
 
     constructor(limiter: RateLimiterAbstract, consumeKey: string) {
@@ -78,6 +78,8 @@ export class HltbApi extends BaseApi {
         };
 
         const authData = await this._getAuthToken(ua);
+        console.log({ authData });
+
         if (authData) {
             headers["x-hp-key"] = authData.hpKey;
             headers["x-hp-val"] = authData.hpVal;
