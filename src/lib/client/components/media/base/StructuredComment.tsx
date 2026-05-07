@@ -26,30 +26,45 @@ export const StructuredComment = ({ content, className }: StructuredCommentProps
 };
 
 
-const bulletRegex = /^\s*[-*•]\s+(.+)$/;
+const bulletRegex = /^\s*[-*•–—]\s+(.+)$/;
 
 
 const renderBlock = (lines: string[], blockIndex: number) => {
-    const isBulletList = lines.every((line) => !line.trim() || bulletRegex.test(line));
+    const segments: Array<{ type: "list" | "paragraph"; lines: string[] }> = [];
 
-    if (isBulletList) {
-        return (
-            <ul className="list-disc space-y-1 pl-5 not-first:mt-3">
-                {lines
-                    .map((line) => line.match(bulletRegex)?.[1]?.trim())
-                    .filter(Boolean)
-                    .map((line, lineIndex) =>
-                        <li key={`${blockIndex}-${lineIndex}`} className="pl-0.5">
-                            {line}
-                        </li>
-                    )}
-            </ul>
-        );
+    for (const line of lines) {
+        if (!line.trim()) continue;
+
+        const type = bulletRegex.test(line) ? "list" : "paragraph";
+        const previousSegment = segments.at(-1);
+
+        if (previousSegment?.type === type) {
+            previousSegment.lines.push(line);
+        } else {
+            segments.push({ type, lines: [line] });
+        }
     }
 
     return (
-        <p className="whitespace-pre-wrap not-first:mt-3">
-            {lines.join("\n")}
-        </p>
+        <>
+            {segments.map((segment, segmentIndex) =>
+                segment.type === "list" ? (
+                    <ul key={segmentIndex} className="list-disc space-y-1 pl-5 not-first:mt-3">
+                        {segment.lines
+                            .map((line) => line.match(bulletRegex)?.[1]?.trim())
+                            .filter(Boolean)
+                            .map((line, lineIndex) =>
+                                <li key={`${blockIndex}-${segmentIndex}-${lineIndex}`} className="pl-0.5">
+                                    {line}
+                                </li>
+                            )}
+                    </ul>
+                ) : (
+                    <p key={segmentIndex} className="whitespace-pre-wrap not-first:mt-3">
+                        {segment.lines.join("\n")}
+                    </p>
+                )
+            )}
+        </>
     );
 };
