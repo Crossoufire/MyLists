@@ -33,7 +33,7 @@ export const funcErrorMiddleware = createMiddleware({ type: "function" }).server
         if (isRedirect(err) || isNotFound(err)) {
             throw err;
         }
-        
+
         await saveErrorToDb(err).catch();
 
         if (err instanceof FormattedError || err instanceof FormZodError) {
@@ -74,11 +74,11 @@ const saveErrorToDb = async (err: any) => {
     const stack = {
         url: request.url,
         method: request.method,
+        stack: err?.stack ?? null,
+        extra: addErrorExtra(err),
         referer: request.headers.get("Referer"),
         userAgent: request.headers.get("User-agent"),
         userInfo: session?.user ? { id: session.user.id, username: session.user.name } : null,
-        stack: err?.stack ?? null,
-        extra: err instanceof z.ZodError ? { issues: err.issues } : null,
     }
 
     await adminService.saveErrorToDb({
@@ -87,3 +87,12 @@ const saveErrorToDb = async (err: any) => {
         message: err?.message ?? "No message provided",
     });
 }
+
+
+const addErrorExtra = (err: unknown) => {
+    if (err instanceof FormZodError || err instanceof z.ZodError) {
+        return { issues: err.issues.map(({ input: _input, ...issue }) => issue) };
+    }
+
+    return null;
+};
