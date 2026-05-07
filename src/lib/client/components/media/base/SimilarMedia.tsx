@@ -38,10 +38,9 @@ export const SimilarMedia = ({ mediaType, similarMedia }: { mediaType: MediaType
 
             {!isBelowSm && similarMedia.length > INITIAL_COUNT &&
                 <Button variant="ghost" size="xs" onClick={handleToggle}>
-                    {isExpanded ?
-                        <>Show Less <ChevronUp className="size-3.5"/></>
-                        :
-                        <>Show More <ChevronDown className="size-3.5"/></>
+                    {isExpanded
+                        ? <>Show Less <ChevronUp className="size-3.5"/></>
+                        : <>Show More <ChevronDown className="size-3.5"/></>
                     }
                 </Button>
             }
