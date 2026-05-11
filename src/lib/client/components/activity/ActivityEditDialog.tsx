@@ -34,6 +34,20 @@ type FormValues = {
 }
 
 
+const toDateInputValue = (value?: string | null) => {
+    if (!value) return "";
+
+    const date = new Date(value.includes(" ") ? `${value.replace(" ", "T")}Z` : value);
+    if (Number.isNaN(date.getTime())) return "";
+
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+
+    return `${year}-${month}-${day}`;
+};
+
+
 export const ActivityEditDialog = (props: ActivityEditDialogProps) => {
     const { open, year, month, mediaId, username, mediaType, mediaName, onOpenChange, sectionParams } = props;
     const updateMutation = useUpdateActivityMutation(username);
@@ -42,9 +56,9 @@ export const ActivityEditDialog = (props: ActivityEditDialogProps) => {
     const form = useForm<FormValues>({
         values: {
             isRedo: event?.isRedo ?? false,
-            lastUpdate: event?.lastUpdate ?? "",
             isCompleted: event?.isCompleted ?? false,
             specificGained: event?.specificGained ?? 0,
+            lastUpdate: toDateInputValue(event?.lastUpdate),
         }
     });
 
@@ -60,9 +74,9 @@ export const ActivityEditDialog = (props: ActivityEditDialogProps) => {
                 activityId: event!.id,
                 payload: {
                     isRedo: data.isRedo,
-                    lastUpdate: data.lastUpdate,
                     isCompleted: data.isCompleted,
                     specificGained: Number(data.specificGained),
+                    lastUpdate: data.lastUpdate ? `${data.lastUpdate}T12:00:00.000Z` : undefined,
                 }
             }
         }, {
@@ -105,9 +119,10 @@ export const ActivityEditDialog = (props: ActivityEditDialogProps) => {
                         />
                     </div>
                     <div className="grid gap-2">
-                        <Label htmlFor="lastUpdate">Last Update (UTC)</Label>
+                        <Label htmlFor="lastUpdate">Recap date</Label>
                         <Input
-                            placeholder="YYYY-MM-DD HH:mm:ss"
+                            type="date"
+                            max={toDateInputValue(new Date().toISOString())}
                             {...form.register("lastUpdate")}
                         />
                     </div>
