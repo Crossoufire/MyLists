@@ -1,6 +1,6 @@
 import {toast} from "sonner";
+import {ListSettings} from "@/lib/schemas";
 import {useAuth} from "@/lib/client/hooks/use-auth";
-import {ListSettings} from "@/lib/types/zod.schema.types";
 import {postUpdateShowOnboarding} from "@/lib/server/functions/user-profile";
 import {QueryClient, useMutation, useQueryClient} from "@tanstack/react-query";
 import {postFollow, postRemoveFollower, postRespondToFollowRequest, postUnfollow} from "@/lib/server/functions/social";

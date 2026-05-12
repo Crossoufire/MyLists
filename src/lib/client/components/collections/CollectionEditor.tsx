@@ -1,5 +1,6 @@
 import {toast} from "sonner";
 import {useMemo, useState} from "react";
+import {CreateCollection} from "@/lib/schemas";
 import {useBlocker} from "@tanstack/react-router";
 import {Badge} from "@/lib/client/components/ui/badge";
 import {Input} from "@/lib/client/components/ui/input";
@@ -9,7 +10,6 @@ import {Button} from "@/lib/client/components/ui/button";
 import {MediaType, PrivacyType} from "@/lib/utils/enums";
 import {useFieldArray, UseFormReturn} from "react-hook-form";
 import {Textarea} from "@/lib/client/components/ui/textarea";
-import {CreateCollection} from "@/lib/types/zod.schema.types";
 import {GripVertical, List, ListOrdered, Trash2} from "lucide-react";
 import {EmptyState} from "@/lib/client/components/general/EmptyState";
 import {RadioGroup, RadioGroupItem} from "@/lib/client/components/ui/radio-group";

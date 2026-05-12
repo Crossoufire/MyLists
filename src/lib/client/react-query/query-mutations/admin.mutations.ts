@@ -1,5 +1,5 @@
 import {toast} from "sonner";
-import {SearchType} from "@/lib/types/zod.schema.types";
+import {SearchType} from "@/lib/schemas";
 import {useMutation, useQueryClient} from "@tanstack/react-query";
 import {adminAchievementsOptions, adminArchivedTasksOptions, adminErrorLogsOptions, userAdminOptions} from "@/lib/client/react-query/query-options/admin-options";
 import {

@@ -1,6 +1,6 @@
 import {createServerFn} from "@tanstack/react-start";
+import {allUpdatesHistorySchema} from "@/lib/schemas";
 import {getContainer} from "@/lib/server/core/container";
-import {allUpdatesHistorySchema} from "@/lib/types/zod.schema.types";
 import {requiredAuthMiddleware} from "@/lib/server/middlewares/authentication";
 import {privateAuthZMiddleware, resolveTargetUserMiddleware} from "@/lib/server/middlewares/authorization";
 

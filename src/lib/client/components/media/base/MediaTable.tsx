@@ -1,7 +1,7 @@
 import {useMemo, useState} from "react";
 import {MediaType} from "@/lib/utils/enums";
+import {MediaListArgs} from "@/lib/schemas";
 import {useAuth} from "@/lib/client/hooks/use-auth";
-import {MediaListArgs} from "@/lib/types/zod.schema.types";
 import {mediaConfig} from "@/lib/client/components/media/media-config";
 import {ListPagination, UserMediaItem} from "@/lib/types/query.options.types";
 import {TablePagination} from "@/lib/client/components/general/TablePagination";

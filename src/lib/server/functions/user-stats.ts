@@ -14,7 +14,7 @@ import {
     getUserStatsSchema,
     monthlyActivitySchema,
     updateActivitySchema
-} from "@/lib/types/zod.schema.types";
+} from "@/lib/schemas";
 
 
 export const getUserStats = createServerFn({ method: "GET" })

@@ -2,9 +2,9 @@ import {z} from "zod";
 import dedent from "dedent";
 import {serverEnv} from "@/env/server";
 import {MediaType} from "@/lib/utils/enums";
+import {adminLlmResponseSchema} from "@/lib/schemas";
 import {getContainer} from "@/lib/server/core/container";
 import {defineTask} from "@/lib/server/tasks/define-task";
-import {llmResponseSchema} from "@/lib/types/zod.schema.types";
 
 
 export const addGenresToBooksUsingLlmTask = defineTask({
@@ -56,12 +56,12 @@ export const addGenresToBooksUsingLlmTask = defineTask({
             await ctx.step(`batch-${batchIndex}`, async () => {
                 const promptToSend = `${mainPrompt}\n${booksBatch.join("\n")}`;
 
-                const data = await booksProvider.llmResponse(promptToSend, llmResponseSchema);
+                const data = await booksProvider.llmResponse(promptToSend, adminLlmResponseSchema);
                 const content = data.choices[0].message.content ?? "";
 
                 let result;
                 try {
-                    result = llmResponseSchema.parse(JSON.parse(content));
+                    result = adminLlmResponseSchema.parse(JSON.parse(content));
                 }
                 catch (parseErr) {
                     ctx.error("Failed to parse LLM JSON response", { content });

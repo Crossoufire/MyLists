@@ -1,8 +1,8 @@
 import {useMemo} from "react";
+import {SearchType} from "@/lib/schemas";
 import {PrivacyType} from "@/lib/utils/enums";
 import {Badge} from "@/lib/client/components/ui/badge";
 import {useSuspenseQuery} from "@tanstack/react-query";
-import {SearchType} from "@/lib/types/zod.schema.types";
 import {Button} from "@/lib/client/components/ui/button";
 import {createFileRoute, Link} from "@tanstack/react-router";
 import {UserStats} from "@/lib/client/components/admin/UserStats";

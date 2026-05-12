@@ -1,8 +1,8 @@
 import {X} from "lucide-react";
 import {Fragment} from "react";
 import {MediaType} from "@/lib/utils/enums";
+import {MediaListArgs} from "@/lib/schemas";
 import {Badge} from "@/lib/client/components/ui/badge";
-import {MediaListArgs} from "@/lib/types/zod.schema.types";
 import {capitalize, formatLocaleName} from "@/lib/utils/formating";
 
 

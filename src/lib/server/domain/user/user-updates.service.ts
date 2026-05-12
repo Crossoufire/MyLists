@@ -1,6 +1,6 @@
+import {SearchType} from "@/lib/schemas";
 import {MediaType} from "@/lib/utils/enums";
 import {LogUpdateParams} from "@/lib/types/base.types";
-import {SearchType} from "@/lib/types/zod.schema.types";
 import {UserUpdatesRepository} from "@/lib/server/domain/user/user-updates.repository";
 
 

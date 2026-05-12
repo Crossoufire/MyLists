@@ -1,9 +1,9 @@
 import {MediaType} from "@/lib/utils/enums";
 import {createServerFn} from "@tanstack/react-start";
 import {getContainer} from "@/lib/server/core/container";
-import {requiredAuthMiddleware} from "@/lib/server/middlewares/authentication";
 import {transactionMiddleware} from "@/lib/server/middlewares/transaction";
-import {addMediadleGuessSchema, mediadleSuggestionsSchema} from "@/lib/types/zod.schema.types";
+import {requiredAuthMiddleware} from "@/lib/server/middlewares/authentication";
+import {addMediadleGuessSchema, mediadleSuggestionsSchema} from "@/lib/schemas";
 
 
 export const getDailyMediadle = createServerFn({ method: "GET" })

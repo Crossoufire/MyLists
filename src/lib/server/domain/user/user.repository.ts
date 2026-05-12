@@ -1,7 +1,7 @@
 import {alias} from "drizzle-orm/sqlite-core";
+import {AdminUpdatePayload, SearchType} from "@/lib/schemas";
 import {getDbClient} from "@/lib/server/database/async-storage";
 import {paginate, resolveSorting} from "@/lib/server/database/pagination";
-import {AdminUpdatePayload, SearchType} from "@/lib/types/zod.schema.types";
 import {and, asc, count, desc, eq, isNotNull, like, sql} from "drizzle-orm";
 import {followers, user, userMediaSettings} from "@/lib/server/database/schema";
 import {ProviderSearchResult, ProviderSearchResults} from "@/lib/types/provider.types";

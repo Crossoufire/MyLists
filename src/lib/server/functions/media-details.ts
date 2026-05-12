@@ -13,7 +13,7 @@ import {
     mediaDetailsToEditSchema,
     refreshMediaDetailsSchema,
     updateBookCoverSchema
-} from "@/lib/types/zod.schema.types";
+} from "@/lib/schemas";
 
 
 export const getMediaDetails = createServerFn({ method: "GET" })

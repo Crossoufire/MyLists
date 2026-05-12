@@ -1,7 +1,7 @@
+import {SearchType} from "@/lib/schemas";
 import React, {useMemo, useState} from "react";
 import {useAuth} from "@/lib/client/hooks/use-auth";
 import {useSuspenseQuery} from "@tanstack/react-query";
-import {SearchType} from "@/lib/types/zod.schema.types";
 import {Button} from "@/lib/client/components/ui/button";
 import {Checkbox} from "@/lib/client/components/ui/checkbox";
 import {createFileRoute, Link} from "@tanstack/react-router";

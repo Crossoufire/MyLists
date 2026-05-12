@@ -1,8 +1,8 @@
+import {MediaListArgs} from "@/lib/schemas";
 import {notFound} from "@tanstack/react-router";
 import {statusUtils} from "@/lib/utils/mapping";
 import {TopAffinityConfig} from "@/lib/types/stats.types";
 import {Achievement} from "@/lib/types/achievements.types";
-import {MediaListArgs} from "@/lib/types/zod.schema.types";
 import {getDbClient} from "@/lib/server/database/async-storage";
 import {MediaSchemaConfig} from "@/lib/types/media.config.types";
 import {JobType, MediaType, Status, TagAction} from "@/lib/utils/enums";

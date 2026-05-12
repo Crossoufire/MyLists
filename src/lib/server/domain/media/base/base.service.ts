@@ -7,7 +7,7 @@ import {saveImageFromUrl, saveUploadedImage} from "@/lib/utils/image-saver";
 import {BaseRepository} from "@/lib/server/domain/media/base/base.repository";
 import {BaseProviderService} from "@/lib/server/domain/media/base/provider.service";
 import {JobType, MediaType, Status, TagAction, UpdateType} from "@/lib/utils/enums";
-import {MediaListArgs, SearchType, UpdateUserCustomCover, UpdateUserMedia} from "@/lib/types/zod.schema.types";
+import {MediaListArgs, SearchType, UpdateUserCustomCover, UpdateUserMedia} from "@/lib/schemas";
 import {StatsCTE, Tag, UpdateHandlerFn, UpdateUserMediaDetails, UserMediaWithTags} from "@/lib/types/base.types";
 
 

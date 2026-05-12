@@ -1,7 +1,7 @@
 import React, {useMemo} from "react";
+import {SearchType} from "@/lib/schemas";
 import {formatDateTime} from "@/lib/utils/formating";
 import {useSuspenseQuery} from "@tanstack/react-query";
-import {SearchType} from "@/lib/types/zod.schema.types";
 import {createFileRoute, Link} from "@tanstack/react-router";
 import {SearchInput} from "@/lib/client/components/general/SearchInput";
 import {ProfileIcon} from "@/lib/client/components/general/ProfileIcon";

@@ -1,6 +1,6 @@
+import {searchTypeSchema} from "@/lib/schemas";
 import {createServerFn} from "@tanstack/react-start";
 import {getContainer} from "@/lib/server/core/container";
-import {searchTypeSchema} from "@/lib/types/zod.schema.types";
 import {requiredAuthMiddleware} from "@/lib/server/middlewares/authentication";
 
 

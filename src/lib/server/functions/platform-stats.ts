@@ -1,11 +1,11 @@
+import {platformStatsSchema} from "@/lib/schemas";
 import {createServerFn} from "@tanstack/react-start";
 import {tryNotFound} from "@/lib/utils/try-not-found";
 import {getContainer} from "@/lib/server/core/container";
 import {AdvancedMediaStats} from "@/lib/types/stats.types";
 import {MediaType, RatingSystemType} from "@/lib/utils/enums";
-import {platformStatsSchema} from "@/lib/types/zod.schema.types";
-import {requiredAuthMiddleware} from "@/lib/server/middlewares/authentication";
 import {platformStatsCacheMiddleware} from "@/lib/server/middlewares/caching";
+import {requiredAuthMiddleware} from "@/lib/server/middlewares/authentication";
 
 
 export const getPlatformStats = createServerFn({ method: "GET" })

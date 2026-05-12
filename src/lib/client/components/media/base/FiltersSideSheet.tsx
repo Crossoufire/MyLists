@@ -1,8 +1,8 @@
+import {MediaListArgs} from "@/lib/schemas";
 import React, {useRef, useState} from "react";
 import {useQuery} from "@tanstack/react-query";
 import {Badge} from "@/lib/client/components/ui/badge";
 import {Button} from "@/lib/client/components/ui/button";
-import {MediaListArgs} from "@/lib/types/zod.schema.types";
 import {Checkbox} from "@/lib/client/components/ui/checkbox";
 import {EmptyState} from "@/lib/client/components/general/EmptyState";
 import {mediaConfig} from "@/lib/client/components/media/media-config";

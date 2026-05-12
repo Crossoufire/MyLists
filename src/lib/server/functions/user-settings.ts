@@ -6,8 +6,8 @@ import {getContainer} from "@/lib/server/core/container";
 import {FormattedError} from "@/lib/utils/error-classes";
 import {tryFormZodError} from "@/lib/utils/try-not-found";
 import {saveUploadedImage} from "@/lib/utils/image-saver";
-import {requiredAuthMiddleware} from "@/lib/server/middlewares/authentication";
 import {transactionMiddleware} from "@/lib/server/middlewares/transaction";
+import {requiredAuthMiddleware} from "@/lib/server/middlewares/authentication";
 import {
     downloadListAsCsvSchema,
     generalSettingsSchema,
@@ -15,7 +15,7 @@ import {
     highlightedMediaSettingsSchema,
     mediaListSettingsSchema,
     passwordSettingsSchema
-} from "@/lib/types/zod.schema.types";
+} from "@/lib/schemas";
 
 
 export const postGeneralSettings = createServerFn({ method: "POST" })

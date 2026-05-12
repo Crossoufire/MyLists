@@ -12,7 +12,7 @@ import {
     mediaCommunityCollectionsSchema,
     updateCollectionSchema,
     userCollectionsSchema
-} from "@/lib/types/zod.schema.types";
+} from "@/lib/schemas";
 
 
 export const getUserCollections = createServerFn({ method: "GET" })

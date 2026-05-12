@@ -1,7 +1,7 @@
 import {Column, SQL} from "drizzle-orm";
+import {MediaListArgs} from "@/lib/schemas";
 import {DeltaStats} from "@/lib/types/stats.types";
 import {MediaTable} from "@/lib/types/media.config.types";
-import {MediaListArgs} from "@/lib/types/zod.schema.types";
 import {SQLiteColumn, SQLiteTable} from "drizzle-orm/sqlite-core";
 import {ListFiltersOptionsType} from "@/lib/types/query.options.types";
 import {GamesPlatformsEnum, JobType, MediaType, RatingSystemType, Status, UpdateType} from "@/lib/utils/enums";

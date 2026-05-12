@@ -14,13 +14,13 @@ import {requiredAuthAndAdminTokenMiddleware, requiredAuthAndManagerRoleMiddlewar
 import {
     adminDeleteArchivedTaskSchema,
     adminDeleteErrorLogSchema,
+    adminPostUpdateTiersSchema,
+    adminPostUpdateUserSchema,
     adminRefreshSchema,
     adminTriggerTaskSchema,
     adminUpdateAchievementSchema,
-    postAdminUpdateTiersSchema,
-    postAdminUpdateUserSchema,
     searchTypeSchema
-} from "@/lib/types/zod.schema.types";
+} from "@/lib/schemas";
 
 
 export const checkAdminAuth = createServerFn({ method: "GET" })
@@ -107,7 +107,7 @@ export const getAdminMediadleStats = createServerFn({ method: "GET" })
 
 export const postAdminUpdateUser = createServerFn({ method: "POST" })
     .middleware([requiredAuthAndAdminTokenMiddleware])
-    .inputValidator(postAdminUpdateUserSchema)
+    .inputValidator(adminPostUpdateUserSchema)
     .handler(async ({ data: { userId, payload } }) => {
         const userService = await getContainer().then((c) => c.services.user);
         return userService.updateUserForAdmin(userId, payload);
@@ -125,7 +125,7 @@ export const postAdminUpdateAchievement = createServerFn({ method: "POST" })
 
 export const postAdminUpdateTiers = createServerFn({ method: "POST" })
     .middleware([requiredAuthAndAdminTokenMiddleware])
-    .inputValidator(postAdminUpdateTiersSchema)
+    .inputValidator(adminPostUpdateTiersSchema)
     .handler(async ({ data: { tiers } }) => {
         const achievementService = await getContainer().then((c) => c.services.achievements);
         return achievementService.updateTiersForAdmin(tiers);

@@ -5,9 +5,9 @@ import {MediaType, Status} from "@/lib/utils/enums";
 import {UpdateUserMediaDetails, UserMediaStats} from "@/lib/types/base.types";
 import {MediaServiceRegistry} from "@/lib/server/domain/media/media.registries";
 import {UserStatsRepository} from "@/lib/server/domain/user/user-stats.repository";
+import {SearchType, SectionActivity, SpecificActivityFilters} from "@/lib/schemas";
 import {UserUpdatesRepository} from "@/lib/server/domain/user/user-updates.repository";
 import {AchievementsRepository} from "@/lib/server/domain/achievements/achievements.repository";
-import {SearchType, SectionActivity, SpecificActivityFilters} from "@/lib/types/zod.schema.types";
 import {GridItem, MediaData, MediaInfo, MediaResult, UpdateActivity, WrappedActivityResult} from "@/lib/types/activity.types";
 
 

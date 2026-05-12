@@ -11,7 +11,7 @@ import {
     updateUserCustomCoverSchema,
     updateUserMediaSchema,
     userTagNamesSchema
-} from "@/lib/types/zod.schema.types";
+} from "@/lib/schemas";
 
 
 export const getUserMediaHistory = createServerFn({ method: "GET" })

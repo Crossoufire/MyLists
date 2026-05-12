@@ -1,0 +1,91 @@
+import * as z from "zod";
+import {ApiProviderType, MediaType, PrivacyType, RatingSystemType} from "@/lib/utils/enums";
+import {createDefaultHighlightedMediaSettings, HIGHLIGHTED_MEDIA_DEFAULT_TITLE, HIGHLIGHTED_MEDIA_TABS, PROFILE_MAX_HIGHLIGHTED_MEDIA} from "@/lib/types/profile-custom.types";
+
+
+export type ListSettings = z.infer<typeof mediaListSettingsSchema>;
+
+
+const highlightedMediaRefSchema = z.object({
+    mediaType: z.enum(MediaType),
+    mediaId: z.coerce.number().int().positive(),
+});
+
+const highlightedMediaTabConfigSchema = z.object({
+    mode: z.enum(["random", "curated", "disabled"]),
+    items: z.array(highlightedMediaRefSchema).max(PROFILE_MAX_HIGHLIGHTED_MEDIA).default([]),
+    title: z.string().trim().max(50)
+        .transform((value) => value || HIGHLIGHTED_MEDIA_DEFAULT_TITLE)
+        .default(HIGHLIGHTED_MEDIA_DEFAULT_TITLE),
+});
+
+const highlightedMediaSettingsShape = HIGHLIGHTED_MEDIA_TABS.reduce((acc, tab) => {
+    acc[tab] = highlightedMediaTabConfigSchema.default({
+        items: [],
+        mode: "random",
+        title: HIGHLIGHTED_MEDIA_DEFAULT_TITLE,
+    });
+    return acc;
+}, {} as Record<(typeof HIGHLIGHTED_MEDIA_TABS)[number], any>);
+
+
+export const highlightedMediaSettingsSchema = z.object(highlightedMediaSettingsShape)
+    .default(createDefaultHighlightedMediaSettings())
+    .superRefine((settings, ctx) => {
+        for (const tab of HIGHLIGHTED_MEDIA_TABS) {
+            const tabConfig = settings[tab];
+
+            if (tabConfig.mode === "curated" && tabConfig.items.length === 0) {
+                ctx.addIssue({
+                    code: "custom",
+                    path: [tab, "items"],
+                    message: "Add at least 1 item or switch this tab back to Random or Disabled.",
+                });
+            }
+
+            if (tab !== "overview") {
+                tabConfig.items.forEach((item: { mediaType: MediaType }, index: number) => {
+                    if (item.mediaType !== tab) {
+                        ctx.addIssue({
+                            code: "custom",
+                            path: [tab, "items", index, "mediaType"],
+                            message: "Items must match the media type of this tab.",
+                        });
+                    }
+                });
+            }
+        }
+    });
+
+export const generalSettingsSchema = z.object({
+    profileImage: z.instanceof(File).optional(),
+    backgroundImage: z.instanceof(File).optional(),
+    privacy: z.enum(PrivacyType),
+    username: z.string().trim()
+        .min(3, "Username too short (3 min)")
+        .max(15, "Username too long (15 max)"),
+});
+
+export const mediaListSettingsSchema = z.object({
+    anime: z.boolean(),
+    games: z.boolean(),
+    manga: z.boolean(),
+    books: z.boolean(),
+    gridListView: z.boolean(),
+    ratingSystem: z.enum(RatingSystemType),
+    searchSelector: z.enum(ApiProviderType),
+});
+
+export const highlightedMediaSearchSchema = z.object({
+    tab: z.enum(HIGHLIGHTED_MEDIA_TABS),
+    query: z.string().trim().min(2).max(100),
+});
+
+export const passwordSettingsSchema = z.object({
+    currentPassword: z.string(),
+    newPassword: z.string().min(8, "Password too short (8 min)").max(50, "Password too long (50 max)"),
+});
+
+export const downloadListAsCsvSchema = z.object({
+    selectedList: z.enum(MediaType),
+});

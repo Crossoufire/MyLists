@@ -1,11 +1,11 @@
 import {auth} from "@/lib/server/core/auth";
+import {baseUsernameSchema} from "@/lib/schemas";
 import {tryNotFound} from "@/lib/utils/try-not-found";
 import {createMiddleware} from "@tanstack/react-start";
 import {getRequest} from "@tanstack/react-start/server";
 import {getContainer} from "@/lib/server/core/container";
 import {FormattedError} from "@/lib/utils/error-classes";
 import {notFound, redirect} from "@tanstack/react-router";
-import {baseUsernameSchema} from "@/lib/types/zod.schema.types";
 import {PrivacyType, RoleType, SocialState} from "@/lib/utils/enums";
 
 

@@ -1,9 +1,9 @@
 import {user} from "@/lib/server/database/schema";
 import {FormattedError} from "@/lib/utils/error-classes";
 import {MediaType, SocialState} from "@/lib/utils/enums";
+import {AdminUpdatePayload, SearchType} from "@/lib/schemas";
 import {CacheManager} from "@/lib/server/core/cache-manager";
 import {UserRepository} from "@/lib/server/domain/user/user.repository";
-import {AdminUpdatePayload, SearchType} from "@/lib/types/zod.schema.types";
 
 
 const LAST_SEEN_CACHE_KEY = "lastSeen";

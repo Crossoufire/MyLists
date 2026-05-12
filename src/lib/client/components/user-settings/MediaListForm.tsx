@@ -1,11 +1,11 @@
 import {toast} from "sonner";
 import React, {useState} from "react";
+import {ListSettings} from "@/lib/schemas";
 import {capitalize} from "@/lib/utils/formating";
 import {useForm, useWatch} from "react-hook-form";
 import {useAuth} from "@/lib/client/hooks/use-auth";
 import {Switch} from "@/lib/client/components/ui/switch";
 import {Button} from "@/lib/client/components/ui/button";
-import {ListSettings} from "@/lib/types/zod.schema.types";
 import {Separator} from "@/lib/client/components/ui/separator";
 import {CircleHelp, Download, TriangleAlert} from "lucide-react";
 import {convertToCsv, saveAsFile} from "@/lib/utils/blob-download";

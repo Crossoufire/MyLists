@@ -1,6 +1,6 @@
 import React, {useMemo} from "react";
+import {SearchType} from "@/lib/schemas";
 import {useSuspenseQuery} from "@tanstack/react-query";
-import {SearchType} from "@/lib/types/zod.schema.types";
 import {createFileRoute, Link} from "@tanstack/react-router";
 import {Payload} from "@/lib/client/components/general/Payload";
 import {MainThemeIcon} from "@/lib/client/components/general/MainIcons";

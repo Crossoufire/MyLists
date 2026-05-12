@@ -1,10 +1,10 @@
 import React from "react";
 import {cn} from "@/lib/utils/helpers";
 import {Status} from "@/lib/utils/enums";
+import {MediaListArgs, SearchType} from "@/lib/schemas";
 import {Button} from "@/lib/client/components/ui/button";
 import {ListPagination} from "@/lib/types/query.options.types";
 import {useBreakpoint} from "@/lib/client/hooks/use-breakpoint";
-import {MediaListArgs, SearchType} from "@/lib/types/zod.schema.types";
 import {SearchInput} from "@/lib/client/components/general/SearchInput";
 import {useSearchNavigate} from "@/lib/client/hooks/use-search-navigate";
 import {ArrowUpDown, ChevronDown, Filter, Grid2X2, List, ListFilter} from "lucide-react";

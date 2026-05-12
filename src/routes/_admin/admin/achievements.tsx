@@ -1,4 +1,5 @@
 import {useEffect, useState} from "react";
+import {AchievementTier} from "@/lib/schemas";
 import {capitalize} from "@/lib/utils/formating";
 import {Badge} from "@/lib/client/components/ui/badge";
 import {Input} from "@/lib/client/components/ui/input";
@@ -7,7 +8,6 @@ import {createFileRoute} from "@tanstack/react-router";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {Button} from "@/lib/client/components/ui/button";
 import {Achievement} from "@/lib/types/achievements.types";
-import {AchievementTier} from "@/lib/types/zod.schema.types";
 import {Textarea} from "@/lib/client/components/ui/textarea";
 import {DashboardShell} from "@/lib/client/components/admin/DashboardShell";
 import {DashboardHeader} from "@/lib/client/components/admin/DashboardHeader";

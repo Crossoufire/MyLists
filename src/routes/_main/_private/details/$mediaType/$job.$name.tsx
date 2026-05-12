@@ -1,7 +1,7 @@
+import {SearchType} from "@/lib/schemas";
 import {JobType, MediaType} from "@/lib/utils/enums";
 import {createFileRoute} from "@tanstack/react-router";
 import {useSuspenseQuery} from "@tanstack/react-query";
-import {SearchType} from "@/lib/types/zod.schema.types";
 import {capitalize, formatDateTime} from "@/lib/utils/formating";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
 import {Pagination} from "@/lib/client/components/general/Pagination";

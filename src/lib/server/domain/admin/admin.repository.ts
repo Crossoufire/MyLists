@@ -1,6 +1,6 @@
+import {SearchType} from "@/lib/schemas";
 import {ErrorLog} from "@/lib/types/base.types";
 import {SaveTaskToDb} from "@/lib/types/tasks.types";
-import {SearchType} from "@/lib/types/zod.schema.types";
 import {MediaType, PrivacyType} from "@/lib/utils/enums";
 import {getDbClient} from "@/lib/server/database/async-storage";
 import {paginate, resolveSorting} from "@/lib/server/database/pagination";

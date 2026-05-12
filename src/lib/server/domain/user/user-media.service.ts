@@ -1,6 +1,6 @@
 import {MediaType, UpdateType} from "@/lib/utils/enums";
+import {AddMediaToList, UpdateUserMedia} from "@/lib/schemas";
 import {UserStatsService} from "@/lib/server/domain/user/user-stats.service";
-import {AddMediaToList, UpdateUserMedia} from "@/lib/types/zod.schema.types";
 import {MediaServiceRegistry} from "@/lib/server/domain/media/media.registries";
 import {UserUpdatesService} from "@/lib/server/domain/user/user-updates.service";
 import {NotificationsService} from "@/lib/server/domain/notifications/notifications.service";

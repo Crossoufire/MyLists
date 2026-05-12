@@ -1,7 +1,7 @@
+import {navbarSearchSchema} from "@/lib/schemas";
 import {createServerFn} from "@tanstack/react-start";
 import {getContainer} from "@/lib/server/core/container";
 import {ApiProviderType, MediaType} from "@/lib/utils/enums";
-import {navbarSearchSchema} from "@/lib/types/zod.schema.types";
 import {requiredAuthMiddleware} from "@/lib/server/middlewares/authentication";
 import {tmdbTransformer} from "@/lib/server/api-providers/transformers/tmdb.transformer";
 import {igdbTransformer} from "@/lib/server/api-providers/transformers/igdb.transformer";

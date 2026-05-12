@@ -1,4 +1,4 @@
-import {SearchType} from "@/lib/types/zod.schema.types";
+import {SearchType} from "@/lib/schemas";
 import {FormattedError} from "@/lib/utils/error-classes";
 import {pixelateImage} from "@/lib/utils/image-pixelation";
 import {MoviesService} from "@/lib/server/domain/media/movies/movies.service";

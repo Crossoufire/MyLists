@@ -1,5 +1,5 @@
+import {SearchType} from "@/lib/schemas";
 import {queryOptions} from "@tanstack/react-query";
-import {SearchType} from "@/lib/types/zod.schema.types";
 import {MediaRefreshStatsParams} from "@/lib/types/admin.types";
 import {
     getAdminAchievements,

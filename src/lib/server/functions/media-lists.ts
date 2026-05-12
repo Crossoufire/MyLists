@@ -5,8 +5,8 @@ import {tryNotFound} from "@/lib/utils/try-not-found";
 import {getContainer} from "@/lib/server/core/container";
 import {FormattedError} from "@/lib/utils/error-classes";
 import {MediaListDataByType} from "@/lib/server/domain/media/base/base.repository";
+import {mediaListFiltersSchema, mediaListSchema, mediaListSearchFiltersSchema} from "@/lib/schemas";
 import {privateAuthZMiddleware, resolveTargetUserMiddleware} from "@/lib/server/middlewares/authorization";
-import {mediaListFiltersSchema, mediaListSchema, mediaListSearchFiltersSchema} from "@/lib/types/zod.schema.types";
 
 
 export const getUserListHeaderSF = createServerFn({ method: "GET" })

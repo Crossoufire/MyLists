@@ -1,10 +1,10 @@
 import z from "zod";
 import {notFound} from "@tanstack/react-router";
 import {createServerFn} from "@tanstack/react-start";
+import {respondToFollowRequest} from "@/lib/schemas";
 import {getContainer} from "@/lib/server/core/container";
 import {FormattedError} from "@/lib/utils/error-classes";
 import {PrivacyType, SocialNotifType} from "@/lib/utils/enums";
-import {respondToFollowRequest} from "@/lib/types/zod.schema.types";
 import {requiredAuthMiddleware} from "@/lib/server/middlewares/authentication";
 
 
