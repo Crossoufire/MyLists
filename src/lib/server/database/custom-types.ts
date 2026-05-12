@@ -1,6 +1,6 @@
-import {CoverType} from "@/lib/types/media-common.types";
-import {getImageUrl} from "@/lib/utils/image-url";
 import {customType} from "drizzle-orm/sqlite-core";
+import {CoverType} from "@/lib/types/media-common.types";
+import {getImageFilename, getImageUrl} from "@/lib/utils/image-url";
 
 
 export const customJson = <TData>(name: string) => customType<{ data: TData; driverData: string }>({
@@ -21,7 +21,7 @@ export const imageUrl = (name: string, coverType: CoverType) => customType<{ dat
         return "text";
     },
     toDriver(value: string) {
-        return value;
+        return getImageFilename(value);
     },
     fromDriver(value: string) {
         return getImageUrl(coverType, value);
@@ -34,12 +34,10 @@ export const nullableImageUrl = (name: string, coverType: CoverType) => customTy
         return "text";
     },
     toDriver(value: string | null) {
-        return value;
+        return value ? getImageFilename(value) : null;
     },
     fromDriver(value: string | null) {
-        if (!value) {
-            return null;
-        }
+        if (!value) return null;
         return getImageUrl(coverType, value);
     },
 })(name);
