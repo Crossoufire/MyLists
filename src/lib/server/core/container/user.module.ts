@@ -11,6 +11,7 @@ import {FeatureVotesRepository} from "@/lib/server/domain/feature-votes/feature-
 import {NotificationsRepository} from "@/lib/server/domain/notifications/notifications.repository";
 import {
     UserProfileRepository,
+    UserMediaService,
     UserProfileService,
     UserRepository,
     UserService,
@@ -43,6 +44,7 @@ export function setupUserModule(mediaServiceRegistry: typeof MediaServiceRegistr
     const userProfileService = new UserProfileService(userProfileRepository, mediaServiceRegistry);
     const collectionsService = new CollectionsService(userService, collectionsRepository, mediaServiceRegistry);
     const userStatsService = new UserStatsService(userStatsRepository, achievementsRepository, userUpdatesRepository, mediaServiceRegistry);
+    const userMediaService = new UserMediaService(userStatsService, userUpdatesService, notificationsService, mediaServiceRegistry);
 
     return {
         repositories: {
@@ -59,6 +61,7 @@ export function setupUserModule(mediaServiceRegistry: typeof MediaServiceRegistr
         services: {
             user: userService,
             mediadle: mediadleService,
+            userMedia: userMediaService,
             userStats: userStatsService,
             userProfile: userProfileService,
             userUpdates: userUpdatesService,

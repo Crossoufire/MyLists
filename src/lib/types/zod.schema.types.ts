@@ -22,6 +22,7 @@ export type MediaListArgs = z.infer<typeof mediaListArgsSchema>;
 export type ListSettings = z.infer<typeof mediaListSettingsSchema>;
 export type AdminUpdatePayload = z.infer<typeof adminUpdatePayloadSchema>;
 export type AchievementTier = z.infer<typeof tierAchievementSchema>;
+export type AddMediaToList = z.infer<typeof addMediaToListSchema>;
 export type UpdateUserMedia = z.infer<typeof updateUserMediaSchema>;
 export type UpdateUserCustomCover = z.infer<typeof updateUserCustomCoverSchema>;
 export type SectionActivity = z.infer<typeof getSectionActivitySchema>;

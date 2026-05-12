@@ -1,4 +1,3 @@
-import {UpdateType} from "@/lib/utils/enums";
 import {createServerFn} from "@tanstack/react-start";
 import {getContainer} from "@/lib/server/core/container";
 import {tryFormZodError} from "@/lib/utils/try-not-found";
@@ -28,61 +27,17 @@ export const postAddMediaToList = createServerFn({ method: "POST" })
     .middleware([requiredAuthMiddleware, transactionMiddleware])
     .inputValidator(addMediaToListSchema)
     .handler(async ({ data: { mediaType, mediaId, status }, context: { currentUser } }) => {
-        const container = await getContainer();
-
-        const userStatsService = container.services.userStats;
-        const userUpdatesService = container.services.userUpdates;
-        const mediaService = container.registries.mediaService.getService(mediaType);
-
-        const { newState, media, delta, logPayload } = await mediaService.addMediaToUserList(currentUser.id, mediaId, status);
-        await userStatsService.updateUserPreComputedStatsWithDelta(currentUser.id, mediaType, mediaId, delta);
-        await userStatsService.logActivityFromDelta(currentUser.id, mediaType, mediaId, delta, newState);
-
-        await userUpdatesService.logUpdate({
-            media,
-            mediaType,
-            userId: currentUser.id,
-            updateType: UpdateType.STATUS,
-            payload: { old_value: logPayload.oldValue, new_value: logPayload.newValue },
-        });
-
-        return newState;
+        const userMediaService = await getContainer().then(c => c.services.userMedia);
+        return userMediaService.addMediaToList({ mediaType, mediaId, status, userId: currentUser.id });
     });
 
 
 export const postUpdateUserMedia = createServerFn({ method: "POST" })
     .middleware([requiredAuthMiddleware, transactionMiddleware])
     .inputValidator(updateUserMediaSchema)
-    .handler(async ({ data, context: { currentUser } }) => {
-        const { mediaType, mediaId, payload } = data;
-        const { loggedAt, ...mediaPayload } = payload;
-
-        const container = await getContainer();
-        const userStatsService = container.services.userStats;
-        const userUpdatesService = container.services.userUpdates;
-        const mediaService = container.registries.mediaService.getService(mediaType);
-
-        const timestamp = loggedAt ? `${loggedAt}T12:00:00.000Z` : undefined;
-        if (timestamp) {
-            await userUpdatesService.deleteRecentInitialAdd(currentUser.id, mediaType, mediaId);
-        }
-
-        const { newState, media, delta, logPayload } = await mediaService.updateUserMediaDetails(currentUser.id, mediaId, mediaPayload);
-        await userStatsService.updateUserPreComputedStatsWithDelta(currentUser.id, mediaType, mediaId, delta);
-        await userStatsService.logActivityFromDelta(currentUser.id, mediaType, mediaId, delta, timestamp, newState);
-
-        if (logPayload) {
-            await userUpdatesService.logUpdate({
-                media,
-                mediaType,
-                timestamp,
-                userId: currentUser.id,
-                updateType: mediaPayload.type,
-                payload: { old_value: logPayload.oldValue, new_value: logPayload.newValue },
-            });
-        }
-
-        return newState;
+    .handler(async ({ data: { mediaType, mediaId, payload }, context: { currentUser } }) => {
+        const userMediaService = await getContainer().then(c => c.services.userMedia);
+        return userMediaService.updateUserMedia({ mediaType, mediaId, payload, userId: currentUser.id });
     });
 
 
@@ -103,17 +58,8 @@ export const postRemoveMediaFromList = createServerFn({ method: "POST" })
     .middleware([requiredAuthMiddleware, transactionMiddleware])
     .inputValidator(mediaActionSchema)
     .handler(async ({ data: { mediaType, mediaId }, context: { currentUser } }) => {
-        const container = await getContainer();
-        const notifService = container.services.notifications;
-        const userStatsService = container.services.userStats;
-        const userUpdatesService = container.services.userUpdates;
-        const mediaService = container.registries.mediaService.getService(mediaType);
-
-        const delta = await mediaService.removeMediaFromUserList(currentUser.id, mediaId);
-        await userUpdatesService.deleteMediaUpdatesForUser(currentUser.id, mediaType, mediaId);
-        await notifService.deleteUserMediaNotifications(currentUser.id, mediaType, mediaId);
-        await userStatsService.updateUserPreComputedStatsWithDelta(currentUser.id, mediaType, mediaId, delta);
-        await userStatsService.deleteAssociatedActivities(currentUser.id, mediaType, mediaId);
+        const userMediaService = await getContainer().then(c => c.services.userMedia);
+        await userMediaService.removeMediaFromList({ mediaType, mediaId, userId: currentUser.id });
     });
 
 

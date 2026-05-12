@@ -27,6 +27,16 @@ const emptyResult: WrappedActivityResult = {
 };
 
 
+type LogActivityFromDeltaParams = {
+    userId: number;
+    mediaId: number;
+    mediaType: MediaType;
+    delta: DeltaStats;
+    lastUpdate?: string;
+    newState: UpdateUserMediaDetails<any, any>["newState"];
+};
+
+
 export class UserStatsService {
     constructor(
         private repository: typeof UserStatsRepository,
@@ -278,7 +288,7 @@ export class UserStatsService {
 
     // --- Activity Stats ----------------------------------------------------------
 
-    async logActivityFromDelta(userId: number, mediaType: MediaType, mediaId: number, delta: DeltaStats, newState: UpdateUserMediaDetails<any, any>["newState"], lastUpdate?: string) {
+    async logActivityFromDelta({ userId, mediaType, mediaId, delta, newState, lastUpdate }: LogActivityFromDeltaParams) {
         const activityFlags = lastUpdate
             ? {
                 isCompleted: "status" in newState && newState.status === Status.COMPLETED,

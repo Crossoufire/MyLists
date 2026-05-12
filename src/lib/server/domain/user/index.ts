@@ -3,6 +3,7 @@ export * from "./user-profile.repository";
 export * from "./user-stats.repository";
 export * from "./user-updates.repository";
 export * from "./user.service";
+export * from "./user-media.service";
 export * from "./user-profile.service";
 export * from "./user-stats.service";
 export * from "./user-updates.service";
