@@ -1,8 +1,8 @@
 import {LogUpdateParams} from "@/lib/types/base.types";
 import {SearchType} from "@/lib/types/zod.schema.types";
-import {MediaType, PrivacyType} from "@/lib/utils/enums";
 import {paginate} from "@/lib/server/database/pagination";
 import {getDbClient} from "@/lib/server/database/async-storage";
+import {MediaType, PrivacyType, UpdateType} from "@/lib/utils/enums";
 import {followers, user, userMediaUpdate} from "@/lib/server/database/schema";
 import {and, count, desc, eq, getTableColumns, inArray, like, or, SQL, sql} from "drizzle-orm";
 
@@ -163,7 +163,30 @@ export class UserUpdatesRepository {
             .where(and(eq(userMediaUpdate.mediaType, mediaType), inArray(userMediaUpdate.mediaId, mediaIds)));
     }
 
-    static async logUpdate({ userId, mediaType, media, updateType, payload }: LogUpdateParams) {
+    static async deleteRecentInitialAdd(userId: number, mediaType: MediaType, mediaId: number) {
+        const previousUpdate = getDbClient()
+            .select()
+            .from(userMediaUpdate)
+            .where(and(
+                eq(userMediaUpdate.userId, userId),
+                eq(userMediaUpdate.mediaId, mediaId),
+                eq(userMediaUpdate.mediaType, mediaType),
+                eq(userMediaUpdate.updateType, UpdateType.STATUS),
+            ))
+            .orderBy(desc(userMediaUpdate.timestamp))
+            .get();
+
+        if (!previousUpdate || previousUpdate.payload?.old_value !== null) return;
+
+        const elapsedSec = (Date.now() - new Date(previousUpdate.timestamp + "Z").getTime()) / 1000;
+        if (elapsedSec > this.updateThresholdSec) return;
+
+        await getDbClient()
+            .delete(userMediaUpdate)
+            .where(eq(userMediaUpdate.id, previousUpdate.id));
+    }
+
+    static async logUpdate({ userId, mediaType, media, updateType, payload, timestamp }: LogUpdateParams) {
         const newUpdate = {
             userId,
             payload,
@@ -171,6 +194,7 @@ export class UserUpdatesRepository {
             updateType,
             mediaId: media.id,
             mediaName: media.name,
+            ...(timestamp ? { timestamp } : {}),
         };
 
         const previousUpdate = getDbClient()
@@ -183,9 +207,10 @@ export class UserUpdatesRepository {
             .orderBy(desc(userMediaUpdate.timestamp))
             .get();
 
-        if (previousUpdate) {
-            const elapsedSec = (Date.now() - new Date(previousUpdate.timestamp + "Z").getTime()) / 1000;
-            if (elapsedSec <= this.updateThresholdSec) {
+        if (previousUpdate && !timestamp) {
+            const referenceMs = timestamp ? new Date(timestamp).getTime() : Date.now();
+            const elapsedSec = (referenceMs - new Date(previousUpdate.timestamp + "Z").getTime()) / 1000;
+            if (elapsedSec >= 0 && elapsedSec <= this.updateThresholdSec) {
                 await getDbClient()
                     .delete(userMediaUpdate)
                     .where(eq(userMediaUpdate.id, previousUpdate.id));

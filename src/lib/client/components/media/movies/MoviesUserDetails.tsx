@@ -9,8 +9,8 @@ import {useUpdateUserMediaMutation} from "@/lib/client/react-query/query-mutatio
 type MoviesUserDetailsProps<T extends MediaType> = Parameters<MediaConfig[T]["mediaUserDetails"]>[number];
 
 
-export const MoviesUserDetails = ({ userMedia, mediaType, queryOption }: MoviesUserDetailsProps<typeof MediaType.MOVIES>) => {
-    const updateUserMediaMutation = useUpdateUserMediaMutation(mediaType, userMedia.mediaId, queryOption);
+export const MoviesUserDetails = ({ userMedia, mediaType, queryOption, mutationOptions }: MoviesUserDetailsProps<typeof MediaType.MOVIES>) => {
+    const updateUserMediaMutation = useUpdateUserMediaMutation(mediaType, userMedia.mediaId, queryOption, mutationOptions);
 
     return (
         <>
@@ -25,6 +25,7 @@ export const MoviesUserDetails = ({ userMedia, mediaType, queryOption }: MoviesU
                         <div>Rating</div>
                         <UpdateRating
                             rating={userMedia.rating}
+                            disabled={mutationOptions?.backlogMode}
                             onUpdateMutation={updateUserMediaMutation}
                         />
                     </div>

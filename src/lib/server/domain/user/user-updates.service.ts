@@ -26,6 +26,10 @@ export class UserUpdatesService {
         return this.repository.deleteMediaUpdates(mediaType, mediaIds);
     }
 
+    async deleteRecentInitialAdd(userId: number, mediaType: MediaType, mediaId: number) {
+        return this.repository.deleteRecentInitialAdd(userId, mediaType, mediaId);
+    }
+
     async getUserUpdatesPaginated(filters: SearchType, userId?: number) {
         return this.repository.getUserUpdatesPaginated(filters, userId)
     }
@@ -38,7 +42,7 @@ export class UserUpdatesService {
         return this.repository.deleteUserUpdates(userId, updateIds, returnData);
     }
 
-    async logUpdate({ userId, mediaType, media, updateType, payload }: LogUpdateParams) {
-        await this.repository.logUpdate({ userId, mediaType, media, updateType, payload });
+    async logUpdate({ userId, mediaType, media, updateType, payload, timestamp }: LogUpdateParams) {
+        await this.repository.logUpdate({ userId, mediaType, media, updateType, payload, timestamp });
     }
 }

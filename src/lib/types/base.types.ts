@@ -12,6 +12,7 @@ export type CoverType = `${MediaType}-covers` | "profile-covers" | "profile-back
 export type UpdatePayload = {
     payload: {
         type: UpdateType;
+        loggedAt?: string;
     } & (CommentPayload | PlatformPayload | RatingPayload | FavoritePayload |
         PlaytimePayload | StatusPayload | PagePayload | ChapterPayload | RedoPayload |
         RedoTvPayload | EpsSeasonPayload);
@@ -192,6 +193,7 @@ export type LogPayload = { oldValue: any; newValue: any } | null;
 export type LogUpdateParams = {
     media: any;
     userId: number;
+    timestamp?: string;
     mediaType: MediaType;
     payload: LogPayloadDb;
     updateType: UpdateType;

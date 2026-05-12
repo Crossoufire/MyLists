@@ -461,8 +461,8 @@ export class UserStatsRepository {
             };
         });
 
-        const gainValues = values.filter((activity) => activity.specificGained !== 0);
-        const zeroGainValues = values.filter((activity) => activity.specificGained === 0);
+        const gainValues = values.filter((a) => a.specificGained !== 0);
+        const zeroGainValues = values.filter((a) => a.specificGained === 0 && (a.isCompleted || a.isRedo));
 
         if (gainValues.length > 0) {
             await getDbClient()
@@ -476,9 +476,9 @@ export class UserStatsRepository {
                         userMediaActivity.monthBucket,
                     ],
                     set: {
-                        isRedo: sql`excluded.is_redo`,
                         lastUpdate: sql`excluded.last_update`,
-                        isCompleted: sql`excluded.is_completed`,
+                        isRedo: sql`${userMediaActivity.isRedo} OR excluded.is_redo`,
+                        isCompleted: sql`${userMediaActivity.isCompleted} OR excluded.is_completed`,
                         specificGained: sql`${userMediaActivity.specificGained} + excluded.specific_gained`,
                     },
                 });
@@ -488,9 +488,9 @@ export class UserStatsRepository {
             await getDbClient()
                 .update(userMediaActivity)
                 .set({
-                    isRedo: activity.isRedo,
                     lastUpdate: activity.lastUpdate,
-                    isCompleted: activity.isCompleted,
+                    isRedo: sql`${userMediaActivity.isRedo} OR ${activity.isRedo}`,
+                    isCompleted: sql`${userMediaActivity.isCompleted} OR ${activity.isCompleted}`,
                 })
                 .where(and(
                     eq(userMediaActivity.userId, activity.userId),

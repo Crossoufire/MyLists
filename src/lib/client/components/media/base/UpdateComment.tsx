@@ -10,12 +10,13 @@ import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle} fro
 
 
 interface CommentaryProps {
+    disabled?: boolean;
     content: string | null | undefined;
     updateComment: ReturnType<typeof useUpdateUserMediaMutation>;
 }
 
 
-export const UpdateComment = ({ content, updateComment }: CommentaryProps) => {
+export const UpdateComment = ({ content, updateComment, disabled = false }: CommentaryProps) => {
     const [comment, setComment] = useState(content);
     const readableDialogComment = comment ?? content;
     const [isEditing, setIsEditing] = useState(false);
@@ -24,6 +25,7 @@ export const UpdateComment = ({ content, updateComment }: CommentaryProps) => {
     const shouldShowExpandedReader = !!content && content.trim().length >= 280;
 
     const handleEditToggle = () => {
+        if (disabled) return;
         if (!isEditing) setComment(content);
         setIsEditing(!isEditing);
     };
@@ -37,6 +39,7 @@ export const UpdateComment = ({ content, updateComment }: CommentaryProps) => {
     };
 
     const handleOpenExpandedReader = () => {
+        if (disabled) return;
         setComment(content);
         setDialogOpen(true);
         setIsDialogEditing(false);
@@ -68,7 +71,7 @@ export const UpdateComment = ({ content, updateComment }: CommentaryProps) => {
                             <Maximize2 className="size-3.5"/>
                         </Button>
                     }
-                    <span role="button" onClick={handleEditToggle}>
+                    <span role="button" onClick={handleEditToggle} className={disabled ? "pointer-events-none opacity-40" : ""}>
                         {content ? "Edit" : "Add"}
                     </span>
                 </div>

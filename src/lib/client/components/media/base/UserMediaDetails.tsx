@@ -1,15 +1,15 @@
 import {toast} from "sonner";
 import {useState} from "react";
 import {MediaType} from "@/lib/utils/enums";
-import {capitalize} from "@/lib/utils/formating";
 import {Card} from "@/lib/client/components/ui/card";
 import {Input} from "@/lib/client/components/ui/input";
 import {Label} from "@/lib/client/components/ui/label";
 import {Button} from "@/lib/client/components/ui/button";
-import {ImageOff, Link2, UploadCloud, X} from "lucide-react";
 import {useQuery, useQueryClient} from "@tanstack/react-query";
+import {capitalize, formatDateTime} from "@/lib/utils/formating";
 import {TagsLists} from "@/lib/client/components/media/base/TagsLists";
 import {UserMedia, UserMediaItem} from "@/lib/types/query.options.types";
+import {CalendarClock, ImageOff, Link2, UploadCloud, X} from "lucide-react";
 import {TabHeader, TabItem} from "@/lib/client/components/general/TabHeader";
 import {UpdateComment} from "@/lib/client/components/media/base/UpdateComment";
 import {HistoryDetails} from "@/lib/client/components/media/base/HistoryDetails";
@@ -33,11 +33,16 @@ interface UserMediaDetailsProps {
 
 export const UserMediaDetails = ({ userMedia, mediaType, queryOption }: UserMediaDetailsProps) => {
     const queryClient = useQueryClient();
+    const [backlogDate, setBacklogDate] = useState("");
+    const [backlogMode, setBacklogMode] = useState(false);
     const history = useQuery(historyOptions(mediaType, userMedia.mediaId)).data;
     const updateCustomCoverMutation = useUpdateCustomCoverMutation(queryOption);
     const removeMediaFromListMutation = useRemoveMediaFromListMutation(queryOption);
     const [activeTab, setActiveTab] = useState<"progress" | "history" | "custom">("progress");
-    const updateUserMediaMutation = useUpdateUserMediaMutation(mediaType, userMedia.mediaId, queryOption);
+    const updateUserMediaMutation = useUpdateUserMediaMutation(mediaType, userMedia.mediaId, queryOption, {
+        backlogMode,
+        loggedAt: backlogMode ? backlogDate : undefined,
+    });
 
     const handleRemoveMediaFromList = () => {
         if (!window.confirm(`Do you want to remove this ${mediaType} from your list?`)) return;
@@ -69,6 +74,7 @@ export const UserMediaDetails = ({ userMedia, mediaType, queryOption }: UserMedi
         <Card className="bg-popover max-w-94 w-full">
             <TabHeader tabs={tabs} activeTab={activeTab} setActiveTab={setActiveTab} className="px-2.5">
                 <UpdateFavorite
+                    disabled={backlogMode}
                     isFavorite={userMedia.favorite}
                     updateFavorite={updateUserMediaMutation}
                 />
@@ -76,21 +82,37 @@ export const UserMediaDetails = ({ userMedia, mediaType, queryOption }: UserMedi
 
             {activeTab === "progress" ?
                 <div className="space-y-2 px-4 mt-1">
-                    <UserMediaSpecificDetails
-                        mediaType={mediaType}
-                        userMedia={userMedia}
-                        queryOption={queryOption}
+                    <div className={(backlogMode && !backlogDate) ? "pointer-events-none opacity-40 space-y-2" : "space-y-2"}>
+                        <UserMediaSpecificDetails
+                            mediaType={mediaType}
+                            userMedia={userMedia}
+                            queryOption={queryOption}
+                            mutationOptions={{ backlogMode, loggedAt: backlogMode ? backlogDate : undefined }}
+                        />
+                    </div>
+
+                    <BacklogModeBanner
+                        date={backlogDate}
+                        enabled={backlogMode}
+                        onDateChange={setBacklogDate}
+                        disabled={updateUserMediaMutation.isPending}
+                        onToggle={() => setBacklogMode((enabled) => !enabled)}
                     />
+
                     <UpdateComment
+                        disabled={backlogMode}
                         content={userMedia.comment}
                         updateComment={updateUserMediaMutation}
                     />
-                    <TagsLists
-                        mediaType={mediaType}
-                        queryOption={queryOption}
-                        mediaId={userMedia.mediaId}
-                        tags={userMedia?.tags ?? []}
-                    />
+                    <div className={backlogMode ? "pointer-events-none opacity-40" : ""}>
+                        <TagsLists
+                            mediaType={mediaType}
+                            queryOption={queryOption}
+                            mediaId={userMedia.mediaId}
+                            tags={userMedia?.tags ?? []}
+                        />
+                    </div>
+
                 </div>
                 :
                 activeTab === "custom" ?
@@ -113,6 +135,66 @@ export const UserMediaDetails = ({ userMedia, mediaType, queryOption }: UserMedi
                 Remove from your list
             </Button>
         </Card>
+    );
+};
+
+
+const toDateInputValue = (date: Date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+
+    return `${year}-${month}-${day}`;
+};
+
+
+interface BacklogModeBannerProps {
+    date: string;
+    enabled: boolean;
+    disabled: boolean;
+    onToggle: () => void;
+    onDateChange: (date: string) => void;
+}
+
+
+const BacklogModeBanner = ({ enabled, date, disabled, onToggle, onDateChange }: BacklogModeBannerProps) => {
+    return (
+        <div className="space-y-2 rounded-md border border-dashed p-3 mt-4">
+            <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2 text-sm font-medium">
+                    <CalendarClock className="size-4 text-muted-foreground"/>
+                    Backlog Mode
+                </div>
+                <Button type="button" size="sm" variant={enabled ? "emeraldy" : "outline"} disabled={disabled} onClick={onToggle}>
+                    {enabled ? "On" : "Off"}
+                </Button>
+            </div>
+            {enabled &&
+                <>
+                    <div className="grid gap-2">
+                        <Label htmlFor="backlog-date">Backlog Date</Label>
+                        <Input
+                            type="date"
+                            value={date}
+                            id="backlog-date"
+                            max={toDateInputValue(new Date())}
+                            onChange={(ev) => onDateChange(ev.target.value)}
+                        />
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                        {date ?
+                            <span>
+                                All progress changes will be logged for {formatDateTime(date, { noTime: true })}
+                            </span>
+                            :
+                            <span>
+                                Choose a backlog date before editing progress.
+                            </span>
+                        }
+                    </div>
+                </>
+            }
+        </div>
     );
 };
 

@@ -11,9 +11,9 @@ import {useUpdateUserMediaMutation} from "@/lib/client/react-query/query-mutatio
 type TvUserDetailsProps<T extends MediaType> = Parameters<MediaConfig[T]["mediaUserDetails"]>[number];
 
 
-export const TvUserDetails = ({ userMedia, mediaType, queryOption }: TvUserDetailsProps<typeof MediaType.SERIES | typeof MediaType.ANIME>) => {
+export const TvUserDetails = ({ userMedia, mediaType, queryOption, mutationOptions }: TvUserDetailsProps<typeof MediaType.SERIES | typeof MediaType.ANIME>) => {
     const queryClient = useQueryClient();
-    const updateUserMediaMutation = useUpdateUserMediaMutation(mediaType, userMedia.mediaId, queryOption);
+    const updateUserMediaMutation = useUpdateUserMediaMutation(mediaType, userMedia.mediaId, queryOption, mutationOptions);
     const mediaData = getMediaData()!;
 
     function getMediaData() {
@@ -47,6 +47,7 @@ export const TvUserDetails = ({ userMedia, mediaType, queryOption }: TvUserDetai
                     <div>Rating</div>
                     <UpdateRating
                         rating={userMedia.rating}
+                        disabled={mutationOptions?.backlogMode}
                         onUpdateMutation={updateUserMediaMutation}
                     />
                 </div>

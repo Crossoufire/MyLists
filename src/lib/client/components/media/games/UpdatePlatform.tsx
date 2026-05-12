@@ -7,13 +7,14 @@ import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/l
 
 
 interface UpdatePlatformProps {
+    disabled?: boolean;
     mediaId: number;
     platform: GamesPlatformsEnum | null;
     updatePlatform: ReturnType<typeof useUpdateUserMediaMutation>;
 }
 
 
-export const UpdatePlatform = ({ platform, mediaId, updatePlatform }: UpdatePlatformProps) => {
+export const UpdatePlatform = ({ platform, mediaId, updatePlatform, disabled = false }: UpdatePlatformProps) => {
     const [open, setOpen] = useState(false);
     const { data, isLoading } = useQuery(gameCompatiblePlatformsOptions(mediaId, open));
 
@@ -24,6 +25,7 @@ export const UpdatePlatform = ({ platform, mediaId, updatePlatform }: UpdatePlat
     const allPlatforms = ["-", ...(selectedPlatformIsMissing ? [platform] : []), ...availablePlatforms];
 
     const handleSelect = (value: string) => {
+        if (disabled) return;
         const valueToSend = value === "-" ? null : value as GamesPlatformsEnum;
         updatePlatform.mutate({ payload: { platform: valueToSend, type: UpdateType.PLATFORM } });
     };
@@ -36,7 +38,7 @@ export const UpdatePlatform = ({ platform, mediaId, updatePlatform }: UpdatePlat
                 onOpenChange={setOpen}
                 onValueChange={handleSelect}
                 value={platform?.toString() ?? "-"}
-                disabled={updatePlatform.isPending}
+                disabled={updatePlatform.isPending || disabled}
             >
                 <SelectTrigger size="sm" className="w-34">
                     <SelectValue/>

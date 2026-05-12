@@ -1,6 +1,7 @@
 import {UpdateType} from "@/lib/utils/enums";
 import {createServerFn} from "@tanstack/react-start";
 import {getContainer} from "@/lib/server/core/container";
+import {tryFormZodError} from "@/lib/utils/try-not-found";
 import {transactionMiddleware} from "@/lib/server/middlewares/transaction";
 import {requiredAuthMiddleware} from "@/lib/server/middlewares/authentication";
 import {
@@ -12,7 +13,6 @@ import {
     updateUserMediaSchema,
     userTagNamesSchema
 } from "@/lib/types/zod.schema.types";
-import {tryFormZodError} from "@/lib/utils/try-not-found";
 
 
 export const getUserMediaHistory = createServerFn({ method: "GET" })
@@ -36,7 +36,7 @@ export const postAddMediaToList = createServerFn({ method: "POST" })
 
         const { newState, media, delta, logPayload } = await mediaService.addMediaToUserList(currentUser.id, mediaId, status);
         await userStatsService.updateUserPreComputedStatsWithDelta(currentUser.id, mediaType, mediaId, delta);
-        await userStatsService.logActivityFromDelta(currentUser.id, mediaType, mediaId, delta);
+        await userStatsService.logActivityFromDelta(currentUser.id, mediaType, mediaId, delta, newState);
 
         await userUpdatesService.logUpdate({
             media,
@@ -55,22 +55,29 @@ export const postUpdateUserMedia = createServerFn({ method: "POST" })
     .inputValidator(updateUserMediaSchema)
     .handler(async ({ data, context: { currentUser } }) => {
         const { mediaType, mediaId, payload } = data;
+        const { loggedAt, ...mediaPayload } = payload;
 
         const container = await getContainer();
         const userStatsService = container.services.userStats;
         const userUpdatesService = container.services.userUpdates;
         const mediaService = container.registries.mediaService.getService(mediaType);
 
-        const { newState, media, delta, logPayload } = await mediaService.updateUserMediaDetails(currentUser.id, mediaId, payload);
+        const timestamp = loggedAt ? `${loggedAt}T12:00:00.000Z` : undefined;
+        if (timestamp) {
+            await userUpdatesService.deleteRecentInitialAdd(currentUser.id, mediaType, mediaId);
+        }
+
+        const { newState, media, delta, logPayload } = await mediaService.updateUserMediaDetails(currentUser.id, mediaId, mediaPayload);
         await userStatsService.updateUserPreComputedStatsWithDelta(currentUser.id, mediaType, mediaId, delta);
-        await userStatsService.logActivityFromDelta(currentUser.id, mediaType, mediaId, delta);
+        await userStatsService.logActivityFromDelta(currentUser.id, mediaType, mediaId, delta, timestamp, newState);
 
         if (logPayload) {
             await userUpdatesService.logUpdate({
                 media,
                 mediaType,
+                timestamp,
                 userId: currentUser.id,
-                updateType: payload.type,
+                updateType: mediaPayload.type,
                 payload: { old_value: logPayload.oldValue, new_value: logPayload.newValue },
             });
         }

@@ -12,9 +12,9 @@ import {useUpdateUserMediaMutation} from "@/lib/client/react-query/query-mutatio
 type BooksUserDetailsProps<T extends MediaType> = Parameters<MediaConfig[T]["mediaUserDetails"]>[0];
 
 
-export const BooksUserDetails = ({ userMedia, mediaType, queryOption }: BooksUserDetailsProps<typeof MediaType.BOOKS>) => {
+export const BooksUserDetails = ({ userMedia, mediaType, queryOption, mutationOptions }: BooksUserDetailsProps<typeof MediaType.BOOKS>) => {
     const queryClient = useQueryClient();
-    const updateUserMediaMutation = useUpdateUserMediaMutation(mediaType, userMedia.mediaId, queryOption);
+    const updateUserMediaMutation = useUpdateUserMediaMutation(mediaType, userMedia.mediaId, queryOption, mutationOptions);
     const mediaData = getMediaData()!;
 
     function getMediaData() {
@@ -53,6 +53,7 @@ export const BooksUserDetails = ({ userMedia, mediaType, queryOption }: BooksUse
                         <div>Rating</div>
                         <UpdateRating
                             rating={userMedia.rating}
+                            disabled={mutationOptions?.backlogMode}
                             onUpdateMutation={updateUserMediaMutation}
                         />
                     </div>

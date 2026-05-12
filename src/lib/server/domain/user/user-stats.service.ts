@@ -2,7 +2,7 @@ import {zeroPad} from "@/lib/utils/formating";
 import {statusUtils} from "@/lib/utils/mapping";
 import {DeltaStats} from "@/lib/types/stats.types";
 import {MediaType, Status} from "@/lib/utils/enums";
-import {UserMediaStats} from "@/lib/types/base.types";
+import {UpdateUserMediaDetails, UserMediaStats} from "@/lib/types/base.types";
 import {MediaServiceRegistry} from "@/lib/server/domain/media/media.registries";
 import {UserStatsRepository} from "@/lib/server/domain/user/user-stats.repository";
 import {UserUpdatesRepository} from "@/lib/server/domain/user/user-updates.repository";
@@ -278,12 +278,20 @@ export class UserStatsService {
 
     // --- Activity Stats ----------------------------------------------------------
 
-    async logActivityFromDelta(userId: number, mediaType: MediaType, mediaId: number, delta: DeltaStats) {
-        const specificGained = this._resolveSpecificGainedFromDelta(mediaType, delta);
-        const isRedo = (delta.totalRedo ?? 0) > 0;
-        const isCompleted = (delta.statusCounts?.[Status.COMPLETED] ?? 0) > 0;
+    async logActivityFromDelta(userId: number, mediaType: MediaType, mediaId: number, delta: DeltaStats, newState: UpdateUserMediaDetails<any, any>["newState"], lastUpdate?: string) {
+        const activityFlags = lastUpdate
+            ? {
+                isCompleted: "status" in newState && newState.status === Status.COMPLETED,
+                isRedo: ("redo" in newState && (newState.redo ?? 0) > 0) || ("redo2" in newState && Array.isArray(newState.redo2)
+                    && newState.redo2.some((count: number) => count > 0)),
+            }
+            : undefined;
 
-        await this.repository.logActivity([{ userId, mediaId, mediaType, specificGained, isCompleted, isRedo }]);
+        const specificGained = this._resolveSpecificGainedFromDelta(mediaType, delta);
+        const isRedo = activityFlags?.isRedo ?? (delta.totalRedo ?? 0) > 0;
+        const isCompleted = activityFlags?.isCompleted ?? (delta.statusCounts?.[Status.COMPLETED] ?? 0) > 0;
+
+        await this.repository.logActivity([{ userId, mediaId, mediaType, specificGained, isCompleted, isRedo, lastUpdate }]);
     }
 
     async getMonthlyActivity(userId: number, timeBucket: string) {

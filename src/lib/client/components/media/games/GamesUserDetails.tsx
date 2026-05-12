@@ -11,8 +11,8 @@ import {useUpdateUserMediaMutation} from "@/lib/client/react-query/query-mutatio
 type GamesUserDetailsProps<T extends MediaType> = Parameters<MediaConfig[T]["mediaUserDetails"]>[0];
 
 
-export const GamesUserDetails = ({ userMedia, mediaType, queryOption }: GamesUserDetailsProps<typeof MediaType.GAMES>) => {
-    const updateUserMediaMutation = useUpdateUserMediaMutation(mediaType, userMedia.mediaId, queryOption);
+export const GamesUserDetails = ({ userMedia, mediaType, queryOption, mutationOptions }: GamesUserDetailsProps<typeof MediaType.GAMES>) => {
+    const updateUserMediaMutation = useUpdateUserMediaMutation(mediaType, userMedia.mediaId, queryOption, mutationOptions);
 
     return (
         <>
@@ -24,6 +24,7 @@ export const GamesUserDetails = ({ userMedia, mediaType, queryOption }: GamesUse
             <UpdatePlatform
                 mediaId={userMedia.mediaId}
                 platform={userMedia.platform}
+                disabled={mutationOptions?.backlogMode}
                 updatePlatform={updateUserMediaMutation}
             />
             {userMedia.status !== Status.PLAN_TO_PLAY &&
@@ -36,6 +37,7 @@ export const GamesUserDetails = ({ userMedia, mediaType, queryOption }: GamesUse
                         <div>Rating</div>
                         <UpdateRating
                             rating={userMedia.rating}
+                            disabled={mutationOptions?.backlogMode}
                             onUpdateMutation={updateUserMediaMutation}
                         />
                     </div>

@@ -50,7 +50,7 @@ import {getMangaActiveFilters} from "@/lib/client/components/media/manga/MangaAc
 import {getBooksActiveFilters} from "@/lib/client/components/media/books/BooksActiveFilters";
 import {getGamesActiveFilters} from "@/lib/client/components/media/games/GamesActiveFilters";
 import {getMoviesActiveFilters} from "@/lib/client/components/media/movies/MoviesActiveFilters";
-import {UserMediaQueryOption} from "@/lib/client/react-query/query-mutations/user-media.mutations";
+import {UpdateUserMediaMutationOptions, UserMediaQueryOption} from "@/lib/client/react-query/query-mutations/user-media.mutations";
 import {ExtractFollowByType, ExtractListByType, ExtractMediaDetailsByType, ExtractUserMediaByType} from "@/lib/types/query.options.types";
 
 
@@ -81,6 +81,7 @@ export type MediaConfig = {
             mediaType: T;
             queryOption: UserMediaQueryOption;
             userMedia: ExtractUserMediaByType<T>;
+            mutationOptions?: UpdateUserMediaMutationOptions;
         }>;
         mediaFollowCard: React.FC<{
             rating: React.ReactNode,

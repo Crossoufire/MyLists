@@ -1,8 +1,8 @@
 import {useAuth} from "@/lib/client/hooks/use-auth";
-import {MediaType, TagAction} from "@/lib/utils/enums";
 import {SearchType} from "@/lib/types/zod.schema.types";
 import {Tag, UpdatePayload} from "@/lib/types/base.types";
 import {useMutation, useQueryClient} from "@tanstack/react-query";
+import {MediaType, TagAction, UpdateType} from "@/lib/utils/enums";
 import {
     postAddMediaToList,
     postDeleteUserUpdates,
@@ -20,9 +20,16 @@ import {
     tagNamesOptions,
     tagsViewOptions
 } from "@/lib/client/react-query/query-options/query-options";
+import {FormattedError} from "@/lib/utils/error-classes";
 
 
 export type UserMediaQueryOption = ReturnType<typeof mediaDetailsOptions> | ReturnType<typeof mediaListOptions>;
+
+
+export type UpdateUserMediaMutationOptions = {
+    loggedAt?: string;
+    backlogMode?: boolean;
+}
 
 
 export const useDeleteProfileUpdateMutation = (username: string) => {
@@ -139,13 +146,44 @@ export const useRemoveMediaFromListMutation = (queryOption: UserMediaQueryOption
 };
 
 
-export const useUpdateUserMediaMutation = (mediaType: MediaType, mediaId: number, queryOption: UserMediaQueryOption) => {
+export const useUpdateUserMediaMutation = (mediaType: MediaType, mediaId: number, queryOption: UserMediaQueryOption, options: UpdateUserMediaMutationOptions = {}) => {
     const queryClient = useQueryClient();
 
+    const activityUpdateTypes = new Set<UpdateType>([
+        UpdateType.TV,
+        UpdateType.PAGE,
+        UpdateType.REDO,
+        UpdateType.STATUS,
+        UpdateType.CHAPTER,
+        UpdateType.PLAYTIME,
+    ]);
+
     return useMutation({
-        mutationFn: ({ payload }: UpdatePayload) => postUpdateUserMedia({ data: { payload, mediaType, mediaId } }),
+        mutationFn: ({ payload }: UpdatePayload) => {
+            const activityUpdate = activityUpdateTypes.has(payload.type);
+
+            if (options.backlogMode && !activityUpdate) {
+                throw new FormattedError("Only progress changes can be edited in backlog mode.");
+            }
+
+            if (options.backlogMode && activityUpdate && !options.loggedAt) {
+                throw new FormattedError("Choose a backlog date before editing progress.");
+            }
+
+            const payloadWithDate = options.loggedAt && activityUpdate ? { ...payload, loggedAt: options.loggedAt } : payload;
+
+            return postUpdateUserMedia({ data: { payload: payloadWithDate, mediaType, mediaId } });
+        },
         meta: { errorMessage: "Failed to update this field value. Please try again later." },
-        onSuccess: (data) => {
+        onSuccess: (data, variables) => {
+            const activityUpdate = activityUpdateTypes.has(variables.payload.type);
+
+            void queryClient.invalidateQueries({ queryKey: historyOptions(mediaType, mediaId).queryKey });
+            if (activityUpdate) {
+                void queryClient.invalidateQueries({ queryKey: ["monthly-activity"] });
+                void queryClient.invalidateQueries({ queryKey: ["section-activity"] });
+            }
+
             if (queryOption.queryKey[0] === "details") {
                 queryClient.setQueryData(queryOption.queryKey, (oldData) => {
                     if (!oldData) return;

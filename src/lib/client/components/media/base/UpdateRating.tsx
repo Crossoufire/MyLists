@@ -6,24 +6,26 @@ import {getFeelingIcon, getFeelingList, getScoreList} from "@/lib/utils/ratings"
 
 
 interface RatingComponentProps {
+    disabled?: boolean;
     rating: number | null;
     onUpdateMutation: ReturnType<typeof useUpdateUserMediaMutation>;
 }
 
 
-export const UpdateRating = ({ rating, onUpdateMutation }: RatingComponentProps) => {
+export const UpdateRating = ({ rating, onUpdateMutation, disabled = false }: RatingComponentProps) => {
     const { currentUser } = useAuth();
     const ratingList = (currentUser?.ratingSystem === RatingSystemType.SCORE) ? getScoreList() : getFeelingList({ size: 16 });
     const ratingValue = (currentUser?.ratingSystem === RatingSystemType.SCORE) ? rating : getFeelingIcon(rating, { labelOnly: true });
 
     const handleSelectChange = (value: string) => {
+        if (disabled) return;
         const valueToSend = value === "-" ? null : Number(value);
         onUpdateMutation.mutate({ payload: { rating: valueToSend, type: UpdateType.RATING } });
     };
 
     return (
         <div className="flex justify-between items-center">
-            <Select value={ratingValue?.toString() ?? "-"} onValueChange={handleSelectChange} disabled={onUpdateMutation?.isPending}>
+            <Select value={ratingValue?.toString() ?? "-"} onValueChange={handleSelectChange} disabled={onUpdateMutation?.isPending || disabled}>
                 <SelectTrigger size="sm" className="w-34">
                     <SelectValue/>
                 </SelectTrigger>

@@ -169,11 +169,36 @@ export const addMediaToListSchema = z.object({
     mediaId: z.coerce.number().int().positive(),
 });
 
+const isValidDateInput = (value: string) => {
+    const [year, month, day] = value.split("-").map(Number);
+    const date = new Date(`${value}T00:00:00.000Z`);
+    return date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day;
+};
+
+
+const loggedAtSchema = z.string().trim()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "Use YYYY-MM-DD.")
+    .refine(isValidDateInput, "Invalid date.")
+    .refine((value) => new Date(`${value}T00:00:00.000Z`).getTime() <= Date.now(), "Date cannot be in the future.")
+    .optional();
+
+
+const loggedActivityUpdateTypes = new Set<UpdateType>([
+    UpdateType.TV,
+    UpdateType.PAGE,
+    UpdateType.REDO,
+    UpdateType.STATUS,
+    UpdateType.CHAPTER,
+    UpdateType.PLAYTIME,
+]);
+
+
 export const updateUserMediaSchema = z.object({
     mediaType: z.enum(MediaType),
     mediaId: z.coerce.number().int().positive(),
     payload: z.object({
         type: z.enum(UpdateType),
+        loggedAt: loggedAtSchema,
         favorite: z.boolean().optional(),
         status: z.enum(Status).optional(),
         comment: z.string().nullish().optional(),
@@ -188,11 +213,14 @@ export const updateUserMediaSchema = z.object({
         rating: z.number().min(0).max(10).optional().nullable(),
     }).refine((data) => {
         const definedFields = Object.entries(data)
-            .filter(([key, value]) => key !== "type" && value !== undefined)
+            .filter(([key, value]) => key !== "type" && key !== "loggedAt" && value !== undefined)
             .map(([key, _]) => key);
         return definedFields.length === 1;
     }, {
-        message: "Exactly one field (besides type) must be provided in the payload."
+        message: "Too many fields provided in the payload."
+    }).refine((data) => !data.loggedAt || loggedActivityUpdateTypes.has(data.type), {
+        message: "Only progress changes can be backdated.",
+        path: ["loggedAt"],
     })
 });
 

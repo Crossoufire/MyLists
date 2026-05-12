@@ -1,17 +1,18 @@
 import {MediaType} from "@/lib/utils/enums";
 import {mediaConfig} from "@/lib/client/components/media/media-config";
 import {ExtractUserMediaByType} from "@/lib/types/query.options.types";
-import {UserMediaQueryOption} from "@/lib/client/react-query/query-mutations/user-media.mutations";
+import {UpdateUserMediaMutationOptions, UserMediaQueryOption} from "@/lib/client/react-query/query-mutations/user-media.mutations";
 
 
 interface UserMediaSpecificDetailsProps<T extends MediaType> {
     mediaType: T;
     queryOption: UserMediaQueryOption;
     userMedia: ExtractUserMediaByType<T>;
+    mutationOptions?: UpdateUserMediaMutationOptions;
 }
 
 
-export const UserMediaSpecificDetails = <T extends MediaType>({ mediaType, userMedia, queryOption }: UserMediaSpecificDetailsProps<T>) => {
+export const UserMediaSpecificDetails = <T extends MediaType>({ mediaType, userMedia, queryOption, mutationOptions }: UserMediaSpecificDetailsProps<T>) => {
     const SpecificDetailsComponent = mediaConfig[mediaType].mediaUserDetails;
 
     return (
@@ -19,6 +20,7 @@ export const UserMediaSpecificDetails = <T extends MediaType>({ mediaType, userM
             mediaType={mediaType}
             userMedia={userMedia}
             queryOption={queryOption}
+            mutationOptions={mutationOptions}
         />
     );
 }
