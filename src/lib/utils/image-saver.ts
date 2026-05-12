@@ -3,7 +3,7 @@ import sharp from "sharp";
 import crypto from "crypto";
 import {mkdir} from "fs/promises";
 import {serverEnv} from "@/env/server";
-import {CoverType} from "@/lib/types/base.types";
+import {CoverType} from "@/lib/types/media-common.types";
 import {FormattedError} from "@/lib/utils/error-classes";
 import {createServerOnlyFn} from "@tanstack/react-start";
 

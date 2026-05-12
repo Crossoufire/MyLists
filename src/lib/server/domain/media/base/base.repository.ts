@@ -9,20 +9,10 @@ import {JobType, MediaType, Status, TagAction} from "@/lib/utils/enums";
 import {resolvePagination, resolveSorting} from "@/lib/server/database/pagination";
 import {animeList, booksList, collectionItems, followers, gamesList, mangaList, moviesList, seriesList, user} from "@/lib/server/database/schema";
 import {and, asc, count, countDistinct, desc, eq, getTableColumns, gte, inArray, isNotNull, isNull, like, lt, lte, ne, notExists, notInArray, or, SQL, sql} from "drizzle-orm";
-import {
-    AddedMediaDetails,
-    ExpandedListFilters,
-    FilterDefinition,
-    FilterDefinitions,
-    ListFilterDefinition,
-    MediaListData,
-    Tag,
-    UpComingMedia,
-    UserFollowsMediaData,
-    UserMediaStats,
-    UserMediaWithTags,
-    UserTag,
-} from "@/lib/types/base.types";
+import {AddedMediaDetails, Tag} from "@/lib/types/media-common.types";
+import {ExpandedListFilters, FilterDefinition, FilterDefinitions, ListFilterDefinition, MediaListData, UserTag} from "@/lib/types/media-list.types";
+import {UpComingMedia} from "@/lib/types/notifications.types";
+import {UserFollowsMediaData, UserMediaStats, UserMediaWithTags} from "@/lib/types/user-media.types";
 import {MediaInfo} from "@/lib/types/activity.types";
 import {ProviderSearchResult} from "@/lib/types/provider.types";
 

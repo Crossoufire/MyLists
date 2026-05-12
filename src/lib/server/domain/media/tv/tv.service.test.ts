@@ -1,5 +1,5 @@
 import {getContainer} from "@/lib/server/core/container";
-import type {UserMediaWithTags} from "@/lib/types/base.types";
+import type {UserMediaWithTags} from "@/lib/types/user-media.types";
 import {MediaType, RatingSystemType, Status} from "@/lib/utils/enums";
 import {afterEach, beforeEach, describe, expect, it, vi} from "vitest";
 import type {TvList, TvType} from "@/lib/server/domain/media/tv/tv.types";

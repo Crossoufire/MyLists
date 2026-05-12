@@ -1,8 +1,7 @@
 import {SearchType} from "@/lib/schemas";
 import {MediaType} from "@/lib/utils/enums";
-import {ErrorLog} from "@/lib/types/base.types";
+import {AdminErrorLog, AdminMediaRefreshStatsParams} from "@/lib/types/admin.types";
 import {SaveTaskToDb} from "@/lib/types/tasks.types";
-import {MediaRefreshStatsParams} from "@/lib/types/admin.types";
 import {AdminRepository} from "@/lib/server/domain/admin/admin.repository";
 import {MediaServiceRegistry} from "@/lib/server/domain/media/media.registries";
 
@@ -11,7 +10,7 @@ export class AdminService {
     constructor(private repository: typeof AdminRepository) {
     }
 
-    async saveErrorToDb(error: ErrorLog) {
+    async saveErrorToDb(error: AdminErrorLog) {
         return this.repository.saveErrorToDb(error);
     }
 
@@ -86,7 +85,7 @@ export class AdminService {
         return this.repository.logMediaRefresh(params);
     }
 
-    async getMediaRefreshStats({ dailyRange = "30d", topRange = "all", recentPage = 1 }: MediaRefreshStatsParams = {}) {
+    async getMediaRefreshStats({ dailyRange = "30d", topRange = "all", recentPage = 1 }: AdminMediaRefreshStatsParams = {}) {
         const mediaRefreshRangeDays = { "30d": 30, "90d": 90, "1y": 365, all: null };
 
         const mediaTypes = Object.values(MediaType);

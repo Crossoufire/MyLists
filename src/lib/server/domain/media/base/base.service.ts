@@ -8,7 +8,8 @@ import {BaseRepository} from "@/lib/server/domain/media/base/base.repository";
 import {BaseProviderService} from "@/lib/server/domain/media/base/provider.service";
 import {JobType, MediaType, Status, TagAction, UpdateType} from "@/lib/utils/enums";
 import {MediaListArgs, SearchType, UpdateUserCustomCover, UpdateUserMedia} from "@/lib/schemas";
-import {StatsCTE, Tag, UpdateHandlerFn, UpdateUserMediaDetails, UserMediaWithTags} from "@/lib/types/base.types";
+import {StatsCTE, Tag} from "@/lib/types/media-common.types";
+import {UpdateHandlerFn, UpdateUserMediaDetails, UserMediaWithTags} from "@/lib/types/user-media.types";
 
 
 export abstract class BaseService<TConfig extends MediaSchemaConfig, R extends BaseRepository<TConfig>> {

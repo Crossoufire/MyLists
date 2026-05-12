@@ -1,7 +1,8 @@
 import {Status} from "@/lib/utils/enums";
 import {Achievement} from "@/lib/types/achievements.types";
 import {getDbClient} from "@/lib/server/database/async-storage";
-import {AddedMediaDetails, EpsPerSeasonType} from "@/lib/types/base.types";
+import {AddedMediaDetails} from "@/lib/types/media-common.types";
+import {EpsPerSeasonType} from "@/lib/types/media-list.types";
 import {BaseRepository} from "@/lib/server/domain/media/base/base.repository";
 import {TvType, UpsertTvWithDetails} from "@/lib/server/domain/media/tv/tv.types";
 import {AnimeSchemaConfig} from "@/lib/server/domain/media/tv/anime/anime.config";

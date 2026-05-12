@@ -1,5 +1,5 @@
 import {MediaType, SocialNotifType} from "@/lib/utils/enums";
-import {NotifTab, UpComingMedia} from "@/lib/types/base.types";
+import {NotifTab, UpComingMedia} from "@/lib/types/notifications.types";
 import {NotificationsRepository} from "@/lib/server/domain/notifications/notifications.repository";
 
 

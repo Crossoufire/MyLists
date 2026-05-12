@@ -1,7 +1,7 @@
 import {describe, expect, it} from "vitest";
 import type {Manga, MangaList} from "./manga.types";
 import {getContainer} from "@/lib/server/core/container";
-import type {UserMediaWithTags} from "@/lib/types/base.types";
+import type {UserMediaWithTags} from "@/lib/types/user-media.types";
 import {MediaType, RatingSystemType, Status} from "@/lib/utils/enums";
 
 

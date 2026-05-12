@@ -11,7 +11,7 @@ import {MoviesInfoGrid} from "./movies/MoviesInfoGrid";
 import {BooksUnderTitle} from "./books/BooksUnderTitle";
 import {MangaUnderTitle} from "./manga/MangaUnderTitle";
 import {GamesUnderTitle} from "./games/GamesUnderTitle";
-import {SheetFilterObject} from "@/lib/types/base.types";
+import {SheetFilterObject} from "@/lib/types/media-list.types";
 import {MoviesUnderTitle} from "./movies/MoviesUnderTitle";
 import {GamesExtraSections} from "./games/GamesExtraSections";
 import {GamesUpComingAlert} from "./games/GamesUpComingAlert";

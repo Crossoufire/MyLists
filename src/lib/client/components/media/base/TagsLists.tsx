@@ -1,4 +1,4 @@
-import {Tag} from "@/lib/types/base.types";
+import {Tag} from "@/lib/types/media-common.types";
 import {Link} from "@tanstack/react-router";
 import {MediaType} from "@/lib/utils/enums";
 import {useAuth} from "@/lib/client/hooks/use-auth";

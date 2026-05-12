@@ -8,7 +8,9 @@ import {BaseService} from "@/lib/server/domain/media/base/base.service";
 import {MovieSchemaConfig} from "@/lib/server/domain/media/movies/movies.config";
 import {MoviesRepository} from "@/lib/server/domain/media/movies/movies.repository";
 import {Movie, MoviesAchCodeName, MoviesList} from "@/lib/server/domain/media/movies/movies.types";
-import {LogPayload, RedoPayload, StatsCTE, StatusPayload, UserMediaWithTags} from "@/lib/types/base.types";
+import {LogPayload} from "@/lib/types/user-updates.types";
+import {RedoPayload, StatusPayload, UserMediaWithTags} from "@/lib/types/user-media.types";
+import {StatsCTE} from "@/lib/types/media-common.types";
 
 
 export class MoviesService extends BaseService<MovieSchemaConfig, MoviesRepository> {

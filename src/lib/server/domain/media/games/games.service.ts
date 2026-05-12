@@ -8,7 +8,9 @@ import {BaseService} from "@/lib/server/domain/media/base/base.service";
 import {GamesSchemaConfig} from "@/lib/server/domain/media/games/games.config";
 import {GamesRepository} from "@/lib/server/domain/media/games/games.repository";
 import {Game, GamesAchCodeName, GamesList} from "@/lib/server/domain/media/games/games.types";
-import {LogPayload, PlaytimePayload, StatsCTE, StatusPayload, UserMediaWithTags} from "@/lib/types/base.types";
+import {LogPayload} from "@/lib/types/user-updates.types";
+import {PlaytimePayload, StatusPayload, UserMediaWithTags} from "@/lib/types/user-media.types";
+import {StatsCTE} from "@/lib/types/media-common.types";
 
 
 export class GamesService extends BaseService<GamesSchemaConfig, GamesRepository> {

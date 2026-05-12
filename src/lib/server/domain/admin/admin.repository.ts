@@ -1,5 +1,5 @@
 import {SearchType} from "@/lib/schemas";
-import {ErrorLog} from "@/lib/types/base.types";
+import {AdminErrorLog} from "@/lib/types/admin.types";
 import {SaveTaskToDb} from "@/lib/types/tasks.types";
 import {MediaType, PrivacyType} from "@/lib/utils/enums";
 import {getDbClient} from "@/lib/server/database/async-storage";
@@ -162,7 +162,7 @@ export class AdminRepository {
         });
     }
 
-    static async saveErrorToDb(error: ErrorLog) {
+    static async saveErrorToDb(error: AdminErrorLog) {
         await getDbClient()
             .insert(errorLogs)
             .values({

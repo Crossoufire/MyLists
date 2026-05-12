@@ -1,6 +1,7 @@
 import {SearchType} from "@/lib/schemas";
 import {useAuth} from "@/lib/client/hooks/use-auth";
-import {Tag, UpdatePayload} from "@/lib/types/base.types";
+import {Tag} from "@/lib/types/media-common.types";
+import {UpdatePayload} from "@/lib/types/user-media.types";
 import {useMutation, useQueryClient} from "@tanstack/react-query";
 import {MediaType, TagAction, UpdateType} from "@/lib/utils/enums";
 import {

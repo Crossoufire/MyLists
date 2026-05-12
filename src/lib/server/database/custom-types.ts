@@ -1,4 +1,4 @@
-import {CoverType} from "@/lib/types/base.types";
+import {CoverType} from "@/lib/types/media-common.types";
 import {getImageUrl} from "@/lib/utils/image-url";
 import {customType} from "drizzle-orm/sqlite-core";
 

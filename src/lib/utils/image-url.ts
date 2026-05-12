@@ -1,6 +1,6 @@
 import {clientEnv} from "@/env/client";
 import {serverEnv} from "@/env/server";
-import {CoverType} from "@/lib/types/base.types";
+import {CoverType} from "@/lib/types/media-common.types";
 import {createServerOnlyFn} from "@tanstack/react-start";
 
 

@@ -9,7 +9,9 @@ import {BaseService} from "@/lib/server/domain/media/base/base.service";
 import {MangaSchemaConfig} from "@/lib/server/domain/media/manga/manga.config";
 import {MangaRepository} from "@/lib/server/domain/media/manga/manga.repository";
 import {Manga, MangaAchCodeName, MangaList} from "@/lib/server/domain/media/manga/manga.types";
-import {ChapterPayload, LogPayload, RedoPayload, StatsCTE, StatusPayload, UserMediaWithTags} from "@/lib/types/base.types";
+import {ChapterPayload, RedoPayload, StatusPayload, UserMediaWithTags} from "@/lib/types/user-media.types";
+import {LogPayload} from "@/lib/types/user-updates.types";
+import {StatsCTE} from "@/lib/types/media-common.types";
 
 
 export class MangaService extends BaseService<MangaSchemaConfig, MangaRepository> {

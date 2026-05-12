@@ -5,6 +5,7 @@ export type TaskVisibility = "admin" | "user";
 export type TaskStatus = "completed" | "failed" | "partial";
 export type TaskTrigger = "user" | "cron/cli" | "dashboard";
 
+
 export type TaskStep = {
     name: string;
     error?: string;
@@ -24,7 +25,6 @@ export type TaskLog = {
     level: "info" | "warn" | "error";
 };
 
-
 export type TaskResult = {
     taskId: string;
     logs: TaskLog[];
@@ -38,7 +38,6 @@ export type TaskResult = {
     errorMessage: string | null;
     metrics: Record<string, number | string>;
 };
-
 
 export type TaskMetadata = {
     name: string;
@@ -55,7 +54,6 @@ export type TaskMetadata = {
         }>;
     };
 }
-
 
 export type SaveTaskToDb = {
     taskId: string,

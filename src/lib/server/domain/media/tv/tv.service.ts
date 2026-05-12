@@ -10,7 +10,9 @@ import {BaseService} from "@/lib/server/domain/media/base/base.service";
 import {AnimeSchemaConfig} from "@/lib/server/domain/media/tv/anime/anime.config";
 import {TvAchCodeName, TvList, TvType} from "@/lib/server/domain/media/tv/tv.types";
 import {SeriesSchemaConfig} from "@/lib/server/domain/media/tv/series/series.config";
-import {EpsSeasonPayload, LogPayload, RedoTvPayload, StatsCTE, StatusPayload, UserMediaWithTags} from "@/lib/types/base.types";
+import {EpsSeasonPayload, RedoTvPayload, StatusPayload, UserMediaWithTags} from "@/lib/types/user-media.types";
+import {LogPayload} from "@/lib/types/user-updates.types";
+import {StatsCTE} from "@/lib/types/media-common.types";
 
 
 export class TvService extends BaseService<AnimeSchemaConfig | SeriesSchemaConfig, TvRepository> {

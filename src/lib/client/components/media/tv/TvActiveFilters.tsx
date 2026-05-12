@@ -1,7 +1,6 @@
 import {JobType} from "@/lib/utils/enums";
-import {SheetFilterObject} from "@/lib/types/base.types";
-
 import {formatLocaleName} from "@/lib/utils/formating";
+import {SheetFilterObject} from "@/lib/types/media-list.types";
 
 
 export const getTvActiveFilters = (): SheetFilterObject[] => {

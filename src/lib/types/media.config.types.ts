@@ -1,7 +1,7 @@
 import {Column, SQL, Table} from "drizzle-orm";
 import {SQLiteColumn} from "drizzle-orm/sqlite-core";
-import {FilterDefinitions} from "@/lib/types/base.types";
 import {JobType, MediaType, Status} from "@/lib/utils/enums";
+import {FilterDefinitions} from "@/lib/types/media-list.types";
 import {AchievementSeedData} from "@/lib/types/achievements.types";
 
 

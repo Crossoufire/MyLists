@@ -1,4 +1,4 @@
-import {NotifTab} from "@/lib/types/base.types";
+import {NotifTab} from "@/lib/types/notifications.types";
 import {and, desc, eq, inArray, sql} from "drizzle-orm";
 import {MediaType, SocialNotifType} from "@/lib/utils/enums";
 import {getDbClient} from "@/lib/server/database/async-storage";

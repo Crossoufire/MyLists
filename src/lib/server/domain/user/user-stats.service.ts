@@ -2,7 +2,7 @@ import {zeroPad} from "@/lib/utils/formating";
 import {statusUtils} from "@/lib/utils/mapping";
 import {DeltaStats} from "@/lib/types/stats.types";
 import {MediaType, Status} from "@/lib/utils/enums";
-import {UpdateUserMediaDetails, UserMediaStats} from "@/lib/types/base.types";
+import {UpdateUserMediaDetails, UserMediaStats} from "@/lib/types/user-media.types";
 import {MediaServiceRegistry} from "@/lib/server/domain/media/media.registries";
 import {UserStatsRepository} from "@/lib/server/domain/user/user-stats.repository";
 import {SearchType, SectionActivity, SpecificActivityFilters} from "@/lib/schemas";

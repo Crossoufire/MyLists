@@ -2,7 +2,7 @@ import {MediaType} from "@/lib/utils/enums";
 import {createFileRoute, Link} from "@tanstack/react-router";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {BarChart3, ExternalLink, Flame, RefreshCw, Users} from "lucide-react";
-import {MediaRefreshStatsParams} from "@/lib/types/admin.types";
+import {AdminMediaRefreshStatsParams} from "@/lib/types/admin.types";
 import {UserStats} from "@/lib/client/components/admin/UserStats";
 import {Pagination} from "@/lib/client/components/general/Pagination";
 import {DashboardShell} from "@/lib/client/components/admin/DashboardShell";
@@ -17,7 +17,7 @@ import {MainThemeIcon} from "@/lib/client/components/general/MainIcons";
 
 
 export const Route = createFileRoute("/_admin/admin/media-refresh")({
-    validateSearch: (search) => search as MediaRefreshStatsParams,
+    validateSearch: (search) => search as AdminMediaRefreshStatsParams,
     loaderDeps: ({ search }) => ({ search }),
     loader: async ({ context: { queryClient }, deps: { search } }) => {
         return queryClient.ensureQueryData(adminMediaRefreshOptions(search));
@@ -65,7 +65,7 @@ function MediaRefreshPage() {
         .map(([role, count]) => ({ role, count }))
         .sort((a, b) => b.count - a.count);
 
-    const onNavigate = (params: MediaRefreshStatsParams) => {
+    const onNavigate = (params: AdminMediaRefreshStatsParams) => {
         navigate({ search: params, resetScroll: false });
     }
 

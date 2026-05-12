@@ -1,6 +1,6 @@
 import {cn} from "@/lib/utils/helpers";
 import {useMemo, useState} from "react";
-import {Tag} from "@/lib/types/base.types";
+import {Tag} from "@/lib/types/media-common.types";
 import {Link} from "@tanstack/react-router";
 import {useQuery} from "@tanstack/react-query";
 import {useAuth} from "@/lib/client/hooks/use-auth";

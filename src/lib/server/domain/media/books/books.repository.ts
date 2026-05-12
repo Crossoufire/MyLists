@@ -1,5 +1,5 @@
 import {Status} from "@/lib/utils/enums";
-import {AddedMediaDetails} from "@/lib/types/base.types";
+import {AddedMediaDetails} from "@/lib/types/media-common.types";
 import {Achievement} from "@/lib/types/achievements.types";
 import {getDbClient} from "@/lib/server/database/async-storage";
 import {BaseRepository} from "@/lib/server/domain/media/base/base.repository";

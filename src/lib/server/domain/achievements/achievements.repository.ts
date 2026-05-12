@@ -1,6 +1,6 @@
 import {db} from "@/lib/server/database/db";
 import {AchievementTier} from "@/lib/schemas";
-import {StatsCTE} from "@/lib/types/base.types";
+import {StatsCTE} from "@/lib/types/media-common.types";
 import {AchievementDifficulty} from "@/lib/utils/enums";
 import {getDbClient} from "@/lib/server/database/async-storage";
 import {AchievementSeedData} from "@/lib/types/achievements.types";

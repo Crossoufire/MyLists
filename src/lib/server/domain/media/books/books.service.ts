@@ -9,7 +9,9 @@ import {saveImageFromUrl, saveUploadedImage} from "@/lib/utils/image-saver";
 import {MangaSchemaConfig} from "@/lib/server/domain/media/books/books.config";
 import {BooksRepository} from "@/lib/server/domain/media/books/books.repository";
 import {Book, BooksAchCodeName, BooksList} from "@/lib/server/domain/media/books/books.types";
-import {LogPayload, PagePayload, RedoPayload, StatsCTE, StatusPayload, UserMediaWithTags} from "@/lib/types/base.types";
+import {LogPayload} from "@/lib/types/user-updates.types";
+import {PagePayload, RedoPayload, StatusPayload, UserMediaWithTags} from "@/lib/types/user-media.types";
+import {StatsCTE} from "@/lib/types/media-common.types";
 
 
 export class BooksService extends BaseService<MangaSchemaConfig, BooksRepository> {

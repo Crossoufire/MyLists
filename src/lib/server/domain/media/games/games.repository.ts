@@ -1,4 +1,4 @@
-import {AddedMediaDetails} from "@/lib/types/base.types";
+import {AddedMediaDetails} from "@/lib/types/media-common.types";
 import {Achievement} from "@/lib/types/achievements.types";
 import {GamesPlatformsEnum, Status} from "@/lib/utils/enums";
 import {getDbClient} from "@/lib/server/database/async-storage";

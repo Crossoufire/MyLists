@@ -1,5 +1,5 @@
 import {useMemo, useState} from "react";
-import {UserTag} from "@/lib/types/base.types";
+import {UserTag} from "@/lib/types/media-list.types";
 import {useAuth} from "@/lib/client/hooks/use-auth";
 import {Input} from "@/lib/client/components/ui/input";
 import {useSuspenseQuery} from "@tanstack/react-query";

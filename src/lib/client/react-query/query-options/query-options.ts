@@ -1,4 +1,4 @@
-import {NotifTab} from "@/lib/types/base.types";
+import {NotifTab} from "@/lib/types/notifications.types";
 import {SectionParams} from "@/lib/types/activity.types";
 import {getCurrentUser} from "@/lib/server/functions/auth";
 import {getTrendsMedia} from "@/lib/server/functions/trends";

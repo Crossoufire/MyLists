@@ -1,5 +1,5 @@
 import {SearchType} from "@/lib/schemas";
-import {LogUpdateParams} from "@/lib/types/base.types";
+import {LogUpdateParams} from "@/lib/types/user-updates.types";
 import {paginate} from "@/lib/server/database/pagination";
 import {getDbClient} from "@/lib/server/database/async-storage";
 import {MediaType, PrivacyType, UpdateType} from "@/lib/utils/enums";
