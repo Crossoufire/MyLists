@@ -73,11 +73,11 @@ interface ActivitySectionGridProps {
 
 
 export const ActivitySectionGrid = (props: ActivitySectionGridProps) => {
-    const [editingItem, setEditingItem] = useState<GridItem | null>(null);
     const { title, username, initialItems, totalCount, section, mediaType, year, month, icon: Icon, canEdit = false } = props;
 
     const limitedInitialItems = initialItems.slice(0, 24);
     const hasMoreThanInitial = totalCount > limitedInitialItems.length;
+    const [editingItem, setEditingItem] = useState<GridItem | null>(null);
 
     const { data, fetchNextPage, hasNextPage, isFetchingNextPage } = useInfiniteQuery({
         ...sectionActivityOptions(username, { year, month, mediaType, section }),

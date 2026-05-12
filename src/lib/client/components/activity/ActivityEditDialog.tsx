@@ -3,6 +3,7 @@ import {useForm} from "react-hook-form";
 import {MediaType} from "@/lib/utils/enums";
 import {useQuery} from "@tanstack/react-query";
 import {getMediaUnitLabel} from "@/lib/utils/mapping";
+import {toDateInputValue} from "@/lib/utils/formating";
 import {Input} from "@/lib/client/components/ui/input";
 import {Label} from "@/lib/client/components/ui/label";
 import {Button} from "@/lib/client/components/ui/button";
@@ -11,6 +12,14 @@ import {Checkbox} from "@/lib/client/components/ui/checkbox";
 import {specificActivityOptions} from "@/lib/client/react-query/query-options/query-options";
 import {useDeleteActivityMutation, useUpdateActivityMutation} from "@/lib/client/react-query/query-mutations/activity.mutations";
 import {Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle} from "@/lib/client/components/ui/dialog";
+
+
+type FormValues = {
+    isRedo: boolean,
+    lastUpdate: string,
+    isCompleted: boolean,
+    specificGained: number,
+}
 
 
 interface ActivityEditDialogProps {
@@ -24,28 +33,6 @@ interface ActivityEditDialogProps {
     sectionParams: SectionParams;
     onOpenChange: (open: boolean) => void;
 }
-
-
-type FormValues = {
-    isRedo: boolean,
-    lastUpdate: string,
-    isCompleted: boolean,
-    specificGained: number,
-}
-
-
-const toDateInputValue = (value?: string | null) => {
-    if (!value) return "";
-
-    const date = new Date(value.includes(" ") ? `${value.replace(" ", "T")}Z` : value);
-    if (Number.isNaN(date.getTime())) return "";
-
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
-
-    return `${year}-${month}-${day}`;
-};
 
 
 export const ActivityEditDialog = (props: ActivityEditDialogProps) => {
@@ -119,11 +106,11 @@ export const ActivityEditDialog = (props: ActivityEditDialogProps) => {
                         />
                     </div>
                     <div className="grid gap-2">
-                        <Label htmlFor="lastUpdate">Recap date</Label>
+                        <Label htmlFor="lastUpdate">Progress date</Label>
                         <Input
                             type="date"
-                            max={toDateInputValue(new Date().toISOString())}
                             {...form.register("lastUpdate")}
+                            max={toDateInputValue(new Date().toISOString())}
                         />
                     </div>
 

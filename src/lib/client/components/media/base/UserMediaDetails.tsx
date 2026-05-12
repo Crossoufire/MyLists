@@ -6,10 +6,10 @@ import {Input} from "@/lib/client/components/ui/input";
 import {Label} from "@/lib/client/components/ui/label";
 import {Button} from "@/lib/client/components/ui/button";
 import {useQuery, useQueryClient} from "@tanstack/react-query";
-import {capitalize, formatDateTime} from "@/lib/utils/formating";
+import {capitalize, toDateInputValue} from "@/lib/utils/formating";
 import {TagsLists} from "@/lib/client/components/media/base/TagsLists";
 import {UserMedia, UserMediaItem} from "@/lib/types/query.options.types";
-import {CalendarClock, ImageOff, Link2, UploadCloud, X} from "lucide-react";
+import {ClockCheck, ImageOff, Link2, UploadCloud, X} from "lucide-react";
 import {TabHeader, TabItem} from "@/lib/client/components/general/TabHeader";
 import {UpdateComment} from "@/lib/client/components/media/base/UpdateComment";
 import {HistoryDetails} from "@/lib/client/components/media/base/HistoryDetails";
@@ -82,6 +82,15 @@ export const UserMediaDetails = ({ userMedia, mediaType, queryOption }: UserMedi
 
             {activeTab === "progress" ?
                 <div className="space-y-2 px-4 mt-1">
+                    <BacklogModeBanner
+                        date={backlogDate}
+                        enabled={backlogMode}
+                        onDateChange={setBacklogDate}
+                        disabled={updateUserMediaMutation.isPending}
+                        onToggle={() => setBacklogMode((enabled) => !enabled)}
+                    />
+
+
                     <div className={(backlogMode && !backlogDate) ? "pointer-events-none opacity-40 space-y-2" : "space-y-2"}>
                         <UserMediaSpecificDetails
                             mediaType={mediaType}
@@ -90,14 +99,6 @@ export const UserMediaDetails = ({ userMedia, mediaType, queryOption }: UserMedi
                             mutationOptions={{ backlogMode, loggedAt: backlogMode ? backlogDate : undefined }}
                         />
                     </div>
-
-                    <BacklogModeBanner
-                        date={backlogDate}
-                        enabled={backlogMode}
-                        onDateChange={setBacklogDate}
-                        disabled={updateUserMediaMutation.isPending}
-                        onToggle={() => setBacklogMode((enabled) => !enabled)}
-                    />
 
                     <UpdateComment
                         disabled={backlogMode}
@@ -139,15 +140,6 @@ export const UserMediaDetails = ({ userMedia, mediaType, queryOption }: UserMedi
 };
 
 
-const toDateInputValue = (date: Date) => {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
-
-    return `${year}-${month}-${day}`;
-};
-
-
 interface BacklogModeBannerProps {
     date: string;
     enabled: boolean;
@@ -159,42 +151,31 @@ interface BacklogModeBannerProps {
 
 const BacklogModeBanner = ({ enabled, date, disabled, onToggle, onDateChange }: BacklogModeBannerProps) => {
     return (
-        <div className="space-y-2 rounded-md border border-dashed p-3 mt-4">
-            <div className="flex items-center justify-between gap-2">
+        <>
+            <div className="flex items-center justify-between gap-2 -mt-2 mb-3">
                 <div className="flex items-center gap-2 text-sm font-medium">
-                    <CalendarClock className="size-4 text-muted-foreground"/>
-                    Backlog Mode
+                    {enabled ?
+                        <>Logging for:
+                            <div className="w-fit">
+                                <Input
+                                    type="date"
+                                    value={date}
+                                    id="backlog-date"
+                                    max={toDateInputValue(new Date().toISOString())}
+                                    onChange={(ev) => onDateChange(ev.target.value)}
+                                />
+                            </div>
+                        </>
+                        :
+                        <>Logging for: Now</>
+                    }
                 </div>
-                <Button type="button" size="sm" variant={enabled ? "emeraldy" : "outline"} disabled={disabled} onClick={onToggle}>
-                    {enabled ? "On" : "Off"}
+                <Button size="xs" variant="emeraldy" title="Toggle backlog mode" onClick={onToggle} disabled={disabled}>
+                    {enabled ? <X/> : <ClockCheck/>}
                 </Button>
             </div>
-            {enabled &&
-                <>
-                    <div className="grid gap-2">
-                        <Label htmlFor="backlog-date">Backlog Date</Label>
-                        <Input
-                            type="date"
-                            value={date}
-                            id="backlog-date"
-                            max={toDateInputValue(new Date())}
-                            onChange={(ev) => onDateChange(ev.target.value)}
-                        />
-                    </div>
-                    <div className="text-xs text-muted-foreground">
-                        {date ?
-                            <span>
-                                All progress changes will be logged for {formatDateTime(date, { noTime: true })}
-                            </span>
-                            :
-                            <span>
-                                Choose a backlog date before editing progress.
-                            </span>
-                        }
-                    </div>
-                </>
-            }
-        </div>
+
+        </>
     );
 };
 
