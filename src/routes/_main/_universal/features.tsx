@@ -127,13 +127,12 @@ const FEATURES_DATA: FeatureData[] = [
     {
         category: "New",
         icon: ClockCheck,
-        name: "Backlog Progress Logging",
+        name: "Backlog Your Progress",
         description: (
             <span>
-                Log progress updates for a past date directly from media details. Enable backlog mode,
-                choose the date you watched, read, or played, then update progress without changing
-                comments, tags, favorites, or covers.
-            </span>
+                Forgot to log something? Pick a past date and update the progress you watched, read, or played.
+                Switch back to 'TODAY' when you are done to keep logging and editing normally.
+        </span>
         )
     },
     {
