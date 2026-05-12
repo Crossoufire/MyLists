@@ -13,6 +13,7 @@ import {
     Calendar,
     CheckCheck,
     ChevronDown,
+    ClockCheck,
     Crop,
     Edit3,
     FileSpreadsheet,
@@ -125,6 +126,18 @@ type FeatureData = {
 const FEATURES_DATA: FeatureData[] = [
     {
         category: "New",
+        icon: ClockCheck,
+        name: "Backlog Progress Logging",
+        description: (
+            <span>
+                Log progress updates for a past date directly from media details. Enable backlog mode,
+                choose the date you watched, read, or played, then update progress without changing
+                comments, tags, favorites, or covers.
+            </span>
+        )
+    },
+    {
+        category: "New",
         icon: Highlighter,
         name: "Custom Profile Highlights",
         description: (
@@ -184,7 +197,7 @@ const FEATURES_DATA: FeatureData[] = [
     },
     {
         icon: Lock,
-        category: "New",
+        category: "Social & Notifications",
         name: "Private Accounts",
         description: (
             <span>

@@ -43,7 +43,7 @@ export class UserMediaService {
     async updateUserMedia({ userId, mediaType, mediaId, payload }: MediaAction & Pick<UpdateUserMedia, "payload">) {
         const { loggedAt, ...mediaPayload } = payload;
 
-        const timestamp = loggedAt ? `${loggedAt}T12:00:00.000Z` : undefined;
+        const timestamp = loggedAt ? `${loggedAt} 12:00:00` : undefined;
         if (timestamp) {
             await this.userUpdatesService.deleteRecentInitialAdd(userId, mediaType, mediaId);
         }
