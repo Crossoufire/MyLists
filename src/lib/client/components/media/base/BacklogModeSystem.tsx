@@ -27,11 +27,18 @@ export const BacklogModeSystem = ({ enabled, date, disabled, onDateChange, onEna
         return toDateInputValue(preset.toISOString());
     };
 
+    const getPresetMonthDate = () => {
+        const preset = new Date();
+        preset.setMonth(preset.getMonth() - 1);
+
+        return toDateInputValue(preset.toISOString());
+    };
+
     const presets = [
         { label: "Today", value: today, enabled: false },
-        { label: "Yest.", value: getPresetDate(1), enabled: true },
         { label: "-2d", value: getPresetDate(2), enabled: true },
-        { label: "-3d", value: getPresetDate(3), enabled: true },
+        { label: "-1 wk.", value: getPresetDate(7), enabled: true },
+        { label: "-1 mo.", value: getPresetMonthDate(), enabled: true },
     ];
 
     const selectDate = (value: string, shouldEnable: boolean) => {
@@ -80,8 +87,8 @@ export const BacklogModeSystem = ({ enabled, date, disabled, onDateChange, onEna
                             variant={isSelected ? "default" : "secondary"}
                             onClick={() => selectDate(preset.value, preset.enabled)}
                             className={isSelected
-                                ? "relative h-7 min-w-14 bg-app-accent text-black hover:bg-app-accent/90"
-                                : "h-7 min-w-14 bg-background text-muted-foreground hover:bg-background/80"
+                                ? "relative h-7 w-fit bg-app-accent text-black hover:bg-app-accent/90"
+                                : "h-7 w-fit bg-background text-muted-foreground hover:bg-background/80"
                             }
                         >
                             {preset.label}
@@ -96,7 +103,7 @@ export const BacklogModeSystem = ({ enabled, date, disabled, onDateChange, onEna
                     variant="secondary"
                     onClick={openDatePicker}
                     title="Choose backlog date"
-                    className="size-7 bg-background text-muted-foreground hover:bg-background/80 w-10"
+                    className="size-7 bg-background text-muted-foreground hover:bg-background/80 w-9"
                 >
                     <Calendar className="size-4"/>
                 </Button>
