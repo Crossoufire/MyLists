@@ -70,7 +70,7 @@ export const UserMediaDetails = ({ userMedia, mediaType, queryOption }: UserMedi
     ]
 
     return (
-        <Card className="bg-popover max-w-94 w-full">
+        <Card className="bg-popover w-full">
             <TabHeader tabs={tabs} activeTab={activeTab} setActiveTab={setActiveTab} className="px-2.5">
                 <UpdateFavorite
                     disabled={backlogMode}

@@ -28,7 +28,7 @@ export const UserMediaEditDialog = ({ dialogOpen, userMedia, mediaType, queryOpt
                         Here you can edit your media details
                     </CredenzaDescription>
                 </CredenzaHeader>
-                <div className="w-full flex items-center justify-center max-sm:mb-8">
+                <div className="w-full flex items-center justify-center max-sm:mb-8 max-sm:px-2">
                     <UserMediaDetails
                         userMedia={userMedia}
                         mediaType={mediaType}
