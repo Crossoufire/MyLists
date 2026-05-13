@@ -57,7 +57,7 @@ function MediaDetailsPage() {
                 external={external}
                 mediaType={mediaType}
             />
-            <div className="grid grid-cols-12 gap-8 container mx-auto px-4 py-2 max-sm:py-0 max-lg:grid-cols-1">
+            <div className="grid grid-cols-12 gap-8 mx-auto px-4 py-2 max-sm:py-0 max-lg:grid-cols-1">
                 <div className="col-span-8 space-y-8 max-lg:col-span-1 max-lg:order-2">
                     <section className="grid grid-cols-2 sm:grid-cols-4 gap-4 py-6 border-y border-app-accent/30">
                         <MediaComponent

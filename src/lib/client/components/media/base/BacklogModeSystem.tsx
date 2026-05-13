@@ -56,7 +56,7 @@ export const BacklogModeSystem = ({ enabled, date, disabled, onDateChange, onEna
             return;
         }
 
-        // @ts-expect-error - possible
+        // @ts-expect-error - older browsers
         input.click();
     };
 
@@ -75,38 +75,34 @@ export const BacklogModeSystem = ({ enabled, date, disabled, onDateChange, onEna
                 </span>
             </div>
 
-            <div className="flex min-w-0 items-start gap-1.5">
-                <div className="grid min-w-0 flex-1 grid-cols-[repeat(auto-fit,minmax(3.25rem,1fr))] gap-1.5">
-                    {presets.map((preset) => {
-                        const isSelected = preset.enabled ? enabled && date === preset.value : !enabled;
+            <div className="relative grid w-full grid-cols-5 gap-1.5">
+                {presets.map((preset) => {
+                    const isSelected = preset.enabled ? enabled && date === preset.value : !enabled;
 
-                        return (
-                            <Button
-                                size="sm"
-                                type="button"
-                                key={preset.label}
-                                disabled={disabled}
-                                variant={isSelected ? "default" : "secondary"}
-                                onClick={() => selectDate(preset.value, preset.enabled)}
-                                className={cn("h-7 min-w-0 px-1.5 text-xs", isSelected
-                                    ? "relative bg-app-accent text-black hover:bg-app-accent/90"
-                                    : "bg-background text-muted-foreground hover:bg-background/80",
-                                )}
-                            >
-                                {preset.label}
-                            </Button>
-                        );
-                    })}
-                </div>
+                    return (
+                        <Button
+                            size="sm"
+                            key={preset.label}
+                            disabled={disabled}
+                            variant={isSelected ? "default" : "secondary"}
+                            onClick={() => selectDate(preset.value, preset.enabled)}
+                            className={cn("h-7 w-full text-xs", isSelected
+                                ? "bg-app-accent text-black hover:bg-app-accent/90"
+                                : "bg-background text-muted-foreground hover:bg-background/80",
+                            )}
+                        >
+                            {preset.label}
+                        </Button>
+                    );
+                })}
 
                 <Button
                     size="icon"
-                    type="button"
                     disabled={disabled}
                     variant="secondary"
                     onClick={openDatePicker}
                     title="Choose backlog date"
-                    className="size-7 shrink-0 bg-background text-muted-foreground hover:bg-background/80"
+                    className="h-7 w-full bg-background text-muted-foreground hover:bg-background/80"
                 >
                     <Calendar className="size-4"/>
                 </Button>
@@ -115,11 +111,10 @@ export const BacklogModeSystem = ({ enabled, date, disabled, onDateChange, onEna
                     type="date"
                     max={today}
                     tabIndex={-1}
-                    id="backlog-date"
                     ref={dateInputRef}
                     value={enabled ? date : today}
-                    className="sr-only dark:scheme-dark"
                     onChange={(ev) => handleCustomDate(ev.target.value)}
+                    className="absolute inset-0 pointer-events-none h-0 w-0 border-none opacity-0"
                 />
             </div>
             {selectedLabel !== "TODAY" &&
