@@ -59,6 +59,8 @@ export function getRouter() {
         notFoundMode: "root",
     });
 
+    installDefaultNotFoundBoundaries(router as any);
+
     setupRouterSsrQueryIntegration({
         router,
         queryClient,
@@ -67,6 +69,13 @@ export function getRouter() {
     });
 
     return router;
+}
+
+
+function installDefaultNotFoundBoundaries(router: ReturnType<typeof createRouter>) {
+    for (const route of Object.values(router.routesById)) {
+        route.options.notFoundComponent ??= NotFound;
+    }
 }
 
 
