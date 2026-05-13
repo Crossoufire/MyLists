@@ -8,11 +8,11 @@ import {mediaCommunityCollectionsOptions} from "@/lib/client/react-query/query-o
 export const MediaCommunityCollections = ({ mediaId, mediaType }: { mediaId: number, mediaType: MediaType }) => {
     const collections = useSuspenseQuery(mediaCommunityCollectionsOptions(mediaId, mediaType)).data;
     if (!collections.length) return null;
-    
+
     return (
         <section>
             <MediaSectionTitle title="Popular Collections"/>
-            <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
+            <div className="grid grid-cols-3 gap-4 max-lg:grid-cols-2 max-sm:grid-cols-1">
                 {collections.map((collection) =>
                     <CollectionCard
                         key={collection.id}

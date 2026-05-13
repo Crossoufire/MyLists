@@ -1,4 +1,5 @@
 import {useRef} from "react";
+import {cn} from "@/lib/utils/helpers";
 import {Calendar, TriangleAlert} from "lucide-react";
 import {Input} from "@/lib/client/components/ui/input";
 import {Button} from "@/lib/client/components/ui/button";
@@ -74,27 +75,29 @@ export const BacklogModeSystem = ({ enabled, date, disabled, onDateChange, onEna
                 </span>
             </div>
 
-            <div className="flex items-center gap-2">
-                {presets.map((preset) => {
-                    const isSelected = preset.enabled ? enabled && date === preset.value : !enabled;
+            <div className="flex min-w-0 items-start gap-1.5">
+                <div className="grid min-w-0 flex-1 grid-cols-[repeat(auto-fit,minmax(3.25rem,1fr))] gap-1.5">
+                    {presets.map((preset) => {
+                        const isSelected = preset.enabled ? enabled && date === preset.value : !enabled;
 
-                    return (
-                        <Button
-                            size="sm"
-                            type="button"
-                            key={preset.label}
-                            disabled={disabled}
-                            variant={isSelected ? "default" : "secondary"}
-                            onClick={() => selectDate(preset.value, preset.enabled)}
-                            className={isSelected
-                                ? "relative h-7 w-fit bg-app-accent text-black hover:bg-app-accent/90"
-                                : "h-7 w-fit bg-background text-muted-foreground hover:bg-background/80"
-                            }
-                        >
-                            {preset.label}
-                        </Button>
-                    );
-                })}
+                        return (
+                            <Button
+                                size="sm"
+                                type="button"
+                                key={preset.label}
+                                disabled={disabled}
+                                variant={isSelected ? "default" : "secondary"}
+                                onClick={() => selectDate(preset.value, preset.enabled)}
+                                className={cn("h-7 min-w-0 px-1.5 text-xs", isSelected
+                                    ? "relative bg-app-accent text-black hover:bg-app-accent/90"
+                                    : "bg-background text-muted-foreground hover:bg-background/80",
+                                )}
+                            >
+                                {preset.label}
+                            </Button>
+                        );
+                    })}
+                </div>
 
                 <Button
                     size="icon"
@@ -103,7 +106,7 @@ export const BacklogModeSystem = ({ enabled, date, disabled, onDateChange, onEna
                     variant="secondary"
                     onClick={openDatePicker}
                     title="Choose backlog date"
-                    className="size-7 bg-background text-muted-foreground hover:bg-background/80 w-9"
+                    className="size-7 shrink-0 bg-background text-muted-foreground hover:bg-background/80"
                 >
                     <Calendar className="size-4"/>
                 </Button>
@@ -121,7 +124,9 @@ export const BacklogModeSystem = ({ enabled, date, disabled, onDateChange, onEna
             </div>
             {selectedLabel !== "TODAY" &&
                 <div className="pt-0.5 flex justify-center items-center gap-2 text-[11px] font-medium uppercase tracking-wider text-app-rating">
-                    <TriangleAlert className="size-4"/> You are backlogging <TriangleAlert className="size-4"/>
+                    <TriangleAlert className="size-4"/>
+                    You are backlogging
+                    <TriangleAlert className="size-4"/>
                 </div>
             }
         </div>
