@@ -83,11 +83,13 @@ const transformTvDetailsResults = async (rawData: TmdbTvDetails, options: Option
         }),
     };
 
-    const seasonsData = rawData?.seasons?.filter((season) => season.season_number && season.season_number > 0)
-        .map((season) => ({
-            season: season.season_number,
-            episodes: season.episode_count,
-        })) || [{ season: 1, episodes: 1 }];
+    const seasonsData = rawData?.seasons?.filter((s) => s.season_number && s.season_number > 0)
+        .map((s) => ({ season: s.season_number, episodes: s.episode_count }))
+        .filter((s) => s.episodes > 0) || [];
+
+    if (seasonsData.length === 0) {
+        seasonsData.push({ season: 1, episodes: 1 });
+    }
 
     const networkData = rawData?.networks?.slice(0, maxNetworks).map((n) => ({ name: n.name }));
     const actorsData = rawData?.credits?.cast?.slice(0, maxActors).map((c) => ({ name: c.name }));

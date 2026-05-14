@@ -253,7 +253,7 @@ export class TvService extends BaseService<AnimeSchemaConfig | SeriesSchemaConfi
 
         if (payload.status === Status.COMPLETED) {
             const sumEpisodesTv = epsPerSeason.reduce((a, b) => a + b.episodes, 0);
-            const sumOldRedoEps = currentState.redo2.reduce((a, b, i) => a + b * epsPerSeason[i].episodes, 0);
+            const sumOldRedoEps = currentState.redo2.reduce((a, b, i) => a + b * (epsPerSeason[i]?.episodes ?? 0), 0);
 
             newState.total = sumEpisodesTv + sumOldRedoEps;
             newState.currentSeason = epsPerSeason.at(-1)!.season;
@@ -285,7 +285,7 @@ export class TvService extends BaseService<AnimeSchemaConfig | SeriesSchemaConfi
             }
 
             const newWatched = epsPerSeasList.slice(0, payload.currentSeason - 1).reduce((a, b) => a + b, 0) + 1;
-            const newTotal = newWatched + currentState.redo2.reduce((a, b, i) => a + b * epsPerSeasList[i], 0);
+            const newTotal = newWatched + currentState.redo2.reduce((a, b, i) => a + b * (epsPerSeasList[i] ?? 0), 0);
 
             newState.total = newTotal
             newState.currentEpisode = 1;
@@ -308,7 +308,7 @@ export class TvService extends BaseService<AnimeSchemaConfig | SeriesSchemaConfi
                 .slice(0, currentState.currentSeason - 1)
                 .reduce((a, b) => a + b, 0) + payload.currentEpisode;
 
-            newState.total = newWatched + currentState.redo2.reduce((a, b, i) => a + b * epsPerSeasList[i], 0);
+            newState.total = newWatched + currentState.redo2.reduce((a, b, i) => a + b * (epsPerSeasList[i] ?? 0), 0);
 
             return [newState, logPayload] as [TvList, LogPayload];
         }
