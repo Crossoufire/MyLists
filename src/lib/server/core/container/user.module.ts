@@ -10,8 +10,8 @@ import {AchievementsRepository} from "@/lib/server/domain/achievements/achieveme
 import {FeatureVotesRepository} from "@/lib/server/domain/feature-votes/feature-votes.repository";
 import {NotificationsRepository} from "@/lib/server/domain/notifications/notifications.repository";
 import {
-    UserProfileRepository,
     UserMediaService,
+    UserProfileRepository,
     UserProfileService,
     UserRepository,
     UserService,
@@ -38,10 +38,10 @@ export function setupUserModule(mediaServiceRegistry: typeof MediaServiceRegistr
     const userService = new UserService(userRepository);
     const mediadleService = new MediadleService(mediadleRepository);
     const userUpdatesService = new UserUpdatesService(userUpdatesRepository);
-    const featureVotesService = new FeatureVotesService(featureVotesRepository);
     const achievementsService = new AchievementsService(achievementsRepository);
     const notificationsService = new NotificationsService(notificationsRepository);
     const userProfileService = new UserProfileService(userProfileRepository, mediaServiceRegistry);
+    const featureVotesService = new FeatureVotesService(featureVotesRepository, notificationsService);
     const collectionsService = new CollectionsService(userService, collectionsRepository, mediaServiceRegistry);
     const userStatsService = new UserStatsService(userStatsRepository, achievementsRepository, userUpdatesRepository, mediaServiceRegistry);
     const userMediaService = new UserMediaService(userStatsService, userUpdatesService, notificationsService, mediaServiceRegistry);

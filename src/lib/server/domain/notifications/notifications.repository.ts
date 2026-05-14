@@ -9,7 +9,18 @@ export class NotificationsRepository {
 
     // --- Social Notifications ---------------------------
 
-    static async createSocialNotification(data: { userId: number; actorId: number; type: SocialNotifType }) {
+    static async createSocialNotification(data: typeof socialNotifications.$inferInsert) {
+        if (data.featureRequestId) {
+            await getDbClient()
+                .delete(socialNotifications)
+                .where(and(
+                    eq(socialNotifications.type, data.type),
+                    eq(socialNotifications.userId, data.userId),
+                    eq(socialNotifications.actorId, data.actorId),
+                    eq(socialNotifications.featureRequestId, data.featureRequestId),
+                ));
+        }
+
         await getDbClient()
             .insert(socialNotifications)
             .values(data)
@@ -75,7 +86,10 @@ export class NotificationsRepository {
         if (type === "social") {
             return getDbClient().query.socialNotifications.findMany({
                 where: eq(socialNotifications.userId, userId),
-                with: { actor: { columns: { id: true, name: true, image: true } } },
+                with: {
+                    featureRequest: { columns: { id: true, title: true } },
+                    actor: { columns: { id: true, name: true, image: true } },
+                },
                 orderBy: desc(socialNotifications.createdAt),
                 limit,
             });

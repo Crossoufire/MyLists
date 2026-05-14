@@ -1,39 +1,43 @@
+import {FeatureStatus, RoleType} from "@/lib/utils/enums";
 import {getDbClient} from "@/lib/server/database/async-storage";
-import {FeatureStatus, FeatureVoteType} from "@/lib/utils/enums";
-import {and, count, desc, eq, notInArray, sql} from "drizzle-orm";
-import {featureRequests, featureVotes,} from "@/lib/server/database/schema";
+import {and, count, desc, eq, getTableColumns, sql} from "drizzle-orm";
+import {featureRequests, featureVotes, user} from "@/lib/server/database/schema";
 
 
 export class FeatureVotesRepository {
     static async getFeatureVotesData(userId: number) {
         const tx = getDbClient();
 
-        const [features, voteAgg, userVotes, superVotesUsed] =
+        const [features, voteAgg, userVotes] =
             await Promise.all([
                 tx
-                    .select()
+                    .select({
+                        author: {
+                            id: user.id,
+                            name: user.name,
+                            image: user.image,
+                        },
+                        ...getTableColumns(featureRequests),
+                    })
                     .from(featureRequests)
+                    .leftJoin(user, eq(featureRequests.createdBy, user.id))
                     .orderBy(desc(featureRequests.createdAt)),
                 tx
                     .select({
+                        totalVotes: count(),
                         featureId: featureVotes.featureId,
-                        normalVotes: sql<number>`SUM(CASE WHEN ${featureVotes.voteType} = ${FeatureVoteType.VOTE} THEN 1 ELSE 0 END)`,
-                        superVotes: sql<number>`SUM(CASE WHEN ${featureVotes.voteType} = ${FeatureVoteType.SUPER} THEN 1 ELSE 0 END)`,
                     })
                     .from(featureVotes)
                     .groupBy(featureVotes.featureId),
                 tx
                     .select({
-                        voteType: featureVotes.voteType,
                         featureId: featureVotes.featureId,
                     })
                     .from(featureVotes)
                     .where(eq(featureVotes.userId, userId)),
-
-                FeatureVotesRepository.countUserSuperVotes(userId),
             ]);
 
-        return { features, voteAgg, userVotes, superVotesUsed };
+        return { features, voteAgg, userVotes };
     }
 
     static async findFeatureWithUserVote(featureId: number, userId: number) {
@@ -55,18 +59,6 @@ export class FeatureVotesRepository {
         return { feature, existingVote };
     }
 
-    static async countUserSuperVotes(userId: number) {
-        return getDbClient()
-            .select({ count: count() })
-            .from(featureVotes)
-            .innerJoin(featureRequests, eq(featureVotes.featureId, featureRequests.id))
-            .where(and(
-                eq(featureVotes.userId, userId),
-                eq(featureVotes.voteType, FeatureVoteType.SUPER),
-                notInArray(featureRequests.status, [FeatureStatus.REJECTED, FeatureStatus.COMPLETED]),
-            )).get()?.count ?? 0;
-    }
-
     static async createFeatureRequest(values: typeof featureRequests.$inferInsert) {
         const existing = getDbClient()
             .select({ id: featureRequests.id })
@@ -78,23 +70,32 @@ export class FeatureVotesRepository {
             return { duplicate: true as const };
         }
 
-        await getDbClient()
+        const [feature] = await getDbClient()
             .insert(featureRequests)
-            .values(values);
+            .values(values)
+            .returning({ id: featureRequests.id });
 
-        return { duplicate: false as const };
+        return { duplicate: false as const, featureId: feature.id };
+    }
+
+    static async getAdminUserIds() {
+        return getDbClient()
+            .select({ id: user.id })
+            .from(user)
+            .where(eq(user.role, RoleType.ADMIN));
+    }
+
+    static async getFeatureRequest(featureId: number) {
+        return getDbClient()
+            .select()
+            .from(featureRequests)
+            .where(eq(featureRequests.id, featureId))
+            .get();
     }
 
     static async deleteVoteById(voteId: number) {
         await getDbClient()
             .delete(featureVotes)
-            .where(eq(featureVotes.id, voteId));
-    }
-
-    static async updateVoteType(voteId: number, voteType: FeatureVoteType) {
-        await getDbClient()
-            .update(featureVotes)
-            .set({ voteType })
             .where(eq(featureVotes.id, voteId));
     }
 

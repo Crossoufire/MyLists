@@ -13,7 +13,7 @@ export class NotificationsService {
         await this.repository.deleteSocialNotifsBetweenUsers(recipientId, actorId, types);
     }
 
-    async createSocialNotification(data: { userId: number; actorId: number; type: SocialNotifType }) {
+    async createSocialNotification(data: { userId: number; actorId: number; type: SocialNotifType; featureRequestId?: number | null }) {
         await this.repository.createSocialNotification(data);
     }
 

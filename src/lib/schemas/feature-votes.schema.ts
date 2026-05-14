@@ -1,5 +1,5 @@
 import * as z from "zod";
-import {FeatureStatus, FeatureVoteType} from "@/lib/utils/enums";
+import {FeatureStatus} from "@/lib/utils/enums";
 
 
 export const postFeatureRequestSchema = z.object({
@@ -12,7 +12,6 @@ export const postFeatureRequestSchema = z.object({
 });
 
 export const postFeatureVoteSchema = z.object({
-    voteType: z.enum(FeatureVoteType),
     featureId: z.coerce.number().int().positive(),
 });
 

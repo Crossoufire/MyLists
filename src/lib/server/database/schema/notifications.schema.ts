@@ -3,17 +3,24 @@ import {user} from "./auth.schema";
 import {relations} from "drizzle-orm/relations";
 import {MediaType, SocialNotifType} from "@/lib/utils/enums";
 import {integer, sqliteTable, text, uniqueIndex} from "drizzle-orm/sqlite-core";
+import {featureRequests} from "@/lib/server/database/schema/feature-votes.schema";
 
 
 export const socialNotifications = sqliteTable("social_notifications", {
     id: integer().primaryKey().notNull(),
     actorId: integer("actor_id").notNull().references(() => user.id, { onDelete: "cascade" }),
     userId: integer("user_id").notNull().references(() => user.id, { onDelete: "cascade" }),
+    featureRequestId: integer("feature_request_id").references(() => featureRequests.id, { onDelete: "cascade" }),
     type: text().$type<SocialNotifType>().notNull(),
     read: integer({ mode: "boolean" }).default(false).notNull(),
     createdAt: text("created_at").default(sql`(CURRENT_TIMESTAMP)`).notNull(),
 }, (table) => [
-    uniqueIndex("social_notif_unique").on(table.userId, table.actorId, table.type),
+    uniqueIndex("social_notif_unique")
+        .on(table.userId, table.actorId, table.type)
+        .where(sql`${table.featureRequestId} IS NULL`),
+    uniqueIndex("social_feature_notif_unique")
+        .on(table.userId, table.actorId, table.type, table.featureRequestId)
+        .where(sql`${table.featureRequestId} IS NOT NULL`),
 ]);
 
 
@@ -40,5 +47,9 @@ export const socialNotificationsRelations = relations(socialNotifications, ({ on
     recipient: one(user, {
         fields: [socialNotifications.userId],
         references: [user.id],
+    }),
+    featureRequest: one(featureRequests, {
+        fields: [socialNotifications.featureRequestId],
+        references: [featureRequests.id],
     }),
 }));

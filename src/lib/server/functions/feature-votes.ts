@@ -26,18 +26,18 @@ export const postCreateFeatureRequest = createServerFn({ method: "POST" })
 export const postToggleFeatureVote = createServerFn({ method: "POST" })
     .middleware([requiredAuthMiddleware, transactionMiddleware])
     .inputValidator(tryFormZodError(postFeatureVoteSchema))
-    .handler(async ({ data, context: { currentUser } }) => {
+    .handler(async ({ data: { featureId }, context: { currentUser } }) => {
         const featureVotesService = await getContainer().then((c) => c.services.featureVotes);
-        await featureVotesService.toggleFeatureVote(data, currentUser.id);
+        await featureVotesService.toggleFeatureVote(featureId, currentUser.id);
     });
 
 
 export const postUpdateFeatureStatus = createServerFn({ method: "POST" })
     .middleware([requiredAuthAndAdminRoleMiddleware, transactionMiddleware])
     .inputValidator(tryFormZodError(postFeatureStatusSchema))
-    .handler(async ({ data }) => {
+    .handler(async ({ data, context: { currentUser } }) => {
         const featureVotesService = await getContainer().then((c) => c.services.featureVotes);
-        await featureVotesService.updateFeatureStatus(data);
+        await featureVotesService.updateFeatureStatus(data, currentUser.id);
     });
 
 

@@ -1,108 +1,105 @@
 import {FormattedError} from "@/lib/utils/error-classes";
-import {FeatureStatus, FeatureVoteType} from "@/lib/utils/enums";
+import {FeatureStatus, SocialNotifType} from "@/lib/utils/enums";
+import {NotificationsService} from "@/lib/server/domain/notifications/notifications.service";
 import {FeatureVotesRepository} from "@/lib/server/domain/feature-votes/feature-votes.repository";
 
 
-const SUPER_VOTE_LIMIT = 3;
-const SUPER_VOTE_WEIGHT = 5;
-
-
 export class FeatureVotesService {
-    constructor(private repository: typeof FeatureVotesRepository) {
+    constructor(
+        private repository: typeof FeatureVotesRepository,
+        private notificationsService: NotificationsService,
+    ) {
     }
 
     async getFeatureVotes(currentUserId: number) {
-        const { features, voteAgg, userVotes, superVotesUsed } = await this.repository.getFeatureVotesData(currentUserId);
+        const { features, voteAgg, userVotes } = await this.repository.getFeatureVotesData(currentUserId);
 
-        const votesByFeature = new Map<number, { normalVotes: number; superVotes: number }>();
+        const votesByFeature = new Map<number, number>();
+        const userVoteIds = new Set(userVotes.map((vote) => vote.featureId));
+
         voteAgg.forEach((vote) => {
-            votesByFeature.set(vote.featureId, {
-                superVotes: Number(vote.superVotes ?? 0),
-                normalVotes: Number(vote.normalVotes ?? 0),
-            });
+            votesByFeature.set(vote.featureId, Number(vote.totalVotes ?? 0));
         });
 
-        const userVoteMap = new Map<number, FeatureVoteType>();
-        userVotes.forEach((vote) => userVoteMap.set(vote.featureId, vote.voteType));
-
         const items = features.map((feature) => {
-            const votes = votesByFeature.get(feature.id) ?? { normalVotes: 0, superVotes: 0 };
-            const totalVotes = votes.normalVotes + votes.superVotes * SUPER_VOTE_WEIGHT;
+            const totalVotes = votesByFeature.get(feature.id) ?? 0;
 
             return {
                 totalVotes,
                 id: feature.id,
                 title: feature.title,
                 status: feature.status,
-                superVotes: votes.superVotes,
                 createdAt: feature.createdAt,
-                normalVotes: votes.normalVotes,
                 description: feature.description,
                 adminComment: feature.adminComment,
-                userVote: userVoteMap.get(feature.id) ?? null,
+                hasUserVote: userVoteIds.has(feature.id),
+                author: feature.author ? {
+                    id: feature.author.id,
+                    name: feature.author.name,
+                    image: feature.author.image,
+                } : null,
             };
         });
 
-        return {
-            items,
-            superVotesUsed,
-            superVoteLimit: SUPER_VOTE_LIMIT,
-            superVoteWeight: SUPER_VOTE_WEIGHT,
-        };
+        return { items };
     }
 
     async createFeatureRequest(userId: number, params: { title: string; description?: string | null }) {
-        const { duplicate } = await this.repository.createFeatureRequest({
+        const { duplicate, featureId } = await this.repository.createFeatureRequest({
             createdBy: userId,
             title: params.title,
             status: FeatureStatus.UNDER_CONSIDERATION,
-            description: params.description || "No description provided yet.",
+            description: params.description || "No description provided.",
         });
 
         if (duplicate) {
             throw new FormattedError("That feature already exists. Please vote for it instead.");
         }
+
+        const admins = await this.repository.getAdminUserIds();
+        await Promise.all(admins
+            .filter((admin) => admin.id !== userId)
+            .map((admin) => this.notificationsService.createSocialNotification({
+                actorId: userId,
+                userId: admin.id,
+                featureRequestId: featureId,
+                type: SocialNotifType.FEATURE_REQUEST_CREATED,
+            }))
+        );
     }
 
-    async toggleFeatureVote(params: { featureId: number; voteType: FeatureVoteType }, userId: number) {
-        const { feature, existingVote } = await this.repository.findFeatureWithUserVote(params.featureId, userId,);
+    async toggleFeatureVote(featureId: number, userId: number) {
+        const { feature, existingVote } = await this.repository.findFeatureWithUserVote(featureId, userId);
         if (!feature) throw new FormattedError("Feature not found.");
 
         const isLocked = feature.status === FeatureStatus.REJECTED || feature.status === FeatureStatus.COMPLETED;
         if (isLocked) throw new FormattedError("Voting is closed for this feature.");
 
-        if (params.voteType === FeatureVoteType.VOTE) {
-            if (existingVote?.voteType === FeatureVoteType.VOTE) {
-                return this.repository.deleteVoteById(existingVote.id);
-            }
-
-            if (existingVote) {
-                return this.repository.updateVoteType(existingVote.id, FeatureVoteType.VOTE);
-            }
-
-            return this.repository.insertVote({ userId, featureId: params.featureId, voteType: FeatureVoteType.VOTE });
-        }
-
-        if (existingVote?.voteType === FeatureVoteType.SUPER) {
+        if (existingVote) {
             return this.repository.deleteVoteById(existingVote.id);
         }
 
-        const canSpendSuperVote = (await this.repository.countUserSuperVotes(userId)) < SUPER_VOTE_LIMIT;
-
-        if (!canSpendSuperVote) {
-            throw new FormattedError("You have no super-votes available.",);
-        }
-
-        if (existingVote) {
-            await this.repository.updateVoteType(existingVote.id, FeatureVoteType.SUPER);
-            return;
-        }
-
-        await this.repository.insertVote({ featureId: params.featureId, userId, voteType: FeatureVoteType.SUPER });
+        await this.repository.insertVote({ featureId, userId });
     }
 
-    async updateFeatureStatus(params: { featureId: number; status: FeatureStatus; adminComment?: string | null }) {
-        await this.repository.updateFeatureStatus(params.featureId, params.status, params.adminComment || null);
+    async updateFeatureStatus(params: { featureId: number; status: FeatureStatus; adminComment?: string | null }, adminUserId: number) {
+        const feature = await this.repository.getFeatureRequest(params.featureId);
+        if (!feature) throw new FormattedError("Feature not found.");
+
+        const nextAdminComment = params.adminComment || null;
+        const statusChanged = feature.status !== params.status;
+        const adminCommentChanged = (feature.adminComment ?? null) !== nextAdminComment && !!nextAdminComment;
+
+        await this.repository.updateFeatureStatus(params.featureId, params.status, nextAdminComment);
+
+        if (feature.createdBy && feature.createdBy !== adminUserId && (statusChanged || adminCommentChanged)) {
+            await this.notificationsService.createSocialNotification({
+                actorId: adminUserId,
+                userId: feature.createdBy,
+                featureRequestId: params.featureId,
+                type: SocialNotifType.FEATURE_REQUEST_UPDATED,
+            });
+        }
     }
 
     async deleteFeatureRequest(featureId: number) {

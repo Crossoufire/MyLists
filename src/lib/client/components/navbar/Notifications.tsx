@@ -231,6 +231,10 @@ const SocialNotificationItem = ({ notification }: { notification: SocialNotif })
                 return " accepted your follow request";
             case SocialNotifType.FOLLOW_DECLINED:
                 return " declined your follow request";
+            case SocialNotifType.FEATURE_REQUEST_CREATED:
+                return " submitted a new feature request";
+            case SocialNotifType.FEATURE_REQUEST_UPDATED:
+                return " updated your feature request";
             default:
                 return "";
         }
@@ -254,6 +258,14 @@ const SocialNotificationItem = ({ notification }: { notification: SocialNotif })
                             </Link>
                         </span>
                         {getMessage()}
+                        {notification.featureRequest &&
+                            <>
+                                {": "}
+                                <Link to="/features-vote" className="font-medium text-app-accent">
+                                    here
+                                </Link>
+                            </>
+                        }
                     </p>
                     <p className="text-xs text-muted-foreground">
                         {formatRelativeTime(notification.createdAt)}

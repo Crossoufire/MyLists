@@ -1,7 +1,7 @@
 import {sql} from "drizzle-orm";
 import {relations} from "drizzle-orm/relations";
+import {FeatureStatus} from "@/lib/utils/enums";
 import {user} from "@/lib/server/database/schema/auth.schema";
-import {FeatureStatus, FeatureVoteType} from "@/lib/utils/enums";
 import {index, integer, sqliteTable, text, uniqueIndex} from "drizzle-orm/sqlite-core";
 
 
@@ -23,11 +23,9 @@ export const featureVotes = sqliteTable("feature_votes", {
     id: integer("id").primaryKey({ autoIncrement: true }).notNull(),
     userId: integer("user_id").notNull().references(() => user.id, { onDelete: "cascade" }),
     featureId: integer("feature_id").notNull().references(() => featureRequests.id, { onDelete: "cascade" }),
-    voteType: text("vote_type").$type<FeatureVoteType>().notNull(),
     createdAt: text("created_at").default(sql`(CURRENT_TIMESTAMP)`).notNull(),
 }, (table) => [
     index("ix_feature_votes_user_id").on(table.userId),
-    index("ix_feature_votes_vote_type").on(table.voteType),
     index("ix_feature_votes_feature_id").on(table.featureId),
     uniqueIndex("ux_feature_votes_feature_user").on(table.featureId, table.userId),
 ]);

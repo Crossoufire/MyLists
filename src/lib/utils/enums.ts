@@ -158,6 +158,8 @@ export const SocialNotifType = {
     FOLLOW_REQUESTED: "followRequested",
     FOLLOW_ACCEPTED: "follow_accepted",
     FOLLOW_DECLINED: "follow_declined",
+    FEATURE_REQUEST_CREATED: "feature_request_created",
+    FEATURE_REQUEST_UPDATED: "feature_request_updated",
 } as const;
 export type SocialNotifType = (typeof SocialNotifType)[keyof typeof SocialNotifType];
 
@@ -206,8 +208,3 @@ export const FeatureStatus = {
 export type FeatureStatus = (typeof FeatureStatus)[keyof typeof FeatureStatus];
 
 
-export const FeatureVoteType = {
-    VOTE: "vote",
-    SUPER: "super",
-} as const;
-export type FeatureVoteType = (typeof FeatureVoteType)[keyof typeof FeatureVoteType];
