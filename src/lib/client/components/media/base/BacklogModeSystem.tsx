@@ -1,9 +1,10 @@
-import {useRef} from "react";
+import {useState} from "react";
 import {cn} from "@/lib/utils/helpers";
-import {Calendar, TriangleAlert} from "lucide-react";
-import {Input} from "@/lib/client/components/ui/input";
 import {Button} from "@/lib/client/components/ui/button";
+import {Calendar} from "@/lib/client/components/ui/calendar";
+import {Calendar as CalendarIcon, TriangleAlert} from "lucide-react";
 import {formatDateTime, toDateInputValue} from "@/lib/utils/formating";
+import {Popover, PopoverContent, PopoverTrigger} from "@/lib/client/components/ui/popover";
 
 
 interface BacklogModeBannerProps {
@@ -18,7 +19,11 @@ interface BacklogModeBannerProps {
 export const BacklogModeSystem = ({ enabled, date, disabled, onDateChange, onEnabledChange }: BacklogModeBannerProps) => {
     // eslint-disable-next-line @eslint-react/purity
     const today = toDateInputValue(new Date().toISOString());
-    const dateInputRef = useRef<HTMLInputElement>(null);
+
+    const todayDate = dateInputValueToDate(today);
+    const [calendarOpen, setCalendarOpen] = useState(false);
+    const selectedDate = dateInputValueToDate(enabled && date ? date : today);
+    const calendarStartDate = new Date(todayDate.getFullYear() - 20, 0, 1);
     const selectedLabel = enabled && date ? formatDateTime(date, { noTime: true }) : "TODAY";
 
     const getPresetDate = (daysAgo: number) => {
@@ -47,23 +52,16 @@ export const BacklogModeSystem = ({ enabled, date, disabled, onDateChange, onEna
         onEnabledChange(shouldEnable);
     };
 
-    const openDatePicker = () => {
-        const input = dateInputRef.current;
-        if (!input) return;
-
-        if ("showPicker" in input) {
-            input.showPicker();
-            return;
-        }
-
-        // @ts-expect-error - older browsers
-        input.click();
-    };
-
     const handleCustomDate = (value: string) => {
         const isToday = value === today;
         onDateChange(isToday ? "" : value);
         onEnabledChange(!!value && !isToday);
+    };
+
+    const handleCalendarSelect = (selected?: Date) => {
+        if (!selected) return;
+        handleCustomDate(toDateInputValueFromDate(selected));
+        setCalendarOpen(false);
     };
 
     return (
@@ -96,26 +94,31 @@ export const BacklogModeSystem = ({ enabled, date, disabled, onDateChange, onEna
                     );
                 })}
 
-                <Button
-                    size="icon"
-                    disabled={disabled}
-                    variant="secondary"
-                    onClick={openDatePicker}
-                    title="Choose backlog date"
-                    className="h-7 w-full bg-background text-muted-foreground hover:bg-background/80"
-                >
-                    <Calendar className="size-4"/>
-                </Button>
-
-                <Input
-                    type="date"
-                    max={today}
-                    tabIndex={-1}
-                    ref={dateInputRef}
-                    value={enabled ? date : today}
-                    onChange={(ev) => handleCustomDate(ev.target.value)}
-                    className="absolute inset-0 pointer-events-none h-0 w-0 border-none opacity-0"
-                />
+                <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
+                    <PopoverTrigger asChild>
+                        <Button
+                            size="icon"
+                            disabled={disabled}
+                            variant="secondary"
+                            title="Choose backlog date"
+                            className="h-7 w-full bg-background text-muted-foreground hover:bg-background/80"
+                        >
+                            <CalendarIcon className="size-4"/>
+                        </Button>
+                    </PopoverTrigger>
+                    <PopoverContent align="end" className="w-auto p-0">
+                        <Calendar
+                            mode="single"
+                            fixedWeeks
+                            endMonth={todayDate}
+                            selected={selectedDate}
+                            captionLayout="dropdown"
+                            startMonth={calendarStartDate}
+                            disabled={{ after: todayDate }}
+                            onSelect={handleCalendarSelect}
+                        />
+                    </PopoverContent>
+                </Popover>
             </div>
             {selectedLabel !== "TODAY" &&
                 <div className="pt-0.5 flex justify-center items-center gap-2 text-[11px] font-medium uppercase tracking-wider text-app-rating">
@@ -126,4 +129,20 @@ export const BacklogModeSystem = ({ enabled, date, disabled, onDateChange, onEna
             }
         </div>
     );
+};
+
+
+const dateInputValueToDate = (value: string) => {
+    const [year, month, day] = value.split("-").map(Number);
+
+    return new Date(year, month - 1, day);
+};
+
+
+const toDateInputValueFromDate = (value: Date) => {
+    const year = value.getFullYear();
+    const month = String(value.getMonth() + 1).padStart(2, "0");
+    const day = String(value.getDate()).padStart(2, "0");
+
+    return `${year}-${month}-${day}`;
 };
