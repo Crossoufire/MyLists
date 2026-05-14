@@ -1,6 +1,6 @@
 import {toast} from "sonner";
 import {routeTree} from "@/routeTree.gen";
-import {createRouter} from "@tanstack/react-router";
+import {AnyRouter, createRouter} from "@tanstack/react-router";
 import {NotFound} from "@/lib/client/components/general/NotFound";
 import {NavLoader} from "./lib/client/components/general/NavLoader";
 import {MutationCache, QueryCache, QueryClient} from "@tanstack/react-query";
@@ -59,7 +59,8 @@ export function getRouter() {
         notFoundMode: "root",
     });
 
-    installDefaultNotFoundBoundaries(router as any);
+    // Necessary patch otherwise `notFound` page display `Something Went Wrong` in prod (not in dev)
+    installDefaultNotFoundBoundaries(router);
 
     setupRouterSsrQueryIntegration({
         router,
@@ -72,7 +73,7 @@ export function getRouter() {
 }
 
 
-function installDefaultNotFoundBoundaries(router: ReturnType<typeof createRouter>) {
+function installDefaultNotFoundBoundaries(router: AnyRouter) {
     for (const route of Object.values(router.routesById)) {
         route.options.notFoundComponent ??= NotFound;
     }
