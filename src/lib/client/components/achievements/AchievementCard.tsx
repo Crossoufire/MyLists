@@ -1,13 +1,13 @@
 import {useMemo} from "react";
-import {Award, Check} from "lucide-react";
 import {cn} from "@/lib/utils/helpers";
+import {Award, Check} from "lucide-react";
 import {Badge} from "@/lib/client/components/ui/badge";
 import {AchCard} from "@/lib/types/query.options.types";
-import {formatDateTime, formatRelativeTime} from "@/lib/utils/formating";
+import {diffColors} from "@/lib/utils/colors-and-icons";
 import {Progress} from "@/lib/client/components/ui/progress";
+import {RelativeTime} from "@/lib/client/components/general/RelativeTime";
 import {TiersDetails} from "@/lib/client/components/achievements/TierDetails";
 import {Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle} from "@/lib/client/components/ui/card";
-import {diffColors} from "@/lib/utils/colors-and-icons";
 
 
 interface AchievementCardProps {
@@ -49,9 +49,10 @@ export const AchievementCard = ({ achievement }: AchievementCardProps) => {
                         <Award className={cn("size-6", iconColorClass)}/>
                         <div className="flex flex-col">
                             {name}
-                            <div className="text-xs font-medium text-muted-foreground" title={formatDateTime(highestCompletedTier?.completedAt)}>
-                                {formatRelativeTime(highestCompletedTier?.completedAt)}
-                            </div>
+                            <RelativeTime
+                                value={highestCompletedTier?.completedAt}
+                                className="text-xs font-medium text-muted-foreground"
+                            />
                         </div>
                     </div>
                 </CardTitle>

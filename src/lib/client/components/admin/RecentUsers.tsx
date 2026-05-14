@@ -1,7 +1,7 @@
 import {Link} from "@tanstack/react-router";
 import {AdminUserOverview} from "@/lib/types/query.options.types";
 import {ProfileIcon} from "@/lib/client/components/general/ProfileIcon";
-import {formatDateTime, formatRelativeTime} from "@/lib/utils/formating";
+import {RelativeTime} from "@/lib/client/components/general/RelativeTime";
 
 
 interface RecentUsersProps {
@@ -35,9 +35,7 @@ export function RecentUsers({ users }: RecentUsersProps) {
                     </div>
                     <div className="ml-auto text-sm">
                         <div className="flex items-center gap-2">
-                            <span title={formatDateTime(user.updatedAt)}>
-                                {formatRelativeTime(user.updatedAt)}
-                            </span>
+                            <RelativeTime value={user.updatedAt}/>
                         </div>
                     </div>
                 </div>

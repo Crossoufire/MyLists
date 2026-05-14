@@ -3,9 +3,10 @@ import {cn} from "@/lib/utils/helpers";
 import {Link} from "@tanstack/react-router";
 import {Pencil, RefreshCw} from "lucide-react";
 import {useAuth} from "@/lib/client/hooks/use-auth";
+import {formatDateTime} from "@/lib/utils/formating";
 import {Button} from "@/lib/client/components/ui/button";
 import {isAtLeastRole, MediaType, RoleType} from "@/lib/utils/enums";
-import {formatDateTime, formatRelativeTime} from "@/lib/utils/formating";
+import {RelativeTime} from "@/lib/client/components/general/RelativeTime";
 import {useRefreshMediaMutation} from "@/lib/client/react-query/query-mutations/media.mutations";
 
 
@@ -60,7 +61,7 @@ export const RefreshAndEdit = ({ mediaType, mediaId, apiId, providerName, extern
     };
 
     return (
-        <div className="flex items-center justify-center gap-4 rounded-lg border p-1 shadow-sm max-sm:gap-2" title={refreshTitle}>
+        <div className="flex items-center justify-center gap-4 rounded-lg border p-1 shadow-sm max-sm:gap-2">
             {canRefreshThisType &&
                 <Button
                     size="sm"
@@ -89,9 +90,11 @@ export const RefreshAndEdit = ({ mediaType, mediaId, apiId, providerName, extern
                 <div className="h-6 border-l border border-muted-foreground/50"/>
             }
 
-            <div className="px-3 text-xs text-muted-foreground" title={formatDateTime(lastUpdate)}>
-                Updated {formatRelativeTime(lastUpdate)}
-            </div>
+            <RelativeTime
+                prefix="Updated "
+                value={lastUpdate}
+                className="px-3 text-xs text-muted-foreground"
+            />
         </div>
     );
 };

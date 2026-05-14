@@ -7,13 +7,14 @@ import {UserStats} from "@/lib/client/components/admin/UserStats";
 import {Pagination} from "@/lib/client/components/general/Pagination";
 import {DashboardShell} from "@/lib/client/components/admin/DashboardShell";
 import {DashboardHeader} from "@/lib/client/components/admin/DashboardHeader";
-import {formatDateTime, formatNumber, formatRelativeTime} from "@/lib/utils/formating";
+import {formatDateTime, formatNumber} from "@/lib/utils/formating";
 import {Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis} from "recharts";
 import {adminMediaRefreshOptions} from "@/lib/client/react-query/query-options/admin-options";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/lib/client/components/ui/table";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/lib/client/components/ui/select";
 import {Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle} from "@/lib/client/components/ui/card";
 import {MainThemeIcon} from "@/lib/client/components/general/MainIcons";
+import {RelativeTime} from "@/lib/client/components/general/RelativeTime";
 
 
 export const Route = createFileRoute("/_admin/admin/media-refresh")({
@@ -314,9 +315,7 @@ function MediaRefreshPage() {
                                             </Link>
                                         </TableCell>
                                         <TableCell className="text-right text-muted-foreground">
-                                            <span title={formatDateTime(row.refreshedAt)}>
-                                                {formatRelativeTime(row.refreshedAt)}
-                                            </span>
+                                            <RelativeTime value={row.refreshedAt}/>
                                         </TableCell>
                                     </TableRow>
                                 )}

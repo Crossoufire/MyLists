@@ -5,7 +5,7 @@ import {diffColors} from "@/lib/utils/colors-and-icons";
 import {Button} from "@/lib/client/components/ui/button";
 import {AchievementsType} from "@/lib/types/query.options.types";
 import {EmptyState} from "@/lib/client/components/general/EmptyState";
-import {formatDateTime, formatRelativeTime} from "@/lib/utils/formating";
+import {RelativeTime} from "@/lib/client/components/general/RelativeTime";
 import {Card, CardContent, CardHeader, CardTitle} from "@/lib/client/components/ui/card";
 
 
@@ -40,9 +40,10 @@ export const AchievementsCard = ({ username, achievements }: AchievementsProps) 
                                             {ach.name}
                                         </div>
                                     </div>
-                                    <div className="text-muted-foreground text-xs" title={formatDateTime(ach.completedAt)}>
-                                        {formatRelativeTime(ach.completedAt)}
-                                    </div>
+                                    <RelativeTime
+                                        value={ach.completedAt}
+                                        className="text-muted-foreground text-xs"
+                                    />
                                 </div>
                                 <p className="text-xs opacity-80 mt-1">
                                     {ach.description}

@@ -133,7 +133,7 @@ export const formatNumber = (value: number | null | undefined, options: Intl.Num
     return withFallback(value, (val) => val.toLocaleString("fr", options));
 };
 
-export const formatRelativeTime = (input: string | null | undefined) => {
+export const formatRelativeTime = (input: string | number | null | undefined) => {
     if (!input) return "Never";
 
     const date = parseDate(input);
