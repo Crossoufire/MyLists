@@ -71,6 +71,13 @@ const saveErrorToDb = async (err: any) => {
     const session = await auth.api.getSession({ headers: request.headers });
     const adminService = await getContainer().then((c) => c.services.admin);
 
+    const addErrorExtra = (err: unknown) => {
+        if (err instanceof FormZodError || err instanceof z.ZodError) {
+            return { issues: err.issues.map(({ input: _input, ...issue }) => issue) };
+        }
+        return null;
+    };
+
     const stack = {
         url: request.url,
         method: request.method,
@@ -87,12 +94,3 @@ const saveErrorToDb = async (err: any) => {
         message: err?.message ?? "No message provided",
     });
 }
-
-
-const addErrorExtra = (err: unknown) => {
-    if (err instanceof FormZodError || err instanceof z.ZodError) {
-        return { issues: err.issues.map(({ input: _input, ...issue }) => issue) };
-    }
-
-    return null;
-};

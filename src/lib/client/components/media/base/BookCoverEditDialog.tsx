@@ -3,6 +3,7 @@ import {useState} from "react";
 import {useQuery} from "@tanstack/react-query";
 import {Input} from "@/lib/client/components/ui/input";
 import {Label} from "@/lib/client/components/ui/label";
+import {getZodMutationError} from "@/lib/utils/helpers";
 import {Button} from "@/lib/client/components/ui/button";
 import {Link2, LoaderCircle, PencilLine, UploadCloud} from "lucide-react";
 import {suggestBookCoverOptions} from "@/lib/client/react-query/query-options/query-options";
@@ -58,7 +59,7 @@ export const BookCoverEditDialog = ({ mediaId, apiId, external, mediaName }: Boo
         }
 
         updateCoverMutation.mutate({ data: formData }, {
-            onError: (err: any) => toast.error(err?.message || "Could not update the book cover."),
+            onError: (err: any) => toast.error(getZodMutationError(err) || "Could not update the book cover."),
             onSuccess: () => {
                 resetForm();
                 setOpen(false);

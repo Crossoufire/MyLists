@@ -83,7 +83,9 @@ export const highlightedMediaSearchSchema = z.object({
 
 export const passwordSettingsSchema = z.object({
     currentPassword: z.string(),
-    newPassword: z.string().min(8, "Password too short (8 min)").max(50, "Password too long (50 max)"),
+    newPassword: z.string()
+        .min(8, "The Password is too short (8 min.)")
+        .max(50, "The Password is too long (50 max)."),
 });
 
 export const downloadListAsCsvSchema = z.object({

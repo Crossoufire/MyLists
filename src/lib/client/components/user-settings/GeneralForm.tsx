@@ -29,6 +29,7 @@ const MAX_FILE_SIZE = 10 * 1024 * 1000;
 export const GeneralForm = () => {
     const { currentUser, setCurrentUser } = useAuth();
     const generalSettingsMutation = useGeneralSettingsMutation();
+    // eslint-disable-next-line react-hooks/purity,@eslint-react/purity
     const [imageCropperKey, setImageCropperKey] = useState(Date.now());
     const form = useForm<FormValues>({
         values: {
@@ -47,8 +48,8 @@ export const GeneralForm = () => {
         });
 
         generalSettingsMutation.mutate({ data: formData }, {
-            onError: (err: any) => {
-                if (err instanceof FormZodError && err?.issues && Array.isArray(err?.issues)) {
+            onError: (err) => {
+                if (err instanceof FormZodError && err.issues.length > 0) {
                     err?.issues.forEach((issue: any) => {
                         form.setError(issue.path[0], { type: "server", message: issue.message });
                     });

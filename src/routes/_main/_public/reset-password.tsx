@@ -62,7 +62,8 @@ function ResetPasswordPage() {
                                     name="newPassword"
                                     rules={{
                                         required: "The password is required.",
-                                        minLength: { value: 8, message: "The password must have at least 8 characters." },
+                                        minLength: { value: 8, message: "The password is too short (8 min)." },
+                                        maxLength: { value: 50, message: "The password is too long (128 max)." },
                                     }}
                                     render={({ field }) =>
                                         <FormItem>

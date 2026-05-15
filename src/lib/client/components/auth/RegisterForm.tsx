@@ -115,7 +115,8 @@ export const RegisterForm = ({ open, onOpenChange }: RegisterFormProps) => {
                                     name="password"
                                     rules={{
                                         required: "Password is required.",
-                                        minLength: { value: 8, message: "The password must have at least 8 characters." },
+                                        minLength: { value: 8, message: "The password is too short (8 min)." },
+                                        maxLength: { value: 50, message: "The password is too long (50 max)." },
                                     }}
                                     render={({ field }) =>
                                         <FormItem>

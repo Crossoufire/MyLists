@@ -28,9 +28,10 @@ export function TaskFormDialog({ task, isRunning, mutation }: TaskFormDialogProp
         ev.preventDefault();
 
         setErrors(null);
+
         mutation.mutate({ data: { taskName: task.name, input: formData } }, {
-            onError: (err: any) => {
-                if (err instanceof FormZodError && err?.issues && Array.isArray(err?.issues)) {
+            onError: (err) => {
+                if (err instanceof FormZodError && err.issues.length > 0) {
                     err?.issues.forEach((issue: any) => {
                         setErrors((prev) => [
                             ...(prev || []),

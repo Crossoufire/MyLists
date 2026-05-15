@@ -1,4 +1,5 @@
 import {toast} from "sonner";
+import {getZodMutationError} from "@/lib/utils/helpers";
 import {useMutation, useQueryClient} from "@tanstack/react-query";
 import {featureVotesOptions} from "@/lib/client/react-query/query-options/query-options";
 import {postCreateFeatureRequest, postDeleteFeatureRequest, postToggleFeatureVote, postUpdateFeatureStatus} from "@/lib/server/functions/feature-votes";
@@ -19,7 +20,7 @@ export const useToggleFeatureVoteMutation = () => {
 
     return useMutation({
         mutationFn: postToggleFeatureVote,
-        onError: () => toast.error("Failed to update your vote."),
+        onError: (err) => toast.error(getZodMutationError(err) || "Failed to update your vote."),
         onSuccess: async () => {
             await queryClient.invalidateQueries({ queryKey: featureVotesOptions.queryKey });
         },
@@ -32,7 +33,7 @@ export const useUpdateFeatureStatusMutation = () => {
 
     return useMutation({
         mutationFn: postUpdateFeatureStatus,
-        onError: () => toast.error("Failed to update the feature status."),
+        onError: (err) => toast.error(getZodMutationError(err) || "Failed to update the feature status."),
         onSuccess: async () => {
             await queryClient.invalidateQueries({ queryKey: featureVotesOptions.queryKey });
         },
@@ -45,7 +46,7 @@ export const useDeleteFeatureRequestMutation = () => {
 
     return useMutation({
         mutationFn: postDeleteFeatureRequest,
-        onError: () => toast.error("Failed to delete the feature request."),
+        onError: (err) => toast.error(getZodMutationError(err) || "Failed to delete the feature request."),
         onSuccess: async () => {
             await queryClient.invalidateQueries({ queryKey: featureVotesOptions.queryKey });
         },

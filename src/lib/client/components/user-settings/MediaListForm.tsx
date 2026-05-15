@@ -4,6 +4,7 @@ import {ListSettings} from "@/lib/schemas";
 import {capitalize} from "@/lib/utils/formating";
 import {useForm, useWatch} from "react-hook-form";
 import {useAuth} from "@/lib/client/hooks/use-auth";
+import {getZodMutationError} from "@/lib/utils/helpers";
 import {Switch} from "@/lib/client/components/ui/switch";
 import {Button} from "@/lib/client/components/ui/button";
 import {Separator} from "@/lib/client/components/ui/separator";
@@ -70,7 +71,7 @@ export const MediaListForm = () => {
 
     const onSubmit = (submittedData: ListSettings) => {
         listSettingsMutation.mutate({ data: submittedData }, {
-            onError: () => toast.error("An error occurred while updating the data"),
+            onError: (err) => toast.error(getZodMutationError(err) || "An error occurred while updating the data"),
             onSuccess: async () => {
                 await setCurrentUser();
                 toast.success("Settings successfully updated");
@@ -82,7 +83,7 @@ export const MediaListForm = () => {
         ev.preventDefault();
 
         downloadListAsCSVMutation.mutate({ selectedList: selectedListForExport }, {
-            onError: () => toast.error("An error occurred querying the CSV data"),
+            onError: (err) => toast.error(getZodMutationError(err) || "An error occurred querying the CSV data"),
             onSuccess: (data) => {
                 if (!data) return;
 

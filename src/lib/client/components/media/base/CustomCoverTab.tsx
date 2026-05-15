@@ -3,6 +3,7 @@ import {useState} from "react";
 import {MediaType} from "@/lib/utils/enums";
 import {Label} from "@/lib/client/components/ui/label";
 import {Input} from "@/lib/client/components/ui/input";
+import {getZodMutationError} from "@/lib/utils/helpers";
 import {Button} from "@/lib/client/components/ui/button";
 import {ImageOff, Link2, UploadCloud, X} from "lucide-react";
 import {UserMedia, UserMediaItem} from "@/lib/types/query.options.types";
@@ -51,7 +52,7 @@ export const CustomCoverTabContent = ({ mediaType, userMedia, mutation }: Custom
         }
 
         mutation.mutate({ data: formData }, {
-            onError: (err) => toast.error(err?.message || "Could not update the custom cover."),
+            onError: (err) => toast.error(getZodMutationError(err) || "Could not update the custom cover."),
             onSuccess: () => {
                 resetForm();
                 toast.success("Custom cover saved.");
@@ -66,7 +67,7 @@ export const CustomCoverTabContent = ({ mediaType, userMedia, mutation }: Custom
         formData.append("remove", "true");
 
         mutation.mutate({ data: formData }, {
-            onError: (err) => toast.error(err?.message || "Could not remove the custom cover."),
+            onError: (err) => toast.error(getZodMutationError(err) || "Could not remove the custom cover."),
             onSuccess: () => {
                 resetForm();
                 toast.success("Custom cover removed.");

@@ -3,6 +3,7 @@ import {useForm} from "react-hook-form";
 import authClient from "@/lib/utils/auth-client";
 import {useMutation} from "@tanstack/react-query";
 import {Input} from "@/lib/client/components/ui/input";
+import {FormZodError} from "@/lib/utils/error-classes";
 import {Button} from "@/lib/client/components/ui/button";
 import {Separator} from "@/lib/client/components/ui/separator";
 import {usePasswordSettingsMutation} from "@/lib/client/react-query/query-mutations/user.mutations";
@@ -34,18 +35,18 @@ export const EmailAndPasswordForm = () => {
 
     const onPasswordSubmit = (values: FormValues) => {
         passwordMutation.mutate({ newPassword: values.newPassword, currentPassword: values.currentPassword }, {
-            onError: (error: any) => {
-                if (error?.name === "ZodError" && Array.isArray(error.issues)) {
-                    error.issues.forEach((issue: any) => {
+            onError: (err) => {
+                if (err instanceof FormZodError && err.issues.length > 0) {
+                    err.issues.forEach((issue) => {
                         passwordForm.setError(issue.path[0], { message: issue.message });
                     });
                 }
-                else if (error?.message?.toLowerCase().includes("current password")) {
-                    passwordForm.setError("currentPassword", { message: error.message });
+                else if (err?.message?.toLowerCase().includes("current password")) {
+                    passwordForm.setError("currentPassword", { message: err.message });
                 }
                 else {
                     passwordForm.setError("root", {
-                        message: error.message || "An unexpected error occurred.",
+                        message: err.message || "An unexpected error occurred.",
                     });
                 }
             },
@@ -93,7 +94,6 @@ export const EmailAndPasswordForm = () => {
 
             <Separator className="max-w-sm"/>
 
-            {/* Password Change Section */}
             <Form {...passwordForm}>
                 <form
                     onSubmit={passwordForm.handleSubmit(onPasswordSubmit)}
@@ -119,7 +119,8 @@ export const EmailAndPasswordForm = () => {
                         name="newPassword"
                         rules={{
                             required: "New password is required",
-                            minLength: { value: 8, message: "Minimum 8 characters" },
+                            minLength: { value: 8, message: "The Password is too short (8 min)." },
+                            maxLength: { value: 50, message: "The Password is too long (50 max)." },
                         }}
                         render={({ field }) => (
                             <FormItem>
@@ -138,6 +139,7 @@ export const EmailAndPasswordForm = () => {
                         rules={{
                             required: "Please confirm your password",
                             validate: (val) => {
+                                // eslint-disable-next-line react-hooks/incompatible-library
                                 if (passwordForm.watch("newPassword") !== val) {
                                     return "Passwords do not match";
                                 }

@@ -158,7 +158,7 @@ function FeatureVotesPage() {
                                 onChange={(ev) => setNewDescription(ev.target.value)}
                             />
                             {createFeatureMutation.isError &&
-                                <p className="text-xs text-red-400">
+                                <p className="text-xs text-red-400 -mt-2">
                                     {getZodMutationError(createFeatureMutation.error)}
                                 </p>
                             }
