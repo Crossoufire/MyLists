@@ -82,6 +82,39 @@ export class CollectionsService {
         return this._enrichWithPreviews(collections);
     }
 
+    async getUserCollectionMemberships(ownerId: number, mediaId: number, mediaType: MediaType) {
+        return this.repository.getUserCollectionMemberships(ownerId, mediaId, mediaType);
+    }
+
+    async addMediaToCollection(params: { actorId: number; mediaId: number; mediaType: MediaType; collectionId: number }) {
+        const collection = await this.repository.getCollectionById(params.collectionId);
+        if (!collection || collection.ownerId !== params.actorId || collection.mediaType !== params.mediaType) {
+            throw new FormattedError("Unauthorized to update this collection.");
+        }
+
+        const nextOrderIndex = await this.repository.getMaxCollectionItemOrder(params.collectionId) + 1;
+        await this.repository.insertCollectionItem({
+            annotation: null,
+            mediaId: params.mediaId,
+            orderIndex: nextOrderIndex,
+            mediaType: params.mediaType,
+            collectionId: params.collectionId,
+        });
+    }
+
+    async removeMediaFromCollection(params: { actorId: number; mediaId: number; mediaType: MediaType; collectionId: number }) {
+        const collection = await this.repository.getCollectionById(params.collectionId);
+        if (!collection || collection.ownerId !== params.actorId || collection.mediaType !== params.mediaType) {
+            throw new FormattedError("Unauthorized to update this collection.");
+        }
+
+        if (collection.itemsCount <= 1) {
+            throw new FormattedError("A collection must contain at least one item.");
+        }
+
+        await this.repository.deleteCollectionItem(params.collectionId, params.mediaId);
+    }
+
     async createCollection(params: {
         title: string;
         ownerId: number;

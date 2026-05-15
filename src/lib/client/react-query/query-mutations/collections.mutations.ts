@@ -1,7 +1,21 @@
 import {toast} from "sonner";
+import {MediaType} from "@/lib/utils/enums";
 import {useMutation, useQueryClient} from "@tanstack/react-query";
-import {collectionDetailsEditOptions, collectionDetailsReadOptions} from "@/lib/client/react-query/query-options/query-options";
-import {postCopyCollection, postCreateCollection, postDeleteCollection, postToggleCollectionLike, postUpdateCollection} from "@/lib/server/functions/collections";
+import {
+    collectionDetailsEditOptions,
+    collectionDetailsReadOptions,
+    mediaCommunityCollectionsOptions,
+    userCollectionMembershipsOptions
+} from "@/lib/client/react-query/query-options/query-options";
+import {
+    postAddMediaToCollection,
+    postCopyCollection,
+    postCreateCollection,
+    postDeleteCollection,
+    postRemoveMediaFromCollection,
+    postToggleCollectionLike,
+    postUpdateCollection
+} from "@/lib/server/functions/collections";
 
 
 export const useCreateCollectionMutation = () => {
@@ -84,6 +98,40 @@ export const useDeleteCollectionMutation = (collectionId: number) => {
             await queryClient.invalidateQueries({ queryKey: ["collections", "user"] });
             await queryClient.invalidateQueries({ queryKey: ["collections", "community"] });
             await queryClient.invalidateQueries({ queryKey: collectionDetailsReadOptions(collectionId).queryKey });
+        },
+    });
+};
+
+
+export const useAddMediaToCollectionMutation = (mediaType: MediaType, mediaId: number) => {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: postAddMediaToCollection,
+        onSuccess: async (_data, variables) => {
+            const collectionId = Number(variables.data.collectionId);
+            await queryClient.invalidateQueries({ queryKey: ["collections", "user"] });
+            await queryClient.invalidateQueries({ queryKey: collectionDetailsReadOptions(collectionId).queryKey });
+            await queryClient.invalidateQueries({ queryKey: collectionDetailsEditOptions(collectionId).queryKey });
+            await queryClient.invalidateQueries({ queryKey: mediaCommunityCollectionsOptions(mediaId, mediaType).queryKey });
+            await queryClient.invalidateQueries({ queryKey: userCollectionMembershipsOptions(mediaId, mediaType, true).queryKey });
+        },
+    });
+};
+
+
+export const useRemoveMediaFromCollectionMutation = (mediaType: MediaType, mediaId: number) => {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: postRemoveMediaFromCollection,
+        onSuccess: async (_data, variables) => {
+            const collectionId = Number(variables.data.collectionId);
+            await queryClient.invalidateQueries({ queryKey: ["collections", "user"] });
+            await queryClient.invalidateQueries({ queryKey: collectionDetailsReadOptions(collectionId).queryKey });
+            await queryClient.invalidateQueries({ queryKey: collectionDetailsEditOptions(collectionId).queryKey });
+            await queryClient.invalidateQueries({ queryKey: mediaCommunityCollectionsOptions(mediaId, mediaType).queryKey });
+            await queryClient.invalidateQueries({ queryKey: userCollectionMembershipsOptions(mediaId, mediaType, true).queryKey });
         },
     });
 };

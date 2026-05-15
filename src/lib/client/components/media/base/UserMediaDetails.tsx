@@ -12,6 +12,7 @@ import {UpdateComment} from "@/lib/client/components/media/base/UpdateComment";
 import {HistoryDetails} from "@/lib/client/components/media/base/HistoryDetails";
 import {UpdateFavorite} from "@/lib/client/components/media/base/UpdateFavorite";
 import {historyOptions} from "@/lib/client/react-query/query-options/query-options";
+import {CollectionsLists} from "@/lib/client/components/media/base/CollectionsLists";
 import {BacklogModeSystem} from "@/lib/client/components/media/base/BacklogModeSystem";
 import {CustomCoverTabContent} from "@/lib/client/components/media/base/CustomCoverTab";
 import {UserMediaSpecificDetails} from "@/lib/client/components/media/base/UserMediaSpecificDetails";
@@ -110,6 +111,10 @@ export const UserMediaDetails = ({ userMedia, mediaType, queryOption }: UserMedi
                             queryOption={queryOption}
                             mediaId={userMedia.mediaId}
                             tags={userMedia?.tags ?? []}
+                        />
+                        <CollectionsLists
+                            mediaType={mediaType}
+                            mediaId={userMedia.mediaId}
                         />
                     </div>
 

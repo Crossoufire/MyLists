@@ -22,7 +22,7 @@ import {getMonthlyActivity, getSectionActivity, getSpecificActivity, getUserStat
 import {getGameCompatiblePlatforms, getJobDetails, getMediaDetails, getMediaDetailsToEdit} from "@/lib/server/functions/media-details";
 import {getAllUpdatesHistory, getUserProfile, getUserProfileHeader, getUsersFollowers, getUsersFollows} from "@/lib/server/functions/user-profile";
 import {getMediaListFilters, getMediaListSearchFilters, getMediaListSF, getTagsViewFn, getUserListHeaderSF} from "@/lib/server/functions/media-lists";
-import {getCommunityCollections, getEditCollectionDetails, getMediaCommunityCollections, getReadCollectionDetails, getUserCollections} from "@/lib/server/functions/collections";
+import {getCommunityCollections, getEditCollectionDetails, getMediaCommunityCollections, getReadCollectionDetails, getUserCollectionMemberships, getUserCollections} from "@/lib/server/functions/collections";
 
 
 export const authOptions = queryOptions({
@@ -308,6 +308,13 @@ export const communityCollectionsOptions = (search: CommunitySearch) => queryOpt
 export const mediaCommunityCollectionsOptions = (mediaId: number, mediaType: MediaType) => queryOptions({
     queryKey: ["details", "collections", "community", mediaType, mediaId],
     queryFn: () => getMediaCommunityCollections({ data: { mediaId, mediaType } }),
+});
+
+
+export const userCollectionMembershipsOptions = (mediaId: number, mediaType: MediaType, isOpen: boolean) => queryOptions({
+    queryKey: ["collections", "memberships", mediaType, mediaId] as const,
+    queryFn: () => getUserCollectionMemberships({ data: { mediaId, mediaType } }),
+    enabled: isOpen,
 });
 
 

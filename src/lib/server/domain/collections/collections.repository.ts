@@ -1,9 +1,10 @@
+import {alias} from "drizzle-orm/sqlite-core";
 import {MediaType, PrivacyType} from "@/lib/utils/enums";
 import {paginate} from "@/lib/server/database/pagination";
 import {CommunitySearch} from "@/lib/types/collections.types";
 import {getDbClient} from "@/lib/server/database/async-storage";
-import {and, asc, count, desc, eq, getTableColumns, inArray, like, or, sql} from "drizzle-orm";
 import {collectionItems, collectionLikes, collections, user} from "@/lib/server/database/schema";
+import {and, asc, count, desc, eq, getTableColumns, inArray, like, max, or, sql} from "drizzle-orm";
 
 
 export class CollectionsRepository {
@@ -68,6 +69,49 @@ export class CollectionsRepository {
             .from(collectionItems)
             .where(eq(collectionItems.collectionId, collectionId))
             .orderBy(asc(collectionItems.orderIndex));
+    }
+
+    static async getUserCollectionMemberships(ownerId: number, mediaId: number, mediaType: MediaType) {
+        const matchingItem = alias(collectionItems, "matchingItem");
+
+        return getDbClient()
+            .select({
+                id: collections.id,
+                title: collections.title,
+                privacy: collections.privacy,
+                ordered: collections.ordered,
+                hasMedia: sql<boolean>`CASE WHEN ${matchingItem.id} IS NULL THEN 0 ELSE 1 END`.mapWith(Boolean).as("hasMedia"),
+                itemsCount: sql<number>`(
+                    SELECT COUNT(*)
+                    FROM ${collectionItems} ci
+                    WHERE ci.collection_id = ${collections.id}
+                )`.as("itemsCount"),
+            })
+            .from(collections)
+            .leftJoin(matchingItem, and(eq(matchingItem.collectionId, collections.id), eq(matchingItem.mediaId, mediaId)))
+            .where(and(eq(collections.ownerId, ownerId), eq(collections.mediaType, mediaType)))
+            .orderBy(asc(collections.title));
+    }
+
+    static async getMaxCollectionItemOrder(collectionId: number) {
+        return getDbClient()
+            .select({ maxOrder: max(collectionItems.orderIndex) })
+            .from(collectionItems)
+            .where(eq(collectionItems.collectionId, collectionId))
+            .get()?.maxOrder ?? 0;
+    }
+
+    static async insertCollectionItem(item: typeof collectionItems.$inferInsert) {
+        await getDbClient()
+            .insert(collectionItems)
+            .values(item)
+            .onConflictDoNothing();
+    }
+
+    static async deleteCollectionItem(collectionId: number, mediaId: number) {
+        await getDbClient()
+            .delete(collectionItems)
+            .where(and(eq(collectionItems.collectionId, collectionId), eq(collectionItems.mediaId, mediaId)));
     }
 
     static async getUserCollections(targetUserId: number, isOwner: boolean, mediaType?: MediaType) {

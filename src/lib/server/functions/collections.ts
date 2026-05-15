@@ -7,6 +7,8 @@ import {requiredAuthMiddleware} from "@/lib/server/middlewares/authentication";
 import {optionalAuthMiddleware, privateAuthZMiddleware} from "@/lib/server/middlewares/authorization";
 import {
     collectionIdSchema,
+    collectionMediaItemActionSchema,
+    collectionMediaMembershipsSchema,
     communityCollectionsSchema,
     createCollectionSchema,
     mediaCommunityCollectionsSchema,
@@ -42,6 +44,16 @@ export const getMediaCommunityCollections = createServerFn({ method: "GET" })
         const container = await getContainer();
         const collectionService = container.services.collections;
         return collectionService.getMediaCommunityCollections(mediaId, mediaType);
+    });
+
+
+export const getUserCollectionMemberships = createServerFn({ method: "GET" })
+    .middleware([requiredAuthMiddleware])
+    .inputValidator(tryNotFound(collectionMediaMembershipsSchema))
+    .handler(async ({ data: { mediaId, mediaType }, context: { currentUser } }) => {
+        const container = await getContainer();
+        const collectionService = container.services.collections;
+        return collectionService.getUserCollectionMemberships(currentUser.id, mediaId, mediaType);
     });
 
 
@@ -84,6 +96,26 @@ export const postUpdateCollection = createServerFn({ method: "POST" })
         const container = await getContainer();
         const collectionService = container.services.collections;
         await collectionService.updateCollection({ ...data, actorId: currentUser.id, actorRole: currentUser.role as RoleType });
+    });
+
+
+export const postAddMediaToCollection = createServerFn({ method: "POST" })
+    .middleware([requiredAuthMiddleware, transactionMiddleware])
+    .inputValidator(collectionMediaItemActionSchema)
+    .handler(async ({ data, context: { currentUser } }) => {
+        const container = await getContainer();
+        const collectionService = container.services.collections;
+        await collectionService.addMediaToCollection({ ...data, actorId: currentUser.id });
+    });
+
+
+export const postRemoveMediaFromCollection = createServerFn({ method: "POST" })
+    .middleware([requiredAuthMiddleware, transactionMiddleware])
+    .inputValidator(collectionMediaItemActionSchema)
+    .handler(async ({ data, context: { currentUser } }) => {
+        const container = await getContainer();
+        const collectionService = container.services.collections;
+        await collectionService.removeMediaFromCollection({ ...data, actorId: currentUser.id });
     });
 
 

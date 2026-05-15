@@ -54,3 +54,12 @@ export const mediaCommunityCollectionsSchema = z.object({
     mediaId: z.coerce.number().int().positive(),
     mediaType: z.enum(MediaType),
 });
+
+export const collectionMediaMembershipsSchema = z.object({
+    mediaType: z.enum(MediaType),
+    mediaId: z.coerce.number().int().positive(),
+});
+
+export const collectionMediaItemActionSchema = collectionMediaMembershipsSchema.extend({
+    collectionId: z.coerce.number().int().positive(),
+});
