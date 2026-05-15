@@ -8,11 +8,12 @@ import {createFileRoute} from "@tanstack/react-router";
 import {Button} from "@/lib/client/components/ui/button";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
 import {MediaHero} from "@/lib/client/components/media/base/MediaHero";
-import {MediaSynopsis} from "@/lib/client/components/media/base/MediaSynopsis";
 import {SimilarMedia} from "@/lib/client/components/media/base/SimilarMedia";
+import {MediaSynopsis} from "@/lib/client/components/media/base/MediaSynopsis";
 import {MediaComponent} from "@/lib/client/components/media/base/MediaComponent";
 import {RefreshAndEdit} from "@/lib/client/components/media/base/RefreshAndEdit";
 import {UserMediaDetails} from "@/lib/client/components/media/base/UserMediaDetails";
+import {CollectionsLists} from "@/lib/client/components/media/base/CollectionsLists";
 import {MediaFollowsSection} from "@/lib/client/components/media/base/MediaFollowsSection";
 import {MediaCommunityCollections} from "@/lib/client/components/media/base/MediaCommunityCollections";
 import {useAddMediaToListMutation} from "@/lib/client/react-query/query-mutations/user-media.mutations";
@@ -137,7 +138,13 @@ function MediaDetailsPage() {
                                     </Button>
                                 </Card>
                             }
+
+                            <CollectionsLists
+                                mediaId={media.id}
+                                mediaType={mediaType}
+                            />
                         </div>
+
                         <MediaFollowsSection
                             mediaType={mediaType}
                             followsData={followsData}

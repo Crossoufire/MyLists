@@ -7,6 +7,7 @@ import {Input} from "@/lib/client/components/ui/input";
 import {MediaType, PrivacyType} from "@/lib/utils/enums";
 import {Button} from "@/lib/client/components/ui/button";
 import {useQuery, useQueryClient} from "@tanstack/react-query";
+import {PrivacyIcon} from "@/lib/client/components/general/MainIcons";
 import {Check, ChevronRight, Folder, LoaderCircle, PlusCircle, TriangleAlert} from "lucide-react";
 import {userCollectionMembershipsOptions} from "@/lib/client/react-query/query-options/query-options";
 import {Credenza, CredenzaContent, CredenzaDescription, CredenzaHeader, CredenzaTitle, CredenzaTrigger} from "@/lib/client/components/ui/credenza";
@@ -22,11 +23,12 @@ interface CollectionsDialogProps {
 export const CollectionsDialog = ({ mediaType, mediaId }: CollectionsDialogProps) => {
     const { currentUser } = useAuth();
     const queryClient = useQueryClient();
-    const createMutation = useCreateCollectionMutation();
     const [isOpen, setIsOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
     const addMutation = useAddMediaToCollectionMutation(mediaType, mediaId);
     const removeMutation = useRemoveMediaFromCollectionMutation(mediaType, mediaId);
+    const createMutation = useCreateCollectionMutation("Private collection created.");
+
     const isPending = addMutation.isPending || removeMutation.isPending || createMutation.isPending;
     const { data: collections = [], isLoading } = useQuery(userCollectionMembershipsOptions(mediaId, mediaType, isOpen));
 
@@ -166,9 +168,9 @@ export const CollectionsDialog = ({ mediaType, mediaId }: CollectionsDialogProps
                                                     "bg-app-accent/4 text-app-accent" : "text-primary/90 hover:bg-popover"
                                                 )}
                                             >
-                                                <div className="flex min-w-0 items-center gap-3">
+                                                <div className="flex min-w-0 flex-1 items-start gap-3">
                                                     <div className={cn("size-4.5 rounded border flex items-center " +
-                                                        "justify-center transition-all shrink-0", isActive
+                                                        "justify-center transition-all shrink-0 mt-0.5", isActive
                                                         ? "bg-app-accent border-app-accent scale-110"
                                                         : "bg-popover group-hover:border-zinc-500",
                                                     )}>
@@ -176,16 +178,23 @@ export const CollectionsDialog = ({ mediaType, mediaId }: CollectionsDialogProps
                                                             <Check className="size-3 text-popover stroke-4"/>
                                                         }
                                                     </div>
-                                                    <span className="font-medium truncate max-w-40">
-                                                        {collection.title}
-                                                    </span>
-                                                    <span className="text-[10px] text-muted-foreground shrink-0">
-                                                        {collection.itemsCount} item{collection.itemsCount > 1 ? "s" : ""}
-                                                    </span>
+                                                    <div className="min-w-0 space-y-1 text-left">
+                                                        <span className="font-medium line-clamp-2 leading-snug" title={collection.title}>
+                                                            {collection.title}
+                                                        </span>
+                                                        <div className="flex flex-wrap items-center gap-2 text-[10px] text-muted-foreground">
+                                                            <span className="inline-flex items-center gap-1 capitalize">
+                                                                <PrivacyIcon type={collection.privacy}/>
+                                                            </span>
+                                                            <span>
+                                                                {collection.itemsCount} item{collection.itemsCount > 1 ? "s" : ""}
+                                                            </span>
+                                                        </div>
+                                                    </div>
                                                 </div>
 
                                                 {isActive &&
-                                                    <div className="flex items-center gap-1.5 animate-in fade-in zoom-in-95">
+                                                    <div className="ml-3 flex shrink-0 items-center gap-1.5 animate-in fade-in zoom-in-95">
                                                         <div className="size-1.5 rounded-full bg-app-accent"/>
                                                         <span className="text-[10px] font-bold uppercase tracking-widest">
                                                             active

@@ -18,13 +18,13 @@ import {
 } from "@/lib/server/functions/collections";
 
 
-export const useCreateCollectionMutation = () => {
+export const useCreateCollectionMutation = (successMessage = "New collection created!") => {
     const queryClient = useQueryClient();
 
     return useMutation({
         mutationFn: postCreateCollection,
         onSuccess: async () => {
-            toast.success("New collection created!");
+            toast.success(successMessage);
             await queryClient.invalidateQueries({ queryKey: ["collections", "user"] });
             await queryClient.invalidateQueries({ queryKey: ["collections", "community"] });
         },
