@@ -1,5 +1,5 @@
-import {MediaType, UpdateType} from "@/lib/utils/enums";
-import {AddMediaToList, UpdateUserMedia} from "@/lib/schemas";
+import {UpdateUserMedia} from "@/lib/schemas";
+import {MediaType, Status, UpdateType} from "@/lib/utils/enums";
 import {UserStatsService} from "@/lib/server/domain/user/user-stats.service";
 import {MediaServiceRegistry} from "@/lib/server/domain/media/media.registries";
 import {UserUpdatesService} from "@/lib/server/domain/user/user-updates.service";
@@ -22,7 +22,7 @@ export class UserMediaService {
     ) {
     }
 
-    async addMediaToList({ userId, mediaType, mediaId, status }: MediaAction & Pick<AddMediaToList, "status">) {
+    async addMediaToList({ userId, mediaType, mediaId, status }: MediaAction & { status?: Status }) {
         const mediaService = this.mediaServiceRegistry.getService(mediaType);
 
         const { newState, media, delta, logPayload } = await mediaService.addMediaToUserList(userId, mediaId, status);

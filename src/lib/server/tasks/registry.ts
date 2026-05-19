@@ -5,7 +5,6 @@ import {maintenanceTask} from "@/lib/server/tasks/definitions/maintenance.task";
 import {dbMaintenanceTask} from "@/lib/server/tasks/definitions/db-maintenance.task";
 import {lockOldMoviesTask} from "@/lib/server/tasks/definitions/lock-old-movies.task";
 import {checkHltbWorksTask} from "@/lib/server/tasks/definitions/check-hltb-works.task";
-import {backfillActivityTask} from "@/lib/server/tasks/definitions/backfill-activity.task";
 import {seedAchievementsTask} from "@/lib/server/tasks/definitions/seed-achievements.task";
 import {bulkMediaRefreshTask} from "@/lib/server/tasks/definitions/bulk-media-refresh.task";
 import {removeAllOrphansMediaTask} from "@/lib/server/tasks/definitions/remove-all-orphans-media";
@@ -25,7 +24,6 @@ export const taskRegistry = {
     [dbMaintenanceTask.name]: dbMaintenanceTask,
     [checkHltbWorksTask.name]: checkHltbWorksTask,
     [bulkMediaRefreshTask.name]: bulkMediaRefreshTask,
-    [backfillActivityTask.name]: backfillActivityTask,
     [seedAchievementsTask.name]: seedAchievementsTask,
     [computeAllUsersStatsTask.name]: computeAllUsersStatsTask,
     [calculateAchievementsTask.name]: calculateAchievementsTask,

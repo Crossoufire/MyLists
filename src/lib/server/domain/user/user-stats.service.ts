@@ -2,10 +2,10 @@ import {zeroPad} from "@/lib/utils/formating";
 import {statusUtils} from "@/lib/utils/mapping";
 import {DeltaStats} from "@/lib/types/stats.types";
 import {MediaType, Status} from "@/lib/utils/enums";
-import {UpdateUserMediaDetails, UserMediaStats} from "@/lib/types/user-media.types";
 import {MediaServiceRegistry} from "@/lib/server/domain/media/media.registries";
 import {UserStatsRepository} from "@/lib/server/domain/user/user-stats.repository";
 import {SearchType, SectionActivity, SpecificActivityFilters} from "@/lib/schemas";
+import {UpdateUserMediaDetails, UserMediaStats} from "@/lib/types/user-media.types";
 import {UserUpdatesRepository} from "@/lib/server/domain/user/user-updates.repository";
 import {AchievementsRepository} from "@/lib/server/domain/achievements/achievements.repository";
 import {GridItem, MediaData, MediaInfo, MediaResult, UpdateActivity, WrappedActivityResult} from "@/lib/types/activity.types";
@@ -289,19 +289,11 @@ export class UserStatsService {
     // --- Activity Stats ----------------------------------------------------------
 
     async logActivityFromDelta({ userId, mediaType, mediaId, delta, newState, lastUpdate }: LogActivityFromDeltaParams) {
-        const activityFlags = lastUpdate
-            ? {
-                isCompleted: "status" in newState && newState.status === Status.COMPLETED,
-                isRedo: ("redo" in newState && (newState.redo ?? 0) > 0) || ("redo2" in newState && Array.isArray(newState.redo2)
-                    && newState.redo2.some((count: number) => count > 0)),
-            }
-            : undefined;
 
         const specificGained = this._resolveSpecificGainedFromDelta(mediaType, delta);
-        const isRedo = activityFlags?.isRedo ?? (delta.totalRedo ?? 0) > 0;
-        const isCompleted = activityFlags?.isCompleted ?? (delta.statusCounts?.[Status.COMPLETED] ?? 0) > 0;
+        const { isRedo, isCompleted } = this._checkActivityFlags(delta, newState, lastUpdate);
 
-        await this.repository.logActivity([{ userId, mediaId, mediaType, specificGained, isCompleted, isRedo, lastUpdate }]);
+        await this.repository.logActivity({ userId, mediaId, mediaType, specificGained, isCompleted, isRedo, lastUpdate });
     }
 
     async getMonthlyActivity(userId: number, timeBucket: string) {
@@ -320,14 +312,12 @@ export class UserStatsService {
         const activities = await this.repository.getMediaTypeActivity(userId, mediaType, timeBucket);
         if (activities.length === 0) return emptyResult;
 
-        const activitiesMapped = new Map(activities.map((a) => [a.mediaId, a]));
-        if (activitiesMapped.size === 0) return emptyResult;
-
+        const activityIds = activities.map((a) => a.mediaId);
         const mediaService = this.mediaServiceRegistry.getService(mediaType);
-        const mediaDetails = await mediaService.getMediaDetailsByIds([...activitiesMapped.keys()]);
+        const mediaDetails = await mediaService.getMediaDetailsByIds(activityIds);
         const mediaDetailsMap = new Map(mediaDetails.map((m) => [m.id, m]));
 
-        return this._aggActivityResults(mediaType, activitiesMapped, mediaDetailsMap);
+        return this._aggActivityResults(mediaType, activities, mediaDetailsMap);
     }
 
     async getSectionActivity(userId: number, params: SectionActivity) {
@@ -381,43 +371,41 @@ export class UserStatsService {
         const activities = await this.repository.getMediaTypeActivity(userId, mediaType, timeBucket);
         if (activities.length === 0) return { completed: [], progressed: [], redo: [] };
 
-        const activitiesMapped = new Map(activities.map((a) => [a.mediaId, a]));
-        if (activitiesMapped.size === 0) return { completed: [], progressed: [], redo: [] };
-
+        const activityIds = activities.map((a) => a.mediaId);
         const mediaService = this.mediaServiceRegistry.getService(mediaType);
-        const mediaDetails = await mediaService.getMediaDetailsByIds([...activitiesMapped.keys()]);
+        const mediaDetails = await mediaService.getMediaDetailsByIds(activityIds);
         const mediaDetailsMap = new Map(mediaDetails.map((m) => [m.id, m]));
 
-        return this._expandActivitySections(mediaType, activitiesMapped, mediaDetailsMap);
+        return this._expandActivitySections(mediaType, activities, mediaDetailsMap);
     }
 
-    private _aggActivityResults(mediaType: MediaType, mediaResults: Map<number, MediaResult>, mediaDetailsMap: Map<number, MediaInfo>) {
-        let timeGained = 0;
-        let specificTotal = 0;
+    private _aggActivityResults(mediaType: MediaType, activities: MediaResult[], mediaDetailsMap: Map<number, MediaInfo>) {
+        let totalSpecific = 0;
+        let totalTimeGained = 0;
         const redo: MediaData[] = [];
         const completed: MediaData[] = [];
         const progressed: MediaData[] = [];
 
-        for (const result of mediaResults.values()) {
-            const meta = mediaDetailsMap.get(result.mediaId);
-            if (!meta) continue;
+        for (const activity of activities) {
+            const mediaDetails = mediaDetailsMap.get(activity.mediaId);
+            if (!mediaDetails) continue;
 
-            const itemTime = this._calculateActivityTime(mediaType, result.specificGained, meta.duration);
+            const timeGained = this._calculateActivityTime(mediaType, activity.specificGained, mediaDetails.duration);
 
             const mediaData: MediaData = {
-                mediaId: meta.id,
-                mediaName: meta.name,
-                timeGained: itemTime,
-                mediaCover: meta.imageCover,
-                specificGained: result.specificGained,
+                timeGained,
+                mediaId: mediaDetails.id,
+                mediaName: mediaDetails.name,
+                mediaCover: mediaDetails.imageCover,
+                specificGained: activity.specificGained,
             };
 
-            if (result.isCompleted) completed.push(mediaData);
-            else if (result.isRedo) redo.push(mediaData);
-            else if (result.specificGained > 0) progressed.push(mediaData);
+            if (activity.isRedo) redo.push(mediaData);
+            else if (activity.isCompleted) completed.push(mediaData);
+            else if (activity.specificGained > 0) progressed.push(mediaData);
 
-            timeGained += itemTime;
-            specificTotal += result.specificGained;
+            totalTimeGained += timeGained;
+            totalSpecific += activity.specificGained;
         }
 
         const sorter = (a: MediaData, b: MediaData) => b.timeGained - a.timeGained;
@@ -427,9 +415,9 @@ export class UserStatsService {
         progressed.sort(sorter);
 
         return {
-            timeGained,
-            specificTotal,
             redoCount: redo.length,
+            timeGained: totalTimeGained,
+            specificTotal: totalSpecific,
             completedCount: completed.length,
             progressedCount: progressed.length,
             count: completed.length + progressed.length + redo.length,
@@ -437,6 +425,33 @@ export class UserStatsService {
             completed: completed.slice(0, INIT_ACTIVITY_LIMIT),
             progressed: progressed.slice(0, INIT_ACTIVITY_LIMIT),
         };
+    }
+
+    private _expandActivitySections(mediaType: MediaType, activities: MediaResult[], mediaDetailsMap: Map<number, MediaInfo>) {
+        const redo: MediaData[] = [];
+        const completed: MediaData[] = [];
+        const progressed: MediaData[] = [];
+
+        for (const activity of activities) {
+            const mediaDetails = mediaDetailsMap.get(activity.mediaId);
+            if (!mediaDetails) continue;
+
+            const timeGained = this._calculateActivityTime(mediaType, activity.specificGained, mediaDetails.duration);
+
+            const mediaData: MediaData = {
+                timeGained,
+                mediaId: mediaDetails.id,
+                mediaName: mediaDetails.name,
+                mediaCover: mediaDetails.imageCover,
+                specificGained: activity.specificGained,
+            };
+
+            if (activity.isRedo) redo.push(mediaData);
+            else if (activity.isCompleted) completed.push(mediaData);
+            else if (activity.specificGained > 0) progressed.push(mediaData);
+        }
+
+        return { completed, progressed, redo };
     }
 
     private _calculateActivityTime(mediaType: MediaType, specificGained: number, duration?: number) {
@@ -457,36 +472,23 @@ export class UserStatsService {
         }
     }
 
-    private _expandActivitySections(mediaType: MediaType, aggregated: Map<number, MediaResult>, metadataMap: Map<number, MediaInfo>) {
-        const redo: MediaData[] = [];
-        const completed: MediaData[] = [];
-        const progressed: MediaData[] = [];
-
-        for (const result of aggregated.values()) {
-            const meta = metadataMap.get(result.mediaId);
-            if (!meta) continue;
-
-            const itemTime = this._calculateActivityTime(mediaType, result.specificGained, meta.duration);
-            const mediaData: MediaData = {
-                mediaId: meta.id,
-                timeGained: itemTime,
-                mediaName: meta.name,
-                mediaCover: meta.imageCover,
-                specificGained: result.specificGained,
-            };
-
-            if (result.isCompleted) completed.push(mediaData);
-            else if (result.isRedo) redo.push(mediaData);
-            else if (result.specificGained > 0) progressed.push(mediaData);
-        }
-
-        return { completed, progressed, redo };
+    private _resolveSpecificGainedFromDelta(mediaType: MediaType, delta: DeltaStats) {
+        if (mediaType === MediaType.GAMES) return delta.timeSpent ?? 0;
+        return delta.totalSpecific ?? 0;
     }
 
-    private _resolveSpecificGainedFromDelta(mediaType: MediaType, delta: DeltaStats) {
-        if (mediaType === MediaType.GAMES) {
-            return delta.timeSpent ?? 0;
-        }
-        return delta.totalSpecific ?? 0;
+    private _checkActivityFlags(delta: DeltaStats, newState: UpdateUserMediaDetails<any, any>["newState"], lastUpdate?: string) {
+        const activityFlags = lastUpdate
+            ? {
+                isCompleted: "status" in newState && newState.status === Status.COMPLETED,
+                isRedo: ("redo" in newState && (newState.redo ?? 0) > 0) || !!("redo2" in newState && Array.isArray(newState.redo2)
+                    && newState.redo2.some((count: number) => count > 0)),
+            }
+            : undefined;
+
+        const isRedo = activityFlags?.isRedo ?? (delta.totalRedo ?? 0) > 0;
+        const isCompleted = activityFlags?.isCompleted ?? (delta.statusCounts?.[Status.COMPLETED] ?? 0) > 0;
+
+        return { isRedo, isCompleted };
     }
 }

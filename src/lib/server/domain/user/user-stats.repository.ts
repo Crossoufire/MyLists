@@ -442,32 +442,15 @@ export class UserStatsRepository {
 
     // --- Activity System -------------------------------------------------------
 
-    static async logActivity(activities: LogActivity[]) {
-        if (activities.length === 0) return;
+    static async logActivity(activity: LogActivity) {
+        const date = activity.lastUpdate ? new Date(activity.lastUpdate) : new Date();
+        const monthBucket = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+        const newActivity = { ...activity, monthBucket, lastUpdate: date.toISOString() }
 
-        const values = activities.map((activity) => {
-            const date = activity.lastUpdate ? new Date(activity.lastUpdate) : new Date();
-            const monthBucket = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-
-            return {
-                monthBucket,
-                userId: activity.userId,
-                isRedo: activity.isRedo,
-                mediaId: activity.mediaId,
-                mediaType: activity.mediaType,
-                isCompleted: activity.isCompleted,
-                specificGained: activity.specificGained,
-                lastUpdate: activity.lastUpdate || new Date().toISOString(),
-            };
-        });
-
-        const gainValues = values.filter((a) => a.specificGained !== 0);
-        const zeroGainValues = values.filter((a) => a.specificGained === 0 && (a.isCompleted || a.isRedo));
-
-        if (gainValues.length > 0) {
+        if (newActivity.specificGained !== 0) {
             await getDbClient()
                 .insert(userMediaActivity)
-                .values(gainValues)
+                .values(newActivity)
                 .onConflictDoUpdate({
                     target: [
                         userMediaActivity.userId,
@@ -484,19 +467,19 @@ export class UserStatsRepository {
                 });
         }
 
-        for (const activity of zeroGainValues) {
+        if (newActivity.specificGained === 0 && (newActivity.isCompleted || newActivity.isRedo)) {
             await getDbClient()
                 .update(userMediaActivity)
                 .set({
-                    lastUpdate: activity.lastUpdate,
-                    isRedo: sql`${userMediaActivity.isRedo} OR ${activity.isRedo}`,
-                    isCompleted: sql`${userMediaActivity.isCompleted} OR ${activity.isCompleted}`,
+                    lastUpdate: newActivity.lastUpdate,
+                    isRedo: sql`${userMediaActivity.isRedo} OR ${newActivity.isRedo}`,
+                    isCompleted: sql`${userMediaActivity.isCompleted} OR ${newActivity.isCompleted}`,
                 })
                 .where(and(
-                    eq(userMediaActivity.userId, activity.userId),
-                    eq(userMediaActivity.mediaId, activity.mediaId),
-                    eq(userMediaActivity.mediaType, activity.mediaType),
-                    eq(userMediaActivity.monthBucket, activity.monthBucket),
+                    eq(userMediaActivity.userId, newActivity.userId),
+                    eq(userMediaActivity.mediaId, newActivity.mediaId),
+                    eq(userMediaActivity.mediaType, newActivity.mediaType),
+                    eq(userMediaActivity.monthBucket, newActivity.monthBucket),
                 ));
         }
     }
