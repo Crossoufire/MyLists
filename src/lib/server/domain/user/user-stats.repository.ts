@@ -447,7 +447,7 @@ export class UserStatsRepository {
         const monthBucket = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
         const newActivity = { ...activity, monthBucket, lastUpdate: date.toISOString() }
 
-        if (newActivity.specificGained !== 0) {
+        if (newActivity.specificGained > 0) {
             await getDbClient()
                 .insert(userMediaActivity)
                 .values(newActivity)
