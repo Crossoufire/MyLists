@@ -78,7 +78,6 @@ export class HltbApi extends BaseApi {
         };
 
         const authData = await this._getAuthToken(ua);
-        console.log({ authData });
 
         if (authData) {
             headers["x-hp-key"] = authData.hpKey;
@@ -88,16 +87,12 @@ export class HltbApi extends BaseApi {
 
         try {
             const payload = this._createPayload(gameName, authData);
-            console.log({ payload });
-            const response = await fetch(HltbApi.searchUrl, {
+            const response = await this.call(HltbApi.searchUrl, "post", {
                 headers,
-                method: "POST",
                 body: JSON.stringify(payload),
             });
 
-            if (response.ok) {
-                return await response.text();
-            }
+            return await response.text();
         }
         catch (err) {
             console.warn("First request failed, trying alternative:", err);
@@ -111,17 +106,12 @@ export class HltbApi extends BaseApi {
         };
 
         try {
-            const response = await fetch(`${HltbApi.tokenUrl}?t=${Date.now()}`, { method: "GET", headers });
-            if (response.ok) {
-                const data = await response.json();
-                const token = data?.token ?? data?.data?.token;
-                const hpKey = data?.hpKey ?? data?.data?.hpKey;
-                const hpVal = data?.hpVal ?? data?.data?.hpVal;
-                return { token: String(token), hpKey: String(hpKey), hpVal: String(hpVal) };
-            }
-            else {
-                console.error("Request failed with status", response.status);
-            }
+            const response = await this.call(`${HltbApi.tokenUrl}?t=${Date.now()}`, "get", { headers });
+            const data = await response.json();
+            const token = data?.token ?? data?.data?.token;
+            const hpKey = data?.hpKey ?? data?.data?.hpKey;
+            const hpVal = data?.hpVal ?? data?.data?.hpVal;
+            return { token: String(token), hpKey: String(hpKey), hpVal: String(hpVal) };
         }
         catch (err) {
             console.error("Error fetching auth token:", err);
