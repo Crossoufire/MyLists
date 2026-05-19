@@ -1,6 +1,7 @@
+import {MediaType} from "@/lib/utils/enums";
+import {JikanApi, TmdbApi} from "@/lib/server/api-providers/api";
 import {TvRepository} from "@/lib/server/domain/media/tv/tv.repository";
 import {UpsertTvWithDetails} from "@/lib/server/domain/media/tv/tv.types";
-import {JikanApi, TmdbApi} from "@/lib/server/api-providers/api";
 import {TmdbTrendingTvResponse, TmdbTvDetails} from "@/lib/types/provider.types";
 import {tmdbTransformer} from "@/lib/server/api-providers/transformers/tmdb.transformer";
 import {BaseTrendsProviderService} from "@/lib/server/domain/media/base/provider.service";
@@ -16,8 +17,9 @@ export class TvProviderService extends BaseTrendsProviderService<TvRepository, T
     }
 
     protected _transformDetails(rawData: TmdbTvDetails) {
-        const isAnime = rawData.genres?.some((g: { id: number; }) => g.id === 16) && rawData.original_language === "ja";
-        if (isAnime) return tmdbTransformer.transformAnimeDetailsResults(rawData);
+        if (this.repository.config.mediaType === MediaType.ANIME) {
+            return tmdbTransformer.transformAnimeDetailsResults(rawData);
+        }
         return tmdbTransformer.transformSeriesDetailsResults(rawData);
     }
 
@@ -35,10 +37,8 @@ export class TvProviderService extends BaseTrendsProviderService<TvRepository, T
         return tvTrends;
     }
 
-    protected async _enhanceDetails(details: UpsertTvWithDetails, isBulk: boolean, rawData: TmdbTvDetails) {
-        const isAnime = rawData.genres?.some((g: { id: number }) => g.id === 16) && rawData.original_language === "ja";
-
-        if (isAnime) {
+    protected async _enhanceDetails(details: UpsertTvWithDetails, isBulk: boolean) {
+        if (this.repository.config.mediaType === MediaType.ANIME) {
             // Automatic refresh metadata, don't update anime genres to not erase better ones from jikan
             // If I add an automatic storing somedays this will means that no genres will ever be added in the first
             // place because this function is called on refresh and on storing.

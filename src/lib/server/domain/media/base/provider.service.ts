@@ -110,12 +110,12 @@ export abstract class BaseProviderService<R extends BaseRepository<any>, TRawDet
     private async _fetchAndTransformDetails(apiId: number | string, isBulk: boolean) {
         const rawData = await this._fetchRawDetails(apiId);
         const details = await this._transformDetails(rawData);
-        return this._enhanceDetails(details, isBulk, rawData);
+        return this._enhanceDetails(details, isBulk);
     }
 
     protected async _refreshFromRawDetails(rawData: TRawDetails, isBulk: boolean) {
         const details = await this._transformDetails(rawData);
-        const enhancedDetails = await this._enhanceDetails(details, isBulk, rawData);
+        const enhancedDetails = await this._enhanceDetails(details, isBulk);
         await this.repository.updateMediaWithDetails(enhancedDetails);
     }
 
@@ -123,7 +123,7 @@ export abstract class BaseProviderService<R extends BaseRepository<any>, TRawDet
         return 1;
     }
 
-    protected async _enhanceDetails(details: TTransformedDetails, _isBulk: boolean, _rawData: TRawDetails) {
+    protected async _enhanceDetails(details: TTransformedDetails, _isBulk: boolean) {
         return details;
     }
 
