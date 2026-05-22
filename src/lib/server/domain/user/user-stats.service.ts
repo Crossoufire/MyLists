@@ -1,38 +1,30 @@
 import {zeroPad} from "@/lib/utils/formating";
 import {statusUtils} from "@/lib/utils/mapping";
 import {DeltaStats} from "@/lib/types/stats.types";
+import {calculateActivityTime} from "@/lib/utils/activity-utils";
+import {FormattedError} from "@/lib/utils/error-classes";
 import {MediaType, Status} from "@/lib/utils/enums";
 import {MediaServiceRegistry} from "@/lib/server/domain/media/media.registries";
 import {UserStatsRepository} from "@/lib/server/domain/user/user-stats.repository";
-import {SearchType, SectionActivity, SpecificActivityFilters} from "@/lib/schemas";
 import {UpdateUserMediaDetails, UserMediaStats} from "@/lib/types/user-media.types";
 import {UserUpdatesRepository} from "@/lib/server/domain/user/user-updates.repository";
 import {AchievementsRepository} from "@/lib/server/domain/achievements/achievements.repository";
-import {GridItem, MediaData, MediaInfo, MediaResult, UpdateActivity, WrappedActivityResult} from "@/lib/types/activity.types";
+import {ActivityEditor as ActivityEditorRow, MediaInfo, WrappedActivityResult} from "@/lib/types/activity.types";
+import {AddActivity, MonthlyActivityFilters, MonthlyActivityStatsFilters, SearchType, SpecificActivityFilters, UpdateActivity} from "@/lib/schemas";
 
 
-const INIT_ACTIVITY_LIMIT = 24;
-
-
-const emptyResult: WrappedActivityResult = {
-    count: 0,
-    redoCount: 0,
-    timeGained: 0,
-    specificTotal: 0,
-    completedCount: 0,
-    progressedCount: 0,
-    redo: [],
-    completed: [],
-    progressed: [],
+type ActivityMediaRef = {
+    mediaId: number;
+    mediaType: MediaType;
+    specificGained: number;
 };
-
 
 type LogActivityFromDeltaParams = {
     userId: number;
     mediaId: number;
-    mediaType: MediaType;
     delta: DeltaStats;
     lastUpdate?: string;
+    mediaType: MediaType;
     newState: UpdateUserMediaDetails<any, any>["newState"];
 };
 
@@ -289,195 +281,6 @@ export class UserStatsService {
     // --- Activity Stats ----------------------------------------------------------
 
     async logActivityFromDelta({ userId, mediaType, mediaId, delta, newState, lastUpdate }: LogActivityFromDeltaParams) {
-
-        const specificGained = this._resolveSpecificGainedFromDelta(mediaType, delta);
-        const { isRedo, isCompleted } = this._checkActivityFlags(delta, newState, lastUpdate);
-
-        await this.repository.logActivity({ userId, mediaId, mediaType, specificGained, isCompleted, isRedo, lastUpdate });
-    }
-
-    async getMonthlyActivity(userId: number, timeBucket: string) {
-        const mediaTypes = Object.values(MediaType);
-
-        const results = await Promise.all(
-            mediaTypes.map((mt) => this.getMediaTypeActivity(userId, mt, timeBucket))
-        );
-
-        return Object.fromEntries(
-            mediaTypes.map((type, i) => [type, results[i]])
-        ) as Record<MediaType, WrappedActivityResult>;
-    }
-
-    async getMediaTypeActivity(userId: number, mediaType: MediaType, timeBucket: string) {
-        const activities = await this.repository.getMediaTypeActivity(userId, mediaType, timeBucket);
-        if (activities.length === 0) return emptyResult;
-
-        const activityIds = activities.map((a) => a.mediaId);
-        const mediaService = this.mediaServiceRegistry.getService(mediaType);
-        const mediaDetails = await mediaService.getMediaDetailsByIds(activityIds);
-        const mediaDetailsMap = new Map(mediaDetails.map((m) => [m.id, m]));
-
-        return this._aggActivityResults(mediaType, activities, mediaDetailsMap);
-    }
-
-    async getSectionActivity(userId: number, params: SectionActivity) {
-        const { year, month, section, mediaType, offset = 0, limit = INIT_ACTIVITY_LIMIT } = params;
-
-        const timeBucket = `${year}-${zeroPad(month)}`
-        const mediaTypes = mediaType ? [mediaType] : Object.values(MediaType);
-
-        const allItems: GridItem[] = [];
-        for (const mediaType of mediaTypes) {
-            const activity = await this._getFullMediaTypeActivity(userId, mediaType, timeBucket);
-            activity[section].forEach((data) => allItems.push({ data, mediaType }));
-        }
-
-        allItems.sort((a, b) => {
-            const timeDiff = b.data.timeGained - a.data.timeGained;
-            if (timeDiff !== 0) return timeDiff;
-            return b.data.mediaId - a.data.mediaId;
-        });
-
-        const items = allItems.slice(offset, offset + limit);
-        const hasMore = offset + limit < allItems.length;
-
-        return {
-            items,
-            hasMore,
-            total: allItems.length,
-        };
-    }
-
-    async getSpecificActivity(userId: number, filters: Omit<SpecificActivityFilters, "username">) {
-        const { year, month, mediaType, mediaId } = filters;
-
-        const timeBucket = `${year}-${zeroPad(month)}`;
-        return this.repository.getSpecificActivity(userId, mediaType, mediaId, timeBucket);
-    }
-
-    async updateSpecificActivity(userId: number, activityId: number, payload: UpdateActivity) {
-        return this.repository.updateSpecificActivity(userId, activityId, payload);
-    }
-
-    async deleteSpecificActivity(userId: number, activityId: number) {
-        await this.repository.deleteSpecificActivity(userId, activityId);
-    }
-
-    async deleteAssociatedActivities(userId: number, mediaType: MediaType, mediaId: number) {
-        await this.repository.deleteAssociatedActivities(userId, mediaType, mediaId);
-    }
-
-    async _getFullMediaTypeActivity(userId: number, mediaType: MediaType, timeBucket: string) {
-        const activities = await this.repository.getMediaTypeActivity(userId, mediaType, timeBucket);
-        if (activities.length === 0) return { completed: [], progressed: [], redo: [] };
-
-        const activityIds = activities.map((a) => a.mediaId);
-        const mediaService = this.mediaServiceRegistry.getService(mediaType);
-        const mediaDetails = await mediaService.getMediaDetailsByIds(activityIds);
-        const mediaDetailsMap = new Map(mediaDetails.map((m) => [m.id, m]));
-
-        return this._expandActivitySections(mediaType, activities, mediaDetailsMap);
-    }
-
-    private _aggActivityResults(mediaType: MediaType, activities: MediaResult[], mediaDetailsMap: Map<number, MediaInfo>) {
-        let totalSpecific = 0;
-        let totalTimeGained = 0;
-        const redo: MediaData[] = [];
-        const completed: MediaData[] = [];
-        const progressed: MediaData[] = [];
-
-        for (const activity of activities) {
-            const mediaDetails = mediaDetailsMap.get(activity.mediaId);
-            if (!mediaDetails) continue;
-
-            const timeGained = this._calculateActivityTime(mediaType, activity.specificGained, mediaDetails.duration);
-
-            const mediaData: MediaData = {
-                timeGained,
-                mediaId: mediaDetails.id,
-                mediaName: mediaDetails.name,
-                mediaCover: mediaDetails.imageCover,
-                specificGained: activity.specificGained,
-            };
-
-            if (activity.isRedo) redo.push(mediaData);
-            else if (activity.isCompleted) completed.push(mediaData);
-            else if (activity.specificGained > 0) progressed.push(mediaData);
-
-            totalTimeGained += timeGained;
-            totalSpecific += activity.specificGained;
-        }
-
-        const sorter = (a: MediaData, b: MediaData) => b.timeGained - a.timeGained;
-
-        redo.sort(sorter);
-        completed.sort(sorter);
-        progressed.sort(sorter);
-
-        return {
-            redoCount: redo.length,
-            timeGained: totalTimeGained,
-            specificTotal: totalSpecific,
-            completedCount: completed.length,
-            progressedCount: progressed.length,
-            count: completed.length + progressed.length + redo.length,
-            redo: redo.slice(0, INIT_ACTIVITY_LIMIT),
-            completed: completed.slice(0, INIT_ACTIVITY_LIMIT),
-            progressed: progressed.slice(0, INIT_ACTIVITY_LIMIT),
-        };
-    }
-
-    private _expandActivitySections(mediaType: MediaType, activities: MediaResult[], mediaDetailsMap: Map<number, MediaInfo>) {
-        const redo: MediaData[] = [];
-        const completed: MediaData[] = [];
-        const progressed: MediaData[] = [];
-
-        for (const activity of activities) {
-            const mediaDetails = mediaDetailsMap.get(activity.mediaId);
-            if (!mediaDetails) continue;
-
-            const timeGained = this._calculateActivityTime(mediaType, activity.specificGained, mediaDetails.duration);
-
-            const mediaData: MediaData = {
-                timeGained,
-                mediaId: mediaDetails.id,
-                mediaName: mediaDetails.name,
-                mediaCover: mediaDetails.imageCover,
-                specificGained: activity.specificGained,
-            };
-
-            if (activity.isRedo) redo.push(mediaData);
-            else if (activity.isCompleted) completed.push(mediaData);
-            else if (activity.specificGained > 0) progressed.push(mediaData);
-        }
-
-        return { completed, progressed, redo };
-    }
-
-    private _calculateActivityTime(mediaType: MediaType, specificGained: number, duration?: number) {
-        switch (mediaType) {
-            case MediaType.SERIES:
-            case MediaType.ANIME:
-                return specificGained * (duration ?? 20);
-            case MediaType.MOVIES:
-                return specificGained * (duration ?? 100);
-            case MediaType.GAMES:
-                return specificGained;
-            case MediaType.BOOKS:
-                return specificGained * 1.7;
-            case MediaType.MANGA:
-                return specificGained * 7;
-            default:
-                return specificGained;
-        }
-    }
-
-    private _resolveSpecificGainedFromDelta(mediaType: MediaType, delta: DeltaStats) {
-        if (mediaType === MediaType.GAMES) return delta.timeSpent ?? 0;
-        return delta.totalSpecific ?? 0;
-    }
-
-    private _checkActivityFlags(delta: DeltaStats, newState: UpdateUserMediaDetails<any, any>["newState"], lastUpdate?: string) {
         const activityFlags = lastUpdate
             ? {
                 isCompleted: "status" in newState && newState.status === Status.COMPLETED,
@@ -488,7 +291,181 @@ export class UserStatsService {
 
         const isRedo = activityFlags?.isRedo ?? (delta.totalRedo ?? 0) > 0;
         const isCompleted = activityFlags?.isCompleted ?? (delta.statusCounts?.[Status.COMPLETED] ?? 0) > 0;
+        const specificGained = (mediaType === MediaType.GAMES) ? (delta.timeSpent ?? 0) : (delta.totalSpecific ?? 0);
 
-        return { isRedo, isCompleted };
+        await this.repository.logActivity({ userId, mediaId, mediaType, specificGained, isCompleted, isRedo, lastUpdate });
     }
+
+    async getMonthlyActivityStats(userId: number, filters: MonthlyActivityStatsFilters) {
+        const mediaTypes = Object.values(MediaType);
+        const timeBucket = `${filters.year}-${zeroPad(filters.month)}`;
+
+        const activities = await this.repository.getStatsActivities(userId, mediaTypes, timeBucket);
+        const mediaDetailsByType = await this._getMediaDetailsByType(activities);
+
+        const activityRecord = Object.fromEntries(
+            mediaTypes.map((mediaType) =>
+                [mediaType, { count: 0, timeGained: 0, specificTotal: 0 }])
+        ) as Record<MediaType, WrappedActivityResult>;
+
+        for (const entry of activities) {
+            const mediaDetails = mediaDetailsByType.get(entry.mediaType)?.get(entry.mediaId);
+            if (!mediaDetails) continue;
+
+            const timeGained = calculateActivityTime(entry.mediaType, entry.specificGained, mediaDetails.duration);
+            const aggStats = activityRecord[entry.mediaType];
+
+            aggStats.count += 1;
+            aggStats.timeGained += timeGained;
+            aggStats.specificTotal += entry.specificGained;
+        }
+
+        const mediaStats = mediaTypes
+            .map((mt) => ({
+                mediaType: mt,
+                timeGained: activityRecord[mt].timeGained,
+                specificTotal: activityRecord[mt].specificTotal,
+            }))
+            .filter((stat) => stat.timeGained > 0 || stat.specificTotal > 0)
+            .sort((a, b) => b.timeGained - a.timeGained);
+
+        return {
+            mediaStats,
+            mediaTypes: mediaStats.map((stat) => stat.mediaType),
+            totalTime: mediaStats.reduce((total, stat) => total + stat.timeGained, 0),
+        };
+    }
+
+    async getMonthlyActivity(userId: number, filters: MonthlyActivityFilters) {
+        const timeBucket = `${filters.year}-${zeroPad(filters.month)}`;
+        const mediaTypes = filters.activeTab === "all" ? Object.values(MediaType) : [filters.activeTab];
+
+        const mediaIdsByType = filters.search?.trim()
+            ? await this._searchActivityMediaIds(userId, mediaTypes, filters.search.trim())
+            : undefined;
+
+        const [availableMediaTypes, result] = await Promise.all([
+            this.repository.getActivityMediaTypes(userId, timeBucket, filters.hiddenOnly),
+            this.repository.getPaginatedActivities(userId, {
+                timeBucket,
+                perPage: 48,
+                mediaIdsByType,
+                page: filters.page,
+                hiddenOnly: filters.hiddenOnly,
+                activityKind: filters.activityKind,
+                mediaType: filters.activeTab === "all" ? undefined : filters.activeTab,
+            }),
+        ]);
+
+        const mediaDetailsByType = await this._getMediaDetailsByType(result.items);
+
+        const rows: ActivityEditorRow[] = [];
+        for (const activity of result.items) {
+            const mediaDetails = mediaDetailsByType.get(activity.mediaType)?.get(activity.mediaId);
+            if (!mediaDetails) continue;
+
+            rows.push({
+                id: activity.id,
+                hidden: activity.hidden,
+                isRedo: activity.isRedo,
+                mediaId: activity.mediaId,
+                mediaName: mediaDetails.name,
+                mediaType: activity.mediaType,
+                lastUpdate: activity.lastUpdate,
+                isCompleted: activity.isCompleted,
+                mediaCover: mediaDetails.imageCover,
+                specificGained: activity.specificGained,
+                timeGained: calculateActivityTime(activity.mediaType, activity.specificGained, mediaDetails.duration),
+            });
+        }
+
+        const items = rows.sort((a, b) => new Date(b.lastUpdate).getTime() - new Date(a.lastUpdate).getTime());
+
+        return { ...result, items, mediaTypes: availableMediaTypes };
+    }
+
+    async getSpecificActivity(userId: number, filters: SpecificActivityFilters) {
+        const timeBucket = `${filters.year}-${zeroPad(filters.month)}`;
+        return this.repository.getSpecificActivity(userId, filters.mediaType, filters.mediaId, timeBucket);
+    }
+
+    async updateSpecificActivity(userId: number, activityId: number, payload: UpdateActivity) {
+        return this.repository.updateSpecificActivity(userId, activityId, payload);
+    }
+
+    async addManualActivity(userId: number, payload: AddActivity) {
+        const mediaService = this.mediaServiceRegistry.getService(payload.mediaType);
+
+        const media = await mediaService.findById(payload.mediaId);
+        if (!media) throw new FormattedError("Media not found");
+
+        const inUserList = await mediaService.hasUserMedia(userId, payload.mediaId);
+        if (!inUserList) throw new FormattedError("Media not in your list");
+
+        await this.repository.logActivity({
+            ...payload,
+            userId,
+            isRedo: payload.isRedo ?? false,
+            isCompleted: payload.isCompleted ?? false,
+            hidden: payload.hidden ?? false,
+        });
+    }
+
+    async searchActivityUserMedia(userId: number, mediaType: MediaType, query: string) {
+        const mediaService = this.mediaServiceRegistry.getService(mediaType);
+        return mediaService.searchUserListByName(userId, query.trim(), 20);
+    }
+
+    async deleteSpecificActivity(userId: number, activityId: number) {
+        await this.repository.deleteSpecificActivity(userId, activityId);
+    }
+
+    async bulkHideActivity(userId: number, filters: { startDate: string, endDate: string, mediaType?: MediaType }) {
+        const end = new Date(`${filters.endDate}T23:59:59.999Z`);
+        const start = new Date(`${filters.startDate}T00:00:00.000Z`);
+
+        return this.repository.bulkHideActivity(userId, {
+            endDate: end.toISOString(),
+            mediaType: filters.mediaType,
+            startDate: start.toISOString(),
+        });
+    }
+
+    async deleteAssociatedActivities(userId: number, mediaType: MediaType, mediaId: number) {
+        await this.repository.deleteAssociatedActivities(userId, mediaType, mediaId);
+    }
+
+    private async _getMediaDetailsByType(activities: ActivityMediaRef[]) {
+        const mediaTypes = [...new Set(activities.map((activity) => activity.mediaType))];
+        const mediaDetailsByType = new Map<MediaType, Map<number, MediaInfo>>();
+
+        await Promise.all(mediaTypes.map(async (mediaType) => {
+            const mediaIds = activities
+                .filter((activity) => activity.mediaType === mediaType)
+                .map((activity) => activity.mediaId);
+
+            if (mediaIds.length === 0) {
+                mediaDetailsByType.set(mediaType, new Map());
+                return;
+            }
+
+            const mediaService = this.mediaServiceRegistry.getService(mediaType);
+            const mediaDetails = await mediaService.getMediaDetailsByIds(mediaIds);
+            mediaDetailsByType.set(mediaType, new Map(mediaDetails.map((m) => [m.id, m])));
+        }));
+
+        return mediaDetailsByType;
+    }
+
+    private async _searchActivityMediaIds(userId: number, mediaTypes: MediaType[], search: string) {
+        const entries = await Promise.all(mediaTypes.map(async (mediaType) => {
+            const mediaService = this.mediaServiceRegistry.getService(mediaType);
+            const results = await mediaService.searchUserListByName(userId, search, 20);
+
+            return [mediaType, results.map((result) => result.mediaId)] as const;
+        }));
+
+        return Object.fromEntries(entries) as Partial<Record<MediaType, number[]>>;
+    }
+
 }

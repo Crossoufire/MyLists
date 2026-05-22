@@ -1,31 +1,57 @@
-import {SectionParams} from "@/lib/types/activity.types";
 import {useMutation, useQueryClient} from "@tanstack/react-query";
-import {sectionActivityOptions} from "@/lib/client/react-query/query-options/query-options";
-import {postDeleteSpecificActivity, postUpdateSpecificActivity} from "@/lib/server/functions/user-stats";
+import {postAddSpecificActivity, postBulkHideActivity, postDeleteSpecificActivity, postUpdateSpecificActivity} from "@/lib/server/functions/user-activity";
 
 
-export const useUpdateActivityMutation = (username: string) => {
+export const useAddActivityMutation = () => {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: postUpdateSpecificActivity,
-        meta: { errorMessage: "Failed to update activity event." },
+        mutationFn: postAddSpecificActivity,
+        meta: { errorMessage: "Failed to add activity." },
         onSuccess: async () => {
-            await queryClient.invalidateQueries({ queryKey: ["monthly-activity", username] });
-            await queryClient.invalidateQueries({ queryKey: ["section-activity", username] });
+            await queryClient.invalidateQueries({ queryKey: ["monthly-activity"] });
+            await queryClient.invalidateQueries({ queryKey: ["specific-activity"] });
         },
     });
 };
 
 
-export const useDeleteActivityMutation = (username: string, sectionParams: SectionParams) => {
+export const useBulkHideActivityMutation = () => {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: postBulkHideActivity,
+        meta: { errorMessage: "Failed to bulk hide activity." },
+        onSuccess: async () => {
+            await queryClient.invalidateQueries({ queryKey: ["monthly-activity"] });
+            await queryClient.invalidateQueries({ queryKey: ["specific-activity"] });
+        },
+    });
+};
+
+
+export const useUpdateActivityMutation = () => {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: postUpdateSpecificActivity,
+        meta: { errorMessage: "Failed to update activity." },
+        onSuccess: async () => {
+            await queryClient.invalidateQueries({ queryKey: ["monthly-activity"] });
+            await queryClient.invalidateQueries({ queryKey: ["specific-activity"] });
+        },
+    });
+};
+
+
+export const useDeleteActivityMutation = () => {
     const queryClient = useQueryClient();
 
     return useMutation({
         mutationFn: postDeleteSpecificActivity,
-        meta: { errorMessage: "Failed to delete activity event." },
+        meta: { errorMessage: "Failed to delete activity." },
         onSuccess: async () => {
-            await queryClient.invalidateQueries({ queryKey: sectionActivityOptions(username, sectionParams).queryKey });
+            await queryClient.invalidateQueries({ queryKey: ["monthly-activity"] });
         },
     });
 };

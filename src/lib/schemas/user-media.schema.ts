@@ -3,7 +3,6 @@ import {tagSchema} from "@/lib/schemas/common.schema";
 import {GamesPlatformsEnum, MediaType, Status, TagAction, UpdateType} from "@/lib/utils/enums";
 
 
-export type AddMediaToList = z.infer<typeof addMediaToListSchema>;
 export type UpdateUserMedia = z.infer<typeof updateUserMediaSchema>;
 export type UpdateUserCustomCover = z.infer<typeof updateUserCustomCoverSchema>;
 

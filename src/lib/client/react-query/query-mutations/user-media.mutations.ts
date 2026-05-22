@@ -182,7 +182,6 @@ export const useUpdateUserMediaMutation = (mediaType: MediaType, mediaId: number
             void queryClient.invalidateQueries({ queryKey: historyOptions(mediaType, mediaId).queryKey });
             if (activityUpdate) {
                 void queryClient.invalidateQueries({ queryKey: ["monthly-activity"] });
-                void queryClient.invalidateQueries({ queryKey: ["section-activity"] });
             }
 
             if (queryOption.queryKey[0] === "details") {
