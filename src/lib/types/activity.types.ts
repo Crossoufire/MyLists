@@ -1,18 +1,39 @@
 import {MediaType} from "@/lib/utils/enums";
 
 
-export type ActivityKind = "all" | "completed" | "progressed" | "redo";
+export type LogActivity = {
+    userId: number;
+    mediaId: number;
+    isRedo: boolean;
+    lastUpdate?: string;
+    isCompleted: boolean;
+    mediaType: MediaType;
+    specificGained: number;
+}
 
 
-export type ActivitySearch = {
+export type UpdateActivity = {
+    isRedo?: boolean;
+    lastUpdate?: string;
+    isCompleted?: boolean;
+    specificGained?: number;
+}
+
+
+export type SectionParams = {
     year: string;
     month: string;
-    page?: number;
-    search?: string;
-    hiddenOnly?: boolean;
-    activityKind?: ActivityKind;
-    activeTab?: MediaType | "all";
+    mediaType: MediaType | "all";
+    section: "completed" | "progressed" | "redo";
 }
+
+
+export type MediaResult = {
+    isRedo: boolean;
+    mediaId: number;
+    isCompleted: boolean;
+    specificGained: number;
+};
 
 
 export type MediaInfo = {
@@ -26,34 +47,29 @@ export type MediaInfo = {
 }
 
 
-export interface ActivityEditor {
-    id: number;
-    isRedo: boolean;
+export interface MediaData {
     mediaId: number;
-    hidden: boolean;
     mediaName: string;
     mediaCover: string;
-    lastUpdate: string;
     timeGained: number;
-    isCompleted: boolean;
-    mediaType: MediaType;
     specificGained: number;
 }
 
 
-export type PaginatedActivityFilter = {
-    page?: number;
-    perPage?: number;
-    timeBucket: string;
-    mediaType?: MediaType;
-    hiddenOnly?: boolean;
-    activityKind?: ActivityKind;
-    mediaIdsByType?: Partial<Record<MediaType, number[]>>;
+export interface GridItem {
+    data: MediaData;
+    mediaType: MediaType;
 }
 
 
 export interface WrappedActivityResult {
     count: number;
+    redoCount: number;
     timeGained: number;
     specificTotal: number;
+    completedCount: number;
+    progressedCount: number;
+    redo: MediaData[];
+    completed: MediaData[];
+    progressed: MediaData[];
 }

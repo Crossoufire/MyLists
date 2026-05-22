@@ -174,7 +174,7 @@ const MediaNotificationItem = ({ notif }: { notif: MediaNotif }) => {
                             to="/details/$mediaType/$mediaId"
                             params={{ mediaType: notif.mediaType, mediaId: notif.mediaId }}
                         >
-                                    <span title={notif.name} className="font-medium text-foreground line-clamp-1 max-w-55 hover:text-app-accent">
+                                    <span title={notif.name} className="font-medium text-foreground line-clamp-1 hover:text-app-accent">
                                         {notif.name}
                                     </span>
                         </Link>

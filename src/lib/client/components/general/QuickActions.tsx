@@ -28,10 +28,10 @@ export const QuickActions = ({ username, mediaType }: { username: string, mediaT
         {
             icon: Zap,
             params: { username },
-            search: { year, month, activeTab: mediaType },
+            search: { year, month },
             label: "User's Activity",
-            to: "/activity/$username",
-            match: `/activity/${username}`,
+            to: "/stats/$username/activity",
+            match: `/stats/${username}/activity`,
         },
         {
             icon: ListOrdered,
