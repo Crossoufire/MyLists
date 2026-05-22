@@ -1,14 +1,24 @@
-import {SearchType} from "@/lib/schemas";
-import {MediaType} from "@/lib/utils/enums";
+import {SearchType, UpdateActivity} from "@/lib/schemas";
 import {alias} from "drizzle-orm/sqlite-core";
 import {DeltaStats} from "@/lib/types/stats.types";
 import {UserMediaStats} from "@/lib/types/user-media.types";
+import {MediaType} from "@/lib/utils/enums";
 import {getDbClient} from "@/lib/server/database/async-storage";
-import {LogActivity, UpdateActivity} from "@/lib/types/activity.types";
 import {resolvePagination, resolveSorting} from "@/lib/server/database/pagination";
+import {PaginatedActivityFilter} from "@/lib/types/activity.types";
 import {user, userMediaActivity, userMediaSettings, userMediaStatsHistory} from "@/lib/server/database/schema";
-import {and, asc, count, countDistinct, desc, eq, gt, gte, inArray, lt, lte, ne, SQL, sql, sum} from "drizzle-orm";
+import {and, asc, count, countDistinct, desc, eq, gt, gte, inArray, lt, lte, ne, or, SQL, sql, sum} from "drizzle-orm";
 
+type LogActivity = {
+    userId: number;
+    mediaId: number;
+    isRedo: boolean;
+    hidden?: boolean;
+    lastUpdate?: string;
+    isCompleted: boolean;
+    mediaType: MediaType;
+    specificGained: number;
+}
 
 export class UserStatsRepository {
     static async userActiveMediaSettings(userId: number) {
@@ -463,6 +473,7 @@ export class UserStatsRepository {
                         isRedo: sql`${userMediaActivity.isRedo} OR excluded.is_redo`,
                         isCompleted: sql`${userMediaActivity.isCompleted} OR excluded.is_completed`,
                         specificGained: sql`${userMediaActivity.specificGained} + excluded.specific_gained`,
+                        hidden: sql`${userMediaActivity.hidden} AND excluded.hidden`,
                     },
                 });
         }
@@ -498,17 +509,107 @@ export class UserStatsRepository {
             .get();
     }
 
-    static async getMediaTypeActivity(userId: number, mediaType: MediaType, timeBucket: string) {
+    static async getStatsActivities(userId: number, mediaTypes: MediaType[], timeBucket: string) {
         return getDbClient()
-            .select()
+            .select({
+                mediaId: userMediaActivity.mediaId,
+                mediaType: userMediaActivity.mediaType,
+                specificGained: userMediaActivity.specificGained,
+            })
             .from(userMediaActivity)
             .where(and(
                 eq(userMediaActivity.userId, userId),
-                eq(userMediaActivity.mediaType, mediaType),
                 gt(userMediaActivity.specificGained, 0),
                 eq(userMediaActivity.monthBucket, timeBucket),
+                inArray(userMediaActivity.mediaType, mediaTypes),
+                eq(userMediaActivity.hidden, false),
             ))
             .orderBy(asc(userMediaActivity.lastUpdate));
+    }
+
+    static async getActivityMediaTypes(userId: number, timeBucket: string, hiddenOnly = false) {
+        const rows = await getDbClient()
+            .selectDistinct({ mediaType: userMediaActivity.mediaType })
+            .from(userMediaActivity)
+            .where(and(
+                eq(userMediaActivity.userId, userId),
+                eq(userMediaActivity.monthBucket, timeBucket),
+                eq(userMediaActivity.hidden, hiddenOnly),
+            ))
+            .orderBy(asc(userMediaActivity.mediaType));
+
+        return rows.map((row) => row.mediaType);
+    }
+
+    static async getPaginatedActivities(userId: number, filters: PaginatedActivityFilter) {
+        const pagination = resolvePagination({ page: filters.page, perPage: filters.perPage, defaultPerPage: 48, maxPerPage: 48 });
+
+        const conditions: SQL[] = [
+            eq(userMediaActivity.userId, userId),
+            eq(userMediaActivity.monthBucket, filters.timeBucket),
+            eq(userMediaActivity.hidden, filters.hiddenOnly === true),
+        ];
+
+        if (filters.mediaType) {
+            conditions.push(eq(userMediaActivity.mediaType, filters.mediaType));
+        }
+
+        if (filters.activityKind && filters.activityKind !== "all") {
+            if (filters.activityKind === "redo") {
+                conditions.push(eq(userMediaActivity.isRedo, true));
+            }
+            else if (filters.activityKind === "completed") {
+                conditions.push(and(
+                    eq(userMediaActivity.isRedo, false),
+                    eq(userMediaActivity.isCompleted, true),
+                )!);
+            }
+            else if (filters.activityKind === "progressed") {
+                conditions.push(and(
+                    eq(userMediaActivity.isRedo, false),
+                    gt(userMediaActivity.specificGained, 0),
+                    eq(userMediaActivity.isCompleted, false),
+                )!);
+            }
+        }
+
+        if (filters.mediaIdsByType) {
+            const searchConditions = Object.entries(filters.mediaIdsByType)
+                .filter(([_, ids]) => ids.length > 0)
+                .map(([mediaType, ids]) => and(
+                    inArray(userMediaActivity.mediaId, ids),
+                    eq(userMediaActivity.mediaType, mediaType as MediaType),
+                ))
+                .filter((condition): condition is SQL => !!condition);
+
+            if (searchConditions.length === 0) {
+                return { items: [], total: 0, page: pagination.page, pages: 0, perPage: pagination.perPage };
+            }
+
+            conditions.push(or(...searchConditions)!);
+        }
+
+        const total = getDbClient()
+            .select({ count: count() })
+            .from(userMediaActivity)
+            .where(and(...conditions))
+            .get()?.count ?? 0;
+
+        const items = await getDbClient()
+            .select()
+            .from(userMediaActivity)
+            .where(and(...conditions))
+            .orderBy(desc(userMediaActivity.lastUpdate))
+            .limit(pagination.limit)
+            .offset(pagination.offset);
+
+        return {
+            items,
+            total,
+            page: pagination.page,
+            perPage: pagination.perPage,
+            pages: Math.ceil(total / pagination.perPage),
+        };
     }
 
     static async updateSpecificActivity(userId: number, activityId: number, payload: UpdateActivity) {
@@ -527,6 +628,8 @@ export class UserStatsRepository {
 
         if (newMonthBucket !== existing.monthBucket) {
             const { id: _existingId, ...existingWithoutId } = existing;
+            const movedSpecificGained = payload.specificGained ?? existing.specificGained;
+
             const [upserted] = await getDbClient()
                 .insert(userMediaActivity)
                 .values({
@@ -545,7 +648,8 @@ export class UserStatsRepository {
                         isRedo: payload.isRedo ?? existing.isRedo,
                         lastUpdate: payload.lastUpdate ?? existing.lastUpdate,
                         isCompleted: payload.isCompleted ?? existing.isCompleted,
-                        specificGained: sql`${userMediaActivity.specificGained} + ${payload.specificGained ?? 0}`,
+                        hidden: payload.hidden ?? existing.hidden,
+                        specificGained: sql`${userMediaActivity.specificGained} + ${movedSpecificGained}`,
                     },
                 })
                 .returning();
@@ -570,6 +674,26 @@ export class UserStatsRepository {
         await getDbClient()
             .delete(userMediaActivity)
             .where(and(eq(userMediaActivity.id, activityId), eq(userMediaActivity.userId, userId)));
+    }
+
+    static async bulkHideActivity(userId: number, filters: { startDate: string, endDate: string, mediaType?: MediaType }) {
+        const conditions = [
+            eq(userMediaActivity.userId, userId),
+            lte(userMediaActivity.lastUpdate, filters.endDate),
+            gte(userMediaActivity.lastUpdate, filters.startDate),
+        ];
+
+        if (filters.mediaType) {
+            conditions.push(eq(userMediaActivity.mediaType, filters.mediaType));
+        }
+
+        const updated = await getDbClient()
+            .update(userMediaActivity)
+            .set({ hidden: true })
+            .where(and(...conditions))
+            .returning({ id: userMediaActivity.id });
+
+        return { count: updated.length };
     }
 
     static async deleteAssociatedActivities(userId: number, mediaType: MediaType, mediaId: number) {

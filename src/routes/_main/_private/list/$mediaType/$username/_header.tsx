@@ -58,7 +58,11 @@ function ListHeader() {
             const year = new Date().getFullYear();
             const month = new Date().getMonth() + 1;
 
-            return navigate({ to: `/list/${mediaType}/${username}/activity?year=${year}&month=${month}` });
+            return navigate({
+                to: "/activity/$username",
+                params: { username },
+                search: { year: String(year), month: String(month), activeTab: mediaType },
+            });
         }
 
         return navigate({ to: `/list/${mediaType}/${username}/achievements` });
