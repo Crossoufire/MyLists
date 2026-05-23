@@ -176,8 +176,8 @@ export class UserStatsService {
     async platformAdvancedStatsSummary() {
         const platformPreComputedStats = await this._getComputedStatsSummary({});
         const platinumAchievements = await this.achievementsRepository.countPlatinumAchievements();
-        const mediaUpdatesPerMonth = await this.userUpdatesRepository.mediaUpdatesStatsPerMonth({});
         const activityByMonth = await this.userActivityService.getActivityStatsByMonth({ excludeBulkImports: true });
+        const mediaUpdatesPerMonth = await this.userUpdatesRepository.mediaUpdatesStatsPerMonth({ excludeBulkImports: true });
 
         const tagCountPromises = platformPreComputedStats.mediaTypes.map((mediaType) => {
             const mediaService = this.mediaServiceRegistry.getService(mediaType);
@@ -199,9 +199,9 @@ export class UserStatsService {
         const mediaService = this.mediaServiceRegistry.getService(mediaType);
 
         const platformPreComputedStats = await this.repository.getAggregatedMediaStats({ mediaType });
-        const mediaUpdatesPerMonthStats = await this.userUpdatesRepository.mediaUpdatesStatsPerMonth({ mediaType });
         const specificMediaStats = await mediaService.calculateAdvancedMediaStats(platformPreComputedStats.avgRated);
         const activityByMonth = await this.userActivityService.getActivityStatsByMonth({ mediaType, excludeBulkImports: true });
+        const mediaUpdatesPerMonthStats = await this.userUpdatesRepository.mediaUpdatesStatsPerMonth({ mediaType, excludeBulkImports: true });
 
         return {
             ...platformPreComputedStats,

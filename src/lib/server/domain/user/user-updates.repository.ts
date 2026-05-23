@@ -1,10 +1,15 @@
 import {SearchType} from "@/lib/schemas";
-import {LogUpdateParams} from "@/lib/types/user-updates.types";
+import {alias} from "drizzle-orm/sqlite-core";
 import {paginate} from "@/lib/server/database/pagination";
+import {LogUpdateParams} from "@/lib/types/user-updates.types";
 import {getDbClient} from "@/lib/server/database/async-storage";
 import {MediaType, PrivacyType, UpdateType} from "@/lib/utils/enums";
 import {followers, user, userMediaUpdate} from "@/lib/server/database/schema";
-import {and, count, desc, eq, getTableColumns, inArray, like, or, SQL, sql} from "drizzle-orm";
+import {and, count, desc, eq, getTableColumns, gt, gte, inArray, isNull, like, or, SQL, sql} from "drizzle-orm";
+
+
+const BULK_IMPORT_GRACE_MONTHS = 2;
+const BULK_IMPORT_UPDATE_THRESHOLD = 200;
 
 
 export class UserUpdatesRepository {
@@ -118,17 +123,29 @@ export class UserUpdatesRepository {
             .limit(limit);
     }
 
-    static async mediaUpdatesStatsPerMonth({ mediaType, userId }: { mediaType?: MediaType, userId?: number }) {
-        const conditions = [];
+    static async mediaUpdatesStatsPerMonth({ mediaType, userId, excludeBulkImports }: { userId?: number, mediaType?: MediaType, excludeBulkImports?: boolean }) {
+        const conditions: SQL[] = [];
         if (userId) conditions.push(eq(userMediaUpdate.userId, userId));
         if (mediaType) conditions.push(eq(userMediaUpdate.mediaType, mediaType));
 
-        const monthlyCounts = await getDbClient()
+        const query = getDbClient()
             .select({
                 name: sql<string>`strftime('%m-%Y', ${userMediaUpdate.timestamp})`.as("name"),
                 value: count(userMediaUpdate.mediaId).as("value"),
             })
             .from(userMediaUpdate)
+            .$dynamic();
+
+        if (excludeBulkImports) {
+            const likelyBulkMonths = this._likelyBulkImportUserMonths();
+            query.leftJoin(likelyBulkMonths, and(
+                eq(userMediaUpdate.userId, likelyBulkMonths.userId),
+                eq(sql<string>`strftime('%Y-%m', ${userMediaUpdate.timestamp})`, likelyBulkMonths.monthBucket),
+            ));
+            conditions.push(isNull(likelyBulkMonths.userId));
+        }
+
+        const monthlyCounts = await query
             .where(conditions.length > 0 ? and(...conditions) : undefined)
             .groupBy(sql`strftime('%m-%Y', ${userMediaUpdate.timestamp})`)
             .orderBy(sql`strftime('%Y-%m', ${userMediaUpdate.timestamp})`);
@@ -220,5 +237,24 @@ export class UserUpdatesRepository {
         await getDbClient()
             .insert(userMediaUpdate)
             .values(newUpdate);
+    }
+
+    private static _likelyBulkImportUserMonths() {
+        const bulkUpdate = alias(userMediaUpdate, "bulk_update");
+
+        return getDbClient()
+            .select({
+                userId: bulkUpdate.userId,
+                monthBucket: sql<string>`strftime('%Y-%m', ${bulkUpdate.timestamp})`.as("month_bucket"),
+            })
+            .from(bulkUpdate)
+            .innerJoin(user, eq(user.id, bulkUpdate.userId))
+            .where(and(
+                gte(sql<string>`strftime('%Y-%m', ${bulkUpdate.timestamp})`, sql<string>`strftime('%Y-%m', ${user.createdAt})`),
+                sql`strftime('%Y-%m', ${bulkUpdate.timestamp}) < strftime('%Y-%m', date(${user.createdAt}, 'start of month', '+' || ${BULK_IMPORT_GRACE_MONTHS} || ' months'))`,
+            ))
+            .groupBy(bulkUpdate.userId, sql`strftime('%Y-%m', ${bulkUpdate.timestamp})`)
+            .having(gt(count(), BULK_IMPORT_UPDATE_THRESHOLD))
+            .as("likely_bulk_update_months");
     }
 }
