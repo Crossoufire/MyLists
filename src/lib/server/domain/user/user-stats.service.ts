@@ -1,32 +1,16 @@
 import {zeroPad} from "@/lib/utils/formating";
 import {statusUtils} from "@/lib/utils/mapping";
 import {DeltaStats} from "@/lib/types/stats.types";
-import {calculateActivityTime} from "@/lib/utils/activity-utils";
-import {FormattedError} from "@/lib/utils/error-classes";
 import {MediaType, Status} from "@/lib/utils/enums";
+import {FormattedError} from "@/lib/utils/error-classes";
+import {UserMediaStats} from "@/lib/types/user-media.types";
+import {calculateActivityTime} from "@/lib/utils/activity-utils";
 import {MediaServiceRegistry} from "@/lib/server/domain/media/media.registries";
 import {UserStatsRepository} from "@/lib/server/domain/user/user-stats.repository";
-import {UpdateUserMediaDetails, UserMediaStats} from "@/lib/types/user-media.types";
 import {UserUpdatesRepository} from "@/lib/server/domain/user/user-updates.repository";
 import {AchievementsRepository} from "@/lib/server/domain/achievements/achievements.repository";
-import {ActivityEditor as ActivityEditorRow, MediaInfo, WrappedActivityResult} from "@/lib/types/activity.types";
-import {AddActivity, MonthlyActivityFilters, MonthlyActivityStatsFilters, SearchType, SpecificActivityFilters, UpdateActivity} from "@/lib/schemas";
-
-
-type ActivityMediaRef = {
-    mediaId: number;
-    mediaType: MediaType;
-    specificGained: number;
-};
-
-type LogActivityFromDeltaParams = {
-    userId: number;
-    mediaId: number;
-    delta: DeltaStats;
-    lastUpdate?: string;
-    mediaType: MediaType;
-    newState: UpdateUserMediaDetails<any, any>["newState"];
-};
+import {AddActivity, MonthlyActivityFilters, MonthlyActivityStatsFilters, SearchType, UpdateActivity} from "@/lib/schemas";
+import {ActivityEditor as ActivityEditorRow, ActivityMediaRef, LogActivityFromDelta, MediaInfo, WrappedActivityResult} from "@/lib/types/activity.types";
 
 
 export class UserStatsService {
@@ -280,7 +264,7 @@ export class UserStatsService {
 
     // --- Activity Stats ----------------------------------------------------------
 
-    async logActivityFromDelta({ userId, mediaType, mediaId, delta, newState, lastUpdate }: LogActivityFromDeltaParams) {
+    async logActivityFromDelta({ userId, mediaType, mediaId, delta, newState, lastUpdate }: LogActivityFromDelta) {
         const activityFlags = lastUpdate
             ? {
                 isCompleted: "status" in newState && newState.status === Status.COMPLETED,
@@ -384,16 +368,7 @@ export class UserStatsService {
         return { ...result, items, mediaTypes: availableMediaTypes };
     }
 
-    async getSpecificActivity(userId: number, filters: SpecificActivityFilters) {
-        const timeBucket = `${filters.year}-${zeroPad(filters.month)}`;
-        return this.repository.getSpecificActivity(userId, filters.mediaType, filters.mediaId, timeBucket);
-    }
-
-    async updateSpecificActivity(userId: number, activityId: number, payload: UpdateActivity) {
-        return this.repository.updateSpecificActivity(userId, activityId, payload);
-    }
-
-    async addManualActivity(userId: number, payload: AddActivity) {
+    async addActivity(userId: number, payload: AddActivity) {
         const mediaService = this.mediaServiceRegistry.getService(payload.mediaType);
 
         const media = await mediaService.findById(payload.mediaId);
@@ -411,13 +386,12 @@ export class UserStatsService {
         });
     }
 
-    async searchActivityUserMedia(userId: number, mediaType: MediaType, query: string) {
-        const mediaService = this.mediaServiceRegistry.getService(mediaType);
-        return mediaService.searchUserListByName(userId, query.trim(), 20);
+    async updateActivity(userId: number, activityId: number, payload: UpdateActivity) {
+        return this.repository.updateActivity(userId, activityId, payload);
     }
 
-    async deleteSpecificActivity(userId: number, activityId: number) {
-        await this.repository.deleteSpecificActivity(userId, activityId);
+    async deleteActivity(userId: number, activityId: number) {
+        await this.repository.deleteActivity(userId, activityId);
     }
 
     async bulkHideActivity(userId: number, filters: { startDate: string, endDate: string, mediaType?: MediaType }) {
@@ -467,5 +441,4 @@ export class UserStatsService {
 
         return Object.fromEntries(entries) as Partial<Record<MediaType, number[]>>;
     }
-
 }

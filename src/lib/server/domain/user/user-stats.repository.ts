@@ -1,13 +1,14 @@
-import {SearchType, UpdateActivity} from "@/lib/schemas";
+import {MediaType} from "@/lib/utils/enums";
 import {alias} from "drizzle-orm/sqlite-core";
 import {DeltaStats} from "@/lib/types/stats.types";
+import {SearchType, UpdateActivity} from "@/lib/schemas";
 import {UserMediaStats} from "@/lib/types/user-media.types";
-import {MediaType} from "@/lib/utils/enums";
 import {getDbClient} from "@/lib/server/database/async-storage";
-import {resolvePagination, resolveSorting} from "@/lib/server/database/pagination";
 import {PaginatedActivityFilter} from "@/lib/types/activity.types";
+import {resolvePagination, resolveSorting} from "@/lib/server/database/pagination";
 import {user, userMediaActivity, userMediaSettings, userMediaStatsHistory} from "@/lib/server/database/schema";
-import {and, asc, count, countDistinct, desc, eq, gt, gte, inArray, lt, lte, ne, or, SQL, sql, sum} from "drizzle-orm";
+import {and, asc, count, countDistinct, desc, eq, gt, gte, inArray, lte, ne, or, SQL, sql, sum} from "drizzle-orm";
+
 
 type LogActivity = {
     userId: number;
@@ -19,6 +20,7 @@ type LogActivity = {
     mediaType: MediaType;
     specificGained: number;
 }
+
 
 export class UserStatsRepository {
     static async userActiveMediaSettings(userId: number) {
@@ -423,33 +425,6 @@ export class UserStatsRepository {
         };
     }
 
-    static async getEntriesInRange(userId: number, mediaType: MediaType, start: Date, end: Date) {
-        return getDbClient()
-            .select()
-            .from(userMediaStatsHistory)
-            .where(and(
-                eq(userMediaStatsHistory.userId, userId),
-                eq(userMediaStatsHistory.mediaType, mediaType),
-                gte(userMediaStatsHistory.timestamp, start.toISOString()),
-                lte(userMediaStatsHistory.timestamp, end.toISOString()),
-            ))
-            .orderBy(asc(userMediaStatsHistory.timestamp));
-    }
-
-    static async getLastEntryBefore(userId: number, mediaType: MediaType, timestamp: string) {
-        return getDbClient()
-            .select()
-            .from(userMediaStatsHistory)
-            .where(and(
-                eq(userMediaStatsHistory.userId, userId),
-                eq(userMediaStatsHistory.mediaType, mediaType),
-                lt(userMediaStatsHistory.timestamp, timestamp),
-            ))
-            .orderBy(desc(userMediaStatsHistory.timestamp))
-            .limit(1)
-            .get();
-    }
-
     // --- Activity System -------------------------------------------------------
 
     static async logActivity(activity: LogActivity) {
@@ -493,20 +468,6 @@ export class UserStatsRepository {
                     eq(userMediaActivity.monthBucket, newActivity.monthBucket),
                 ));
         }
-    }
-
-    static async getSpecificActivity(userId: number, mediaType: MediaType, mediaId: number, timeBucket: string) {
-        return getDbClient()
-            .select()
-            .from(userMediaActivity)
-            .where(and(
-                eq(userMediaActivity.userId, userId),
-                eq(userMediaActivity.mediaId, mediaId),
-                eq(userMediaActivity.mediaType, mediaType),
-                eq(userMediaActivity.monthBucket, timeBucket),
-            ))
-            .orderBy(asc(userMediaActivity.lastUpdate))
-            .get();
     }
 
     static async getStatsActivities(userId: number, mediaTypes: MediaType[], timeBucket: string) {
@@ -612,7 +573,7 @@ export class UserStatsRepository {
         };
     }
 
-    static async updateSpecificActivity(userId: number, activityId: number, payload: UpdateActivity) {
+    static async updateActivity(userId: number, activityId: number, payload: UpdateActivity) {
         const [existing] = await getDbClient()
             .select()
             .from(userMediaActivity)
@@ -670,7 +631,7 @@ export class UserStatsRepository {
         return updated;
     }
 
-    static async deleteSpecificActivity(userId: number, activityId: number) {
+    static async deleteActivity(userId: number, activityId: number) {
         await getDbClient()
             .delete(userMediaActivity)
             .where(and(eq(userMediaActivity.id, activityId), eq(userMediaActivity.userId, userId)));

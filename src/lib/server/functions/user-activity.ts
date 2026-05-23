@@ -9,7 +9,6 @@ import {
     addActivitySchema,
     bulkHideActivitySchema,
     deleteActivitySchema,
-    getSpecificActivitySchema,
     monthlyActivitySchema,
     monthlyActivityStatsSchema,
     updateActivitySchema
@@ -34,48 +33,39 @@ export const getMonthlyActivity = createServerFn({ method: "GET" })
     });
 
 
-export const getSpecificActivity = createServerFn({ method: "GET" })
-    .middleware([requiredAuthMiddleware])
-    .inputValidator(tryNotFound(getSpecificActivitySchema))
-    .handler(async ({ data, context: { currentUser } }) => {
-        const userStatsService = await getContainer().then(c => c.services.userStats);
-        return userStatsService.getSpecificActivity(currentUser.id, data);
-    });
-
-
 export const getActivityAddMediaSearch = createServerFn({ method: "GET" })
     .middleware([requiredAuthMiddleware])
     .inputValidator(tryNotFound(activityAddMediaSearchSchema))
     .handler(async ({ data: { mediaType, query }, context: { currentUser } }) => {
-        const userStatsService = await getContainer().then(c => c.services.userStats);
-        return userStatsService.searchActivityUserMedia(currentUser.id, mediaType, query);
+        const mediaService = await getContainer().then(c => c.registries.mediaService.getService(mediaType));
+        return mediaService.searchUserListByName(currentUser.id, query.trim(), 20);
     });
 
 
-export const postUpdateSpecificActivity = createServerFn({ method: "POST" })
+export const postUpdateActivity = createServerFn({ method: "POST" })
     .middleware([requiredAuthMiddleware, transactionMiddleware])
     .inputValidator(tryFormZodError(updateActivitySchema))
     .handler(async ({ data: { activityId, payload }, context: { currentUser } }) => {
         const userStatsService = await getContainer().then(c => c.services.userStats);
-        return userStatsService.updateSpecificActivity(currentUser.id, activityId, payload);
+        return userStatsService.updateActivity(currentUser.id, activityId, payload);
     });
 
 
-export const postAddSpecificActivity = createServerFn({ method: "POST" })
+export const postAddActivity = createServerFn({ method: "POST" })
     .middleware([requiredAuthMiddleware, transactionMiddleware])
     .inputValidator(tryFormZodError(addActivitySchema))
     .handler(async ({ data, context: { currentUser } }) => {
         const userStatsService = await getContainer().then(c => c.services.userStats);
-        await userStatsService.addManualActivity(currentUser.id, data);
+        await userStatsService.addActivity(currentUser.id, data);
     });
 
 
-export const postDeleteSpecificActivity = createServerFn({ method: "POST" })
+export const postDeleteActivity = createServerFn({ method: "POST" })
     .middleware([requiredAuthMiddleware, transactionMiddleware])
     .inputValidator(deleteActivitySchema)
     .handler(async ({ data: { activityId }, context: { currentUser } }) => {
         const userStatsService = await getContainer().then(c => c.services.userStats);
-        await userStatsService.deleteSpecificActivity(currentUser.id, activityId);
+        await userStatsService.deleteActivity(currentUser.id, activityId);
     });
 
 

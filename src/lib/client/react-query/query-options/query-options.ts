@@ -14,13 +14,13 @@ import {ApiProviderType, JobType, MediaType} from "@/lib/utils/enums";
 import {getPlatformStats} from "@/lib/server/functions/platform-stats";
 import {getAdminAllUpdatesHistory} from "@/lib/server/functions/admin";
 import {getUserAchievements} from "@/lib/server/functions/user-achievements";
-import {MediaListArgs, SearchType, SpecificActivityFilters} from "@/lib/schemas";
+import {MediaListArgs, SearchType} from "@/lib/schemas";
 import {getUserMediaHistory, getUserTagNames} from "@/lib/server/functions/user-media";
 import {getDailyMediadle, getMediadleSuggestions} from "@/lib/server/functions/moviedle";
 import {getNotifications, getNotificationsCount} from "@/lib/server/functions/notifications";
 import {getProfileCustomSearch, getProfileCustomSettings} from "@/lib/server/functions/user-settings";
 import {getGameCompatiblePlatforms, getJobDetails, getMediaDetails, getMediaDetailsToEdit} from "@/lib/server/functions/media-details";
-import {getActivityAddMediaSearch, getMonthlyActivity, getMonthlyActivityStats, getSpecificActivity} from "@/lib/server/functions/user-activity";
+import {getActivityAddMediaSearch, getMonthlyActivity, getMonthlyActivityStats} from "@/lib/server/functions/user-activity";
 import {getAllUpdatesHistory, getUserProfile, getUserProfileHeader, getUsersFollowers, getUsersFollows} from "@/lib/server/functions/user-profile";
 import {getMediaListFilters, getMediaListSearchFilters, getMediaListSF, getTagsViewFn, getUserListHeaderSF} from "@/lib/server/functions/media-lists";
 import {
@@ -234,15 +234,6 @@ export const monthlyActivityOptions = (username: string, search: ActivitySearch)
         queryKey: ["monthly-activity", username, "rows", search],
         queryFn: () => getMonthlyActivity({ data: { username, ...search } }),
     });
-}
-
-
-export const specificActivityOptions = (params: SpecificActivityFilters, open: boolean) => {
-    return queryOptions({
-        queryKey: ["specific-activity", params],
-        queryFn: () => getSpecificActivity({ data: { ...params } }),
-        enabled: open,
-    })
 }
 
 

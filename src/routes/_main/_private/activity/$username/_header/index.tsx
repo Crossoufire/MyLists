@@ -43,7 +43,7 @@ function MonthlyActivityPage() {
     const [addActivity, setAddActivity] = useState(false);
     const apiData = useSuspenseQuery(monthlyActivityOptions(username, filters)).data;
     const [editActivity, setEditActivity] = useState<ActivityEditor | null>(null);
-    const activeMediaTypes = currentUser?.settings.filter((setting) => setting.active).map((setting) => setting.mediaType) ?? apiData.mediaTypes;
+    const activeMediaTypes = currentUser?.settings.filter(s => s.active).map(s => s.mediaType) ?? apiData.mediaTypes;
     const { activeTab = "all", activityKind = "all", hiddenOnly = false, search = "", page = 1, ...dateFilters } = filters;
     const { localSearch, handleInputChange, updateFilters } = useSearchNavigate<ActivitySearch>({
         search: filters.search ?? "",
@@ -191,12 +191,8 @@ function MonthlyActivityPage() {
 
             {editActivity &&
                 <ActivityEditDialog
+                    activity={editActivity}
                     open={Boolean(editActivity)}
-                    mediaId={editActivity.mediaId}
-                    year={Number(dateFilters.year)}
-                    month={Number(dateFilters.month)}
-                    mediaName={editActivity.mediaName}
-                    mediaType={editActivity.mediaType}
                     onOpenChange={() => setEditActivity(null)}
                 />
             }

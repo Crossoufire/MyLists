@@ -1,13 +1,11 @@
 import {toast} from "sonner";
 import {useForm} from "react-hook-form";
-import {MediaType} from "@/lib/utils/enums";
-import {useQuery} from "@tanstack/react-query";
 import {toDateInputValue} from "@/lib/utils/formating";
 import {Input} from "@/lib/client/components/ui/input";
 import {Label} from "@/lib/client/components/ui/label";
 import {Button} from "@/lib/client/components/ui/button";
+import {ActivityEditor} from "@/lib/types/activity.types";
 import {Checkbox} from "@/lib/client/components/ui/checkbox";
-import {specificActivityOptions} from "@/lib/client/react-query/query-options/query-options";
 import {useDeleteActivityMutation, useUpdateActivityMutation} from "@/lib/client/react-query/query-mutations/activity.mutations";
 import {Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle} from "@/lib/client/components/ui/dialog";
 import {getActivityInputStep, getActivityUnitLabel, toActivityDisplayValue, toActivityStoredValue} from "@/lib/utils/activity-utils";
@@ -23,52 +21,41 @@ type FormValues = {
 
 
 interface ActivityEditDialogProps {
-    year: number;
     open: boolean;
-    month: number;
-    mediaId: number;
-    mediaName: string;
-    mediaType: MediaType;
-    onActivityChange?: () => void;
+    activity: ActivityEditor;
     onOpenChange: (open: boolean) => void;
 }
 
 
-export const ActivityEditDialog = ({ open, year, month, mediaId, mediaType, mediaName, onActivityChange, onOpenChange }: ActivityEditDialogProps) => {
+export const ActivityEditDialog = ({ open, activity, onOpenChange }: ActivityEditDialogProps) => {
     const updateMutation = useUpdateActivityMutation();
     const deleteMutation = useDeleteActivityMutation();
-    const { data: event, isLoading } = useQuery(specificActivityOptions({ year, month, mediaType, mediaId }, open));
     const form = useForm<FormValues>({
         values: {
-            isRedo: event?.isRedo ?? false,
-            hidden: event?.hidden ?? false,
-            isCompleted: event?.isCompleted ?? false,
-            lastUpdate: toDateInputValue(event?.lastUpdate),
-            specificGained: toActivityDisplayValue(mediaType, event?.specificGained ?? 0),
+            isRedo: activity.isRedo ?? false,
+            hidden: activity.hidden ?? false,
+            isCompleted: activity.isCompleted ?? false,
+            lastUpdate: toDateInputValue(activity.lastUpdate),
+            specificGained: toActivityDisplayValue(activity.mediaType, activity.specificGained ?? 0),
         }
     });
-
-    if (isLoading) {
-        return null;
-    }
 
     const handleOnSave = (data: FormValues) => {
         if (!data) return;
 
         updateMutation.mutate({
             data: {
-                activityId: event!.id,
+                activityId: activity.id,
                 payload: {
                     isRedo: data.isRedo,
                     hidden: data.hidden,
                     isCompleted: data.isCompleted,
-                    specificGained: toActivityStoredValue(mediaType, data.specificGained),
                     lastUpdate: data.lastUpdate ? `${data.lastUpdate}T12:00:00.000Z` : undefined,
+                    specificGained: toActivityStoredValue(activity.mediaType, data.specificGained),
                 }
             }
         }, {
             onSuccess: () => {
-                onActivityChange?.();
                 onOpenChange(false);
                 toast.success("Activity updated");
             }
@@ -76,11 +63,10 @@ export const ActivityEditDialog = ({ open, year, month, mediaId, mediaType, medi
     };
 
     const handleOnDelete = () => {
-        if (!event || !window.confirm("Delete this activity event?")) return;
+        if (!window.confirm("Delete this activity event?")) return;
 
-        deleteMutation.mutate({ data: { activityId: event.id } }, {
+        deleteMutation.mutate({ data: { activityId: activity.id } }, {
             onSuccess: () => {
-                onActivityChange?.();
                 onOpenChange(false);
                 toast.success("Activity deleted");
             }
@@ -91,18 +77,18 @@ export const ActivityEditDialog = ({ open, year, month, mediaId, mediaType, medi
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="w-100 max-sm:w-full">
                 <DialogHeader>
-                    <DialogTitle>Edit Activity - {mediaName}</DialogTitle>
+                    <DialogTitle>Edit Activity - {activity.mediaName}</DialogTitle>
                     <DialogDescription>Adjust or remove this monthly activity.</DialogDescription>
                 </DialogHeader>
 
                 <form onSubmit={form.handleSubmit(handleOnSave)} className="space-y-5 mt-2">
                     <div className="grid gap-2">
                         <Label htmlFor="specificGained">
-                            {getActivityUnitLabel(mediaType, "long") ?? "Units gained"}
+                            {getActivityUnitLabel(activity.mediaType, "long") ?? "Units gained"}
                         </Label>
                         <Input
                             type="number"
-                            step={getActivityInputStep(mediaType)}
+                            step={getActivityInputStep(activity.mediaType)}
                             {...form.register("specificGained", { required: true, min: 0 })}
                         />
                     </div>

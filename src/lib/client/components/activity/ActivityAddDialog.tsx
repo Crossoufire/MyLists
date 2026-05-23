@@ -32,12 +32,11 @@ interface ActivityAddDialogProps {
     open: boolean;
     month: number;
     mediaTypes: MediaType[];
-    onActivityChange?: () => void;
     onOpenChange: (open: boolean) => void;
 }
 
 
-export const ActivityAddDialog = ({ open, year, month, mediaTypes, onActivityChange, onOpenChange }: ActivityAddDialogProps) => {
+export const ActivityAddDialog = ({ open, year, month, mediaTypes, onOpenChange }: ActivityAddDialogProps) => {
     const addMutation = useAddActivityMutation();
     const [selectedType, setSelectedType] = useState<MediaType>(mediaTypes[0] ?? MediaType.SERIES);
     const [selectedMedia, setSelectedMedia] = useState<{ id: number; name: string; imageCover: string } | null>(null);
@@ -86,7 +85,6 @@ export const ActivityAddDialog = ({ open, year, month, mediaTypes, onActivityCha
             },
         }, {
             onSuccess: () => {
-                onActivityChange?.();
                 onOpenChange(false);
                 toast.success("Activity added");
             },
