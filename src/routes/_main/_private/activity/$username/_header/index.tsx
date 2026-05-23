@@ -1,5 +1,5 @@
 import {MediaType} from "@/lib/utils/enums";
-import React, {Suspense, useState} from "react";
+import React, {useState} from "react";
 import {useAuth} from "@/lib/client/hooks/use-auth";
 import {formatMinutes} from "@/lib/utils/formating";
 import {Badge} from "@/lib/client/components/ui/badge";
@@ -18,20 +18,31 @@ import {ActivityAddDialog} from "@/lib/client/components/activity/ActivityAddDia
 import {ActivityEditDialog} from "@/lib/client/components/activity/ActivityEditDialog";
 import {MediaCornerCommon} from "@/lib/client/components/media/base/MediaCornerCommon";
 import {ActivityEditor, ActivityKind, ActivitySearch} from "@/lib/types/activity.types";
+import {getActivityUnitLabel, toActivityDisplayValue} from "@/lib/utils/activity-utils";
 import {CheckCircle, Clock, Hourglass, LayoutGrid, Plus, RotateCw, Settings2} from "lucide-react";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/lib/client/components/ui/select";
 import {monthlyActivityOptions, monthlyActivityStatsOptions} from "@/lib/client/react-query/query-options/query-options";
-import {ActivityStatusKind, getActivityKind, getActivityUnitLabel, toActivityDisplayValue} from "@/lib/utils/activity-utils";
 
 
 export const Route = createFileRoute("/_main/_private/activity/$username/_header/")({
     validateSearch: (search) => search as ActivitySearch,
     loaderDeps: ({ search }) => ({ search }),
     loader: async ({ context: { queryClient }, params: { username }, deps: { search } }) => {
-        await queryClient.ensureQueryData(monthlyActivityOptions(username, search));
+        await Promise.all([
+            queryClient.ensureQueryData(monthlyActivityOptions(username, search)),
+            queryClient.ensureQueryData(monthlyActivityStatsOptions(username, { year: search.year, month: search.month })),
+        ]);
     },
     component: MonthlyActivityPage,
 });
+
+
+const activityKindFilters: { label: string, value: ActivityKind }[] = [
+    { label: "All Activities", value: "all" },
+    { label: "Completed", value: "completed" },
+    { label: "In progress", value: "progressed" },
+    { label: "Re-experience", value: "redo" },
+];
 
 
 function MonthlyActivityPage() {
@@ -62,13 +73,11 @@ function MonthlyActivityPage() {
                 onDateChange={(year, month) => handleFilterChange({ year, month, activeTab: "all" })}
             />
 
-            <Suspense>
-                <MonthlyActivityStats
-                    username={username}
-                    year={dateFilters.year}
-                    month={dateFilters.month}
-                />
-            </Suspense>
+            <MonthlyActivityStats
+                username={username}
+                year={dateFilters.year}
+                month={dateFilters.month}
+            />
 
             <div className="flex flex-wrap items-center gap-3">
                 <Select value={activityKind} onValueChange={(v) => handleFilterChange({ activityKind: v as ActivityKind })}>
@@ -209,14 +218,6 @@ function MonthlyActivityPage() {
 }
 
 
-const activityKindFilters: { label: string, value: ActivityKind }[] = [
-    { label: "All Activities", value: "all" },
-    { label: "Completed", value: "completed" },
-    { label: "In progress", value: "progressed" },
-    { label: "Re-experience", value: "redo" },
-];
-
-
 function MonthlyActivityStats({ username, year, month }: { username: string, year: string, month: string }) {
     const stats = useSuspenseQuery(monthlyActivityStatsOptions(username, { year, month })).data;
 
@@ -235,56 +236,45 @@ function MonthlyActivityStats({ username, year, month }: { username: string, yea
                     {formatMinutes(stats.totalTime)}
                 </div>
             </div>
-            {stats.mediaStats.map((stat) =>
-                <MonthlyActivityMediaStat
-                    stat={stat}
-                    key={stat.mediaType}
-                />
-            )}
-        </div>
-    );
-}
+            {stats.mediaStats.map((stat) => {
+                const unitLabel = getActivityUnitLabel(stat.mediaType, "short");
 
-
-function MonthlyActivityMediaStat({ stat }: { stat: { mediaType: MediaType, timeGained: number, specificTotal: number } }) {
-    const unitLabel = getActivityUnitLabel(stat.mediaType, "short");
-
-    return (
-        <div className="flex min-h-20 min-w-0 max-w-45 flex-col justify-between rounded-md border bg-background px-3 py-2">
-            <div className="flex min-w-0 items-center justify-between gap-2">
-                <div className="flex min-w-0 items-center gap-2">
-                    <MainThemeIcon type={stat.mediaType} size={15}/>
-                    <span className="truncate text-sm font-medium capitalize">
-                        {stat.mediaType}
-                    </span>
-                </div>
-                {unitLabel && stat.specificTotal > 0 &&
-                    <span className="shrink-0 text-xs text-muted-foreground">
-                        {toActivityDisplayValue(stat.mediaType, stat.specificTotal)} {unitLabel}
-                    </span>
-                }
-            </div>
-            <div className="text-lg font-semibold">
-                {formatMinutes(stat.timeGained)}
-            </div>
+                return (
+                    <div className="flex min-h-20 min-w-0 max-w-45 flex-col justify-between rounded-md border bg-background px-3 py-2">
+                        <div className="flex min-w-0 items-center justify-between gap-2">
+                            <div className="flex min-w-0 items-center gap-2">
+                                <MainThemeIcon type={stat.mediaType} size={15}/>
+                                <span className="truncate text-sm font-medium capitalize">
+                                    {stat.mediaType}
+                                </span>
+                            </div>
+                            {unitLabel && stat.specificTotal > 0 &&
+                                <span className="shrink-0 text-xs text-muted-foreground">
+                                    {toActivityDisplayValue(stat.mediaType, stat.specificTotal)} {unitLabel}
+                                </span>
+                            }
+                        </div>
+                        <div className="text-lg font-semibold">
+                            {formatMinutes(stat.timeGained)}
+                        </div>
+                    </div>
+                )
+            })}
         </div>
     );
 }
 
 
 function ActivityStatusIcon({ row }: { row: ActivityEditor }) {
-    const status = activityStatusView[getActivityKind(row)];
-    const Icon = status.icon;
+    const { label, icon: Icon } = (() => {
+        if (row.isRedo) return { label: "Re-experience", icon: RotateCw };
+        if (row.isCompleted) return { label: "Completed", icon: CheckCircle };
+        return { label: "In progress", icon: Hourglass };
+    })();
 
     return (
-        <span className="ml-auto" title={status.label}>
-            <Icon className={status.className} size={12}/>
+        <span className="ml-auto" title={label}>
+            <Icon className="text-neutral-300" size={12}/>
         </span>
     );
 }
-
-const activityStatusView: Record<ActivityStatusKind, { label: string; icon: typeof RotateCw; className: string }> = {
-    redo: { label: "Re-experience", icon: RotateCw, className: "text-neutral-300" },
-    completed: { label: "Completed", icon: CheckCircle, className: "text-neutral-300" },
-    progressed: { label: "In progress", icon: Hourglass, className: "text-neutral-300" },
-};

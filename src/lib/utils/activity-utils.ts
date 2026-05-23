@@ -101,13 +101,6 @@ export const getDefaultActivityDate = (year: number, month: number) => {
 };
 
 
-export const getActivityKind = (activity: { isRedo: boolean; isCompleted: boolean }): ActivityStatusKind => {
-    if (activity.isRedo) return "redo";
-    if (activity.isCompleted) return "completed";
-    return "progressed";
-};
-
-
 function identity(value: number) {
     return value;
 }

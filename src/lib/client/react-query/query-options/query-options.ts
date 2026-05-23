@@ -225,6 +225,7 @@ export const monthlyActivityStatsOptions = (username: string, search: Pick<Activ
     return queryOptions({
         queryKey: ["monthly-activity", username, "stats", search],
         queryFn: () => getMonthlyActivityStats({ data: { username, ...search } }),
+        staleTime: Infinity,
     });
 }
 
