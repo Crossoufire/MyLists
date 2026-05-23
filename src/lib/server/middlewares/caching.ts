@@ -28,3 +28,17 @@ export const platformStatsCacheMiddleware = createMiddleware({ type: "function" 
                 { ttl: 24 * 60 * 60 * 1000 },
             ));
     });
+
+
+export const userStatsCacheMiddleware = createMiddleware({ type: "function" })
+    .server(async ({ next, data }) => {
+        const cacheKey = `userStats:${JSON.stringify(data ?? null)}`;
+
+        // Cached for 2 hours
+        return getContainer()
+            .then((c) => c.cacheManager.wrap(
+                cacheKey,
+                async () => next(),
+                { ttl: 2 * 60 * 60 * 1000 },
+            ));
+    });
