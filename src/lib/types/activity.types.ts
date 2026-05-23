@@ -68,6 +68,12 @@ export type ActivityMediaRef = {
 };
 
 
+export type MonthlyActivityChartDatum = {
+    month: string;
+    total: number;
+} & Partial<Record<MediaType, number>>;
+
+
 export type LogActivityFromDelta = {
     userId: number;
     mediaId: number;
@@ -76,3 +82,15 @@ export type LogActivityFromDelta = {
     mediaType: MediaType;
     newState: UpdateUserMediaDetails<any, any>["newState"];
 };
+
+
+export type LogActivity = {
+    userId: number;
+    mediaId: number;
+    isRedo: boolean;
+    hidden?: boolean;
+    lastUpdate?: string;
+    isCompleted: boolean;
+    mediaType: MediaType;
+    specificGained: number;
+}

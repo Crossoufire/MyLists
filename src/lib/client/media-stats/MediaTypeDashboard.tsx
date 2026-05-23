@@ -8,6 +8,7 @@ import {MainThemeIcon} from "@/lib/client/components/general/MainIcons";
 import {TopAffinityCard} from "@/lib/client/media-stats/TopAffinityCard";
 import {DistributionChart} from "@/lib/client/media-stats/DistributionChart";
 import {StatusDistribution} from "@/lib/client/media-stats/StatusDistribution";
+import {ActivityByMonthChart} from "@/lib/client/media-stats/ActivityByMonthChart";
 import {capitalize, formatCurrency, formatHours, formatNumber} from "@/lib/utils/formating";
 import {ChartColumn, Clock, DollarSign, Heart, Play, SquareStack, Star, Tags, XLineTop} from "lucide-react";
 
@@ -84,6 +85,12 @@ export function MediaTypeDashboard({ stats }: MediaTypeDashboardProps) {
                     data={stats.specificMediaStats.durationDistrib}
                     title={getMediaNaming(mediaType).durationDistribution}
                     unit={getMediaNaming(mediaType).durationDistributionUnit}
+                />
+                <ActivityByMonthChart
+                    mediaType={mediaType}
+                    title="Activity by Month"
+                    data={stats.activityByMonth.data}
+                    mediaTypes={stats.activityByMonth.mediaTypes}
                 />
                 <DistributionChart
                     height={300}

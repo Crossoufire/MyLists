@@ -19,8 +19,8 @@ export const getMonthlyActivityStats = createServerFn({ method: "GET" })
     .middleware([privateAuthZMiddleware])
     .inputValidator(tryNotFound(monthlyActivityStatsSchema))
     .handler(async ({ data, context: { user } }) => {
-        const userStatsService = await getContainer().then(c => c.services.userStats);
-        return userStatsService.getMonthlyActivityStats(user.id, data);
+        const userActivityService = await getContainer().then(c => c.services.userActivity);
+        return userActivityService.getMonthlyActivityStats(user.id, data);
     });
 
 
@@ -28,8 +28,8 @@ export const getMonthlyActivity = createServerFn({ method: "GET" })
     .middleware([privateAuthZMiddleware])
     .inputValidator(tryNotFound(monthlyActivitySchema))
     .handler(async ({ data, context: { user } }) => {
-        const userStatsService = await getContainer().then(c => c.services.userStats);
-        return userStatsService.getMonthlyActivity(user.id, data);
+        const userActivityService = await getContainer().then(c => c.services.userActivity);
+        return userActivityService.getMonthlyActivity(user.id, data);
     });
 
 
@@ -46,8 +46,8 @@ export const postUpdateActivity = createServerFn({ method: "POST" })
     .middleware([requiredAuthMiddleware, transactionMiddleware])
     .inputValidator(tryFormZodError(updateActivitySchema))
     .handler(async ({ data: { activityId, payload }, context: { currentUser } }) => {
-        const userStatsService = await getContainer().then(c => c.services.userStats);
-        return userStatsService.updateActivity(currentUser.id, activityId, payload);
+        const userActivityService = await getContainer().then(c => c.services.userActivity);
+        return userActivityService.updateActivity(currentUser.id, activityId, payload);
     });
 
 
@@ -55,8 +55,8 @@ export const postAddActivity = createServerFn({ method: "POST" })
     .middleware([requiredAuthMiddleware, transactionMiddleware])
     .inputValidator(tryFormZodError(addActivitySchema))
     .handler(async ({ data, context: { currentUser } }) => {
-        const userStatsService = await getContainer().then(c => c.services.userStats);
-        await userStatsService.addActivity(currentUser.id, data);
+        const userActivityService = await getContainer().then(c => c.services.userActivity);
+        await userActivityService.addActivity(currentUser.id, data);
     });
 
 
@@ -64,8 +64,8 @@ export const postDeleteActivity = createServerFn({ method: "POST" })
     .middleware([requiredAuthMiddleware, transactionMiddleware])
     .inputValidator(deleteActivitySchema)
     .handler(async ({ data: { activityId }, context: { currentUser } }) => {
-        const userStatsService = await getContainer().then(c => c.services.userStats);
-        await userStatsService.deleteActivity(currentUser.id, activityId);
+        const userActivityService = await getContainer().then(c => c.services.userActivity);
+        await userActivityService.deleteActivity(currentUser.id, activityId);
     });
 
 
@@ -73,6 +73,6 @@ export const postBulkHideActivity = createServerFn({ method: "POST" })
     .middleware([requiredAuthMiddleware, transactionMiddleware])
     .inputValidator(tryFormZodError(bulkHideActivitySchema))
     .handler(async ({ data, context: { currentUser } }) => {
-        const userStatsService = await getContainer().then(c => c.services.userStats);
-        return userStatsService.bulkHideActivity(currentUser.id, data);
+        const userActivityService = await getContainer().then(c => c.services.userActivity);
+        return userActivityService.bulkHideActivity(currentUser.id, data);
     });
