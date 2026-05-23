@@ -1,6 +1,6 @@
 import {SearchType} from "@/lib/schemas";
-import {LogUpdateParams} from "@/lib/types/user-updates.types";
 import {paginate} from "@/lib/server/database/pagination";
+import {LogUpdateParams} from "@/lib/types/user-updates.types";
 import {getDbClient} from "@/lib/server/database/async-storage";
 import {MediaType, PrivacyType, UpdateType} from "@/lib/utils/enums";
 import {followers, user, userMediaUpdate} from "@/lib/server/database/schema";
@@ -203,6 +203,7 @@ export class UserUpdatesRepository {
                 eq(userMediaUpdate.userId, userId),
                 eq(userMediaUpdate.mediaId, media.id),
                 eq(userMediaUpdate.mediaType, mediaType),
+                eq(userMediaUpdate.updateType, updateType),
             ))
             .orderBy(desc(userMediaUpdate.timestamp))
             .get();
