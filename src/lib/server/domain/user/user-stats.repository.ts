@@ -638,20 +638,19 @@ export class UserStatsRepository {
     }
 
     static async bulkHideActivity(userId: number, filters: { startDate: string, endDate: string, mediaType?: MediaType }) {
-        const conditions = [
-            eq(userMediaActivity.userId, userId),
-            lte(userMediaActivity.lastUpdate, filters.endDate),
-            gte(userMediaActivity.lastUpdate, filters.startDate),
-        ];
-
-        if (filters.mediaType) {
-            conditions.push(eq(userMediaActivity.mediaType, filters.mediaType));
-        }
+        const conditions = [];
+        if (filters.mediaType) conditions.push(eq(userMediaActivity.mediaType, filters.mediaType));
 
         const updated = await getDbClient()
             .update(userMediaActivity)
             .set({ hidden: true })
-            .where(and(...conditions))
+            .where(and(
+                eq(userMediaActivity.userId, userId),
+                ne(userMediaActivity.hidden, true),
+                lte(userMediaActivity.lastUpdate, filters.endDate),
+                gte(userMediaActivity.lastUpdate, filters.startDate),
+                ...conditions,
+            ))
             .returning({ id: userMediaActivity.id });
 
         return { count: updated.length };
