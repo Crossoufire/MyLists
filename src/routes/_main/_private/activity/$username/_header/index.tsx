@@ -1,10 +1,11 @@
-import {MediaType} from "@/lib/utils/enums";
 import React, {useState} from "react";
+import {MediaType} from "@/lib/utils/enums";
 import {useAuth} from "@/lib/client/hooks/use-auth";
 import {formatMinutes} from "@/lib/utils/formating";
 import {Badge} from "@/lib/client/components/ui/badge";
 import {createFileRoute} from "@tanstack/react-router";
 import {useSuspenseQuery} from "@tanstack/react-query";
+import {LayoutGrid, Plus, Settings2} from "lucide-react";
 import {Switch} from "@/lib/client/components/ui/switch";
 import {Button} from "@/lib/client/components/ui/button";
 import {EmptyState} from "@/lib/client/components/general/EmptyState";
@@ -17,9 +18,9 @@ import {useSearchNavigate} from "@/lib/client/hooks/use-search-navigate";
 import {ActivityAddDialog} from "@/lib/client/components/activity/ActivityAddDialog";
 import {ActivityEditDialog} from "@/lib/client/components/activity/ActivityEditDialog";
 import {MediaCornerCommon} from "@/lib/client/components/media/base/MediaCornerCommon";
+import {ActivityStatusIcon} from "@/lib/client/components/activity/ActivityStatusIcon";
 import {ActivityEditor, ActivityKind, ActivitySearch} from "@/lib/types/activity.types";
-import {getActivityUnitLabel, toActivityDisplayValue} from "@/lib/utils/activity-utils";
-import {CheckCircle, Clock, Hourglass, LayoutGrid, Plus, RotateCw, Settings2} from "lucide-react";
+import {MonthlyActivityStats} from "@/lib/client/components/activity/MonthlyActivityStats";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/lib/client/components/ui/select";
 import {monthlyActivityOptions, monthlyActivityStatsOptions} from "@/lib/client/react-query/query-options/query-options";
 
@@ -66,7 +67,7 @@ function MonthlyActivityPage() {
     };
 
     return (
-        <div className="space-y-4">
+        <div className="space-y-5">
             <CalendarNav
                 activeYear={Number(dateFilters.year)}
                 activeMonth={Number(dateFilters.month)}
@@ -79,66 +80,76 @@ function MonthlyActivityPage() {
                 month={dateFilters.month}
             />
 
-            <div className="flex flex-wrap items-center gap-3">
-                <Select value={activityKind} onValueChange={(v) => handleFilterChange({ activityKind: v as ActivityKind })}>
-                    <SelectTrigger className="w-36">
-                        <SelectValue placeholder="Activity Kind"/>
-                    </SelectTrigger>
-                    <SelectContent>
-                        {activityKindFilters.map((filter) =>
-                            <SelectItem key={filter.value} value={filter.value}>
-                                {filter.label}
-                            </SelectItem>
-                        )}
-                    </SelectContent>
-                </Select>
-
-                <div className="grow">
-                    <SearchInput
-                        className="w-full"
-                        value={localSearch}
-                        onChange={handleInputChange}
-                        placeholder="Search activity by title..."
-                    />
+            <div className="flex w-full flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                <div className="grid grid-cols-2 gap-3 sm:flex sm:grow sm:items-center min-w-0">
+                    <div className="col-span-2 min-w-0 sm:order-2 sm:grow">
+                        <SearchInput
+                            className="w-full"
+                            value={localSearch}
+                            onChange={handleInputChange}
+                            placeholder="Search activity by title..."
+                        />
+                    </div>
+                    <div className="col-span-1 sm:order-1 sm:shrink-0">
+                        <Select value={activityKind} onValueChange={(v) => handleFilterChange({ activityKind: v as ActivityKind })}>
+                            <SelectTrigger className="w-full sm:w-36">
+                                <SelectValue placeholder="Activity Kind"/>
+                            </SelectTrigger>
+                            <SelectContent>
+                                {activityKindFilters.map((filter) =>
+                                    <SelectItem key={filter.value} value={filter.value}>
+                                        {filter.label}
+                                    </SelectItem>
+                                )}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    <div className="col-span-1 sm:order-3 sm:shrink-0">
+                        <Select value={activeTab} onValueChange={(v) => handleFilterChange({ activeTab: v as MediaType | "all" })}>
+                            <SelectTrigger className="w-full sm:w-36">
+                                <SelectValue placeholder="Media type"/>
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">
+                                    <div className="flex items-center gap-2">
+                                        <MainThemeIcon type="all"/>
+                                        <span>All Types</span>
+                                    </div>
+                                </SelectItem>
+                                {apiData.mediaTypes.map((mediaType) =>
+                                    <SelectItem key={mediaType} value={mediaType}>
+                                        <div className="flex items-center gap-2 capitalize">
+                                            <MainThemeIcon type={mediaType}/>
+                                            <span>{mediaType}</span>
+                                        </div>
+                                    </SelectItem>
+                                )}
+                            </SelectContent>
+                        </Select>
+                    </div>
                 </div>
-
-                <Select value={activeTab} onValueChange={(v) => handleFilterChange({ activeTab: v as MediaType | "all" })}>
-                    <SelectTrigger className="w-36">
-                        <SelectValue placeholder="Media type"/>
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="all">
-                            <div className="flex items-center gap-2">
-                                <MainThemeIcon type="all"/>
-                                <span>All Types</span>
-                            </div>
-                        </SelectItem>
-                        {apiData.mediaTypes.map((mediaType) =>
-                            <SelectItem key={mediaType} value={mediaType}>
-                                <div className="flex items-center gap-2 capitalize">
-                                    <MainThemeIcon type={mediaType}/>
-                                    <span>{mediaType}</span>
-                                </div>
-                            </SelectItem>
-                        )}
-                    </SelectContent>
-                </Select>
                 {canEdit &&
-                    <>
-                        <Button variant="outline" onClick={() => setAddActivity(true)}>
-                            <Plus className="size-4"/>
-                            Add activity
+                    <div className="flex items-center gap-3 sm:justify-end shrink-0">
+                        <Button
+                            variant="outline"
+                            onClick={() => setAddActivity(true)}
+                            className="flex-1 sm:flex-initial justify-center gap-2"
+                        >
+                            <Plus className="size-4 shrink-0"/>
+                            <span>Add activity</span>
                         </Button>
-                        <Button variant="outline" asChild>
-                            <label className=" flex items-center gap-2 text-sm text-muted-foreground max-sm:ml-0">
-                                <Switch
-                                    checked={hiddenOnly}
-                                    onCheckedChange={(checked) => handleFilterChange({ hiddenOnly: checked })}
-                                />
-                                Only hidden
+                        <div className="flex h-10 items-center gap-2 rounded-md border border-input bg-background px-3
+                        shadow-sm flex-1 sm:flex-initial justify-center cursor-pointer select-none">
+                            <Switch
+                                id="hidden-only"
+                                checked={hiddenOnly}
+                                onCheckedChange={(checked) => handleFilterChange({ hiddenOnly: checked })}
+                            />
+                            <label htmlFor="hidden-only" className="text-sm font-medium leading-none cursor-pointer">
+                                Hidden Only
                             </label>
-                        </Button>
-                    </>
+                        </div>
+                    </div>
                 }
             </div>
 
@@ -214,67 +225,5 @@ function MonthlyActivityPage() {
                 month={Number(dateFilters.month)}
             />
         </div>
-    );
-}
-
-
-function MonthlyActivityStats({ username, year, month }: { username: string, year: string, month: string }) {
-    const stats = useSuspenseQuery(monthlyActivityStatsOptions(username, { year, month })).data;
-
-    return (
-        <div className="grid min-w-0 flex-1 grid-cols-2 gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-            <div className="flex min-h-20 min-w-0 max-w-45 flex-col justify-between rounded-md border bg-background px-3 py-2">
-                <div className="flex min-w-0 items-center justify-between gap-2">
-                    <div className="flex min-w-0 items-center gap-2">
-                        <Clock className="text-app-accent" size={15}/>
-                        <span className="truncate text-sm font-medium capitalize">
-                        Monthly Time
-                    </span>
-                    </div>
-                </div>
-                <div className="text-lg font-semibold">
-                    {formatMinutes(stats.totalTime)}
-                </div>
-            </div>
-            {stats.mediaStats.map((stat) => {
-                const unitLabel = getActivityUnitLabel(stat.mediaType, "short");
-
-                return (
-                    <div className="flex min-h-20 min-w-0 max-w-45 flex-col justify-between rounded-md border bg-background px-3 py-2">
-                        <div className="flex min-w-0 items-center justify-between gap-2">
-                            <div className="flex min-w-0 items-center gap-2">
-                                <MainThemeIcon type={stat.mediaType} size={15}/>
-                                <span className="truncate text-sm font-medium capitalize">
-                                    {stat.mediaType}
-                                </span>
-                            </div>
-                            {unitLabel && stat.specificTotal > 0 &&
-                                <span className="shrink-0 text-xs text-muted-foreground">
-                                    {toActivityDisplayValue(stat.mediaType, stat.specificTotal)} {unitLabel}
-                                </span>
-                            }
-                        </div>
-                        <div className="text-lg font-semibold">
-                            {formatMinutes(stat.timeGained)}
-                        </div>
-                    </div>
-                )
-            })}
-        </div>
-    );
-}
-
-
-function ActivityStatusIcon({ row }: { row: ActivityEditor }) {
-    const { label, icon: Icon } = (() => {
-        if (row.isRedo) return { label: "Re-experience", icon: RotateCw };
-        if (row.isCompleted) return { label: "Completed", icon: CheckCircle };
-        return { label: "In progress", icon: Hourglass };
-    })();
-
-    return (
-        <span className="ml-auto" title={label}>
-            <Icon className="text-neutral-300" size={12}/>
-        </span>
     );
 }
