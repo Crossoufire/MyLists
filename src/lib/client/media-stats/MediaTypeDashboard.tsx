@@ -88,7 +88,7 @@ export function MediaTypeDashboard({ stats }: MediaTypeDashboardProps) {
                 />
                 <ActivityByMonthChart
                     mediaType={mediaType}
-                    title="Activity by Month"
+                    title="Activity Time by Month"
                     data={stats.activityByMonth.data}
                     mediaTypes={stats.activityByMonth.mediaTypes}
                 />
@@ -105,13 +105,13 @@ export function MediaTypeDashboard({ stats }: MediaTypeDashboardProps) {
                     ratingSystem={ratingSystem}
                     ratings={specificMediaStats.ratings}
                 />
-                <DistributionChart
-                    height={300}
-                    mediaType={mediaType}
-                    title="Updates per Month"
-                    data={stats.updatesDistribution}
-                />
             </div>
+            <DistributionChart
+                height={300}
+                mediaType={mediaType}
+                title="Updates per Month"
+                data={stats.updatesDistribution}
+            />
 
             <MediaSpecificTopStats
                 stats={stats}

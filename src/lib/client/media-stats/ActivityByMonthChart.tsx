@@ -7,7 +7,7 @@ import {Card, CardContent, CardHeader, CardTitle} from "@/lib/client/components/
 
 
 interface ActivityByMonthChartProps {
-    title?: string;
+    title: string;
     stacked?: boolean;
     mediaType?: MediaType;
     mediaTypes: MediaType[];
@@ -15,7 +15,7 @@ interface ActivityByMonthChartProps {
 }
 
 
-export function ActivityByMonthChart({ data, mediaTypes, mediaType, stacked = false, title = "Activity by Month" }: ActivityByMonthChartProps) {
+export function ActivityByMonthChart({ title, data, mediaTypes, mediaType, stacked = false }: ActivityByMonthChartProps) {
     const displayMediaTypes = mediaType ? [mediaType] : mediaTypes;
     const height = displayMediaTypes.length > 1 ? 350 : 300;
 
