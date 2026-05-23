@@ -17,6 +17,7 @@ interface ActivityByMonthChartProps {
 
 export function ActivityByMonthChart({ data, mediaTypes, mediaType, stacked = false, title = "Activity by Month" }: ActivityByMonthChartProps) {
     const displayMediaTypes = mediaType ? [mediaType] : mediaTypes;
+    const height = displayMediaTypes.length > 1 ? 350 : 300;
 
     return (
         <Card>
@@ -26,7 +27,7 @@ export function ActivityByMonthChart({ data, mediaTypes, mediaType, stacked = fa
                 </CardTitle>
             </CardHeader>
             <CardContent>
-                <ResponsiveContainer width="100%" height={320}>
+                <ResponsiveContainer width="100%" height={height}>
                     <BarChart data={data} className="-ml-6">
                         <XAxis
                             dataKey="month"

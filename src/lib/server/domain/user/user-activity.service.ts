@@ -160,12 +160,13 @@ export class UserActivityService {
         await this.repository.deleteAssociatedActivities(userId, mediaType, mediaId);
     }
 
-    async getActivityStatsByMonth(filters: { userId?: number, mediaType?: MediaType, startYear?: number } = {}) {
+    async getActivityStatsByMonth(filters: { userId?: number, mediaType?: MediaType, startYear?: number, excludeBulkImports?: boolean } = {}) {
         const mediaTypes = filters.mediaType ? [filters.mediaType] : Object.values(MediaType);
         const activities = await this.repository.getActivityStatsByMonth({
             userId: filters.userId,
             mediaType: filters.mediaType,
             startMonth: `${filters.startYear ?? 2026}-01`,
+            excludeBulkImports: filters.excludeBulkImports,
         });
 
         const chartMap = new Map<string, MonthlyActivityChartDatum>();

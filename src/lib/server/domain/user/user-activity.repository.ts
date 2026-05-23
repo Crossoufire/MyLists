@@ -1,10 +1,15 @@
 import {MediaType} from "@/lib/utils/enums";
 import {UpdateActivity} from "@/lib/schemas";
-import {userMediaActivity} from "@/lib/server/database/schema";
+import {alias} from "drizzle-orm/sqlite-core";
 import {getDbClient} from "@/lib/server/database/async-storage";
 import {resolvePagination} from "@/lib/server/database/pagination";
+import {user, userMediaActivity} from "@/lib/server/database/schema";
 import {LogActivity, PaginatedActivityFilter} from "@/lib/types/activity.types";
-import {and, asc, count, desc, eq, gt, gte, inArray, lte, ne, or, SQL, sql, sum} from "drizzle-orm";
+import {and, asc, count, desc, eq, gt, gte, inArray, isNull, lte, ne, or, SQL, sql, sum} from "drizzle-orm";
+
+
+const BULK_IMPORT_GRACE_MONTHS = 2;
+const BULK_IMPORT_ACTIVITY_THRESHOLD = 200;
 
 
 export class UserActivityRepository {
@@ -69,12 +74,16 @@ export class UserActivityRepository {
             .orderBy(asc(userMediaActivity.lastUpdate));
     }
 
-    static async getActivityStatsByMonth(filters: { userId?: number, mediaType?: MediaType, startMonth: string }) {
-        const conditions: SQL[] = [];
+    static async getActivityStatsByMonth(filters: { userId?: number, mediaType?: MediaType, startMonth: string, excludeBulkImports?: boolean }) {
+        const conditions: SQL[] = [
+            eq(userMediaActivity.hidden, false),
+            gt(userMediaActivity.specificGained, 0),
+            gte(userMediaActivity.monthBucket, filters.startMonth),
+        ];
         if (filters.userId) conditions.push(eq(userMediaActivity.userId, filters.userId));
         if (filters.mediaType) conditions.push(eq(userMediaActivity.mediaType, filters.mediaType));
 
-        return getDbClient()
+        const query = getDbClient()
             .select({
                 mediaId: userMediaActivity.mediaId,
                 mediaType: userMediaActivity.mediaType,
@@ -82,12 +91,19 @@ export class UserActivityRepository {
                 specificGained: sum(userMediaActivity.specificGained).mapWith(Number),
             })
             .from(userMediaActivity)
-            .where(and(
-                eq(userMediaActivity.hidden, false),
-                gt(userMediaActivity.specificGained, 0),
-                gte(userMediaActivity.monthBucket, filters.startMonth),
-                ...conditions,
-            ))
+            .$dynamic();
+
+        if (filters.excludeBulkImports) {
+            const likelyBulkMonths = this._likelyBulkImportUserMonths();
+            query.leftJoin(likelyBulkMonths, and(
+                eq(userMediaActivity.userId, likelyBulkMonths.userId),
+                eq(userMediaActivity.monthBucket, likelyBulkMonths.monthBucket),
+            ));
+            conditions.push(isNull(likelyBulkMonths.userId));
+        }
+
+        return query
+            .where(and(...conditions))
             .groupBy(userMediaActivity.monthBucket, userMediaActivity.mediaType, userMediaActivity.mediaId)
             .orderBy(asc(userMediaActivity.monthBucket), asc(userMediaActivity.mediaType));
     }
@@ -268,5 +284,26 @@ export class UserActivityRepository {
                 eq(userMediaActivity.mediaId, mediaId),
                 eq(userMediaActivity.mediaType, mediaType),
             ));
+    }
+
+    private static _likelyBulkImportUserMonths() {
+        const bulkActivity = alias(userMediaActivity, "bulk_activity");
+
+        return getDbClient()
+            .select({
+                userId: bulkActivity.userId,
+                monthBucket: bulkActivity.monthBucket,
+            })
+            .from(bulkActivity)
+            .innerJoin(user, eq(user.id, bulkActivity.userId))
+            .where(and(
+                eq(bulkActivity.hidden, false),
+                gt(bulkActivity.specificGained, 0),
+                gte(bulkActivity.monthBucket, sql<string>`strftime('%Y-%m', ${user.createdAt})`),
+                sql`${bulkActivity.monthBucket} < strftime('%Y-%m', date(${user.createdAt}, 'start of month', '+' || ${BULK_IMPORT_GRACE_MONTHS} || ' months'))`,
+            ))
+            .groupBy(bulkActivity.userId, bulkActivity.monthBucket)
+            .having(gt(count(), BULK_IMPORT_ACTIVITY_THRESHOLD))
+            .as("likely_bulk_months");
     }
 }
