@@ -3,6 +3,7 @@ import {ExtractStatsByType} from "@/lib/types/stats.types";
 import {StatCard} from "@/lib/client/media-stats/StatCard";
 import {DistributionChart} from "@/lib/client/media-stats/DistributionChart";
 import {formatHours, formatNumber, formatPercent} from "@/lib/utils/formating";
+import {ActivityByMonthChart} from "@/lib/client/media-stats/ActivityByMonthChart";
 import {ChartColumn, Clock, Heart, MessageSquare, RefreshCw, Star, Tags, TrendingUp, Trophy, User} from "lucide-react";
 
 
@@ -88,6 +89,15 @@ export function OverviewDashboard({ stats }: OverviewDashboardProps) {
                     data={stats.mediaTimeDistribution}
                     title="Time (hours) Distribution by Media"
                 />
+                <ActivityByMonthChart
+                    stacked={true}
+                    title="Activity Time by Month"
+                    data={stats.activityByMonth.data}
+                    mediaTypes={stats.activityByMonth.mediaTypes}
+                />
+            </div>
+
+            <div className="grid grid-cols-1 gap-4">
                 <DistributionChart
                     height={350}
                     title="Updates per Month"

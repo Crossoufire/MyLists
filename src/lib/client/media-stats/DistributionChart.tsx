@@ -140,7 +140,7 @@ export const CustomTooltip = (props: any) => {
         return (
             <div className="bg-gray-800 px-4 py-2 rounded-md capitalize">
                 <p>Label: {label}</p>
-                <p>Value: {`${formatNumber(payload[0].value)}`}</p>
+                <p>Value: {`${formatNumber(payload[0].value, { notation: "compact", maximumFractionDigits: 1 })}`}</p>
             </div>
         );
     }

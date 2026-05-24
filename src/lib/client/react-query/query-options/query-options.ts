@@ -1,9 +1,11 @@
+import {queryOptions} from "@tanstack/react-query";
 import {NotifTab} from "@/lib/types/notifications.types";
-import {SectionParams} from "@/lib/types/activity.types";
 import {getCurrentUser} from "@/lib/server/functions/auth";
 import {getTrendsMedia} from "@/lib/server/functions/trends";
 import {CommunitySearch} from "@/lib/types/collections.types";
 import {getSearchResults} from "@/lib/server/functions/search";
+import {ActivitySearch} from "@/lib/types/activity.types";
+import {getUserStats} from "@/lib/server/functions/user-stats";
 import {getHallOfFame} from "@/lib/server/functions/hall-of-fame";
 import {getFeatureVotes} from "@/lib/server/functions/feature-votes";
 import {HighlightedMediaTab} from "@/lib/types/profile-custom.types";
@@ -11,18 +13,24 @@ import {getComingNextMedia} from "@/lib/server/functions/coming-next";
 import {ApiProviderType, JobType, MediaType} from "@/lib/utils/enums";
 import {getPlatformStats} from "@/lib/server/functions/platform-stats";
 import {getAdminAllUpdatesHistory} from "@/lib/server/functions/admin";
-import {infiniteQueryOptions, queryOptions} from "@tanstack/react-query";
 import {getUserAchievements} from "@/lib/server/functions/user-achievements";
-import {MediaListArgs, SearchType, SpecificActivityFilters} from "@/lib/schemas";
+import {MediaListArgs, SearchType} from "@/lib/schemas";
 import {getUserMediaHistory, getUserTagNames} from "@/lib/server/functions/user-media";
 import {getDailyMediadle, getMediadleSuggestions} from "@/lib/server/functions/moviedle";
 import {getNotifications, getNotificationsCount} from "@/lib/server/functions/notifications";
 import {getProfileCustomSearch, getProfileCustomSettings} from "@/lib/server/functions/user-settings";
-import {getMonthlyActivity, getSectionActivity, getSpecificActivity, getUserStats} from "@/lib/server/functions/user-stats";
 import {getGameCompatiblePlatforms, getJobDetails, getMediaDetails, getMediaDetailsToEdit} from "@/lib/server/functions/media-details";
+import {getActivityAddMediaSearch, getMonthlyActivity, getMonthlyActivityStats} from "@/lib/server/functions/user-activity";
 import {getAllUpdatesHistory, getUserProfile, getUserProfileHeader, getUsersFollowers, getUsersFollows} from "@/lib/server/functions/user-profile";
 import {getMediaListFilters, getMediaListSearchFilters, getMediaListSF, getTagsViewFn, getUserListHeaderSF} from "@/lib/server/functions/media-lists";
-import {getCommunityCollections, getEditCollectionDetails, getMediaCommunityCollections, getReadCollectionDetails, getUserCollectionMemberships, getUserCollections} from "@/lib/server/functions/collections";
+import {
+    getCommunityCollections,
+    getEditCollectionDetails,
+    getMediaCommunityCollections,
+    getReadCollectionDetails,
+    getUserCollectionMemberships,
+    getUserCollections
+} from "@/lib/server/functions/collections";
 
 
 export const authOptions = queryOptions({
@@ -213,43 +221,29 @@ export const featureVotesOptions = queryOptions({
 });
 
 
-export const monthlyActivityOptions = (username: string, search: { year: string, month: string }) => {
+export const monthlyActivityStatsOptions = (username: string, search: Pick<ActivitySearch, "year" | "month"> & { mediaType?: MediaType }) => {
     return queryOptions({
-        queryKey: ["monthly-activity", username, search],
-        queryFn: () => getMonthlyActivity({ data: { username, ...search } }),
-    })
-}
-
-
-export const specificActivityOptions = (params: SpecificActivityFilters, open: boolean) => {
-    return queryOptions({
-        queryKey: ["specific-activity", params],
-        queryFn: () => getSpecificActivity({ data: { ...params } }),
-        enabled: open,
-    })
-}
-
-
-export const sectionActivityOptions = (username: string, params: SectionParams) => {
-    return infiniteQueryOptions({
-        queryKey: ["section-activity", username, params],
-        queryFn: ({ pageParam = 0 }) => getSectionActivity({
-            data: {
-                username,
-                limit: 24,
-                offset: pageParam,
-                section: params.section,
-                year: Number(params.year),
-                month: Number(params.month),
-                mediaType: params.mediaType === "all" ? undefined : params.mediaType,
-            }
-        }),
+        queryKey: ["monthly-activity", username, "stats", search],
+        queryFn: () => getMonthlyActivityStats({ data: { username, ...search } }),
         staleTime: Infinity,
-        initialPageParam: undefined as number | undefined,
-        getNextPageParam: (lastPage, allPages) => {
-            if (!lastPage.hasMore) return undefined;
-            return allPages.reduce((acc, page) => acc + page.items.length, 0);
-        },
+    });
+}
+
+
+export const monthlyActivityOptions = (username: string, search: ActivitySearch) => {
+    return queryOptions({
+        queryKey: ["monthly-activity", username, "rows", search],
+        queryFn: () => getMonthlyActivity({ data: { username, ...search } }),
+    });
+}
+
+
+export const activityMediaAddSearchOptions = (mediaType: MediaType, query: string) => {
+    return queryOptions({
+        queryKey: ["activity-user-media-search", mediaType, query],
+        queryFn: () => getActivityAddMediaSearch({ data: { mediaType, query } }),
+        enabled: query.trim().length >= 2,
+        staleTime: 30 * 1000,
     });
 }
 

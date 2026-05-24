@@ -207,7 +207,7 @@ export const Navbar = () => {
                                             </DropdownMenuItem>
                                             <DropdownMenuItem asChild>
                                                 <Link
-                                                    to="/stats/$username/activity"
+                                                    to="/activity/$username"
                                                     params={{ username: currentUser.name }}
                                                     search={{ year: String(new Date().getFullYear()), month: String(new Date().getMonth() + 1) }}
                                                 >

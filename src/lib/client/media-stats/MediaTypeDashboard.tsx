@@ -1,15 +1,16 @@
 import {MediaType} from "@/lib/utils/enums";
 import {formatAvgRating} from "@/lib/utils/ratings";
+import {getMediaNaming} from "@/lib/utils/stats-utils";
 import {ExtractStatsByType} from "@/lib/types/stats.types";
 import {StatCard} from "@/lib/client/media-stats/StatCard";
 import {RatingsChart} from "@/lib/client/media-stats/RatingsChart";
-import {getMediaNaming} from "@/lib/client/media-stats/stats-utils";
 import {MainThemeIcon} from "@/lib/client/components/general/MainIcons";
 import {TopAffinityCard} from "@/lib/client/media-stats/TopAffinityCard";
-import {ChartColumn, Clock, DollarSign, Heart, Play, SquareStack, Star, Tags, XLineTop} from "lucide-react";
 import {DistributionChart} from "@/lib/client/media-stats/DistributionChart";
 import {StatusDistribution} from "@/lib/client/media-stats/StatusDistribution";
+import {ActivityByMonthChart} from "@/lib/client/media-stats/ActivityByMonthChart";
 import {capitalize, formatCurrency, formatHours, formatNumber} from "@/lib/utils/formating";
+import {ChartColumn, Clock, DollarSign, Heart, Play, SquareStack, Star, Tags, XLineTop} from "lucide-react";
 
 
 interface MediaTypeDashboardProps {
@@ -85,6 +86,12 @@ export function MediaTypeDashboard({ stats }: MediaTypeDashboardProps) {
                     title={getMediaNaming(mediaType).durationDistribution}
                     unit={getMediaNaming(mediaType).durationDistributionUnit}
                 />
+                <ActivityByMonthChart
+                    mediaType={mediaType}
+                    title="Activity Time by Month"
+                    data={stats.activityByMonth.data}
+                    mediaTypes={stats.activityByMonth.mediaTypes}
+                />
                 <DistributionChart
                     height={300}
                     enableBinning={true}
@@ -98,13 +105,13 @@ export function MediaTypeDashboard({ stats }: MediaTypeDashboardProps) {
                     ratingSystem={ratingSystem}
                     ratings={specificMediaStats.ratings}
                 />
-                <DistributionChart
-                    height={300}
-                    mediaType={mediaType}
-                    title="Updates per Month"
-                    data={stats.updatesDistribution}
-                />
             </div>
+            <DistributionChart
+                height={300}
+                mediaType={mediaType}
+                title="Updates per Month"
+                data={stats.updatesDistribution}
+            />
 
             <MediaSpecificTopStats
                 stats={stats}

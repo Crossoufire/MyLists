@@ -183,6 +183,13 @@
       "when": 1779141600000,
       "tag": "0025_remove_negative_activity",
       "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "6",
+      "when": 1779141600001,
+      "tag": "0026_activity_recap_controls",
+      "breakpoints": true
     }
   ]
 }
