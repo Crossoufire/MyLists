@@ -20,7 +20,7 @@ export function MonthlyActivityStats({ username, year, month, mediaType }: Month
 
     return (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-7">
-            <div className="flex min-h-20 w-full min-w-0 flex-col justify-between rounded-md border bg-background px-3 py-2">
+            <div className="flex min-h-20 w-full min-w-0 flex-col justify-between rounded-lg border bg-background px-3 py-2">
                 <div className="flex min-w-0 items-center justify-between gap-2">
                     <div className="flex min-w-0 items-center gap-2">
                         <Clock className="text-app-accent" size={15}/>
@@ -38,7 +38,7 @@ export function MonthlyActivityStats({ username, year, month, mediaType }: Month
                 const unitLabel = getActivityUnitLabel(stat.mediaType, "short");
 
                 return (
-                    <div key={stat.mediaType} className="flex min-h-20 w-full min-w-0 flex-col justify-between rounded-md border bg-background px-3 py-2">
+                    <div key={stat.mediaType} className="flex min-h-20 w-full min-w-0 flex-col justify-between rounded-lg border bg-background px-3 py-2">
                         <div className="flex min-w-0 items-center justify-between gap-2">
                             <div className="flex min-w-0 items-center gap-2">
                                 <MainThemeIcon type={stat.mediaType} size={15}/>
