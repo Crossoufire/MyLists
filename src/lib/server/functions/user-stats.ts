@@ -4,36 +4,42 @@ import {tryNotFound} from "@/lib/utils/try-not-found";
 import {getContainer} from "@/lib/server/core/container";
 import {FormattedError} from "@/lib/utils/error-classes";
 import {AdvancedMediaStats} from "@/lib/types/stats.types";
-import {userStatsCacheMiddleware} from "@/lib/server/middlewares/caching";
 import {privateAuthZMiddleware} from "@/lib/server/middlewares/authorization";
+import {getUserStatsCacheKey, ONE_HOUR_CACHE_TTL_MS} from "@/lib/server/core/cache-keys";
 
 
 export const getUserStats = createServerFn({ method: "GET" })
-    .middleware([privateAuthZMiddleware, userStatsCacheMiddleware])
+    .middleware([privateAuthZMiddleware])
     .inputValidator(tryNotFound(getUserStatsSchema))
     .handler(async ({ data: { mediaType }, context: { user } }) => {
-        const userStatsService = await getContainer().then(c => c.services.userStats);
-        const activatedMediaTypes = user.userMediaSettings.filter((s) => s.active).map((s) => s.mediaType)
+        const container = await getContainer();
+        const userStatsService = container.services.userStats;
+        const activatedMediaTypes = user.userMediaSettings.filter(s => s.active).map(s => s.mediaType);
 
-        if (!mediaType) {
-            const userStats = await userStatsService.userAdvancedSummaryStats(user.id);
-            return {
-                ...userStats,
-                activatedMediaTypes,
-                mediaType: undefined,
-                ratingSystem: user.ratingSystem,
-            };
-        }
+        return container.cacheManager.wrap(
+            getUserStatsCacheKey(user.id, { mediaType }), async () => {
+                if (!mediaType) {
+                    const userStats = await userStatsService.userAdvancedSummaryStats(user.id);
+                    return {
+                        ...userStats,
+                        activatedMediaTypes,
+                        mediaType: undefined,
+                        ratingSystem: user.ratingSystem,
+                    };
+                }
 
-        if (user.userMediaSettings.find((s) => s.mediaType === mediaType)?.active === false) {
-            throw new FormattedError("MediaType not activated");
-        }
+                if (user.userMediaSettings.find((s) => s.mediaType === mediaType)?.active === false) {
+                    throw new FormattedError("MediaType not activated");
+                }
 
-        const mediaStats = await userStatsService.userAdvancedMediaStats(user.id, mediaType);
-        return {
-            ...mediaStats,
-            mediaType,
-            activatedMediaTypes,
-            ratingSystem: user.ratingSystem,
-        } as AdvancedMediaStats;
+                const mediaStats = await userStatsService.userAdvancedMediaStats(user.id, mediaType);
+                return {
+                    ...mediaStats,
+                    mediaType,
+                    activatedMediaTypes,
+                    ratingSystem: user.ratingSystem,
+                } as AdvancedMediaStats;
+            },
+            { ttl: ONE_HOUR_CACHE_TTL_MS },
+        );
     });

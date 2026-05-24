@@ -11,6 +11,7 @@ import {removeAllOrphansMediaTask} from "@/lib/server/tasks/definitions/remove-a
 import {calculateAchievementsTask} from "@/lib/server/tasks/definitions/calculate-achievements.task";
 import {computeAllUsersStatsTask} from "@/lib/server/tasks/definitions/compute-all-users-stats.task";
 import {addGenresToBooksUsingLlmTask} from "@/lib/server/tasks/definitions/add-books-genres-llm.task";
+import {precomputePlatformStatsTask} from "@/lib/server/tasks/definitions/precompute-platform-stats.task";
 import {deleteNonActivatedUsersTask} from "@/lib/server/tasks/definitions/delete-non-activated-users.task";
 import {removeUnusedMediaCoversTask} from "@/lib/server/tasks/definitions/remove-unused-media-covers.task";
 import {createMediaNotificationsTask} from "@/lib/server/tasks/definitions/create-media-notifications.task";
@@ -30,6 +31,7 @@ export const taskRegistry = {
     [removeAllOrphansMediaTask.name]: removeAllOrphansMediaTask,
     [deleteNonActivatedUsersTask.name]: deleteNonActivatedUsersTask,
     [removeUnusedMediaCoversTask.name]: removeUnusedMediaCoversTask,
+    [precomputePlatformStatsTask.name]: precomputePlatformStatsTask,
     [createMediaNotificationsTask.name]: createMediaNotificationsTask,
     [addGenresToBooksUsingLlmTask.name]: addGenresToBooksUsingLlmTask,
     [removeUnusedProfileImagesTask.name]: removeUnusedProfileImagesTask,
