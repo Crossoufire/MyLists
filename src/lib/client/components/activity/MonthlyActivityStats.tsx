@@ -1,4 +1,5 @@
 import {Clock} from "lucide-react";
+import {MediaType} from "@/lib/utils/enums";
 import {formatMinutes} from "@/lib/utils/formating";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {MainThemeIcon} from "@/lib/client/components/general/MainIcons";
@@ -10,11 +11,12 @@ interface MonthlyActivityStatsProps {
     year: string;
     month: string;
     username: string;
+    mediaType?: MediaType;
 }
 
 
-export function MonthlyActivityStats({ username, year, month }: MonthlyActivityStatsProps) {
-    const stats = useSuspenseQuery(monthlyActivityStatsOptions(username, { year, month })).data;
+export function MonthlyActivityStats({ username, year, month, mediaType }: MonthlyActivityStatsProps) {
+    const stats = useSuspenseQuery(monthlyActivityStatsOptions(username, { year, month, mediaType })).data;
 
     return (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-7">

@@ -32,8 +32,8 @@ export class UserActivityService {
     }
 
     async getMonthlyActivityStats(userId: number, filters: MonthlyActivityStatsFilters) {
-        const mediaTypes = Object.values(MediaType);
         const timeBucket = `${filters.year}-${zeroPad(filters.month)}`;
+        const mediaTypes = filters.mediaType ? [filters.mediaType] : Object.values(MediaType);
 
         const activities = await this.repository.getStatsActivities(userId, mediaTypes, timeBucket);
         const mediaDetailsByType = await this._getMediaDetailsByType(activities);

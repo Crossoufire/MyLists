@@ -4,27 +4,28 @@ import {MonthlyActivityContent} from "@/lib/client/components/activity/MonthlyAc
 import {monthlyActivityOptions, monthlyActivityStatsOptions} from "@/lib/client/react-query/query-options/query-options";
 
 
-export const Route = createFileRoute("/_main/_private/activity/$username/_header/")({
+export const Route = createFileRoute("/_main/_private/list/$mediaType/$username/_header/activity")({
     validateSearch: (search) => search as ActivitySearch,
     loaderDeps: ({ search }) => ({ search }),
-    loader: async ({ context: { queryClient }, params: { username }, deps: { search } }) => {
+    loader: async ({ context: { queryClient }, params: { mediaType, username }, deps: { search } }) => {
         await Promise.all([
-            queryClient.ensureQueryData(monthlyActivityOptions(username, search)),
-            queryClient.ensureQueryData(monthlyActivityStatsOptions(username, { year: search.year, month: search.month })),
+            queryClient.ensureQueryData(monthlyActivityOptions(username, { ...search, activeTab: mediaType })),
+            queryClient.ensureQueryData(monthlyActivityStatsOptions(username, { year: search.year, month: search.month, mediaType })),
         ]);
     },
-    component: MonthlyActivityPage,
+    component: ListActivityPage,
 });
 
 
-function MonthlyActivityPage() {
+function ListActivityPage() {
     const filters = Route.useSearch();
-    const { username } = Route.useParams();
+    const { mediaType, username } = Route.useParams();
 
     return (
         <MonthlyActivityContent
             filters={filters}
             username={username}
+            fixedMediaType={mediaType}
         />
     );
 }

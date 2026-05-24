@@ -59,9 +59,8 @@ function ListHeader() {
             const month = new Date().getMonth() + 1;
 
             return navigate({
-                to: "/activity/$username",
-                params: { username },
-                search: { year: String(year), month: String(month), activeTab: mediaType },
+                to: `/list/${mediaType}/${username}/activity`,
+                search: { year: String(year), month: String(month) },
             });
         }
 

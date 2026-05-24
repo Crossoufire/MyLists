@@ -24,6 +24,8 @@ export const monthlyActivityStatsSchema = monthlyActivitySchema.pick({
     year: true,
     month: true,
     username: true,
+}).extend({
+    mediaType: z.enum(MediaType).optional(),
 });
 
 export const getSpecificActivitySchema = z.object({

@@ -221,7 +221,7 @@ export const featureVotesOptions = queryOptions({
 });
 
 
-export const monthlyActivityStatsOptions = (username: string, search: Pick<ActivitySearch, "year" | "month">) => {
+export const monthlyActivityStatsOptions = (username: string, search: Pick<ActivitySearch, "year" | "month"> & { mediaType?: MediaType }) => {
     return queryOptions({
         queryKey: ["monthly-activity", username, "stats", search],
         queryFn: () => getMonthlyActivityStats({ data: { username, ...search } }),
