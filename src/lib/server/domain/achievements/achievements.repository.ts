@@ -6,6 +6,7 @@ import {getDbClient} from "@/lib/server/database/async-storage";
 import {AchievementSeedData} from "@/lib/types/achievements.types";
 import {and, asc, count, desc, eq, inArray, max, notInArray, SQL, sql} from "drizzle-orm";
 import {achievement, achievementTier, user, userAchievement} from "@/lib/server/database/schema";
+import {UserStatsRepository} from "@/lib/server/domain/user/user-stats.repository";
 
 
 export class AchievementsRepository {
@@ -154,6 +155,7 @@ export class AchievementsRepository {
 
     static async getUserAchievementStats(userId: number) {
         const tierOrder = this._getSQLTierOrdering();
+        const activeMedia = await UserStatsRepository.userActiveMediaSettings(userId);
 
         const subq = getDbClient()
             .select({
@@ -185,6 +187,7 @@ export class AchievementsRepository {
                 mediaType: achievement.mediaType,
             })
             .from(achievement)
+            .where(inArray(achievement.mediaType, activeMedia.map(item => item.mediaType)))
             .groupBy(achievement.mediaType);
 
         return { completedResult, totalAchievementsResult };
