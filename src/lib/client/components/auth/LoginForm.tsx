@@ -4,9 +4,9 @@ import authClient from "@/lib/utils/auth-client";
 import {FaGithub, FaGoogle} from "react-icons/fa";
 import {useQueryClient} from "@tanstack/react-query";
 import {Input} from "@/lib/client/components/ui/input";
+import {Link, useRouter} from "@tanstack/react-router";
 import {Button} from "@/lib/client/components/ui/button";
 import {Separator} from "@/lib/client/components/ui/separator";
-import {Link, useNavigate, useRouter} from "@tanstack/react-router";
 import {authOptions} from "@/lib/client/react-query/query-options/query-options";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/lib/client/components/ui/form";
 import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle} from "@/lib/client/components/ui/dialog";
@@ -26,7 +26,6 @@ type FormValues = {
 
 export const LoginForm = ({ open, onOpenChange }: LoginFormProps) => {
     const router = useRouter();
-    const navigate = useNavigate();
     const queryClient = useQueryClient();
     const form = useForm<FormValues>({
         shouldFocusError: false,
@@ -53,11 +52,10 @@ export const LoginForm = ({ open, onOpenChange }: LoginFormProps) => {
                     form.setError("root", { type: "value", message: ctx.error.message });
                 }
             },
-            onSuccess: async (data: any) => {
+            onSuccess: async () => {
                 await queryClient.invalidateQueries({ queryKey: authOptions.queryKey });
                 await router.invalidate();
                 onOpenChange(false);
-                await navigate({ to: "/profile/$username", params: { username: data.user.name }, replace: true });
             },
         });
     };

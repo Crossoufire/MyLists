@@ -62,10 +62,10 @@ export const Navbar = () => {
 
     const logoutUser = async () => {
         await authClient.signOut();
-        await router.invalidate();
         queryClient.setQueryData(authOptions.queryKey, null);
+        await router.invalidate();
         await navigate({ to: "/", replace: true });
-        queryClient.removeQueries();
+        queryClient.clear();
     };
 
     const onFeaturesClick = async () => {
