@@ -5,16 +5,25 @@ import authClient from "@/lib/utils/auth-client";
 import {useAuth} from "@/lib/client/hooks/use-auth";
 import {useQueryClient} from "@tanstack/react-query";
 import {Button} from "@/lib/client/components/ui/button";
+import {Link, useNavigate} from "@tanstack/react-router";
 import {isAtLeastRole, RoleType} from "@/lib/utils/enums";
 import {LoginForm} from "@/lib/client/components/auth/LoginForm";
 import {SearchBar} from "@/lib/client/components/navbar/SearchBar";
-import {Link, useNavigate, useRouter} from "@tanstack/react-router";
 import {RegisterForm} from "@/lib/client/components/auth/RegisterForm";
 import {ProfileIcon} from "@/lib/client/components/general/ProfileIcon";
 import {Notifications} from "@/lib/client/components/navbar/Notifications";
 import {authOptions} from "@/lib/client/react-query/query-options/query-options";
 import {MainThemeIcon, PrivacyIcon} from "@/lib/client/components/general/MainIcons";
 import {useFeatureFlagMutation} from "@/lib/client/react-query/query-mutations/user.mutations";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuGroup,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger
+} from "@/lib/client/components/ui/dropdown-menu";
 import {
     Activity,
     Award,
@@ -34,15 +43,6 @@ import {
     X,
     Zap
 } from "lucide-react";
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuGroup,
-    DropdownMenuItem,
-    DropdownMenuLabel,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger
-} from "@/lib/client/components/ui/dropdown-menu";
 
 
 const navStyle = cva("inline-flex items-center justify-center px-4 text-sm font-medium hover:text-app-accent " +
@@ -51,7 +51,6 @@ const navStyle = cva("inline-flex items-center justify-center px-4 text-sm font-
 
 
 export const Navbar = () => {
-    const router = useRouter();
     const navigate = useNavigate();
     const { currentUser } = useAuth();
     const queryClient = useQueryClient();
@@ -63,9 +62,8 @@ export const Navbar = () => {
     const logoutUser = async () => {
         await authClient.signOut();
         queryClient.setQueryData(authOptions.queryKey, null);
-        await router.invalidate();
         await navigate({ to: "/", replace: true });
-        queryClient.clear();
+        queryClient.removeQueries({ predicate: (query) => query.queryKey[0] !== authOptions.queryKey[0] });
     };
 
     const onFeaturesClick = async () => {

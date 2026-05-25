@@ -1,15 +1,14 @@
 import {toast} from "sonner";
 import {Trash2} from "lucide-react";
 import authClient from "@/lib/utils/auth-client";
+import {useNavigate} from "@tanstack/react-router";
 import {useQueryClient} from "@tanstack/react-query";
 import {Button} from "@/lib/client/components/ui/button";
-import {useNavigate, useRouter} from "@tanstack/react-router";
 import {authOptions} from "@/lib/client/react-query/query-options/query-options";
 import {useDeleteAccountMutation} from "@/lib/client/react-query/query-mutations/user.mutations";
 
 
 export const DangerForm = () => {
-    const router = useRouter();
     const navigate = useNavigate();
     const queryClient = useQueryClient();
     const deleteAccountMutation = useDeleteAccountMutation();
@@ -25,10 +24,9 @@ export const DangerForm = () => {
             onError: () => toast.error("An error occurred deleting your account. Please try again later."),
             onSuccess: async () => {
                 await authClient.signOut();
-                await router.invalidate();
                 queryClient.setQueryData(authOptions.queryKey, null);
                 await navigate({ to: "/", replace: true });
-                queryClient.removeQueries();
+                queryClient.removeQueries({ predicate: (query) => query.queryKey[0] !== authOptions.queryKey[0] });
                 toast.success("Account successfully deleted");
             }
         });

@@ -4,7 +4,7 @@ import authClient from "@/lib/utils/auth-client";
 import {FaGithub, FaGoogle} from "react-icons/fa";
 import {useQueryClient} from "@tanstack/react-query";
 import {Input} from "@/lib/client/components/ui/input";
-import {Link, useRouter} from "@tanstack/react-router";
+import {Link, useNavigate} from "@tanstack/react-router";
 import {Button} from "@/lib/client/components/ui/button";
 import {Separator} from "@/lib/client/components/ui/separator";
 import {authOptions} from "@/lib/client/react-query/query-options/query-options";
@@ -25,7 +25,7 @@ type FormValues = {
 
 
 export const LoginForm = ({ open, onOpenChange }: LoginFormProps) => {
-    const router = useRouter();
+    const navigate = useNavigate();
     const queryClient = useQueryClient();
     const form = useForm<FormValues>({
         shouldFocusError: false,
@@ -53,9 +53,11 @@ export const LoginForm = ({ open, onOpenChange }: LoginFormProps) => {
                 }
             },
             onSuccess: async () => {
-                await queryClient.invalidateQueries({ queryKey: authOptions.queryKey });
-                await router.invalidate();
+                const currentUser = await queryClient.fetchQuery({ ...authOptions, staleTime: 0 });
                 onOpenChange(false);
+                if (currentUser) {
+                    await navigate({ to: "/profile/$username", params: { username: currentUser.name }, replace: true });
+                }
             },
         });
     };
