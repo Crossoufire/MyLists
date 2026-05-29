@@ -11,7 +11,7 @@ interface MediaInfoGridItemProps {
 
 
 export const MediaInfoGridItem = ({ label, children }: MediaInfoGridItemProps) => (
-    <div key={label} className="space-y-1">
+    <div className="space-y-1">
         <span className="text-xs uppercase tracking-wider text-muted-foreground">
             {label}
         </span>

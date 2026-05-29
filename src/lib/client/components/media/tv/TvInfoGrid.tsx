@@ -20,7 +20,7 @@ export const TvInfoGrid = ({ mediaType, media }: TvDetailsProps<typeof MediaType
             <MediaInfoGridItem label="Created By">
                 {creators.length > 0 ?
                     creators.map((c) =>
-                        <Link to="/details/$mediaType/$job/$name" params={{ mediaType, job: "creator", name: c.name }}>
+                        <Link key={c.name} to="/details/$mediaType/$job/$name" params={{ mediaType, job: "creator", name: c.name }}>
                             <div key={c.name}>
                                 {c.name}
                             </div>
