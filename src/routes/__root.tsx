@@ -94,8 +94,8 @@ function RootComponent() {
             <PostHogProvider
                 apiKey={clientEnv.VITE_PUBLIC_POSTHOG_KEY}
                 options={{
-                    defaults: "2025-11-30",
-                    capture_exceptions: true,
+                    defaults: "2026-01-30",
+                    disable_session_recording: true,
                     capture_pageview: "history_change",
                     person_profiles: "identified_only",
                     api_host: clientEnv.VITE_PUBLIC_POSTHOG_HOST,
