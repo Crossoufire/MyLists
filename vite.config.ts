@@ -7,6 +7,9 @@ import {tanstackStart} from "@tanstack/react-start/plugin/vite";
 import react, {reactCompilerPreset} from "@vitejs/plugin-react";
 
 
+const isDev = process.env.NODE_ENV !== "production";
+
+
 export default defineConfig({
     resolve: {
         tsconfigPaths: true,
@@ -14,8 +17,60 @@ export default defineConfig({
             "@": path.resolve(__dirname, "./src"),
         },
     },
+    build: {
+        rollupOptions: {
+            output: {
+                manualChunks: (id) => {
+                    if (
+                        id.includes("/node_modules/react/") ||
+                        id.includes("/node_modules/react-dom/") ||
+                        id.includes("/node_modules/scheduler/")
+                    ) {
+                        return "react";
+                    }
+
+                    if (
+                        id.includes("/node_modules/@tanstack/react-router") ||
+                        id.includes("/node_modules/@tanstack/router-core") ||
+                        id.includes("/node_modules/@tanstack/history")
+                    ) {
+                        return "tanstack-router";
+                    }
+
+                    if (
+                        id.includes("/node_modules/@tanstack/react-query") ||
+                        id.includes("/node_modules/@tanstack/query-core")
+                    ) {
+                        return "tanstack-query";
+                    }
+
+                    if (id.includes("/node_modules/recharts")) {
+                        return "charts";
+                    }
+
+                    if (id.includes("/node_modules/posthog-js")) {
+                        return "analytics";
+                    }
+
+                    if (
+                        id.includes("/node_modules/lucide-react") ||
+                        id.includes("/node_modules/react-icons")
+                    ) {
+                        return "icons";
+                    }
+
+                    if (
+                        id.includes("/node_modules/@radix-ui/") ||
+                        id.includes("/node_modules/radix-ui/")
+                    ) {
+                        return "radix-ui";
+                    }
+                },
+            },
+        },
+    },
     plugins: [
-        devtools(),
+        ...(isDev ? [devtools()] : []),
         tanstackStart({
             spa: {
                 enabled: true,
@@ -23,6 +78,17 @@ export default defineConfig({
             router: {
                 semicolons: true,
                 quoteStyle: "double",
+                codeSplittingOptions: {
+                    defaultBehavior: [
+                        [
+                            "component",
+                            "pendingComponent",
+                            "errorComponent",
+                            "notFoundComponent",
+                            "loader",
+                        ],
+                    ],
+                },
             },
         }),
         react(),
