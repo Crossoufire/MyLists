@@ -297,6 +297,10 @@ export class CollectionsService {
 
         // Handle non-authed user
         if (!actorId) {
+            if (collection.privacy === PrivacyType.RESTRICTED && collection.ownerPrivacy === PrivacyType.PUBLIC) {
+                return;
+            }
+
             if (collection.privacy !== PrivacyType.PUBLIC) {
                 throw new UnauthorizedError(collection.ownerPrivacy === PrivacyType.RESTRICTED ? "restricted" : "private");
             }
