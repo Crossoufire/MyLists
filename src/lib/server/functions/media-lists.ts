@@ -11,7 +11,7 @@ import {authorizationMiddleware, resolveTargetUserMiddleware} from "@/lib/server
 
 export const getUserListHeaderSF = createServerFn({ method: "GET" })
     .middleware([resolveTargetUserMiddleware])
-    .inputValidator(z.object({ username: z.string(), mediaType: z.enum(MediaType) }))
+    .inputValidator(tryNotFound(z.object({ username: z.string(), mediaType: z.enum(MediaType) })))
     .handler(async ({ data: { mediaType }, context: { currentUser, targetUser } }) => {
         const container = await getContainer();
         const userService = container.services.user;
