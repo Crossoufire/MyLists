@@ -189,7 +189,7 @@ export class UserRepository {
                 eq(currentUserFollows.followedId, user.id),
                 eq(currentUserFollows.followerId, currentUserId ?? -1),
             ))
-            .where(eq(followers.followedId, userId))
+            .where(and(eq(followers.followedId, userId), eq(followers.status, SocialState.ACCEPTED)))
             .orderBy(asc(user.name))
             .limit(limit);
 
@@ -218,7 +218,8 @@ export class UserRepository {
                 eq(currentUserFollows.followedId, user.id),
                 eq(currentUserFollows.followerId, currentUserId ?? -1),
             ))
-            .where(eq(followers.followerId, userId))
+            .where(and(eq(followers.followerId, userId), eq(followers.status, SocialState.ACCEPTED),
+            ))
             .orderBy(asc(user.name))
             .limit(limit);
 

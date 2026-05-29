@@ -10,8 +10,8 @@ import {getDbClient} from "@/lib/server/database/async-storage";
 import {ProviderSearchResult} from "@/lib/types/provider.types";
 import {MediaSchemaConfig} from "@/lib/types/media.config.types";
 import {AddedMediaDetails, Tag} from "@/lib/types/media-common.types";
-import {JobType, MediaType, Status, TagAction} from "@/lib/utils/enums";
 import {resolvePagination, resolveSorting} from "@/lib/server/database/pagination";
+import {JobType, MediaType, SocialState, Status, TagAction} from "@/lib/utils/enums";
 import {UserFollowsMediaData, UserMediaStats, UserMediaWithTags} from "@/lib/types/user-media.types";
 import {animeList, booksList, collectionItems, followers, gamesList, mangaList, moviesList, seriesList, user} from "@/lib/server/database/schema";
 import {ExpandedListFilters, FilterDefinition, FilterDefinitions, ListFilterDefinition, MediaListData, UserTag} from "@/lib/types/media-list.types";
@@ -433,7 +433,7 @@ export abstract class BaseRepository<TConfig extends MediaSchemaConfig> {
             .from(followers)
             .innerJoin(user, eq(user.id, followers.followedId))
             .innerJoin(listTable, eq(listTable.userId, followers.followedId))
-            .where(and(eq(followers.followerId, userId), eq(listTable.mediaId, mediaId)))
+            .where(and(eq(followers.followerId, userId), eq(followers.status, SocialState.ACCEPTED), eq(listTable.mediaId, mediaId)))
             .orderBy(asc(user.name));
 
         return inFollowsLists;

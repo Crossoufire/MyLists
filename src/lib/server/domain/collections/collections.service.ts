@@ -287,8 +287,6 @@ export class CollectionsService {
     }
 
     private async _assertVisible(collection: AssertCollection, isOwner: boolean, isModerator: boolean, actorId?: number) {
-        console.log({ collection, isOwner, isModerator, actorId });
-
         // Owners and moderators have instant access
         if (isOwner || isModerator) return;
 

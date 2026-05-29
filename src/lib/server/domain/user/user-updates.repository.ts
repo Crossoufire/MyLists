@@ -3,8 +3,8 @@ import {alias} from "drizzle-orm/sqlite-core";
 import {paginate} from "@/lib/server/database/pagination";
 import {LogUpdateParams} from "@/lib/types/user-updates.types";
 import {getDbClient} from "@/lib/server/database/async-storage";
-import {MediaType, PrivacyType, UpdateType} from "@/lib/utils/enums";
 import {followers, user, userMediaUpdate} from "@/lib/server/database/schema";
+import {MediaType, PrivacyType, SocialState, UpdateType} from "@/lib/utils/enums";
 import {and, count, desc, eq, getTableColumns, gt, gte, inArray, isNull, like, or, SQL, sql} from "drizzle-orm";
 
 
@@ -80,14 +80,14 @@ export class UserUpdatesRepository {
         const followedByB = getDbClient()
             .select({ id: followers.followedId })
             .from(followers)
-            .where(eq(followers.followerId, profileOwnerId));
+            .where(and(eq(followers.followerId, profileOwnerId), eq(followers.status, SocialState.ACCEPTED)));
 
         // Subquery: People that Visitor (User A) follows (Rule 3)
         const followedByA = visitorId
             ? getDbClient()
                 .select({ id: followers.followedId })
                 .from(followers)
-                .where(eq(followers.followerId, visitorId))
+                .where(and(eq(followers.followerId, visitorId), eq(followers.status, SocialState.ACCEPTED)))
             : null;
 
         // Define privacy filters based on rules
