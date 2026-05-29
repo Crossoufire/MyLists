@@ -4,7 +4,7 @@ import {FormattedError} from "@/lib/utils/error-classes";
 import {isAtLeastRole, MediaType, RoleType} from "@/lib/utils/enums";
 import {tryFormZodError, tryNotFound} from "@/lib/utils/try-not-found";
 import {transactionMiddleware} from "@/lib/server/middlewares/transaction";
-import {optionalAuthMiddleware, requiredAuthAndManagerRoleMiddleware, requiredAuthMiddleware} from "@/lib/server/middlewares/authentication";
+import {publicAuthMiddleware, requiredAuthAndManagerRoleMiddleware, requiredAuthMiddleware} from "@/lib/server/middlewares/authentication";
 import {
     editMediaDetailsSchema,
     jobDetailsSchema,
@@ -17,7 +17,7 @@ import {
 
 
 export const getMediaDetails = createServerFn({ method: "GET" })
-    .middleware([optionalAuthMiddleware, transactionMiddleware])
+    .middleware([publicAuthMiddleware, transactionMiddleware])
     .inputValidator(tryNotFound(mediaDetailsSchema))
     .handler(async ({ data: { mediaType, mediaId, external }, context: { currentUser } }) => {
         const container = await getContainer();
@@ -32,6 +32,16 @@ export const getMediaDetails = createServerFn({ method: "GET" })
         } = await mediaService.getMediaAndUserDetails(currentUser?.id, mediaId, external, mediaProviderService);
 
         return { media, userMedia, followsData, similarMedia };
+    });
+
+
+export const getJobDetails = createServerFn({ method: "GET" })
+    .middleware([publicAuthMiddleware])
+    .inputValidator(tryNotFound(jobDetailsSchema))
+    .handler(async ({ data: { mediaType, job, name, search }, context: { currentUser } }) => {
+        const container = await getContainer();
+        const mediaService = container.registries.mediaService.getService(mediaType);
+        return mediaService.getMediaJobDetails(job, name, search, currentUser?.id);
     });
 
 
@@ -67,16 +77,6 @@ export const refreshMediaDetails = createServerFn({ method: "POST" })
     });
 
 
-export const getMediaDetailsToEdit = createServerFn({ method: "GET" })
-    .middleware([requiredAuthAndManagerRoleMiddleware, transactionMiddleware])
-    .inputValidator(tryNotFound(mediaDetailsToEditSchema))
-    .handler(async ({ data: { mediaType, mediaId } }) => {
-        const container = await getContainer();
-        const mediaService = container.registries.mediaService.getService(mediaType);
-        return mediaService.getMediaEditableFields(mediaId);
-    });
-
-
 export const getGameCompatiblePlatforms = createServerFn({ method: "GET" })
     .middleware([requiredAuthMiddleware])
     .inputValidator(tryNotFound(mediaActionSchema))
@@ -92,16 +92,6 @@ export const getGameCompatiblePlatforms = createServerFn({ method: "GET" })
     });
 
 
-export const postEditMediaDetails = createServerFn({ method: "POST" })
-    .middleware([requiredAuthAndManagerRoleMiddleware, transactionMiddleware])
-    .inputValidator(tryFormZodError(editMediaDetailsSchema))
-    .handler(async ({ data: { mediaType, mediaId, payload } }) => {
-        const container = await getContainer();
-        const mediaService = container.registries.mediaService.getService(mediaType);
-        return mediaService.updateMediaEditableFields(mediaId, payload);
-    });
-
-
 export const postUpdateBookCover = createServerFn({ method: "POST" })
     .middleware([requiredAuthMiddleware, transactionMiddleware])
     .inputValidator(tryFormZodError(updateBookCoverSchema))
@@ -112,11 +102,21 @@ export const postUpdateBookCover = createServerFn({ method: "POST" })
     });
 
 
-export const getJobDetails = createServerFn({ method: "GET" })
-    .middleware([optionalAuthMiddleware])
-    .inputValidator(tryNotFound(jobDetailsSchema))
-    .handler(async ({ data: { mediaType, job, name, search }, context: { currentUser } }) => {
+export const getMediaDetailsToEdit = createServerFn({ method: "GET" })
+    .middleware([requiredAuthAndManagerRoleMiddleware, transactionMiddleware])
+    .inputValidator(tryNotFound(mediaDetailsToEditSchema))
+    .handler(async ({ data: { mediaType, mediaId } }) => {
         const container = await getContainer();
         const mediaService = container.registries.mediaService.getService(mediaType);
-        return mediaService.getMediaJobDetails(job, name, search, currentUser?.id);
+        return mediaService.getMediaEditableFields(mediaId);
+    });
+
+
+export const postEditMediaDetails = createServerFn({ method: "POST" })
+    .middleware([requiredAuthAndManagerRoleMiddleware, transactionMiddleware])
+    .inputValidator(tryFormZodError(editMediaDetailsSchema))
+    .handler(async ({ data: { mediaType, mediaId, payload } }) => {
+        const container = await getContainer();
+        const mediaService = container.registries.mediaService.getService(mediaType);
+        return mediaService.updateMediaEditableFields(mediaId, payload);
     });

@@ -3,11 +3,11 @@ import {getContainer} from "@/lib/server/core/container";
 import {tryFormZodError} from "@/lib/utils/try-not-found";
 import {transactionMiddleware} from "@/lib/server/middlewares/transaction";
 import {postFeatureDeleteSchema, postFeatureRequestSchema, postFeatureStatusSchema, postFeatureVoteSchema} from "@/lib/schemas";
-import {optionalAuthMiddleware, requiredAuthAndAdminRoleMiddleware, requiredAuthMiddleware} from "@/lib/server/middlewares/authentication";
+import {publicAuthMiddleware, requiredAuthAndAdminRoleMiddleware, requiredAuthMiddleware} from "@/lib/server/middlewares/authentication";
 
 
 export const getFeatureVotes = createServerFn({ method: "GET" })
-    .middleware([optionalAuthMiddleware])
+    .middleware([publicAuthMiddleware])
     .handler(async ({ context: { currentUser } }) => {
         const featureVotesService = await getContainer().then((c) => c.services.featureVotes);
         return featureVotesService.getFeatureVotes(currentUser?.id);

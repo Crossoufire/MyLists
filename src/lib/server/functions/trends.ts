@@ -1,12 +1,12 @@
 import {MediaType} from "@/lib/utils/enums";
 import {createServerFn} from "@tanstack/react-start";
 import {getContainer} from "@/lib/server/core/container";
-import {optionalAuthMiddleware} from "@/lib/server/middlewares/authentication";
+import {publicAuthMiddleware} from "@/lib/server/middlewares/authentication";
 import {getTrendsCacheKey, ONE_DAY_CACHE_TTL_MS} from "@/lib/server/core/cache-keys";
 
 
 export const getTrendsMedia = createServerFn({ method: "GET" })
-    .middleware([optionalAuthMiddleware])
+    .middleware([publicAuthMiddleware])
     .handler(async () => {
         const container = await getContainer();
 

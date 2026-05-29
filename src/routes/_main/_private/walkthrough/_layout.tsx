@@ -1,22 +1,11 @@
 import {useAuth} from "@/lib/client/hooks/use-auth";
+import {createFileRoute, Outlet} from "@tanstack/react-router";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
-import {createFileRoute, Outlet, redirect} from "@tanstack/react-router";
-import {authOptions} from "@/lib/client/react-query/query-options/query-options";
 import {OnboardingNav} from "@/lib/client/components/onboarding/OnBoardingShared";
 import {LinkSidebar, LinkSidebarItem} from "@/lib/client/components/general/LinkSidebar";
 
 
 export const Route = createFileRoute("/_main/_private/walkthrough/_layout")({
-    beforeLoad: async ({ context: { queryClient } }) => {
-        const currentUser = queryClient.getQueryData(authOptions.queryKey);
-        if (!currentUser) {
-            throw redirect({
-                to: "/login",
-                replace: true,
-                search: { message: "You need to sign in to access this content." },
-            });
-        }
-    },
     component: SidebarLayout,
 });
 

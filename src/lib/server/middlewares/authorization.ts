@@ -5,11 +5,11 @@ import {createMiddleware} from "@tanstack/react-start";
 import {getContainer} from "@/lib/server/core/container";
 import {UnauthorizedError} from "@/lib/utils/error-classes";
 import {PrivacyType, RoleType, SocialState} from "@/lib/utils/enums";
-import {optionalAuthMiddleware} from "@/lib/server/middlewares/authentication";
+import {publicAuthMiddleware} from "@/lib/server/middlewares/authentication";
 
 
 export const resolveTargetUserMiddleware = createMiddleware({ type: "function" })
-    .middleware([optionalAuthMiddleware])
+    .middleware([publicAuthMiddleware])
     .inputValidator(tryNotFound(baseUsernameSchema))
     .server(async ({ next, data: { username }, context: { currentUser } }) => {
         const container = await getContainer();
@@ -27,7 +27,7 @@ export const resolveTargetUserMiddleware = createMiddleware({ type: "function" }
     });
 
 
-export const privateAuthZMiddleware = createMiddleware({ type: "function" })
+export const authorizationMiddleware = createMiddleware({ type: "function" })
     .middleware([resolveTargetUserMiddleware])
     .server(async ({ next, context: { targetUser, currentUser } }) => {
         const container = await getContainer();

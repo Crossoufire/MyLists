@@ -2,12 +2,12 @@ import {MediaType} from "@/lib/utils/enums";
 import {createServerFn} from "@tanstack/react-start";
 import {getContainer} from "@/lib/server/core/container";
 import {transactionMiddleware} from "@/lib/server/middlewares/transaction";
-import {optionalAuthMiddleware, requiredAuthMiddleware} from "@/lib/server/middlewares/authentication";
 import {addMediadleGuessSchema, mediadleSuggestionsSchema} from "@/lib/schemas";
+import {publicAuthMiddleware, requiredAuthMiddleware} from "@/lib/server/middlewares/authentication";
 
 
 export const getDailyMediadle = createServerFn({ method: "GET" })
-    .middleware([optionalAuthMiddleware, transactionMiddleware])
+    .middleware([publicAuthMiddleware, transactionMiddleware])
     .handler(async ({ context: { currentUser } }) => {
         const container = await getContainer();
         const mediadleService = container.services.mediadle;

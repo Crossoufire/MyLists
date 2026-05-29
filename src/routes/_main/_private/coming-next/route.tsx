@@ -4,27 +4,16 @@ import {MediaType} from "@/lib/utils/enums";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {getDaysRemaining} from "@/lib/utils/formating";
 import {ComingNextItem} from "@/lib/types/query.options.types";
-import {createFileRoute, redirect} from "@tanstack/react-router";
+import {createFileRoute} from "@tanstack/react-router";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
 import {EmptyState} from "@/lib/client/components/general/EmptyState";
 import {MainThemeIcon} from "@/lib/client/components/general/MainIcons";
 import {TabHeader, TabItem} from "@/lib/client/components/general/TabHeader";
 import {ComingNextSection} from "@/lib/client/components/coming-next/ComingNextSection";
-import {authOptions, upcomingOptions} from "@/lib/client/react-query/query-options/query-options";
+import {upcomingOptions} from "@/lib/client/react-query/query-options/query-options";
 
 
 export const Route = createFileRoute("/_main/_private/coming-next")({
-    beforeLoad: async ({ context: { queryClient } }) => {
-        const currentUser = queryClient.getQueryData(authOptions.queryKey);
-
-        if (!currentUser) {
-            throw redirect({
-                to: "/login",
-                replace: true,
-                search: { message: "You need to sign in to access this content." },
-            });
-        }
-    },
     loader: ({ context: { queryClient } }) => queryClient.ensureQueryData(upcomingOptions),
     component: ComingNextPage,
 });

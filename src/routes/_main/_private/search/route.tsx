@@ -33,6 +33,7 @@ function SearchPage() {
     const filters = Route.useSearch();
     const navigate = Route.useNavigate();
     const { query = DEFAULT.query, apiProvider = DEFAULT.apiProvider } = filters;
+
     const [selectDrop, setSelectDrop] = useState(apiProvider);
     const [currentSearch, setCurrentSearch] = useState(query);
     const { data: apiData, isLoading, error } = useQuery(navSearchOptions(query, 1, apiProvider));
@@ -64,9 +65,9 @@ function SearchPage() {
                     <Input
                         type="search"
                         value={currentSearch}
-                        onKeyDown={(ev) => onSearchEnter(ev)}
                         placeholder="Search for media/users..."
-                        className="pl-8 rounded-md w-112 max-sm:w-full"
+                        className="pl-8 rounded-md w-md max-sm:w-full"
+                        onKeyDown={(ev) => onSearchEnter(ev)}
                         onChange={(ev) => setCurrentSearch(ev.target.value)}
                     />
                 </div>

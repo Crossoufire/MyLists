@@ -1,11 +1,11 @@
 import {searchTypeSchema} from "@/lib/schemas";
 import {createServerFn} from "@tanstack/react-start";
 import {getContainer} from "@/lib/server/core/container";
-import {optionalAuthMiddleware} from "@/lib/server/middlewares/authentication";
+import {publicAuthMiddleware} from "@/lib/server/middlewares/authentication";
 
 
 export const getHallOfFame = createServerFn({ method: "GET" })
-    .middleware([optionalAuthMiddleware])
+    .middleware([publicAuthMiddleware])
     .inputValidator(searchTypeSchema)
     .handler(async ({ data, context: { currentUser } }) => {
         const userStatsService = await getContainer().then((c) => c.services.userStats);

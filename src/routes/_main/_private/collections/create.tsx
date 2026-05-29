@@ -3,27 +3,16 @@ import {useForm} from "react-hook-form";
 import {CreateCollection} from "@/lib/schemas";
 import {useAuth} from "@/lib/client/hooks/use-auth";
 import {FormZodError} from "@/lib/utils/error-classes";
+import {createFileRoute} from "@tanstack/react-router";
 import {MediaType, PrivacyType} from "@/lib/utils/enums";
 import {Button} from "@/lib/client/components/ui/button";
-import {createFileRoute, redirect} from "@tanstack/react-router";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
 import {MainThemeIcon} from "@/lib/client/components/general/MainIcons";
-import {authOptions} from "@/lib/client/react-query/query-options/query-options";
 import {CollectionEditor} from "@/lib/client/components/collections/CollectionEditor";
 import {useCreateCollectionMutation} from "@/lib/client/react-query/query-mutations/collections.mutations";
 
 
 export const Route = createFileRoute("/_main/_private/collections/create")({
-    beforeLoad: async ({ context: { queryClient } }) => {
-        const currentUser = queryClient.getQueryData(authOptions.queryKey);
-        if (!currentUser) {
-            throw redirect({
-                to: "/login",
-                replace: true,
-                search: { message: "You need to sign in to access this content." },
-            });
-        }
-    },
     component: CollectionCreatePage,
 });
 
