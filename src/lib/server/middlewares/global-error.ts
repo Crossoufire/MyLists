@@ -30,13 +30,13 @@ export const funcErrorMiddleware = createMiddleware({ type: "function" }).server
             console.error("ServerFunc Error:", { err });
         }
 
-        if (isRedirect(err) || isNotFound(err)) {
+        if (isRedirect(err) || isNotFound(err) || err instanceof FormattedError || err instanceof UnauthorizedError) {
             throw err;
         }
 
         await saveErrorToDb(err).catch();
 
-        if (err instanceof FormattedError || err instanceof FormZodError || err instanceof UnauthorizedError) {
+        if (err instanceof FormZodError) {
             throw err;
         }
         else if (err instanceof z.ZodError) {
