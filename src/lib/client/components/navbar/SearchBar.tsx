@@ -22,8 +22,8 @@ interface SearchBarProps {
 
 
 export const SearchBar = ({ setMobileMenu }: SearchBarProps) => {
-    const [page, setPage] = useState(1);
     const { currentUser } = useAuth();
+    const [page, setPage] = useState(1);
     const [selectOpen, setSelectOpen] = useState(false);
     const [prevSelector, setPrevSelector] = useState(currentUser?.searchSelector);
     const [selectDrop, setSelectDrop] = useState<ApiProviderType>(currentUser?.searchSelector ?? ApiProviderType.USERS);
