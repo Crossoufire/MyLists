@@ -2,12 +2,8 @@ import path from "path";
 import {defineConfig} from "vite";
 import babel from "@rolldown/plugin-babel";
 import tailwindcss from "@tailwindcss/vite";
-import {devtools} from "@tanstack/devtools-vite";
 import {tanstackStart} from "@tanstack/react-start/plugin/vite";
 import react, {reactCompilerPreset} from "@vitejs/plugin-react";
-
-
-const isDev = process.env.NODE_ENV !== "production";
 
 
 export default defineConfig({
@@ -70,7 +66,6 @@ export default defineConfig({
         },
     },
     plugins: [
-        ...(isDev ? [devtools()] : []),
         tanstackStart({
             spa: {
                 enabled: true,
