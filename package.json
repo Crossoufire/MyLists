@@ -46,7 +46,7 @@
         "@tanstack/react-store": "^0.11.0",
         "@tanstack/react-table": "^8.21.3",
         "bcrypt": "^6.0.0",
-        "better-auth": "^1.6.11",
+        "better-auth": "1.6.11",
         "class-variance-authority": "^0.7.1",
         "clsx": "^2.1.1",
         "commander": "^15.0.0",

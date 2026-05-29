@@ -101,9 +101,9 @@ export const ActivityEditDialog = ({ open, activity, onOpenChange }: ActivityEdi
                     </div>
 
                     <div className="flex flex-wrap gap-4">
-                        <label className="flex items-center gap-2 text-sm">
+                        <label className="flex items-center gap-2 text-sm" htmlFor="checkbox-1">
                             <Checkbox
-                                // eslint-disable-next-line react-hooks/incompatible-library
+                                id="checkbox-1"
                                 checked={!form.watch().isCompleted && !form.watch().isRedo}
                                 onCheckedChange={() => {
                                     form.setValue("isRedo", false);
@@ -112,8 +112,9 @@ export const ActivityEditDialog = ({ open, activity, onOpenChange }: ActivityEdi
                             />
                             Progress
                         </label>
-                        <label className="flex items-center gap-2 text-sm">
+                        <label className="flex items-center gap-2 text-sm" htmlFor="checkbox-2">
                             <Checkbox
+                                id="checkbox-2"
                                 checked={form.watch().isCompleted}
                                 onCheckedChange={(val) => {
                                     form.setValue("isCompleted", !!val);
@@ -122,8 +123,9 @@ export const ActivityEditDialog = ({ open, activity, onOpenChange }: ActivityEdi
                             />
                             Completed
                         </label>
-                        <label className="flex items-center gap-2 text-sm">
+                        <label className="flex items-center gap-2 text-sm" htmlFor="checkbox-3">
                             <Checkbox
+                                id="checkbox-3"
                                 checked={form.watch().isRedo}
                                 onCheckedChange={(val) => {
                                     form.setValue("isRedo", !!val);
@@ -134,8 +136,9 @@ export const ActivityEditDialog = ({ open, activity, onOpenChange }: ActivityEdi
                         </label>
                     </div>
 
-                    <label className="flex items-start gap-2 rounded-md border border-border p-3 text-sm">
+                    <label className="flex items-start gap-2 rounded-md border border-border p-3 text-sm" htmlFor="checkbox-4">
                         <Checkbox
+                            id="checkbox-4"
                             checked={form.watch().hidden}
                             onCheckedChange={(val) => form.setValue("hidden", !!val)}
                         />

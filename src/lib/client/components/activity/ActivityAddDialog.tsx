@@ -220,8 +220,9 @@ export const ActivityAddDialog = ({ open, year, month, mediaTypes, onOpenChange 
                     </div>
 
                     <div className="flex flex-wrap gap-4">
-                        <label className="flex items-center gap-2 text-sm">
+                        <label className="flex items-center gap-2 text-sm" htmlFor="is-progress">
                             <Checkbox
+                                id="is-progress"
                                 checked={form.watch().isCompleted}
                                 onCheckedChange={(val) => {
                                     form.setValue("isCompleted", !!val);
@@ -230,8 +231,9 @@ export const ActivityAddDialog = ({ open, year, month, mediaTypes, onOpenChange 
                             />
                             Completed
                         </label>
-                        <label className="flex items-center gap-2 text-sm">
+                        <label className="flex items-center gap-2 text-sm" htmlFor="is-re-experience">
                             <Checkbox
+                                id="is-re-experience"
                                 checked={form.watch().isRedo}
                                 onCheckedChange={(val) => {
                                     form.setValue("isRedo", !!val);
