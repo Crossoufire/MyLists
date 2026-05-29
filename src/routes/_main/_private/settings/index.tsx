@@ -1,9 +1,10 @@
-import {createFileRoute} from "@tanstack/react-router";
+import {createFileRoute, redirect} from "@tanstack/react-router";
 import {useHashTab} from "@/lib/client/hooks/use-hash-tab";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
 import {DangerForm} from "@/lib/client/components/user-settings/DangerForm";
 import {Sidebar, SidebarItem} from "@/lib/client/components/general/Sidebar";
 import {GeneralForm} from "@/lib/client/components/user-settings/GeneralForm";
+import {authOptions} from "@/lib/client/react-query/query-options/query-options";
 import {MediaListForm} from "@/lib/client/components/user-settings/MediaListForm";
 import {ProfileCustomForm} from "@/lib/client/components/user-settings/ProfileCustomForm";
 import {FeaturesWalkthrough} from "@/lib/client/components/user-settings/FeaturesWalkthrough";
@@ -12,6 +13,16 @@ import {ActivityCleanupSettings} from "@/lib/client/components/user-settings/Act
 
 
 export const Route = createFileRoute("/_main/_private/settings/")({
+    beforeLoad: async ({ context: { queryClient } }) => {
+        const currentUser = queryClient.getQueryData(authOptions.queryKey);
+        if (!currentUser) {
+            throw redirect({
+                to: "/login",
+                replace: true,
+                search: { message: "You need to sign in to access this content." },
+            });
+        }
+    },
     component: SettingsPage,
 });
 

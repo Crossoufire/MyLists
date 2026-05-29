@@ -9,13 +9,6 @@ import {Button} from "@/lib/client/components/ui/button";
 import {Separator} from "@/lib/client/components/ui/separator";
 import {authOptions} from "@/lib/client/react-query/query-options/query-options";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/lib/client/components/ui/form";
-import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle} from "@/lib/client/components/ui/dialog";
-
-
-interface LoginFormProps {
-    open: boolean;
-    onOpenChange: (open: boolean) => void;
-}
 
 
 type FormValues = {
@@ -24,7 +17,12 @@ type FormValues = {
 };
 
 
-export const LoginForm = ({ open, onOpenChange }: LoginFormProps) => {
+interface LoginFormProps {
+    onOpenChange?: (open: boolean) => void;
+}
+
+
+export const LoginForm = ({ onOpenChange }: LoginFormProps) => {
     const navigate = useNavigate();
     const queryClient = useQueryClient();
     const form = useForm<FormValues>({
@@ -54,7 +52,7 @@ export const LoginForm = ({ open, onOpenChange }: LoginFormProps) => {
             },
             onSuccess: async () => {
                 const currentUser = await queryClient.fetchQuery({ ...authOptions, staleTime: 0 });
-                onOpenChange(false);
+                onOpenChange?.(false);
                 if (currentUser) {
                     await navigate({ to: "/profile/$username", params: { username: currentUser.name }, replace: true });
                 }
@@ -71,78 +69,74 @@ export const LoginForm = ({ open, onOpenChange }: LoginFormProps) => {
     };
 
     return (
-        <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-sm:w-full w-87 bg-neutral-950">
-                <DialogHeader>
-                    <DialogTitle>Login to MyLists</DialogTitle>
-                    <DialogDescription></DialogDescription>
-                </DialogHeader>
-                <div className="mt-4">
-                    <Form {...form}>
-                        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                            <div className="space-y-4">
-                                <FormField
-                                    control={form.control}
-                                    name="email"
-                                    rules={{ required: "This field is required" }}
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Email</FormLabel>
-                                            <FormControl>
-                                                <Input
-                                                    {...field}
-                                                    type="email"
-                                                    placeholder="Email"
-                                                />
-                                            </FormControl>
-                                            <FormMessage/>
-                                        </FormItem>
-                                    )}
-                                />
-                                <FormField
-                                    control={form.control}
-                                    name="password"
-                                    rules={{ required: "This field is required" }}
-                                    render={({ field }) =>
-                                        <FormItem>
-                                            <div className="flex items-center justify-between">
-                                                <FormLabel>Password</FormLabel>
-                                                <Link to="/forgot-password" className="text-sm underline" tabIndex={-1}
-                                                      onClick={() => onOpenChange(false)}>
-                                                    Forgot password?
-                                                </Link>
-                                            </div>
-                                            <FormControl>
-                                                <Input
-                                                    {...field}
-                                                    type="password"
-                                                    placeholder="********"
-                                                />
-                                            </FormControl>
-                                            <FormMessage/>
-                                        </FormItem>
-                                    }
-                                />
-                            </div>
-                            {form.formState.errors.root &&
-                                <FormMessage className="text-center">
-                                    {form.formState.errors.root.message}
-                                </FormMessage>
-                            }
-                            <Button className="w-full">Login</Button>
-                        </form>
-                    </Form>
-                    <Separator className="mt-3"/>
-                    <div className="mt-3 flex-col space-y-2">
-                        <Button variant="secondary" className="w-full" onClick={() => withProvider("google")}>
-                            <FaGoogle className="size-4"/> Connexion via Google
-                        </Button>
-                        <Button variant="secondary" className="w-full" onClick={() => withProvider("github")}>
-                            <FaGithub className="size-4"/> Connexion via Github
-                        </Button>
+        <>
+            <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                    <div className="space-y-4">
+                        <FormField
+                            control={form.control}
+                            name="email"
+                            rules={{ required: "This field is required" }}
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Email</FormLabel>
+                                    <FormControl>
+                                        <Input
+                                            {...field}
+                                            type="email"
+                                            placeholder="Email"
+                                        />
+                                    </FormControl>
+                                    <FormMessage/>
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="password"
+                            rules={{ required: "This field is required" }}
+                            render={({ field }) => (
+                                <FormItem>
+                                    <div className="flex items-center justify-between">
+                                        <FormLabel>Password</FormLabel>
+                                        <Link
+                                            to="/forgot-password"
+                                            className="text-sm underline"
+                                            tabIndex={-1}
+                                            onClick={() => onOpenChange?.(false)}
+                                        >
+                                            Forgot password?
+                                        </Link>
+                                    </div>
+                                    <FormControl>
+                                        <Input
+                                            {...field}
+                                            type="password"
+                                            placeholder="********"
+                                        />
+                                    </FormControl>
+                                    <FormMessage/>
+                                </FormItem>
+                            )}
+                        />
                     </div>
-                </div>
-            </DialogContent>
-        </Dialog>
+                    {form.formState.errors.root && (
+                        <FormMessage className="text-center">
+                            {form.formState.errors.root.message}
+                        </FormMessage>
+                    )}
+                    <Button className="w-full">Login</Button>
+                </form>
+            </Form>
+            <Separator className="mt-3"/>
+            <div className="mt-3 flex-col space-y-2">
+                <Button variant="secondary" className="w-full" onClick={() => withProvider("google")}>
+                    <FaGoogle className="size-4"/> Connexion via Google
+                </Button>
+                <Button variant="secondary" className="w-full" onClick={() => withProvider("github")}>
+                    <FaGithub className="size-4"/> Connexion via Github
+                </Button>
+            </div>
+        </>
     );
 };

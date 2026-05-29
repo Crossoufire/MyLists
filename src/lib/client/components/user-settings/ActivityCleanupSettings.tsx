@@ -5,10 +5,11 @@ import {useAuth} from "@/lib/client/hooks/use-auth";
 import {Input} from "@/lib/client/components/ui/input";
 import {toDateInputValue} from "@/lib/utils/formating";
 import {Button} from "@/lib/client/components/ui/button";
-import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/lib/client/components/ui/form";
-import {useBulkHideActivityMutation} from "@/lib/client/react-query/query-mutations/activity.mutations";
-import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/lib/client/components/ui/select";
 import {MainThemeIcon} from "@/lib/client/components/general/MainIcons";
+import {useBulkHideActivityMutation} from "@/lib/client/react-query/query-mutations/activity.mutations";
+import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/lib/client/components/ui/form";
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/lib/client/components/ui/select";
+import {FormZodError} from "@/lib/utils/error-classes";
 
 
 type FormValues = {
@@ -49,6 +50,13 @@ export function ActivityCleanupSettings() {
                 mediaType: values.mediaType === "all" ? undefined : values.mediaType,
             },
         }, {
+            onError: (err) => {
+                if (err instanceof FormZodError) {
+                    err.issues.forEach((issue) => {
+                        form.setError(issue.path[0], { type: "server", message: issue.message });
+                    });
+                }
+            },
             onSuccess: (result) => {
                 toast.success(`Hidden ${result.count} Activit${result.count === 1 ? "y" : "ies"}`);
             },

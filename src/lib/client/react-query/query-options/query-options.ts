@@ -1,10 +1,11 @@
 import {queryOptions} from "@tanstack/react-query";
+import {MediaListArgs, SearchType} from "@/lib/schemas";
 import {NotifTab} from "@/lib/types/notifications.types";
+import {ActivitySearch} from "@/lib/types/activity.types";
 import {getCurrentUser} from "@/lib/server/functions/auth";
 import {getTrendsMedia} from "@/lib/server/functions/trends";
 import {CommunitySearch} from "@/lib/types/collections.types";
 import {getSearchResults} from "@/lib/server/functions/search";
-import {ActivitySearch} from "@/lib/types/activity.types";
 import {getUserStats} from "@/lib/server/functions/user-stats";
 import {getHallOfFame} from "@/lib/server/functions/hall-of-fame";
 import {getFeatureVotes} from "@/lib/server/functions/feature-votes";
@@ -14,13 +15,12 @@ import {ApiProviderType, JobType, MediaType} from "@/lib/utils/enums";
 import {getPlatformStats} from "@/lib/server/functions/platform-stats";
 import {getAdminAllUpdatesHistory} from "@/lib/server/functions/admin";
 import {getUserAchievements} from "@/lib/server/functions/user-achievements";
-import {MediaListArgs, SearchType} from "@/lib/schemas";
 import {getUserMediaHistory, getUserTagNames} from "@/lib/server/functions/user-media";
 import {getDailyMediadle, getMediadleSuggestions} from "@/lib/server/functions/moviedle";
 import {getNotifications, getNotificationsCount} from "@/lib/server/functions/notifications";
 import {getProfileCustomSearch, getProfileCustomSettings} from "@/lib/server/functions/user-settings";
-import {getGameCompatiblePlatforms, getJobDetails, getMediaDetails, getMediaDetailsToEdit} from "@/lib/server/functions/media-details";
 import {getActivityAddMediaSearch, getMonthlyActivity, getMonthlyActivityStats} from "@/lib/server/functions/user-activity";
+import {getGameCompatiblePlatforms, getJobDetails, getMediaDetails, getMediaDetailsToEdit} from "@/lib/server/functions/media-details";
 import {getAllUpdatesHistory, getUserProfile, getUserProfileHeader, getUsersFollowers, getUsersFollows} from "@/lib/server/functions/user-profile";
 import {getMediaListFilters, getMediaListSearchFilters, getMediaListSF, getTagsViewFn, getUserListHeaderSF} from "@/lib/server/functions/media-lists";
 import {
@@ -56,14 +56,14 @@ export const notificationsCountOptions = queryOptions({
     queryKey: ["notification-counts"],
     queryFn: getNotificationsCount,
     refetchInterval: 30 * 60 * 1000,
-    meta: { errorMessage: "An error occurred getting your notifications count" },
+    meta: { errorToastMessage: "An error occurred getting your notifications count." },
 });
 
 
 export const notificationsOptions = (open: boolean, activeTab: NotifTab) => queryOptions({
     queryKey: ["notifications", activeTab],
     queryFn: () => getNotifications({ data: { type: activeTab } }),
-    meta: { errorMessage: "An error occurred fetching the notifications" },
+    meta: { errorToastMessage: "An error occurred fetching the notifications." },
     enabled: open,
 });
 
@@ -71,7 +71,7 @@ export const notificationsOptions = (open: boolean, activeTab: NotifTab) => quer
 export const trendsOptions = queryOptions({
     queryKey: ["trends"],
     queryFn: () => getTrendsMedia(),
-    meta: { errorMessage: "An error occurred fetching the trends. Please try again later." },
+    meta: { errorToastMessage: "An error occurred fetching the trends." },
 });
 
 

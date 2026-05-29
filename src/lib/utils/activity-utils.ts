@@ -2,8 +2,6 @@ import {MediaType} from "@/lib/utils/enums";
 import {toDateInputValue} from "@/lib/utils/formating";
 
 
-export type ActivityStatusKind = "redo" | "completed" | "progressed";
-
 type ActivityMediaConfig = {
     longUnit?: string;
     inputStep: number;
@@ -14,7 +12,7 @@ type ActivityMediaConfig = {
 }
 
 
-export const activityMediaConfig: Record<MediaType, ActivityMediaConfig> = {
+const activityMediaConfig: Record<MediaType, ActivityMediaConfig> = {
     [MediaType.SERIES]: {
         inputStep: 1,
         shortUnit: "eps",

@@ -22,17 +22,17 @@ interface SearchBarProps {
 
 
 export const SearchBar = ({ setMobileMenu }: SearchBarProps) => {
-    const { currentUser } = useAuth();
     const [page, setPage] = useState(1);
+    const { currentUser, isAnonymous } = useAuth();
     const [selectOpen, setSelectOpen] = useState(false);
     const [prevSelector, setPrevSelector] = useState(currentUser?.searchSelector);
-    const [selectDrop, setSelectDrop] = useState<ApiProviderType>(currentUser?.searchSelector ?? ApiProviderType.TMDB);
+    const [selectDrop, setSelectDrop] = useState<ApiProviderType>(currentUser?.searchSelector ?? ApiProviderType.USERS);
     const { search, setSearch, debouncedSearch, isOpen, reset, containerRef } = useSearchContainer({ onReset: () => setPage(1) });
     const { data: searchResults, isFetching, error } = useQuery(navSearchOptions(debouncedSearch, page, selectDrop));
 
     if (prevSelector !== currentUser?.searchSelector) {
         setPrevSelector(currentUser?.searchSelector);
-        setSelectDrop(currentUser?.searchSelector ?? ApiProviderType.TMDB);
+        setSelectDrop(currentUser?.searchSelector ?? ApiProviderType.USERS);
     }
 
     const handleInputChange = (ev: any) => {
@@ -91,10 +91,9 @@ export const SearchBar = ({ setMobileMenu }: SearchBarProps) => {
                     focus:border-none focus-visible:border-none focus-visible:ring-0 dark:bg-background"
                 />
                 <div className="px-3 text-muted-foreground">
-                    {isOpen ?
-                        <X className="size-4 cursor-pointer" onClick={reset}/>
-                        :
-                        <Search className="size-4"/>
+                    {isOpen
+                        ? <X className="size-4 cursor-pointer" onClick={reset}/>
+                        : <Search className="size-4"/>
                     }
                 </div>
             </div>

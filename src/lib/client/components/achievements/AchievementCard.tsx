@@ -34,8 +34,6 @@ export const AchievementCard = ({ achievement }: AchievementCardProps) => {
     const iconColorClass = diffColors(displayDifficulty);
     const borderColorClass = diffColors(displayDifficulty, "border");
 
-    console.log({ nextTier });
-
     const tierForProgressDisplay = nextTier ?? tiers[tiers.length - 1];
     const currentCount = tierForProgressDisplay?.count ?? 0;
     const progressValue = tierForProgressDisplay?.progress ?? 0;

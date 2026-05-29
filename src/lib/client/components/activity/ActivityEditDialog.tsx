@@ -1,4 +1,3 @@
-import {toast} from "sonner";
 import {useForm} from "react-hook-form";
 import {toDateInputValue} from "@/lib/utils/formating";
 import {Input} from "@/lib/client/components/ui/input";
@@ -9,6 +8,8 @@ import {Checkbox} from "@/lib/client/components/ui/checkbox";
 import {useDeleteActivityMutation, useUpdateActivityMutation} from "@/lib/client/react-query/query-mutations/activity.mutations";
 import {Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle} from "@/lib/client/components/ui/dialog";
 import {getActivityInputStep, getActivityUnitLabel, toActivityDisplayValue, toActivityStoredValue} from "@/lib/utils/activity-utils";
+import {InlineErrorContainer} from "@/lib/client/components/general/InlineErrorContainer";
+import {displayContainerError} from "@/lib/utils/helpers";
 
 
 type FormValues = {
@@ -28,8 +29,8 @@ interface ActivityEditDialogProps {
 
 
 export const ActivityEditDialog = ({ open, activity, onOpenChange }: ActivityEditDialogProps) => {
-    const updateMutation = useUpdateActivityMutation();
-    const deleteMutation = useDeleteActivityMutation();
+    const updateMutation = useUpdateActivityMutation({ noGlobalErrorToast: true });
+    const deleteMutation = useDeleteActivityMutation({ noGlobalErrorToast: true });
     const form = useForm<FormValues>({
         values: {
             isRedo: activity.isRedo ?? false,
@@ -57,7 +58,6 @@ export const ActivityEditDialog = ({ open, activity, onOpenChange }: ActivityEdi
         }, {
             onSuccess: () => {
                 onOpenChange(false);
-                toast.success("Activity updated");
             }
         });
     };
@@ -68,7 +68,6 @@ export const ActivityEditDialog = ({ open, activity, onOpenChange }: ActivityEdi
         deleteMutation.mutate({ data: { activityId: activity.id } }, {
             onSuccess: () => {
                 onOpenChange(false);
-                toast.success("Activity deleted");
             }
         });
     };
@@ -150,6 +149,12 @@ export const ActivityEditDialog = ({ open, activity, onOpenChange }: ActivityEdi
                         </span>
                     </label>
 
+                    {(updateMutation.isError || deleteMutation.isError) &&
+                        <InlineErrorContainer>
+                            {displayContainerError({ error: updateMutation.error ?? deleteMutation.error })}
+                        </InlineErrorContainer>
+                    }
+
                     <DialogFooter className="pt-2 mx-auto gap-3">
                         <Button type="button" variant="destructive" onClick={handleOnDelete} disabled={deleteMutation.isPending}>
                             Delete
@@ -160,7 +165,7 @@ export const ActivityEditDialog = ({ open, activity, onOpenChange }: ActivityEdi
                     </DialogFooter>
                 </form>
 
-                <div className="text-xs text-red-400">
+                <div className="text-xs text-destructive">
                     <b>Note:</b> These values determine how your time is allocated to your{" "}
                     monthly and yearly recaps. For example, you can log a show you watched years
                     ago without it inflating your current monthly / yearly recap. This does not affect your total lifetime

@@ -2,6 +2,7 @@ import React, {useState} from "react";
 import {useQuery} from "@tanstack/react-query";
 import {useAuth} from "@/lib/client/hooks/use-auth";
 import {Card} from "@/lib/client/components/ui/card";
+import {formatDateTime} from "@/lib/utils/formating";
 import {Input} from "@/lib/client/components/ui/input";
 import {Badge} from "@/lib/client/components/ui/badge";
 import {ApiProviderType, MediaType} from "@/lib/utils/enums";
@@ -10,7 +11,6 @@ import {PageTitle} from "@/lib/client/components/general/PageTitle";
 import {navSearchOptions} from "@/lib/client/react-query/query-options/query-options";
 import {BookImage, Cat, Gamepad2, Library, LoaderCircle, Monitor, Popcorn, Search, User, X} from "lucide-react";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/lib/client/components/ui/select";
-import {formatDateTime} from "@/lib/utils/formating";
 
 
 type GlobalSearch = {

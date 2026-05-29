@@ -5,7 +5,6 @@ import {MediaType} from "@/lib/utils/enums";
 export type AddActivity = z.infer<typeof addActivitySchema>;
 export type MonthlyActivityFilters = z.infer<typeof monthlyActivitySchema>;
 export type UpdateActivity = z.infer<typeof updateActivitySchema>["payload"];
-export type SpecificActivityFilters = z.infer<typeof getSpecificActivitySchema>;
 export type MonthlyActivityStatsFilters = z.infer<typeof monthlyActivityStatsSchema>;
 
 
@@ -26,13 +25,6 @@ export const monthlyActivityStatsSchema = monthlyActivitySchema.pick({
     username: true,
 }).extend({
     mediaType: z.enum(MediaType).optional(),
-});
-
-export const getSpecificActivitySchema = z.object({
-    mediaType: z.enum(MediaType),
-    year: z.coerce.number().int().positive(),
-    mediaId: z.coerce.number().int().positive(),
-    month: z.coerce.number().int().positive().min(1).max(12),
 });
 
 export const activityAddMediaSearchSchema = z.object({
@@ -70,7 +62,7 @@ export const bulkHideActivitySchema = z.object({
     startDate: z.string(),
     mediaType: z.enum(MediaType).optional(),
 }).refine((data) => new Date(data.startDate).getTime() <= new Date(data.endDate).getTime(), {
-    message: "Start date must be before end date.",
+    message: "Start date must be before end date.", path: ["endDate"],
 });
 
 export const deleteActivitySchema = z.object({

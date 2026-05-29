@@ -1,11 +1,10 @@
 import {toast} from "sonner";
 import {useAuth} from "@/lib/client/hooks/use-auth";
-import {createFileRoute} from "@tanstack/react-router";
+import {createFileRoute, Link} from "@tanstack/react-router";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {Button} from "@/lib/client/components/ui/button";
 import {PrivacyType, SocialState} from "@/lib/utils/enums";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
-import {BlockLink} from "@/lib/client/components/general/BlockLink";
 import {PrivacyIcon} from "@/lib/client/components/general/MainIcons";
 import {EmptyState} from "@/lib/client/components/general/EmptyState";
 import {Clock, Loader2, UserCheck, UserPlus, UserX} from "lucide-react";
@@ -95,15 +94,11 @@ function FollowCard({ follow, currentUserName, profileOwner, isViewingOwnProfile
                         </div>
                     </div>
                     <div>
-                        <BlockLink
-                            privacy={follow.privacy}
-                            to={"/profile/$username"}
-                            params={{ username: follow.username }}
-                        >
+                        <Link to="/profile/$username" params={{ username: follow.username }}>
                             <h3 className="text-primary hover:text-app-accent font-medium leading-none">
                                 {follow.username}
                             </h3>
-                        </BlockLink>
+                        </Link>
                         <p className="mt-1 text-xs capitalize text-slate-500">
                             {follow.privacy} Profile
                         </p>

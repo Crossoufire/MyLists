@@ -2,6 +2,7 @@ import {UserX} from "lucide-react";
 import {SearchType} from "@/lib/schemas";
 import {MediaType} from "@/lib/utils/enums";
 import {capitalize} from "@/lib/utils/formating";
+import {useAuth} from "@/lib/client/hooks/use-auth";
 import {createFileRoute} from "@tanstack/react-router";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
@@ -11,6 +12,7 @@ import {EmptyState} from "@/lib/client/components/general/EmptyState";
 import {SearchInput} from "@/lib/client/components/general/SearchInput";
 import {useSearchNavigate} from "@/lib/client/hooks/use-search-navigate";
 import {HofRanking} from "@/lib/client/components/hall-of-fame/HofRanking";
+import {LockedContent} from "@/lib/client/components/general/LockedContent";
 import {hallOfFameOptions} from "@/lib/client/react-query/query-options/query-options";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/lib/client/components/ui/select";
 
@@ -29,6 +31,7 @@ const DEFAULT = { page: 1, search: "", sorting: "normalized" } satisfies SearchT
 
 
 function HallOfFamePage() {
+    const { isAnonymous } = useAuth();
     const filters = Route.useSearch();
     const apiData = useSuspenseQuery(hallOfFameOptions(filters)).data;
     const { page = DEFAULT.page, sorting = DEFAULT.sorting, search = DEFAULT.search } = filters;
@@ -87,7 +90,14 @@ function HallOfFamePage() {
                         onChangePage={(page) => updateFilters({ page })}
                     />
                 </div>
-                <div className="col-span-5 mt-5.25 max-lg:col-span-1 max-lg:mt-4 max-lg:order-1">
+
+                <div className="relative h-fit col-span-5 mt-5.25 max-lg:col-span-1 max-lg:mt-4 max-lg:order-1">
+                    <LockedContent
+                        showAuthButtons={true}
+                        title="Statistics Locked"
+                        isAnonymous={isAnonymous}
+                        description="Sign in to unlock your ranking, see where you are on the leaderboard, and track your stats."
+                    />
                     <HofRanking
                         userRanks={apiData.userRanks}
                     />

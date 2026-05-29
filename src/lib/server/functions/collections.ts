@@ -3,8 +3,8 @@ import {createServerFn} from "@tanstack/react-start";
 import {getContainer} from "@/lib/server/core/container";
 import {tryFormZodError, tryNotFound} from "@/lib/utils/try-not-found";
 import {transactionMiddleware} from "@/lib/server/middlewares/transaction";
-import {requiredAuthMiddleware} from "@/lib/server/middlewares/authentication";
-import {optionalAuthMiddleware, privateAuthZMiddleware} from "@/lib/server/middlewares/authorization";
+import {privateAuthZMiddleware} from "@/lib/server/middlewares/authorization";
+import {optionalAuthMiddleware, requiredAuthMiddleware} from "@/lib/server/middlewares/authentication";
 import {
     collectionIdSchema,
     collectionMediaItemActionSchema,
@@ -28,7 +28,7 @@ export const getUserCollections = createServerFn({ method: "GET" })
 
 
 export const getCommunityCollections = createServerFn({ method: "GET" })
-    .middleware([requiredAuthMiddleware])
+    .middleware([optionalAuthMiddleware])
     .inputValidator(tryNotFound(communityCollectionsSchema))
     .handler(async ({ data: { search, page, mediaType } }) => {
         const container = await getContainer();
@@ -38,7 +38,7 @@ export const getCommunityCollections = createServerFn({ method: "GET" })
 
 
 export const getMediaCommunityCollections = createServerFn({ method: "GET" })
-    .middleware([requiredAuthMiddleware])
+    .middleware([optionalAuthMiddleware])
     .inputValidator(tryNotFound(mediaCommunityCollectionsSchema))
     .handler(async ({ data: { mediaId, mediaType } }) => {
         const container = await getContainer();

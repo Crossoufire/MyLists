@@ -1,10 +1,9 @@
-import {toast} from "sonner";
 import {useMemo, useState} from "react";
 import {useAuth} from "@/lib/client/hooks/use-auth";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {Badge} from "@/lib/client/components/ui/badge";
 import {Input} from "@/lib/client/components/ui/input";
-import {getZodMutationError} from "@/lib/utils/helpers";
+import {displayPageFormError} from "@/lib/utils/helpers";
 import {Button} from "@/lib/client/components/ui/button";
 import {createFileRoute, Link} from "@tanstack/react-router";
 import {Textarea} from "@/lib/client/components/ui/textarea";
@@ -13,20 +12,18 @@ import {TabHeader} from "@/lib/client/components/general/TabHeader";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
 import {ProfileIcon} from "@/lib/client/components/general/ProfileIcon";
 import {FeatureStatus, isAtLeastRole, RoleType,} from "@/lib/utils/enums";
-import {CalendarClock, ChevronUp, ExternalLink, Search, Settings2} from "lucide-react";
+import {LockedContent} from "@/lib/client/components/general/LockedContent";
+import {CalendarClock, ChevronUp, ExternalLink, Search} from "lucide-react";
 import {featureVotesOptions} from "@/lib/client/react-query/query-options/query-options";
+import {AdminFeatureControlsDialog} from "@/lib/client/components/feature-votes/AdminFeaturesDialog";
 import {Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle,} from "@/lib/client/components/ui/card";
-import {Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger} from "@/lib/client/components/ui/dialog";
-import {
-    useCreateFeatureRequestMutation,
-    useDeleteFeatureRequestMutation,
-    useToggleFeatureVoteMutation,
-    useUpdateFeatureStatusMutation
-} from "@/lib/client/react-query/query-mutations/feature-votes.mutations";
+import {useCreateFeatureRequestMutation, useToggleFeatureVoteMutation} from "@/lib/client/react-query/query-mutations/feature-votes.mutations";
 
 
 export const Route = createFileRoute("/_main/_private/features-vote")({
-    loader: ({ context: { queryClient } }) => queryClient.ensureQueryData(featureVotesOptions),
+    loader: ({ context: { queryClient } }) => {
+        return queryClient.ensureQueryData(featureVotesOptions);
+    },
     component: FeatureVotesPage,
 });
 
@@ -48,7 +45,7 @@ const STATUS_STYLES: Record<FeatureStatus, string> = {
 
 
 function FeatureVotesPage() {
-    const { currentUser } = useAuth();
+    const { currentUser, isAnonymous } = useAuth();
     const [newTitle, setNewTitle] = useState("");
     const toggleVoteMutation = useToggleFeatureVoteMutation();
     const apiData = useSuspenseQuery(featureVotesOptions).data;
@@ -78,7 +75,6 @@ function FeatureVotesPage() {
             onSuccess: () => {
                 setNewTitle("");
                 setNewDescription("");
-                toast.success("Feature request submitted successfully!");
             },
         });
     };
@@ -138,7 +134,13 @@ function FeatureVotesPage() {
                             </dl>
                         </CardContent>
                     </Card>
-                    <Card className="border-app-accent/40">
+                    <Card className="relative overflow-hidden border-app-accent/40">
+                        <LockedContent
+                            showAuthButtons={true}
+                            isAnonymous={isAnonymous}
+                            title="Have an idea for MyLists?"
+                            description="Log-in or register to submit your proposal and join the community in voting for our next features."
+                        />
                         <CardHeader>
                             <CardTitle>Propose a new feature</CardTitle>
                             <CardDescription>
@@ -148,22 +150,24 @@ function FeatureVotesPage() {
                         <CardContent className="space-y-4">
                             <Input
                                 value={newTitle}
+                                disabled={isAnonymous}
                                 placeholder="Feature title"
                                 onChange={(ev) => setNewTitle(ev.target.value)}
                             />
                             <Textarea
                                 rows={3}
+                                disabled={isAnonymous}
                                 value={newDescription}
                                 placeholder="Optional: add a short context or use-case."
                                 onChange={(ev) => setNewDescription(ev.target.value)}
                             />
                             {createFeatureMutation.isError &&
-                                <p className="text-xs text-red-400 -mt-2">
-                                    {getZodMutationError(createFeatureMutation.error)}
+                                <p className="text-xs text-destructive -mt-2">
+                                    {displayPageFormError(createFeatureMutation.error)}
                                 </p>
                             }
                             <div className="flex items-center justify-center">
-                                <Button onClick={handleAddNewFeature} disabled={createFeatureMutation.isPending}>
+                                <Button onClick={handleAddNewFeature} disabled={createFeatureMutation.isPending || isAnonymous}>
                                     Add Feature for Voting
                                 </Button>
                             </div>
@@ -271,14 +275,14 @@ function FeatureVotesPage() {
                                                 size="sm"
                                                 onClick={() => handleVote(req.id)}
                                                 variant={req.hasUserVote ? "emeraldy" : "outline"}
-                                                disabled={toggleVoteMutation.isPending || isLocked}
+                                                disabled={toggleVoteMutation.isPending || isLocked || isAnonymous}
                                             >
                                                 {voteLabel}
                                             </Button>
                                         </div>
 
                                         {isAdmin &&
-                                            <AdminFeatureControls
+                                            <AdminFeatureControlsDialog
                                                 featureId={req.id}
                                                 currentStatus={req.status}
                                                 currentComment={req.adminComment}
@@ -294,116 +298,3 @@ function FeatureVotesPage() {
         </PageTitle>
     );
 }
-
-
-interface AdminFeatureControlsProps {
-    featureId: number;
-    currentStatus: FeatureStatus;
-    currentComment: string | null;
-}
-
-
-export const AdminFeatureControls = ({ featureId, currentStatus, currentComment }: AdminFeatureControlsProps) => {
-    const [open, setOpen] = useState(false);
-    const [note, setNote] = useState(currentComment ?? "");
-    const updateStatusMutation = useUpdateFeatureStatusMutation();
-    const deleteFeatureMutation = useDeleteFeatureRequestMutation();
-    const [status, setStatus] = useState<FeatureStatus>(currentStatus);
-
-    const handleSave = () => {
-        updateStatusMutation.mutate({ data: { featureId, status, adminComment: note } }, {
-            onSuccess: () => setOpen(false),
-        });
-    };
-
-    const handleDelete = () => {
-        if (!window.confirm("Delete this feature request and all its votes?")) return;
-
-        deleteFeatureMutation.mutate({ data: { featureId } }, {
-            onSuccess: () => setOpen(false),
-        });
-    };
-
-    return (
-        <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-                <Button variant="outline" size="sm" className="gap-2">
-                    <Settings2 className="size-3"/>
-                    Admin
-                </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-md">
-                <DialogHeader>
-                    <DialogTitle>Admin Management</DialogTitle>
-                    <DialogDescription>
-                        Update the status of this feature request and add internal or public
-                        commentary.
-                    </DialogDescription>
-                </DialogHeader>
-
-                <div className="space-y-4 py-4">
-                    <div className="space-y-2">
-                        <label className="text-sm font-medium leading-none">
-                            Feature Status
-                        </label>
-                        <select
-                            value={status}
-                            disabled={updateStatusMutation.isPending}
-                            onChange={(ev) => setStatus(ev.target.value as FeatureStatus)}
-                            className="flex h-10 w-full rounded-md border border-input bg-background px-3  py-2 text-sm
-                            ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                        >
-                            {Object.values(FeatureStatus).map((fs) =>
-                                <option key={fs} value={fs}>
-                                    {fs}
-                                </option>
-                            )}
-                        </select>
-                    </div>
-
-                    <div className="space-y-2">
-                        <label className="text-sm font-medium leading-none">
-                            Admin Note
-                        </label>
-                        <Textarea
-                            rows={4}
-                            value={note}
-                            disabled={updateStatusMutation.isPending}
-                            onChange={(ev) => setNote(ev.target.value)}
-                            placeholder="Provide context on why this status was chosen..."
-                        />
-                    </div>
-
-                    <Button
-                        size="sm"
-                        type="button"
-                        className="mt-3"
-                        variant="destructive"
-                        onClick={handleDelete}
-                        disabled={deleteFeatureMutation.isPending}
-                    >
-                        {deleteFeatureMutation.isPending ? "Deleting..." : "Delete feature request"}
-                    </Button>
-                </div>
-
-                <DialogFooter>
-                    <Button
-                        type="button"
-                        variant="ghost"
-                        onClick={() => setOpen(false)}
-                        disabled={updateStatusMutation.isPending || deleteFeatureMutation.isPending}
-                    >
-                        Cancel
-                    </Button>
-                    <Button
-                        type="button"
-                        onClick={handleSave}
-                        disabled={updateStatusMutation.isPending || deleteFeatureMutation.isPending}
-                    >
-                        {updateStatusMutation.isPending ? "Saving..." : "Save Changes"}
-                    </Button>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
-    );
-};

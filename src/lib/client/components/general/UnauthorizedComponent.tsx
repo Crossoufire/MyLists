@@ -3,7 +3,20 @@ import {Lock} from "lucide-react";
 import {Card} from "@/lib/client/components/ui/card";
 
 
-export const PrivateComponent = () => {
+interface UnauthorizedComponentProps {
+    type: "restricted" | "private" | "sign-in";
+}
+
+
+export const UnauthorizedComponent = ({ type }: UnauthorizedComponentProps) => {
+    const title = type === "restricted"
+        ? "This content is restricted"
+        : "This content is private";
+
+    const description = type === "restricted"
+        ? "Sign-in to see this user's contents: lists, stats, and updates."
+        : "Follow this user to see their contents: lists, stats, and updates.";
+
     return (
         <Card className="w-full max-w-sm mx-auto bg-popover relative overflow-hidden shadow-2xl">
             <div className="absolute inset-0 z-0 opacity-20 pointer-events-none">
@@ -18,10 +31,10 @@ export const PrivateComponent = () => {
                 </div>
                 <div className="space-y-2">
                     <h3 className="text-xl font-semibold tracking-tight text-primary">
-                        This account is private
+                        {title}
                     </h3>
                     <p className="text-sm text-muted-foreground max-w-70 mx-auto leading-relaxed">
-                        Follow this user to see their contents: lists, stats, and updates.
+                        {description}
                     </p>
                 </div>
             </div>

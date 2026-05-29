@@ -8,6 +8,7 @@ import {createFileRoute} from "@tanstack/react-router";
 import {Button} from "@/lib/client/components/ui/button";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
 import {MediaHero} from "@/lib/client/components/media/base/MediaHero";
+import {LockedContent} from "@/lib/client/components/general/LockedContent";
 import {SimilarMedia} from "@/lib/client/components/media/base/SimilarMedia";
 import {MediaSynopsis} from "@/lib/client/components/media/base/MediaSynopsis";
 import {MediaComponent} from "@/lib/client/components/media/base/MediaComponent";
@@ -24,8 +25,8 @@ export const Route = createFileRoute("/_main/_private/details/$mediaType/$mediaI
     params: {
         parse: (params) => {
             return {
-                mediaId: params.mediaId as string | number,
                 mediaType: params.mediaType as MediaType,
+                mediaId: params.mediaId as string | number,
             }
         }
     },
@@ -40,19 +41,18 @@ export const Route = createFileRoute("/_main/_private/details/$mediaType/$mediaI
 
 
 function MediaDetailsPage() {
-    const { currentUser } = useAuth();
+    const { isAnonymous } = useAuth();
     const { external } = Route.useSearch();
     const { mediaType, mediaId } = Route.useParams();
-    const apiData = useSuspenseQuery(mediaDetailsOptions(mediaType, mediaId, external)).data;
     const addMediaToListMutation = useAddMediaToListMutation(mediaDetailsOptions(mediaType, mediaId, external));
-    const { media, userMedia, followsData, similarMedia } = apiData;
+    const { media, userMedia, followsData, similarMedia } = useSuspenseQuery(mediaDetailsOptions(mediaType, mediaId, external)).data;
 
     const handleAddMediaToUser = () => {
-        addMediaToListMutation.mutate({ data: { mediaType, mediaId: apiData.media.id } });
+        addMediaToListMutation.mutate({ data: { mediaType, mediaId: media.id } });
     };
 
     return (
-        <PageTitle title={apiData.media.name} onlyHelmet>
+        <PageTitle title={media.name} onlyHelmet>
             <MediaHero
                 media={media}
                 external={external}
@@ -93,14 +93,13 @@ function MediaDetailsPage() {
                 <div className="col-span-4 space-y-6 max-lg:col-span-1 max-lg:order-1">
                     <div className="space-y-6 max-lg:grid max-lg:grid-cols-2 max-md:grid-cols-1 max-lg:gap-6">
                         <div className="space-y-6 max-lg:mb-0">
-                            {currentUser &&
+                            {!isAnonymous &&
                                 <RefreshAndEdit
                                     mediaId={media.id}
                                     apiId={media.apiId}
                                     external={external}
                                     mediaType={mediaType}
                                     lastUpdate={media.lastApiUpdate}
-                                    providerName={media.providerData.name}
                                 />
                             }
 
@@ -124,29 +123,40 @@ function MediaDetailsPage() {
                                     queryOption={mediaDetailsOptions(mediaType, mediaId, external)}
                                 />
                                 :
-                                <Card>
-                                    <div className="text-center space-y-2">
-                                        <h3 className="text-lg font-semibold text-slate-200">
-                                            Are you interested in this?
-                                        </h3>
-                                        <p className="text-sm text-muted-foreground">
-                                            Add this {mediaType} to your list to track your progress.
-                                        </p>
-                                    </div>
-                                    <Button className="w-full mt-2" onClick={handleAddMediaToUser}>
-                                        <Plus className="size-4"/> Add to List
-                                    </Button>
-                                </Card>
+                                isAnonymous ?
+                                    <LockedContent
+                                        variant="inline"
+                                        showAuthButtons={true}
+                                        isAnonymous={isAnonymous}
+                                        title="Want to track your progress?"
+                                        description="Log-in or register to add this media to your list, track your
+                                        progress, add ratings, comments, tags and more."
+                                    />
+                                    :
+                                    <Card>
+                                        <div className="text-center space-y-2">
+                                            <h3 className="text-lg font-semibold text-slate-200">
+                                                Are you interested in this?
+                                            </h3>
+                                            <p className="text-sm text-muted-foreground">
+                                                Add this {mediaType} to your list to track your progress.
+                                            </p>
+                                        </div>
+                                        <Button className="w-full mt-2" onClick={handleAddMediaToUser}>
+                                            <Plus className="size-4"/> Add to List
+                                        </Button>
+                                    </Card>
                             }
-
                             <CollectionsLists
                                 mediaId={media.id}
                                 mediaType={mediaType}
+                                isAnonymous={isAnonymous}
                             />
                         </div>
 
                         <MediaFollowsSection
                             mediaType={mediaType}
+                            isAnonymous={isAnonymous}
                             followsData={followsData}
                         />
                     </div>

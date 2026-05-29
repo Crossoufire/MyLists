@@ -1,6 +1,7 @@
+import {cn} from "@/lib/utils/helpers";
 import {MediaType} from "@/lib/utils/enums";
 import {BookOpen, Plus} from "lucide-react";
-import {capitalize} from "@/lib/utils/formating";
+import {useAuth} from "@/lib/client/hooks/use-auth";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {Button} from "@/lib/client/components/ui/button";
 import {createFileRoute, Link} from "@tanstack/react-router";
@@ -29,70 +30,78 @@ const DEFAULT = { page: 1, search: "" } satisfies CommunitySearch;
 
 
 function CollectionsDiscoverPage() {
+    const { isAnonymous } = useAuth();
     const filters = Route.useSearch();
+    const mediaTypes = Object.values(MediaType);
     const { page = DEFAULT.page, search = DEFAULT.search, mediaType } = filters;
     const apiData = useSuspenseQuery(communityCollectionsOptions(filters)).data;
     const { localSearch, handleInputChange, updateFilters } = useSearchNavigate<CommunitySearch>({ search });
 
     return (
         <PageTitle title="Community collections" subtitle="Public collections created and shared by the community.">
-            <div className="space-y-10">
-                <div className="space-y-4">
-                    <div className="flex flex-wrap justify-between items-center gap-4">
-                        <div className="flex flex-wrap items-center gap-3 gap-y-2">
-                            <SearchInput
-                                className="w-60"
-                                value={localSearch}
-                                onChange={handleInputChange}
-                                placeholder="Search collections..."
-                            />
-                            <Select
-                                value={mediaType ?? "all"}
-                                onValueChange={(val) => updateFilters({ page: 1, mediaType: val === "all" ? undefined : val as MediaType })}
-                            >
-                                <SelectTrigger className="w-40">
-                                    <SelectValue/>
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="all">All Types</SelectItem>
-                                    {Object.values(MediaType).map((type) =>
-                                        <SelectItem key={type} value={type}>
-                                            {capitalize(type)}
-                                        </SelectItem>
-                                    )}
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        <Button asChild>
-                            <Link to="/collections/create">
-                                <Plus className="size-4"/> New collection
-                            </Link>
-                        </Button>
+            <div className="pt-2">
+                <div className="grid grid-cols-2 gap-3 sm:flex sm:flex-row sm:items-center sm:gap-4">
+                    <div className="col-span-2 sm:w-60">
+                        <SearchInput
+                            className="w-full"
+                            value={localSearch}
+                            onChange={handleInputChange}
+                            placeholder="Search collections..."
+                        />
                     </div>
 
-                    {apiData.items.length === 0 ?
-                        <EmptyState
-                            iconSize={40}
-                            icon={BookOpen}
-                            className="py-20"
-                            message={`No public collections found${search ? ` for '${search}'` : ""}.`}
-                        />
-                        :
-                        <div className="grid gap-4 gap-y-7 grid-cols-3 pt-4 max-sm:grid-cols-1">
-                            {apiData.items.map((collection) =>
-                                <CollectionCard
-                                    key={collection.id}
-                                    collection={collection}
-                                />
-                            )}
-                        </div>
+                    <div className={cn("sm:w-40 col-span-1", !isAnonymous && "sm:mr-auto")}>
+                        <Select
+                            value={mediaType ?? "all"}
+                            onValueChange={(val) => {
+                                return updateFilters({ page: 1, mediaType: val === "all" ? undefined : (val as MediaType) })
+                            }}
+                        >
+                            <SelectTrigger className="w-full">
+                                <SelectValue/>
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">All Types</SelectItem>
+                                {mediaTypes.map((mediaType) =>
+                                    <SelectItem key={mediaType} value={mediaType} className="capitalize">
+                                        {mediaType}
+                                    </SelectItem>
+                                )}
+                            </SelectContent>
+                        </Select>
+                    </div>
+
+                    {!isAnonymous &&
+                        <Button asChild className="col-span-1 justify-center whitespace-nowrap sm:w-auto">
+                            <Link to="/collections/create">
+                                <Plus className="size-4 shrink-0"/> New collection
+                            </Link>
+                        </Button>
                     }
-                    <Pagination
-                        currentPage={page}
-                        totalPages={apiData.pages}
-                        onChangePage={(nextPage) => updateFilters({ page: nextPage })}
-                    />
                 </div>
+
+                {apiData.items.length === 0 ?
+                    <EmptyState
+                        iconSize={40}
+                        icon={BookOpen}
+                        className="py-20"
+                        message={`No public collections found${search ? ` for '${search}'` : ""}.`}
+                    />
+                    :
+                    <div className="grid gap-4 grid-cols-3 pt-4 max-sm:grid-cols-1">
+                        {apiData.items.map((collection) =>
+                            <CollectionCard
+                                key={collection.id}
+                                collection={collection}
+                            />
+                        )}
+                    </div>
+                }
+                <Pagination
+                    currentPage={page}
+                    totalPages={apiData.pages}
+                    onChangePage={(nextPage) => updateFilters({ page: nextPage })}
+                />
             </div>
         </PageTitle>
     );

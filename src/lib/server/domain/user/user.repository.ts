@@ -411,6 +411,7 @@ export class UserRepository {
                 name: user.name,
                 image: user.image,
                 date: user.createdAt,
+                privacy: user.privacy,
             })
             .from(user)
             .where(like(user.name, `%${query}%`))

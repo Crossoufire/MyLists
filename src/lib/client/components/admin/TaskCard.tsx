@@ -33,8 +33,8 @@ const statusConfig = {
     },
     failed: {
         icon: XCircle,
-        badge: "bg-red-400",
-        color: "text-red-400",
+        badge: "bg-destructive",
+        color: "text-destructive",
     },
 } as const;
 
@@ -102,7 +102,7 @@ export function TaskCard({ task }: TaskCardProps) {
                             {" / "}{logs.steps.length}
                             {failedSteps > 0 &&
                                 <>{" "}
-                                    (<span className="text-red-400">
+                                    (<span className="text-destructive">
                                         {failedSteps} failed
                                     </span>)
                                 </>

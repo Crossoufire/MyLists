@@ -14,6 +14,7 @@ import {ReactQueryDevtoolsPanel} from "@tanstack/react-query-devtools";
 import {TanStackRouterDevtoolsPanel} from "@tanstack/react-router-devtools";
 import {PostHogAuthSync} from "@/lib/client/components/general/PostHogAuthSync";
 import {authOptions} from "@/lib/client/react-query/query-options/query-options";
+import {AuthModalProvider} from "@/lib/client/components/general/AuthModalProvider";
 import {FeatureVoteLink} from "@/lib/client/components/feature-votes/FeatureVoteLink";
 import {createRootRouteWithContext, HeadContent, Outlet, Scripts} from "@tanstack/react-router";
 
@@ -54,6 +55,7 @@ function RootComponent() {
         <>
             <PostHogAuthSync/>
             <Toaster/>
+            <AuthModalProvider/>
             <Navbar/>
             <Outlet/>
             <Footer/>

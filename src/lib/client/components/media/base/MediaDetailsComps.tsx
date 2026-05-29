@@ -11,7 +11,7 @@ interface MediaInfoGridItemProps {
 
 
 export const MediaInfoGridItem = ({ label, children }: MediaInfoGridItemProps) => (
-    <div className="space-y-1">
+    <div key={label} className="space-y-1">
         <span className="text-xs uppercase tracking-wider text-muted-foreground">
             {label}
         </span>
@@ -122,7 +122,7 @@ export const UpComingAlert = ({ children, title, dateString }: UpComingAlertProp
     const daysRemaining = getDaysRemaining(dateString);
 
     if ((daysRemaining ?? 0) < 50) return null;
-    
+
     return (
         <div className="relative overflow-hidden rounded-xl border bg-card p-4 text-card-foreground shadow-sm">
             <div className="flex items-center gap-4">

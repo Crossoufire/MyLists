@@ -20,11 +20,11 @@ export const Route = createFileRoute("/_main/_private/achievements/$username/_he
 
 function AchievementPage() {
     const { username } = Route.useParams();
+    const mediaTypes = Object.values(MediaType);
     const apiData = useSuspenseQuery(achievementOptions(username)).data;
     const [activeTab, setActiveTab] = useState<MediaType | "all">("all");
     const mediaAchievements = apiData.result.filter((r) => activeTab === "all" || r.mediaType === activeTab);
 
-    const mediaTypes = Object.values(MediaType);
     const mediaTabs: TabItem<"all" | MediaType>[] = [
         {
             id: "all",
@@ -48,7 +48,9 @@ function AchievementPage() {
                     />
                 </TabHeader>
 
-                <AchievementSummary summary={apiData.summary[activeTab]}/>
+                <AchievementSummary
+                    summary={apiData.summary[activeTab]}
+                />
 
                 <div className="grid grid-cols-3 gap-6 max-lg:grid-cols-2 max-sm:grid-cols-1">
                     {mediaAchievements.map((achievement) =>

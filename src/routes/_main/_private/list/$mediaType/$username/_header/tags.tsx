@@ -82,7 +82,8 @@ function TagsView() {
                                     {editMutation.isPending ? "..." : "CREATE"}
                                 </Button>
                                 :
-                                <div className="px-2 py-1 rounded bg-popover/50 border text-[10px] text-muted-foreground font-mono tracking-tighter">
+                                <div className="px-2 py-1 rounded bg-popover/50 border text-[10px] text-muted-foreground
+                                font-mono tracking-tighter">
                                     ESC
                                 </div>
                             }
@@ -104,21 +105,13 @@ function TagsView() {
                         filteredTags.map((col) =>
                             <TagCard
                                 tag={col}
+                                key={col.tagId}
                                 isOwner={isOwner}
                                 username={username}
                                 mediaType={mediaType}
-                                key={col.tagId}
-                                onDelete={(name) => {
-                                    editMutation.mutate({
-                                        tag: { name },
-                                        action: TagAction.DELETE_ALL,
-                                    });
-                                }}
+                                onDelete={(name) => editMutation.mutate({ tag: { name }, action: TagAction.DELETE_ALL })}
                                 onRename={(oldName, newName) => {
-                                    editMutation.mutate({
-                                        action: TagAction.RENAME,
-                                        tag: { name: newName, oldName },
-                                    });
+                                    editMutation.mutate({ tag: { name: newName, oldName }, action: TagAction.RENAME })
                                 }}
                             />
                         )

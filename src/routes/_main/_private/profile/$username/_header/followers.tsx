@@ -1,12 +1,11 @@
 import {toast} from "sonner";
 import {cn} from "@/lib/utils/helpers";
 import {useAuth} from "@/lib/client/hooks/use-auth";
-import {createFileRoute} from "@tanstack/react-router";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {Button} from "@/lib/client/components/ui/button";
 import {PrivacyType, SocialState} from "@/lib/utils/enums";
+import {createFileRoute, Link} from "@tanstack/react-router";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
-import {BlockLink} from "@/lib/client/components/general/BlockLink";
 import {PrivacyIcon} from "@/lib/client/components/general/MainIcons";
 import {EmptyState} from "@/lib/client/components/general/EmptyState";
 import {Clock, Loader2, UserCheck, UserPlus, UserX} from "lucide-react";
@@ -77,7 +76,6 @@ function FollowerCard({ follower, currentUserName, profileOwner, isViewingOwnPro
     const handleRemoveFollower = () => {
         if (window.confirm(`Are you sure you want to remove ${follower.username} from your followers?`)) {
             removeMutation.mutate({ data: { followerId: follower.id } }, {
-                onError: () => toast.error("Sorry, failed to remove follower"),
                 onSuccess: () => toast.success("Follower removed!"),
             });
         }
@@ -103,15 +101,11 @@ function FollowerCard({ follower, currentUserName, profileOwner, isViewingOwnPro
                         </div>
                     </div>
                     <div>
-                        <BlockLink
-                            to={"/profile/$username"}
-                            privacy={follower.privacy}
-                            params={{ username: follower.username }}
-                        >
+                        <Link to="/profile/$username" params={{ username: follower.username }}>
                             <h3 className="text-primary hover:text-app-accent font-medium leading-none">
                                 {follower.username}
                             </h3>
-                        </BlockLink>
+                        </Link>
                         <p className="mt-1 text-xs capitalize text-slate-500">
                             {follower.privacy} Profile
                         </p>

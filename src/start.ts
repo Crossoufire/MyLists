@@ -1,6 +1,6 @@
 import {createStart} from "@tanstack/react-start";
-import {formattedErrorAdapter, formZodErrorAdapter} from "@/lib/utils/error-classes";
 import {funcErrorMiddleware, reqErrorMiddleware} from "@/lib/server/middlewares/global-error";
+import {formattedErrorAdapter, formZodErrorAdapter, unauthorizedErrorAdapter} from "@/lib/utils/error-classes";
 
 
 export const startInstance = createStart(() => {
@@ -11,6 +11,7 @@ export const startInstance = createStart(() => {
         serializationAdapters: [
             formZodErrorAdapter,
             formattedErrorAdapter,
+            unauthorizedErrorAdapter,
         ],
     }
 });

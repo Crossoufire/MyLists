@@ -25,14 +25,13 @@ export const Route = createFileRoute("/_main/_private/collections/$collectionId/
 
 
 function CollectionViewer() {
-    const { currentUser } = useAuth();
+    const { isAnonymous } = useAuth();
     const navigate = Route.useNavigate();
     const { collectionId } = Route.useParams();
     const copyMutation = useCopyCollectionMutation(collectionId);
     const toggleLikeMutation = useToggleCollectionLikeMutation(collectionId);
     const apiData = useSuspenseQuery(collectionDetailsReadOptions(collectionId)).data;
 
-    const isConnected = !!currentUser;
     const { collection, items, isLiked, canManage } = apiData;
 
     const handleLikeCollection = () => {
@@ -55,7 +54,7 @@ function CollectionViewer() {
         >
             <div className="flex flex-wrap items-center justify-between pb-5">
                 <div className="flex items-center gap-3">
-                    {isConnected &&
+                    {!isAnonymous &&
                         <>
                             <Button
                                 size="sm"
@@ -105,7 +104,7 @@ function CollectionViewer() {
                                     #{item.orderIndex}
                                 </div>
                             }
-                            {isConnected && item.inUserList &&
+                            {!isAnonymous && item.inUserList &&
                                 <MediaCornerCommon
                                     isCommon={item.inUserList}
                                 />
