@@ -5,7 +5,7 @@ export const ONE_HOUR_CACHE_TTL_MS = 60 * 60 * 1000;
 
 export const ONE_DAY_CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 
-export const FOURTEEN_DAYS_CACHE_TTL_S = 60 * 60 * 24 * 14;
+export const TWO_DAYS_CACHE_TTL_S = 60 * 60 * 24 * 2;
 
 export const TRENDS_CACHE_KEY = "$trends:v2:null";
 

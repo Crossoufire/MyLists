@@ -3,7 +3,7 @@ import {notFound} from "@tanstack/react-router";
 import {FormattedError} from "@/lib/utils/error-classes";
 import {getRedisConnection} from "@/lib/server/core/redis-client";
 import {RateLimiterAbstract, RateLimiterQueue} from "rate-limiter-flexible";
-import {FOURTEEN_DAYS_CACHE_TTL_S, getRollupKey, PENDING_ROLLUPS_KEY} from "@/lib/server/core/cache-keys";
+import {getRollupKey, PENDING_ROLLUPS_KEY, TWO_DAYS_CACHE_TTL_S} from "@/lib/server/core/cache-keys";
 
 
 export class BaseApi {
@@ -137,9 +137,9 @@ export class BaseApi {
             .hincrby(getRollupKey(bucketStartMs, this.consumeKey, { seconds: true }), String(secondInMinute), 1)
             .hincrby(`api-monitor:second:${second}`, this.consumeKey, 1)
             .hincrby(`api-monitor:second:${second}`, "total", 1)
-            .expire(getRollupKey(bucketStartMs, this.consumeKey), FOURTEEN_DAYS_CACHE_TTL_S)
-            .expire(getRollupKey(bucketStartMs, this.consumeKey, { seconds: true }), FOURTEEN_DAYS_CACHE_TTL_S)
-            .expire(getRollupKey(bucketStartMs, this.consumeKey, { statuses: true }), FOURTEEN_DAYS_CACHE_TTL_S)
+            .expire(getRollupKey(bucketStartMs, this.consumeKey), TWO_DAYS_CACHE_TTL_S)
+            .expire(getRollupKey(bucketStartMs, this.consumeKey, { seconds: true }), TWO_DAYS_CACHE_TTL_S)
+            .expire(getRollupKey(bucketStartMs, this.consumeKey, { statuses: true }), TWO_DAYS_CACHE_TTL_S)
             .expire(`api-monitor:second:${second}`, 60 * 60)
             .exec();
     }

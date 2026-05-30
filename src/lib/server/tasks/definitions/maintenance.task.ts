@@ -21,7 +21,6 @@ export const maintenanceTask = defineTask({
     description: "Run all daily maintenance tasks in sequence",
     inputSchema: z.object({}),
     handler: async (ctx, input) => {
-        await ctx.step(flushApiMonitoringTask.name, () => flushApiMonitoringTask.handler(ctx, { olderThanSecs: 90 }));
         await ctx.step(deleteNonActivatedUsersTask.name, () => deleteNonActivatedUsersTask.handler(ctx, input));
         await ctx.step(removeAllOrphansMediaTask.name, () => removeAllOrphansMediaTask.handler(ctx, input));
         await ctx.step(removeUnusedMediaCoversTask.name, () => removeUnusedMediaCoversTask.handler(ctx, input));
@@ -34,5 +33,6 @@ export const maintenanceTask = defineTask({
         await ctx.step(calculateAchievementsTask.name, () => calculateAchievementsTask.handler(ctx, input));
         await ctx.step(dbMaintenanceTask.name, () => dbMaintenanceTask.handler(ctx, input));
         await ctx.step(addGenresToBooksUsingLlmTask.name, () => addGenresToBooksUsingLlmTask.handler(ctx, input));
+        await ctx.step(flushApiMonitoringTask.name, () => flushApiMonitoringTask.handler(ctx, { olderThanSecs: 90 }));
     },
 });

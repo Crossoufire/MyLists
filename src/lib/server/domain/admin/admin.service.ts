@@ -144,7 +144,7 @@ export class AdminService {
     }
 
     async getApiMonitoringStats({ range = "30d", dailyRange = "30d", recentPage = 1 }: AdminApiMonitoringParams = {}) {
-        await this.flushProviderApiRedisRollups();
+        await this.flushProviderApiRedisRollups().catch();
         const rangeDays = { "24h": 1, "7d": 7, "30d": 30, "90d": 90, all: null };
 
         const selectedDays = rangeDays[range];
@@ -158,7 +158,10 @@ export class AdminService {
             this.repository.getApiCallStatusTotals(selectedDays),
             this.repository.getApiCallSummary(selectedDays),
             this.repository.getRecentApiCalls(recentPage),
-            this._getProviderApiRedisSnapshot(),
+            this._getProviderApiRedisSnapshot().catch((err) => {
+                console.warn("Failed to read provider API live Redis snapshot:", err);
+                return null;
+            }),
         ]);
 
         const firstCallDate = summary.firstCallAt ? new Date(summary.firstCallAt) : null;
@@ -211,41 +214,57 @@ export class AdminService {
             const [bucket, provider] = member.split("|");
             const bucketStartMs = Number(bucket);
 
-            const rollupKey = getRollupKey(bucketStartMs, provider);
-            const secondsKey = getRollupKey(bucketStartMs, provider, { seconds: true });
-            const statusKey = getRollupKey(bucketStartMs, provider, { statuses: true });
-
-            const [rollupData, statusData, secondData] = await Promise.all([
-                redis.hgetall(rollupKey),
-                redis.hgetall(statusKey),
-                redis.hgetall(secondsKey),
-            ]);
-
-            const total = Number(rollupData.total ?? 0);
-            if (total <= 0) {
+            if (!provider || !Number.isFinite(bucketStartMs)) {
                 await redis.zrem(PENDING_ROLLUPS_KEY, member);
                 continue;
             }
 
-            await this.repository.upsertApiCallRollup({
-                total,
-                provider,
-                bucketStartMs,
-                errors: Number(rollupData.errors ?? 0),
-                durationMsTotal: Number(rollupData.durationMsTotal ?? 0),
-                maxSecondBurst: Math.max(0, ...Object.values(secondData).map(Number)),
-                statusCounts: Object.fromEntries(Object.entries(statusData).map(([k, v]) => [k, Number(v)])),
-            });
+            const lockKey = `api-monitor:rollups:lock:${member}`;
+            const lockAcquired = await redis.set(lockKey, "1", "EX", 120, "NX");
+            if (lockAcquired !== "OK") {
+                continue;
+            }
 
-            await redis
-                .pipeline()
-                .del(rollupKey)
-                .del(statusKey)
-                .del(secondsKey)
-                .zrem(PENDING_ROLLUPS_KEY, member)
-                .exec();
+            const rollupKey = getRollupKey(bucketStartMs, provider);
+            const secondsKey = getRollupKey(bucketStartMs, provider, { seconds: true });
+            const statusKey = getRollupKey(bucketStartMs, provider, { statuses: true });
 
-            flushed += 1;
+            try {
+                const [rollupData, statusData, secondData] = await Promise.all([
+                    redis.hgetall(rollupKey),
+                    redis.hgetall(statusKey),
+                    redis.hgetall(secondsKey),
+                ]);
+
+                const total = Number(rollupData.total ?? 0);
+                if (total <= 0) {
+                    await redis.zrem(PENDING_ROLLUPS_KEY, member);
+                    continue;
+                }
+
+                await this.repository.upsertApiCallRollup({
+                    total,
+                    provider,
+                    bucketStartMs,
+                    errors: Number(rollupData.errors ?? 0),
+                    durationMsTotal: Number(rollupData.durationMsTotal ?? 0),
+                    maxSecondBurst: Math.max(0, ...Object.values(secondData).map(Number)),
+                    statusCounts: Object.fromEntries(Object.entries(statusData).map(([k, v]) => [k, Number(v)])),
+                });
+
+                await redis
+                    .pipeline()
+                    .del(rollupKey)
+                    .del(statusKey)
+                    .del(secondsKey)
+                    .zrem(PENDING_ROLLUPS_KEY, member)
+                    .exec();
+
+                flushed += 1;
+            }
+            finally {
+                await redis.del(lockKey);
+            }
         }
 
         return { flushed };
@@ -254,52 +273,46 @@ export class AdminService {
     private async _getProviderApiRedisSnapshot() {
         if (!serverEnv.REDIS_ENABLED) return null;
 
-        try {
-            const redis = await getRedisConnection();
+        const redis = await getRedisConnection();
 
-            const pipeline = redis.pipeline();
-            const currentSecond = Math.floor(Date.now() / 1000);
-            const seconds = Array.from({ length: 60 }, (_value, idx) => currentSecond - idx);
+        const pipeline = redis.pipeline();
+        const currentSecond = Math.floor(Date.now() / 1000);
+        const seconds = Array.from({ length: 60 }, (_value, idx) => currentSecond - idx);
 
-            for (const second of seconds) {
-                pipeline.hgetall(`api-monitor:second:${second}`);
+        for (const second of seconds) {
+            pipeline.hgetall(`api-monitor:second:${second}`);
+        }
+
+        const rows = await pipeline.exec();
+        if (!rows) return null;
+
+        let lastMinuteTotal = 0;
+        let peakSecondCount = 0;
+        let currentSecondTotal = 0;
+        let peakSecondAt: string | null = null;
+
+        rows.forEach(([err, value], idx) => {
+            if (err || !value) return;
+
+            const second = seconds[idx] ?? currentSecond;
+            const total = Number((value as Record<string, string>).total ?? 0);
+
+            lastMinuteTotal += total;
+            if (idx === 0) currentSecondTotal = total;
+
+            if (total > peakSecondCount) {
+                peakSecondCount = total;
+                peakSecondAt = new Date(second * 1000).toISOString();
             }
+        });
 
-            const rows = await pipeline.exec();
-            if (!rows) return null;
-
-            let lastMinuteTotal = 0;
-            let peakSecondCount = 0;
-            let currentSecondTotal = 0;
-            let peakSecondAt: string | null = null;
-
-            rows.forEach(([err, value], idx) => {
-                if (err || !value) return;
-
-                const second = seconds[idx] ?? currentSecond;
-                const total = Number((value as Record<string, string>).total ?? 0);
-
-                lastMinuteTotal += total;
-                if (idx === 0) currentSecondTotal = total;
-
-                if (total > peakSecondCount) {
-                    peakSecondCount = total;
-                    peakSecondAt = new Date(second * 1000).toISOString();
-                }
-            });
-
-            return {
-                peakSecondAt,
-                lastMinuteTotal,
-                peakSecondCount,
-                currentSecondTotal,
-                avgPerSecondLastMinute: Number((lastMinuteTotal / 60).toFixed(2)),
-            };
-        }
-        catch (err) {
-            console.warn("Failed to read provider API monitoring counters from Redis:", err);
-            return null;
-        }
+        return {
+            peakSecondAt,
+            lastMinuteTotal,
+            peakSecondCount,
+            currentSecondTotal,
+            avgPerSecondLastMinute: Number((lastMinuteTotal / 60).toFixed(2)),
+        };
     };
 
     private _buildDailySeriesByKey = <TKey extends string>(startDate: Date, endDate: Date, keys: TKey[], countsMap: Map<string, number>) => {

@@ -4,7 +4,7 @@ import {MediaType, PrivacyType} from "@/lib/utils/enums";
 import {getDbClient} from "@/lib/server/database/async-storage";
 import {AdminErrorLog, ProviderApiRollup} from "@/lib/types/admin.types";
 import {paginate, resolveSorting} from "@/lib/server/database/pagination";
-import {and, asc, count, countDistinct, desc, eq, gte, inArray, like, or, sql} from "drizzle-orm";
+import {asc, count, countDistinct, desc, eq, gte, inArray, like, or, sql} from "drizzle-orm";
 import {apiCallRollup, collections, errorLogs, mediaRefreshLog, taskHistory, user} from "@/lib/server/database/schema";
 
 
@@ -530,56 +530,28 @@ export class AdminRepository {
     }
 
     static async upsertApiCallRollup(rollup: ProviderApiRollup) {
-        const mergeStatusCounts = (base: Record<string, number>, next: Record<string, number>) => {
-            const merged = { ...base };
-
-            for (const [key, value] of Object.entries(next)) {
-                merged[key] = (merged[key] ?? 0) + value;
-            }
-
-            return merged;
-        };
-
-        try {
-            const existing = getDbClient()
-                .select()
-                .from(apiCallRollup)
-                .where(and(
-                    eq(apiCallRollup.provider, rollup.provider),
-                    eq(apiCallRollup.bucketStartMs, rollup.bucketStartMs),
-                ))
-                .get();
-
-            if (!existing) {
-                await getDbClient()
-                    .insert(apiCallRollup)
-                    .values({
-                        total: rollup.total,
-                        errors: rollup.errors,
-                        provider: rollup.provider,
-                        statusCounts: rollup.statusCounts,
-                        bucketStartMs: rollup.bucketStartMs,
-                        maxSecondBurst: rollup.maxSecondBurst,
-                        durationMsTotal: rollup.durationMsTotal,
-                        bucketStart: new Date(rollup.bucketStartMs).toISOString(),
-                    });
-                return;
-            }
-
-            await getDbClient()
-                .update(apiCallRollup)
-                .set({
-                    total: existing.total + rollup.total,
-                    errors: existing.errors + rollup.errors,
-                    durationMsTotal: existing.durationMsTotal + rollup.durationMsTotal,
-                    maxSecondBurst: Math.max(existing.maxSecondBurst, rollup.maxSecondBurst),
-                    statusCounts: mergeStatusCounts(existing.statusCounts, rollup.statusCounts),
-                })
-                .where(eq(apiCallRollup.id, existing.id));
-        }
-        catch (err) {
-            console.warn("Failed to persist provider API monitoring rollup:", err);
-        }
+        await getDbClient()
+            .insert(apiCallRollup)
+            .values({
+                total: rollup.total,
+                errors: rollup.errors,
+                provider: rollup.provider,
+                statusCounts: rollup.statusCounts,
+                bucketStartMs: rollup.bucketStartMs,
+                maxSecondBurst: rollup.maxSecondBurst,
+                durationMsTotal: rollup.durationMsTotal,
+                bucketStart: new Date(rollup.bucketStartMs).toISOString(),
+            })
+            .onConflictDoUpdate({
+                target: [apiCallRollup.bucketStartMs, apiCallRollup.provider],
+                set: {
+                    total: rollup.total,
+                    errors: rollup.errors,
+                    statusCounts: rollup.statusCounts,
+                    maxSecondBurst: rollup.maxSecondBurst,
+                    durationMsTotal: rollup.durationMsTotal,
+                },
+            });
     };
 
     private static _buildApiCallMsFilter(days?: number | null) {
