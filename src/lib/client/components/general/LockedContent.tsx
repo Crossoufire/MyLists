@@ -1,5 +1,6 @@
 import {LockIcon} from "lucide-react";
 import {cn} from "@/lib/utils/helpers";
+import {useLocation} from "@tanstack/react-router";
 import {Button} from "@/lib/client/components/ui/button";
 import {useAuthModal} from "@/lib/client/hooks/use-auth-modal";
 
@@ -15,6 +16,7 @@ interface LockedContentProps {
 
 
 export const LockedContent = ({ isAnonymous, title, description, showAuthButtons, className, variant = "overlay" }: LockedContentProps) => {
+    const location = useLocation();
     const isOverlay = (variant === "overlay");
     const { openLogin, openRegister } = useAuthModal();
 
@@ -34,10 +36,10 @@ export const LockedContent = ({ isAnonymous, title, description, showAuthButtons
                 </p>
                 {showAuthButtons &&
                     <div className="flex justify-center items-center gap-2 mt-4">
-                        <Button variant="ghost" size="sm" onClick={openLogin}>
+                        <Button variant="ghost" size="sm" onClick={() => openLogin(location.href)}>
                             Login
                         </Button>
-                        <Button size="sm" variant="emeraldy" onClick={openRegister}>
+                        <Button size="sm" variant="emeraldy" onClick={() => openRegister(location.href)}>
                             Register
                         </Button>
                     </div>

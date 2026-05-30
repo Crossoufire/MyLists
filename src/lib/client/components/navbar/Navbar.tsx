@@ -5,10 +5,10 @@ import authClient from "@/lib/utils/auth-client";
 import {useAuth} from "@/lib/client/hooks/use-auth";
 import {useQueryClient} from "@tanstack/react-query";
 import {Button} from "@/lib/client/components/ui/button";
-import {Link, useNavigate} from "@tanstack/react-router";
 import {isAtLeastRole, RoleType} from "@/lib/utils/enums";
 import {useAuthModal} from "@/lib/client/hooks/use-auth-modal";
 import {SearchBar} from "@/lib/client/components/navbar/SearchBar";
+import {Link, useLocation, useNavigate} from "@tanstack/react-router";
 import {ProfileIcon} from "@/lib/client/components/general/ProfileIcon";
 import {Notifications} from "@/lib/client/components/navbar/Notifications";
 import {authOptions} from "@/lib/client/react-query/query-options/query-options";
@@ -51,6 +51,7 @@ const navStyle = cva("inline-flex items-center justify-center px-4 text-sm font-
 
 export const Navbar = () => {
     const navigate = useNavigate();
+    const location = useLocation();
     const queryClient = useQueryClient();
     const { currentUser, isAnonymous } = useAuth();
     const { openLogin, openRegister } = useAuthModal();
@@ -136,10 +137,10 @@ export const Navbar = () => {
                     <div className="flex items-center gap-1 max-sm:gap-2">
                         {isAnonymous ?
                             <div className="flex items-center gap-2">
-                                <Button variant="ghost" size="sm" onClick={openLogin}>
+                                <Button variant="ghost" size="sm" onClick={() => openLogin(location.href)}>
                                     Login
                                 </Button>
-                                <Button size="sm" variant="emeraldy" onClick={openRegister}>
+                                <Button size="sm" variant="emeraldy" onClick={() => openRegister(location.href)}>
                                     Register
                                 </Button>
                             </div>

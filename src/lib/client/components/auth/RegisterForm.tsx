@@ -3,6 +3,7 @@ import {useForm} from "react-hook-form";
 import {LoaderCircle} from "lucide-react";
 import authClient from "@/lib/utils/auth-client";
 import {FaGithub, FaGoogle} from "react-icons/fa";
+import {useLocation} from "@tanstack/react-router";
 import {Input} from "@/lib/client/components/ui/input";
 import {Button} from "@/lib/client/components/ui/button";
 import {Separator} from "@/lib/client/components/ui/separator";
@@ -18,11 +19,13 @@ type FormValues = {
 
 
 interface RegisterFormProps {
+    redirectTo?: string;
     onOpenChange?: (open: boolean) => void;
 }
 
 
-export const RegisterForm = ({ onOpenChange }: RegisterFormProps) => {
+export const RegisterForm = ({ redirectTo, onOpenChange }: RegisterFormProps) => {
+    const location = useLocation();
     const form = useForm<FormValues>({
         defaultValues: {
             email: "",
@@ -33,11 +36,16 @@ export const RegisterForm = ({ onOpenChange }: RegisterFormProps) => {
         shouldFocusError: false,
     });
 
+    const getRedirectTarget = () => {
+        return redirectTo || location.href || "/";
+    };
+
     const onSubmit = async (submitted: FormValues) => {
         await authClient.signUp.email({
             email: submitted.email,
             name: submitted.username,
             password: submitted.password,
+            callbackURL: getRedirectTarget(),
         }, {
             onError: (ctx) => {
                 form.setError("root", { type: "value", message: ctx.error.message }, { shouldFocus: false });
@@ -51,7 +59,7 @@ export const RegisterForm = ({ onOpenChange }: RegisterFormProps) => {
     };
 
     const withProvider = async (provider: "google" | "github") => {
-        await authClient.signIn.social({ provider }, {
+        await authClient.signIn.social({ provider, callbackURL: getRedirectTarget() }, {
             onError: (ctx) => {
                 toast.error(ctx.error.message);
             },

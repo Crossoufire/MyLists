@@ -5,15 +5,17 @@ import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle} fro
 
 
 export function AuthModalProvider() {
-    const { view, isOpen, close } = useAuthModal();
+    const { view, isOpen, redirect, close } = useAuthModal();
 
     return (
         <>
             <LoginModal
+                redirect={redirect}
                 onOpenChange={close}
                 open={isOpen && view === "login"}
             />
             <RegisterModal
+                redirect={redirect}
                 onOpenChange={close}
                 open={isOpen && view === "register"}
             />
@@ -24,11 +26,12 @@ export function AuthModalProvider() {
 
 interface LoginModalProps {
     open: boolean;
+    redirect?: string;
     onOpenChange?: (open: boolean) => void;
 }
 
 
-function LoginModal({ open, onOpenChange }: LoginModalProps) {
+function LoginModal({ open, redirect, onOpenChange }: LoginModalProps) {
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="max-sm:w-full w-87 bg-neutral-950">
@@ -37,6 +40,7 @@ function LoginModal({ open, onOpenChange }: LoginModalProps) {
                     <DialogDescription></DialogDescription>
                 </DialogHeader>
                 <LoginForm
+                    redirectTo={redirect}
                     onOpenChange={onOpenChange}
                 />
             </DialogContent>
@@ -47,11 +51,12 @@ function LoginModal({ open, onOpenChange }: LoginModalProps) {
 
 interface RegisterModalProps {
     open: boolean;
+    redirect?: string;
     onOpenChange?: (open: boolean) => void;
 }
 
 
-function RegisterModal({ open, onOpenChange }: RegisterModalProps) {
+function RegisterModal({ open, redirect, onOpenChange }: RegisterModalProps) {
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="max-sm:w-full w-87 bg-neutral-950">
@@ -60,6 +65,7 @@ function RegisterModal({ open, onOpenChange }: RegisterModalProps) {
                     <DialogDescription></DialogDescription>
                 </DialogHeader>
                 <RegisterForm
+                    redirectTo={redirect}
                     onOpenChange={onOpenChange}
                 />
             </DialogContent>

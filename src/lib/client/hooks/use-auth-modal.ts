@@ -1,21 +1,29 @@
 import {Store, useSelector} from "@tanstack/react-store";
 
 
-const authModalStore = new Store<{ view: "login" | "register" | null }>({ view: null });
+type AuthModalState = {
+    redirect?: string;
+    view: "login" | "register" | null;
+};
+
+
+const authModalStore = new Store<AuthModalState>({ view: null });
 
 
 const authModalActions = {
     close: () => authModalStore.setState(() => ({ view: null })),
-    openLogin: () => authModalStore.setState(() => ({ view: "login" })),
-    openRegister: () => authModalStore.setState(() => ({ view: "register" })),
+    openLogin: (redirect?: string) => authModalStore.setState(() => ({ view: "login", redirect })),
+    openRegister: (redirect?: string) => authModalStore.setState(() => ({ view: "register", redirect })),
 };
 
 
 export const useAuthModal = () => {
     const view = useSelector(authModalStore, (state) => state.view);
+    const redirect = useSelector(authModalStore, (state) => state.redirect);
 
     return {
         view,
+        redirect,
         isOpen: view !== null,
         ...authModalActions,
     };

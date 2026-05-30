@@ -4,9 +4,9 @@ import authClient from "@/lib/utils/auth-client";
 import {FaGithub, FaGoogle} from "react-icons/fa";
 import {useQueryClient} from "@tanstack/react-query";
 import {Input} from "@/lib/client/components/ui/input";
-import {Link, useNavigate} from "@tanstack/react-router";
 import {Button} from "@/lib/client/components/ui/button";
 import {Separator} from "@/lib/client/components/ui/separator";
+import {Link, useLocation, useNavigate, useRouter} from "@tanstack/react-router";
 import {authOptions} from "@/lib/client/react-query/query-options/query-options";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/lib/client/components/ui/form";
 
@@ -18,12 +18,15 @@ type FormValues = {
 
 
 interface LoginFormProps {
+    redirectTo?: string;
     onOpenChange?: (open: boolean) => void;
 }
 
 
-export const LoginForm = ({ onOpenChange }: LoginFormProps) => {
+export const LoginForm = ({ redirectTo, onOpenChange }: LoginFormProps) => {
+    const router = useRouter();
     const navigate = useNavigate();
+    const location = useLocation();
     const queryClient = useQueryClient();
     const form = useForm<FormValues>({
         shouldFocusError: false,
@@ -32,6 +35,15 @@ export const LoginForm = ({ onOpenChange }: LoginFormProps) => {
             password: "",
         },
     });
+
+    const getRedirectTarget = () => {
+        return redirectTo || location.href || "/";
+    };
+
+    const refreshAuthenticatedRouteData = async () => {
+        await router.invalidate();
+        await queryClient.invalidateQueries({ predicate: (q) => q.queryKey[0] !== authOptions.queryKey[0] });
+    };
 
     const onSubmit = async (submitted: FormValues) => {
         await authClient.signIn.email({
@@ -54,14 +66,15 @@ export const LoginForm = ({ onOpenChange }: LoginFormProps) => {
                 const currentUser = await queryClient.fetchQuery({ ...authOptions, staleTime: 0 });
                 onOpenChange?.(false);
                 if (currentUser) {
-                    await navigate({ to: "/profile/$username", params: { username: currentUser.name }, replace: true });
+                    await navigate({ href: getRedirectTarget(), replace: true });
+                    await refreshAuthenticatedRouteData();
                 }
             },
         });
     };
 
     const withProvider = async (provider: "google" | "github") => {
-        await authClient.signIn.social({ provider }, {
+        await authClient.signIn.social({ provider, callbackURL: getRedirectTarget() }, {
             onError: (ctx) => {
                 toast.error(ctx.error.message);
             },

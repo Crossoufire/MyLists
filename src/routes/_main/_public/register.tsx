@@ -1,17 +1,17 @@
 import {toast} from "sonner";
-import {createFileRoute, Link} from "@tanstack/react-router";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
 import {RegisterForm} from "@/lib/client/components/auth/RegisterForm";
+import {createFileRoute, Link, useSearch} from "@tanstack/react-router";
 
 
 export const Route = createFileRoute("/_main/_public/register")({
-    validateSearch: (search) => search as { message?: string },
     component: RegisterPage,
 });
 
 
 function RegisterPage() {
-    const { message } = Route.useSearch();
+    const { message, redirect } = useSearch({ from: "/_main/_public" });
+
     if (message) toast.warning(message);
 
     return (
@@ -20,10 +20,14 @@ function RegisterPage() {
                 <h1 className="text-2xl font-semibold tracking-tight text-center text-white mb-2">
                     Register to MyLists
                 </h1>
-                <RegisterForm/>
+
+                <RegisterForm
+                    redirectTo={redirect}
+                />
+
                 <div className="mt-6 text-center text-sm text-neutral-400">
                     Already have an account?{" "}
-                    <Link to="/login" className="underline text-white hover:text-neutral-200">
+                    <Link to="/login" search={{ redirect }} className="underline text-white hover:text-neutral-200">
                         Sign-in
                     </Link>
                 </div>
