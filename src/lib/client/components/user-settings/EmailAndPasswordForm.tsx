@@ -37,7 +37,7 @@ export const EmailAndPasswordForm = () => {
             onError: (err) => {
                 if (err instanceof FormZodError) {
                     err.issues.forEach((issue) => {
-                        passwordForm.setError(issue.path[0], { message: issue.message });
+                        passwordForm.setError(issue.path.join("."), { message: issue.message });
                     });
                 }
                 else if (err?.message?.toLowerCase().includes("current password")) {

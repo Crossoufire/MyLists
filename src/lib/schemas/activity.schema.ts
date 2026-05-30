@@ -41,7 +41,7 @@ export const updateActivitySchema = z.object({
         isCompleted: z.boolean().optional(),
         specificGained: z.number().min(0).optional(),
     }).refine((data) => Object.values(data).some((val) => val !== undefined), {
-        message: "Provide at least one field to update.",
+        message: "Provide at least one field to update.", path: ["lastUpdate"],
     }),
 });
 
@@ -54,7 +54,7 @@ export const addActivitySchema = z.object({
     isRedo: z.boolean().optional().default(false),
     isCompleted: z.boolean().optional().default(false),
 }).refine((data) => data.specificGained > 0 || data.isCompleted || data.isRedo, {
-    message: "Activity must have progress, completion, or redo.",
+    message: "Activity must have progress, completion, or redo.", path: ["specificGained"],
 });
 
 export const bulkHideActivitySchema = z.object({

@@ -74,7 +74,7 @@ export const MediaListForm = () => {
             onError: (err) => {
                 if (err instanceof FormZodError) {
                     err.issues.forEach((issue) => {
-                        form.setError(issue.path[0], { type: "server", message: issue.message });
+                        form.setError(issue.path.join("."), { type: "server", message: issue.message });
                     });
                 }
             },

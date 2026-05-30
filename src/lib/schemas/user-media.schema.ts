@@ -35,17 +35,24 @@ export const updateUserCustomCoverSchema = z.object({
     imageUrl: z.url().trim().optional(),
     imageFile: z.instanceof(File).optional(),
     remove: z.coerce.boolean().optional().default(false),
-}).refine((data) => {
-    if (data.remove) {
-        return !data.imageUrl && !data.imageFile;
+}).superRefine((data, ctx) => {
+    const addFieldIssues = (message: string) => {
+        ctx.addIssue({ code: "custom", message, path: ["imageUrl"] });
+        ctx.addIssue({ code: "custom", message, path: ["imageFile"] });
+    };
+
+    if (data.remove && (data.imageUrl || data.imageFile)) {
+        addFieldIssues("Provide an image link, upload a file, or choose remove.");
     }
-    return !!data.imageUrl || !!data.imageFile;
-}, {
-    message: "Provide an image link, upload a file, or choose remove.",
-}).refine((data) => {
-    if (data.remove) return true;
-    return !(data.imageUrl && data.imageFile);
-}, { message: "Please, choose only one cover option." });
+
+    if (!data.remove && !data.imageUrl && !data.imageFile) {
+        addFieldIssues("Provide an image link, upload a file, or choose remove.");
+    }
+
+    if (!data.remove && data.imageUrl && data.imageFile) {
+        addFieldIssues("Please, choose only one cover option.");
+    }
+});
 
 export const addMediaToListSchema = z.object({
     mediaType: z.enum(MediaType),
@@ -77,10 +84,9 @@ export const updateUserMediaSchema = z.object({
             .map(([key, _]) => key);
         return definedFields.length === 1;
     }, {
-        message: "Too many fields provided in the payload."
+        message: "Too many fields provided in the payload.", path: ["type"],
     }).refine((data) => !data.loggedAt || loggedActivityUpdateTypes.has(data.type), {
-        message: "Only progress changes can be backdated.",
-        path: ["loggedAt"],
+        message: "Only progress changes can be backdated.", path: ["loggedAt"],
     })
 });
 

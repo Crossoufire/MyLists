@@ -45,7 +45,8 @@ function CollectionCreatePage() {
             onError: (err) => {
                 if (err instanceof FormZodError) {
                     err.issues.forEach((issue) => {
-                        form.setError(issue.path[0], { message: issue.message });
+                        const fieldPath = issue.path[0] === "items" ? "items" : issue.path.join(".");
+                        form.setError(fieldPath, { message: issue.message });
                     });
                 }
             },

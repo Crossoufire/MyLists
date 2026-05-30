@@ -82,7 +82,7 @@ function MediaEditPage() {
             onError: (err) => {
                 if (err instanceof FormZodError) {
                     err.issues.forEach((issue) => {
-                        form.setError(issue.path[0], { message: issue.message });
+                        form.setError(issue.path.join("."), { message: issue.message });
                     });
                 }
             },
