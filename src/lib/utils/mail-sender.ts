@@ -1,7 +1,7 @@
 import nodemailer from "nodemailer";
 import {serverEnv} from "@/env/server";
+import {render} from "@react-email/render";
 import {Options} from "nodemailer/lib/mailer";
-import {render} from "@react-email/components";
 import {createServerOnlyFn} from "@tanstack/react-start";
 import {PasswordResetEmail, RegisterEmail} from "@/lib/client/components/emails";
 

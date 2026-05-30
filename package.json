@@ -80,7 +80,7 @@
     "devDependencies": {
         "@babel/core": "^7.29.7",
         "@libsql/client": "^0.17.3",
-        "@react-email/preview-server": "5.2.10",
+        "@react-email/ui": "6.5.0",
         "@rolldown/plugin-babel": "^0.2.3",
         "@tailwindcss/vite": "^4.3.0",
         "@tanstack/react-query-devtools": "^5.100.14",
