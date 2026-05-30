@@ -26,9 +26,6 @@ const withFallback = <T>(value: T | null | undefined, formatter: (v: T) => strin
     return value === null || value === undefined || value === "" ? fallback : formatter(value);
 };
 
-
-export const CURRENT_DATE = new Date();
-
 export const zeroPad = (value: number | string | null | undefined) => {
     return String(value ?? 0).padStart(2, "0");
 };
@@ -43,10 +40,9 @@ export const capitalize = (input: string | null | undefined) => {
     return trimmed.charAt(0).toUpperCase() + trimmed.slice(1);
 };
 
-
 export const getDaysRemaining = (dateString: string | null) => {
     if (!dateString) return null;
-    const diffTime = new Date(dateString).getTime() - CURRENT_DATE.getTime();
+    const diffTime = new Date(dateString).getTime() - new Date().getTime();
 
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 };
