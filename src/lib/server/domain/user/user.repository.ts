@@ -269,6 +269,17 @@ export class UserRepository {
             .get();
     }
 
+    static async getMinimalUserSettings(userId: number) {
+        return getDbClient()
+            .select({
+                active: userMediaSettings.active,
+                mediaType: userMediaSettings.mediaType,
+            })
+            .from(userMediaSettings)
+            .where(eq(userMediaSettings.userId, userId))
+            .orderBy(orderByMediaType);
+    }
+
     static async updateUserSettings(userId: number, payload: Partial<typeof user.$inferInsert>) {
         await getDbClient()
             .update(user)
