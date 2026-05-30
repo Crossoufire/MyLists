@@ -2,7 +2,7 @@ import {MediaType} from "@/lib/utils/enums";
 import {createServerFn} from "@tanstack/react-start";
 import {getContainer} from "@/lib/server/core/container";
 import {publicAuthMiddleware} from "@/lib/server/middlewares/authentication";
-import {getTrendsCacheKey, ONE_DAY_CACHE_TTL_MS} from "@/lib/server/core/cache-keys";
+import {ONE_DAY_CACHE_TTL_MS, TRENDS_CACHE_KEY} from "@/lib/server/core/cache-keys";
 
 
 export const getTrendsMedia = createServerFn({ method: "GET" })
@@ -11,7 +11,7 @@ export const getTrendsMedia = createServerFn({ method: "GET" })
         const container = await getContainer();
 
         return container.cacheManager.wrap(
-            getTrendsCacheKey(),
+            TRENDS_CACHE_KEY,
             async () => {
                 const mediaProviderRegistry = container.registries.mediaProviderService;
                 const gamesProviderService = mediaProviderRegistry.getService(MediaType.GAMES);

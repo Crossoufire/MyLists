@@ -1,6 +1,7 @@
 import {z} from "zod";
 import {defineTask} from "@/lib/server/tasks/define-task";
 import {dbMaintenanceTask} from "@/lib/server/tasks/definitions/db-maintenance.task";
+import {flushApiMonitoringTask} from "@/lib/server/tasks/definitions/flush-api-monitoring.task";
 import {lockOldMoviesTask} from "@/lib/server/tasks/definitions/lock-old-movies.task";
 import {bulkMediaRefreshTask} from "@/lib/server/tasks/definitions/bulk-media-refresh.task";
 import {removeAllOrphansMediaTask} from "@/lib/server/tasks/definitions/remove-all-orphans-media";
@@ -20,6 +21,7 @@ export const maintenanceTask = defineTask({
     description: "Run all daily maintenance tasks in sequence",
     inputSchema: z.object({}),
     handler: async (ctx, input) => {
+        await ctx.step(flushApiMonitoringTask.name, () => flushApiMonitoringTask.handler(ctx, { olderThanSecs: 90 }));
         await ctx.step(deleteNonActivatedUsersTask.name, () => deleteNonActivatedUsersTask.handler(ctx, input));
         await ctx.step(removeAllOrphansMediaTask.name, () => removeAllOrphansMediaTask.handler(ctx, input));
         await ctx.step(removeUnusedMediaCoversTask.name, () => removeUnusedMediaCoversTask.handler(ctx, input));

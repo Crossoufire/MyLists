@@ -1,8 +1,9 @@
 import {SearchType} from "@/lib/schemas";
 import {queryOptions} from "@tanstack/react-query";
-import {AdminMediaRefreshStatsParams} from "@/lib/types/admin.types";
+import {AdminApiMonitoringParams, AdminMediaRefreshStatsParams} from "@/lib/types/admin.types";
 import {
     getAdminAchievements,
+    getAdminApiMonitoringStats,
     getAdminAllCollections,
     getAdminAllUsers,
     getAdminArchivedTasks,
@@ -80,4 +81,10 @@ export const adminErrorLogsOptions = (search: SearchType) => queryOptions({
 export const adminMediaRefreshOptions = (params: AdminMediaRefreshStatsParams = {}) => queryOptions({
     queryKey: ["admin", "media-refresh", params],
     queryFn: () => getAdminMediaRefreshStats({ data: params }),
+});
+
+
+export const adminApiMonitoringOptions = (params: AdminApiMonitoringParams = {}) => queryOptions({
+    queryKey: ["admin", "api-monitoring", params],
+    queryFn: () => getAdminApiMonitoringStats({ data: params }),
 });

@@ -14,6 +14,7 @@ import {requiredAuthAndAdminTokenMiddleware, requiredAuthAndManagerRoleMiddlewar
 import {
     adminDeleteArchivedTaskSchema,
     adminDeleteErrorLogSchema,
+    adminApiMonitoringSchema,
     adminPostUpdateTiersSchema,
     adminPostUpdateUserSchema,
     adminRefreshSchema,
@@ -195,6 +196,15 @@ export const getAdminMediaRefreshStats = createServerFn({ method: "GET" })
     .handler(async ({ data }) => {
         const adminService = await getContainer().then((c) => c.services.admin);
         return adminService.getMediaRefreshStats(data);
+    });
+
+
+export const getAdminApiMonitoringStats = createServerFn({ method: "GET" })
+    .middleware([requiredAuthAndAdminTokenMiddleware])
+    .inputValidator(adminApiMonitoringSchema)
+    .handler(async ({ data }) => {
+        const adminService = await getContainer().then((c) => c.services.admin);
+        return adminService.getApiMonitoringStats(data);
     });
 
 
