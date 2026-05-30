@@ -89,7 +89,7 @@ export const FiltersSideSheet = ({ filters, username, mediaType, isCurrent, onCl
                                 <EmptyState
                                     icon={X}
                                     message={error.message}
-                                    className="text-red-400"
+                                    className="text-destructive"
                                 />
                             </div>
                             :
@@ -244,10 +244,9 @@ const CheckboxGroup = ({ title, items, onChange, defaultChecked, render }: Check
             </div>
             {items.length > initVisibleItems &&
                 <Button variant="outline" size="xs" onClick={toggleShowAll} className="mt-1">
-                    {showAll ?
-                        <>Less <ChevronUp className="size-3.5"/></>
-                        :
-                        <>More <ChevronDown className="size-3.5"/></>
+                    {showAll
+                        ? <>Less <ChevronUp className="size-3.5"/></>
+                        : <>More <ChevronDown className="size-3.5"/></>
                     }
                 </Button>
             }

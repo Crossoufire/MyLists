@@ -2,6 +2,7 @@ import React, {useState} from "react";
 import {useQuery} from "@tanstack/react-query";
 import {useAuth} from "@/lib/client/hooks/use-auth";
 import {Card} from "@/lib/client/components/ui/card";
+import {formatDateTime} from "@/lib/utils/formating";
 import {Input} from "@/lib/client/components/ui/input";
 import {Badge} from "@/lib/client/components/ui/badge";
 import {ApiProviderType, MediaType} from "@/lib/utils/enums";
@@ -10,7 +11,6 @@ import {PageTitle} from "@/lib/client/components/general/PageTitle";
 import {navSearchOptions} from "@/lib/client/react-query/query-options/query-options";
 import {BookImage, Cat, Gamepad2, Library, LoaderCircle, Monitor, Popcorn, Search, User, X} from "lucide-react";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/lib/client/components/ui/select";
-import {formatDateTime} from "@/lib/utils/formating";
 
 
 type GlobalSearch = {
@@ -33,6 +33,7 @@ function SearchPage() {
     const filters = Route.useSearch();
     const navigate = Route.useNavigate();
     const { query = DEFAULT.query, apiProvider = DEFAULT.apiProvider } = filters;
+
     const [selectDrop, setSelectDrop] = useState(apiProvider);
     const [currentSearch, setCurrentSearch] = useState(query);
     const { data: apiData, isLoading, error } = useQuery(navSearchOptions(query, 1, apiProvider));
@@ -64,9 +65,9 @@ function SearchPage() {
                     <Input
                         type="search"
                         value={currentSearch}
-                        onKeyDown={(ev) => onSearchEnter(ev)}
                         placeholder="Search for media/users..."
-                        className="pl-8 rounded-md w-112 max-sm:w-full"
+                        className="pl-8 rounded-md w-md max-sm:w-full"
+                        onKeyDown={(ev) => onSearchEnter(ev)}
                         onChange={(ev) => setCurrentSearch(ev.target.value)}
                     />
                 </div>

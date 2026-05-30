@@ -10,8 +10,17 @@ export const useAuth = () => {
         await queryClient.invalidateQueries({ queryKey: authOptions.queryKey });
     };
 
+    if (currentUser) {
+        return {
+            currentUser,
+            setCurrentUser,
+            isAnonymous: false as const,
+        };
+    }
+
     return {
-        currentUser,
         setCurrentUser,
+        currentUser: null,
+        isAnonymous: true as const,
     };
 };

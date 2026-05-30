@@ -82,11 +82,13 @@ function RouteComponent() {
             >
                 <OnboardingDemoBox>
                     {!!userMedia &&
-                        <UserMediaDetails
-                            userMedia={userMedia}
-                            mediaType={MediaType.MOVIES}
-                            queryOption={mediaDetailsOptions(MediaType.MOVIES, mediaId, false)}
-                        />
+                        <div className="max-w-100">
+                            <UserMediaDetails
+                                userMedia={userMedia}
+                                mediaType={MediaType.MOVIES}
+                                queryOption={mediaDetailsOptions(MediaType.MOVIES, mediaId, false)}
+                            />
+                        </div>
                     }
                 </OnboardingDemoBox>
 

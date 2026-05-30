@@ -5,7 +5,6 @@ import {MediaType} from "@/lib/utils/enums";
 export type AddActivity = z.infer<typeof addActivitySchema>;
 export type MonthlyActivityFilters = z.infer<typeof monthlyActivitySchema>;
 export type UpdateActivity = z.infer<typeof updateActivitySchema>["payload"];
-export type SpecificActivityFilters = z.infer<typeof getSpecificActivitySchema>;
 export type MonthlyActivityStatsFilters = z.infer<typeof monthlyActivityStatsSchema>;
 
 
@@ -28,13 +27,6 @@ export const monthlyActivityStatsSchema = monthlyActivitySchema.pick({
     mediaType: z.enum(MediaType).optional(),
 });
 
-export const getSpecificActivitySchema = z.object({
-    mediaType: z.enum(MediaType),
-    year: z.coerce.number().int().positive(),
-    mediaId: z.coerce.number().int().positive(),
-    month: z.coerce.number().int().positive().min(1).max(12),
-});
-
 export const activityAddMediaSearchSchema = z.object({
     mediaType: z.enum(MediaType),
     query: z.string().trim().min(2),
@@ -49,7 +41,7 @@ export const updateActivitySchema = z.object({
         isCompleted: z.boolean().optional(),
         specificGained: z.number().min(0).optional(),
     }).refine((data) => Object.values(data).some((val) => val !== undefined), {
-        message: "Provide at least one field to update.",
+        message: "Provide at least one field to update.", path: ["lastUpdate"],
     }),
 });
 
@@ -62,7 +54,7 @@ export const addActivitySchema = z.object({
     isRedo: z.boolean().optional().default(false),
     isCompleted: z.boolean().optional().default(false),
 }).refine((data) => data.specificGained > 0 || data.isCompleted || data.isRedo, {
-    message: "Activity must have progress, completion, or redo.",
+    message: "Activity must have progress, completion, or redo.", path: ["specificGained"],
 });
 
 export const bulkHideActivitySchema = z.object({
@@ -70,7 +62,7 @@ export const bulkHideActivitySchema = z.object({
     startDate: z.string(),
     mediaType: z.enum(MediaType).optional(),
 }).refine((data) => new Date(data.startDate).getTime() <= new Date(data.endDate).getTime(), {
-    message: "Start date must be before end date.",
+    message: "Start date must be before end date.", path: ["endDate"],
 });
 
 export const deleteActivitySchema = z.object({

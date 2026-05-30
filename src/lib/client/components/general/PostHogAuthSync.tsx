@@ -1,19 +1,25 @@
 import {useEffect} from "react";
-import posthog from "posthog-js";
+import {usePostHog} from "posthog-js/react";
 import {useAuth} from "@/lib/client/hooks/use-auth";
 
 
 export function PostHogAuthSync() {
+    const posthog = usePostHog();
     const { currentUser } = useAuth();
 
+    const username = currentUser?.name;
+    const userId = currentUser?.id ? String(currentUser.id) : null;
+
     useEffect(() => {
-        if (currentUser && currentUser.id) {
-            posthog.identify(String(currentUser.id), { username: currentUser.name });
+        if (!posthog) return;
+
+        if (userId) {
+            posthog.identify(userId, { username });
         }
         else {
             posthog.reset();
         }
-    }, [currentUser]);
+    }, [posthog, userId, username]);
 
     return null;
 }

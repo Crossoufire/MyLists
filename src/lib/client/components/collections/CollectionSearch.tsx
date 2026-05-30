@@ -1,4 +1,3 @@
-import {toast} from "sonner";
 import {useState} from "react";
 import {cn} from "@/lib/utils/helpers";
 import {useQuery} from "@tanstack/react-query";
@@ -29,7 +28,7 @@ interface CollectionSearchProps {
 export const CollectionSearch = ({ mediaType, onAdd, disabled }: CollectionSearchProps) => {
     const [page, setPage] = useState(1);
     const apiProvider = providerByMediaType[mediaType];
-    const mutation = useAddMediaToCollectionMutation(mediaType);
+    const mutation = useAddMediaToCollectionMutation();
     const [resolvingId, setResolvingId] = useState<number | string | null>(null);
     const { search, setSearch, debouncedSearch, isOpen, reset, containerRef } = useSearchContainer({
         onReset: () => setPage(1),
@@ -45,8 +44,8 @@ export const CollectionSearch = ({ mediaType, onAdd, disabled }: CollectionSearc
         if (disabled || resolvingId) return;
 
         setResolvingId(item.id)
-        mutation.mutate(item, {
-            onError: () => toast.error("Failed to add the media."),
+
+        mutation.mutate({ data: { mediaType, external: true, mediaId: item.id } }, {
             onSuccess: ({ media }) => {
                 onAdd({ mediaId: media.id, mediaName: media.name, mediaCover: media.imageCover });
                 reset();

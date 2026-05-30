@@ -3,7 +3,7 @@ import {MediaType} from "@/lib/utils/enums";
 import {Badge} from "@/lib/client/components/ui/badge";
 import {formatDateTime, getDaysRemaining, zeroPad} from "@/lib/utils/formating";
 import {ComingNextItem} from "@/lib/types/query.options.types";
-import {Hourglass, AlertCircle, Clock, Calendar} from "lucide-react";
+import {AlertCircle, Calendar, Clock, Hourglass} from "lucide-react";
 import {StatusBadge} from "@/lib/client/components/general/StatusBadge";
 import {MainThemeIcon} from "@/lib/client/components/general/MainIcons";
 
@@ -48,7 +48,7 @@ export const ComingNextCard = ({ item, mediaType }: { item: ComingNextItem, medi
                                             S{zeroPad(item.seasonToAir)}.E{zeroPad(item.episodeToAir)}
                                         </span>
                                         {item.episodeToAir === 1 &&
-                                            <span className="text-[10px] text-red-400 px-1.5 rounded border border-red-500">
+                                            <span className="text-[10px] text-destructive px-1.5 rounded border border-red-500">
                                                 Premiere
                                             </span>
                                         }

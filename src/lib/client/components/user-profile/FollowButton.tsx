@@ -1,4 +1,3 @@
-import {toast} from "sonner";
 import {cn} from "@/lib/utils/helpers";
 import {SocialState} from "@/lib/utils/enums";
 import {Button} from "@/lib/client/components/ui/button";
@@ -60,10 +59,7 @@ export const FollowButton = ({ profileUsername, social }: FollowButtonProps) => 
 
     const handleClick = () => {
         const mutation = (config.action === "follow") ? followMutation : unfollowMutation;
-
-        mutation.mutate({ data: { targetUserId: social.followId } }, {
-            onError: (error) => toast.error(error.message || "An unexpected error occurred."),
-        });
+        mutation.mutate({ data: { targetUserId: social.followId } });
     };
 
     return (

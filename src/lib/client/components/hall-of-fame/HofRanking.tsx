@@ -1,10 +1,10 @@
 import React from "react";
 import {Ban, TrendingUp} from "lucide-react";
 import {capitalize} from "@/lib/utils/formating";
+import {getThemeColor} from "@/lib/utils/colors-and-icons";
 import {HofUserRank} from "@/lib/types/query.options.types";
 import {Progress} from "@/lib/client/components/ui/progress";
 import {Card, CardContent} from "@/lib/client/components/ui/card";
-import {getThemeColor} from "@/lib/utils/colors-and-icons";
 
 
 interface HofRankingProps {
@@ -40,7 +40,10 @@ export const HofRanking = ({ userRanks }: HofRankingProps) => {
                                 <div className="text-xs font-semibold mt-2">
                                     <div className="flex items-center gap-1">
                                         <TrendingUp className="text-app-accent size-4"/>
-                                        {rank.percent ? <>Top {rank.percent.toFixed(1)}%</> : <>Top - %</>}
+                                        {rank.percent
+                                            ? <>Top {rank.percent.toFixed(1)}%</>
+                                            : <>Top - %</>
+                                        }
                                     </div>
                                 </div>
                             </CardContent>

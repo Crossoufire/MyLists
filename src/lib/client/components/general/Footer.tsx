@@ -1,9 +1,9 @@
 import {FaGithub} from "react-icons/fa";
 import {mail} from "@/lib/utils/helpers";
 import {Link} from "@tanstack/react-router";
+import {Activity, Coffee, Mail} from "lucide-react";
 import {Button} from "@/lib/client/components/ui/button";
 import {Separator} from "@/lib/client/components/ui/separator";
-import {Activity, Coffee, ExternalLink, Mail} from "lucide-react";
 
 
 export const Footer = () => {
@@ -44,11 +44,6 @@ export const Footer = () => {
                             <li>
                                 <a href="https://github.com/Crossoufire/MyLists" className="flex items-center gap-2">
                                     <FaGithub className="size-4"/> GitHub
-                                </a>
-                            </li>
-                            <li>
-                                <a href="https://github.com/Crossoufire/MyLists/releases" className="flex items-center gap-2">
-                                    <ExternalLink className="size-4"/> Changelog
                                 </a>
                             </li>
                             <li>

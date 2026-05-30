@@ -39,7 +39,6 @@ function AchievementPage() {
 
     useEffect(() => {
         if (editAchievementDialogOpen && editingAchievement) {
-            // eslint-disable-next-line react-hooks/set-state-in-effect
             setEditedName(editingAchievement.name);
             setEditedMediaType(editingAchievement.mediaType);
             setEditedDescription(editingAchievement.description);
@@ -48,7 +47,6 @@ function AchievementPage() {
 
     useEffect(() => {
         if (isTierDialogOpen && editingAchievement) {
-            // eslint-disable-next-line react-hooks/set-state-in-effect
             setEditableTiers(JSON.parse(JSON.stringify(editingAchievement.tiers || [])));
         }
     }, [isTierDialogOpen, editingAchievement]);
