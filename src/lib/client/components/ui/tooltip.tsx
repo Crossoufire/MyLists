@@ -5,7 +5,6 @@ import * as TooltipPrimitive from "@radix-ui/react-tooltip";
 
 function TooltipProvider({ delayDuration = 0, ...props }: React.ComponentProps<typeof TooltipPrimitive.Provider>) {
     return (
-        // eslint-disable-next-line @eslint-react/no-context-provider
         <TooltipPrimitive.Provider
             data-slot="tooltip-provider"
             delayDuration={delayDuration}

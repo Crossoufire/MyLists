@@ -138,7 +138,6 @@ export const RegisterForm = ({ redirectTo, onOpenChange }: RegisterFormProps) =>
                                 name="confirmPassword"
                                 rules={{
                                     validate: (val) => {
-                                        // eslint-disable-next-line react-hooks/incompatible-library
                                         if (form.watch("password") !== val) {
                                             return "The passwords do not match.";
                                         }

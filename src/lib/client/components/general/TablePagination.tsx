@@ -1,5 +1,3 @@
-/* eslint-disable react-compiler/react-compiler */
-
 import {cn} from "@/lib/utils/classnames";
 import {Table} from "@tanstack/react-table";
 import {Button} from "@/lib/client/components/ui/button";

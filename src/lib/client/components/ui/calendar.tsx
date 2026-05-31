@@ -120,7 +120,6 @@ function Calendar({
                 ...classNames,
             }}
             components={{
-                // eslint-disable-next-line @eslint-react/component-hook-factories,@eslint-react/no-nested-component-definitions
                 Root: ({ className, rootRef, ...props }) => {
                     return (
                         <div
@@ -131,7 +130,6 @@ function Calendar({
                         />
                     )
                 },
-                // eslint-disable-next-line @eslint-react/component-hook-factories,@eslint-react/no-nested-component-definitions
                 Chevron: ({ className, orientation, ...props }) => {
                     if (orientation === "left") {
                         return (
@@ -159,7 +157,6 @@ function Calendar({
                     )
                 },
                 DayButton: CalendarDayButton,
-                // eslint-disable-next-line @eslint-react/component-hook-factories,@eslint-react/no-nested-component-definitions
                 WeekNumber: ({ children, ...props }) => {
                     return (
                         <td {...props}>

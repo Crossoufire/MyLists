@@ -135,7 +135,6 @@ export const EmailAndPasswordForm = () => {
                         rules={{
                             required: "Please confirm your password",
                             validate: (val) => {
-                                // eslint-disable-next-line react-hooks/incompatible-library
                                 if (passwordForm.watch("newPassword") !== val) {
                                     return "Passwords do not match";
                                 }

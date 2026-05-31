@@ -66,7 +66,6 @@ function SidebarProvider({ defaultOpen = true, open: openProp, onOpenChange: set
             }
 
             // This sets the cookie to keep the sidebar state.
-            // eslint-disable-next-line react-compiler/react-compiler
             document.cookie = `${SIDEBAR_COOKIE_NAME}=${openState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`
         },
         [setOpenProp, open]
