@@ -2,7 +2,7 @@ import React, {useState} from "react";
 import {useQuery} from "@tanstack/react-query";
 import {useAuth} from "@/lib/client/hooks/use-auth";
 import {Card} from "@/lib/client/components/ui/card";
-import {formatDateTime} from "@/lib/utils/formating";
+import {formatDateTime} from "@/lib/utils/date-formatting";
 import {Input} from "@/lib/client/components/ui/input";
 import {Badge} from "@/lib/client/components/ui/badge";
 import {ApiProviderType, MediaType} from "@/lib/utils/enums";

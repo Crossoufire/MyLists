@@ -1,7 +1,8 @@
 import {Link} from "@tanstack/react-router";
 import {MediaType} from "@/lib/utils/enums";
 import {Badge} from "@/lib/client/components/ui/badge";
-import {formatDateTime, getDaysRemaining, zeroPad} from "@/lib/utils/formating";
+import {formatDateTime, getDaysRemaining} from "@/lib/utils/date-formatting";
+import {zeroPad} from "@/lib/utils/number-formatting";
 import {ComingNextItem} from "@/lib/types/query.options.types";
 import {AlertCircle, Calendar, Clock, Hourglass} from "lucide-react";
 import {StatusBadge} from "@/lib/client/components/general/StatusBadge";

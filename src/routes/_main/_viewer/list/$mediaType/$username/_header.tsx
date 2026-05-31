@@ -1,5 +1,5 @@
 import {MediaType} from "@/lib/utils/enums";
-import {capitalize} from "@/lib/utils/formating";
+import {capitalize} from "@/lib/utils/text-formatting";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
 import {TabHeader} from "@/lib/client/components/general/TabHeader";

@@ -1,5 +1,6 @@
 import * as z from "zod";
 import {tagSchema} from "@/lib/schemas/common.schema";
+import {isDateInputValue, isPastOrTodayDateInputValue} from "@/lib/utils/date-formatting";
 import {GamesPlatformsEnum, MediaType, Status, TagAction, UpdateType} from "@/lib/utils/enums";
 
 
@@ -7,16 +8,10 @@ export type UpdateUserMedia = z.infer<typeof updateUserMediaSchema>;
 export type UpdateUserCustomCover = z.infer<typeof updateUserCustomCoverSchema>;
 
 
-const isValidDateInput = (value: string) => {
-    const [year, month, day] = value.split("-").map(Number);
-    const date = new Date(`${value}T00:00:00.000Z`);
-    return date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day;
-};
-
 const loggedAtSchema = z.string().trim()
     .regex(/^\d{4}-\d{2}-\d{2}$/, "Use YYYY-MM-DD.")
-    .refine(isValidDateInput, "Invalid date.")
-    .refine((value) => new Date(`${value}T00:00:00.000Z`).getTime() <= Date.now(), "Date cannot be in the future.")
+    .refine(isDateInputValue, "Invalid date.")
+    .refine(isPastOrTodayDateInputValue, "Date cannot be in the future.")
     .optional();
 
 const loggedActivityUpdateTypes = new Set<UpdateType>([

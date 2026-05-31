@@ -1,7 +1,7 @@
 import {toast} from "sonner";
 import React, {useCallback, useMemo} from "react";
 import {useAuth} from "@/lib/client/hooks/use-auth";
-import {formatDateTime} from "@/lib/utils/formating";
+import {formatDateTime} from "@/lib/utils/date-formatting";
 import {Badge} from "@/lib/client/components/ui/badge";
 import {PrivacyType, RoleType} from "@/lib/utils/enums";
 import {Button} from "@/lib/client/components/ui/button";

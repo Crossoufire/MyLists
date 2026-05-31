@@ -1,5 +1,5 @@
 import {LockIcon} from "lucide-react";
-import {cn} from "@/lib/utils/helpers";
+import {cn} from "@/lib/utils/classnames";
 import {useLocation} from "@tanstack/react-router";
 import {Button} from "@/lib/client/components/ui/button";
 import {useAuthModal} from "@/lib/client/hooks/use-auth-modal";

@@ -1,8 +1,8 @@
 import {Ban} from "lucide-react";
-import {cn} from "@/lib/utils/helpers";
+import {cn} from "@/lib/utils/classnames";
 import {MediaType} from "@/lib/utils/enums";
-import {computeLevel} from "@/lib/utils/compute-level";
-import {getThemeColor} from "@/lib/utils/colors-and-icons";
+import {getThemeColor} from "@/lib/utils/theme-utils";
+import {computeLevel} from "@/lib/utils/number-formatting";
 
 
 interface MediaLevelProps {

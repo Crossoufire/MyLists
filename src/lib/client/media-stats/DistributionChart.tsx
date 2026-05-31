@@ -1,8 +1,9 @@
 import {useMemo} from "react";
 import {MediaType} from "@/lib/utils/enums";
 import {NamedValue} from "@/lib/types/stats.types";
-import {getThemeColor} from "@/lib/utils/colors-and-icons";
-import {capitalize, formatNumber} from "@/lib/utils/formating";
+import {getThemeColor} from "@/lib/utils/theme-utils";
+import {capitalize} from "@/lib/utils/text-formatting";
+import {formatNumber} from "@/lib/utils/number-formatting";
 import {Card, CardContent, CardHeader, CardTitle} from "@/lib/client/components/ui/card";
 import {Bar, BarChart, LabelList, Rectangle, ResponsiveContainer, Tooltip, XAxis, YAxis} from "recharts";
 

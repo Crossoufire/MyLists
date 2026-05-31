@@ -1,6 +1,6 @@
 import {MediaType} from "@/lib/utils/enums";
 import {getImageUrl} from "@/lib/utils/image-url";
-import {formatHtmlText} from "@/lib/utils/formating";
+import {formatHtmlText} from "@/lib/utils/text-formatting";
 import {saveImageFromUrl} from "@/lib/utils/image-saver";
 import {GBooksDetails, GBooksSearchResults, ProviderSearchResult, SearchData} from "@/lib/types/provider.types";
 

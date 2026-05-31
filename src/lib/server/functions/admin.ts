@@ -5,7 +5,7 @@ import {createServerFn} from "@tanstack/react-start";
 import {runTask} from "@/lib/server/tasks/task-runner";
 import {FormattedError} from "@/lib/utils/error-classes";
 import {getContainer} from "@/lib/server/core/container";
-import {setSignedCookie} from "@/lib/utils/auth-cookies";
+import {setSignedCookie} from "@/lib/utils/signed-cookies";
 import {tryFormZodError} from "@/lib/utils/try-not-found";
 import {deleteCookie} from "@tanstack/react-start/server";
 import {getAllTasksMetadata, getTask} from "@/lib/server/tasks/registry";

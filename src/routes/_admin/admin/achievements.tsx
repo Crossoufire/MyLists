@@ -1,6 +1,6 @@
 import {useEffect, useState} from "react";
 import {AchievementTier} from "@/lib/schemas";
-import {capitalize} from "@/lib/utils/formating";
+import {capitalize} from "@/lib/utils/text-formatting";
 import {Badge} from "@/lib/client/components/ui/badge";
 import {Input} from "@/lib/client/components/ui/input";
 import {Label} from "@/lib/client/components/ui/label";

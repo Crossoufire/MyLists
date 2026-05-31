@@ -1,5 +1,5 @@
 import {toast} from "sonner";
-import {cn} from "@/lib/utils/helpers";
+import {cn} from "@/lib/utils/classnames";
 import {useAuth} from "@/lib/client/hooks/use-auth";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {Button} from "@/lib/client/components/ui/button";

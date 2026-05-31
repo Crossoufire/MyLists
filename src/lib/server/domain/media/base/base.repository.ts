@@ -1,6 +1,6 @@
 import {MediaListArgs} from "@/lib/schemas";
 import {notFound} from "@tanstack/react-router";
-import {statusUtils} from "@/lib/utils/mapping";
+import {statusUtils} from "@/lib/utils/media-mapping";
 import {MediaInfo} from "@/lib/types/activity.types";
 import {FormattedError} from "@/lib/utils/error-classes";
 import {TopAffinityConfig} from "@/lib/types/stats.types";

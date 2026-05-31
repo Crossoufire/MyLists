@@ -1,6 +1,6 @@
 import {Link} from "@tanstack/react-router";
-import {getFeelingIcon} from "@/lib/utils/ratings";
-import {getThemeColor} from "@/lib/utils/colors-and-icons";
+import {getFeelingIcon} from "@/lib/utils/ratings-formatting";
+import {getThemeColor} from "@/lib/utils/theme-utils";
 import {RatingSystemType, Status} from "@/lib/utils/enums";
 import {PerMediaSummaryType} from "@/lib/types/query.options.types";
 import {EmptyState} from "@/lib/client/components/general/EmptyState";

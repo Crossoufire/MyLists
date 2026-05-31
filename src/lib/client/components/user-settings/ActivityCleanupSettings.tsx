@@ -3,7 +3,7 @@ import {useForm} from "react-hook-form";
 import {MediaType} from "@/lib/utils/enums";
 import {useAuth} from "@/lib/client/hooks/use-auth";
 import {Input} from "@/lib/client/components/ui/input";
-import {toDateInputValue} from "@/lib/utils/formating";
+import {toDateInputValue} from "@/lib/utils/date-formatting";
 import {Button} from "@/lib/client/components/ui/button";
 import {MainThemeIcon} from "@/lib/client/components/general/MainIcons";
 import {useBulkHideActivityMutation} from "@/lib/client/react-query/query-mutations/activity.mutations";

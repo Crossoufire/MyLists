@@ -1,4 +1,4 @@
-import {getMonthName} from "@/lib/utils/formating";
+import {getMonthName} from "@/lib/utils/date-formatting";
 import {ActivitySearch} from "@/lib/types/activity.types";
 import {createFileRoute, Outlet} from "@tanstack/react-router";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";

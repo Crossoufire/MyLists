@@ -1,7 +1,7 @@
 import {toast} from "sonner";
 import React, {useState} from "react";
 import {ListSettings} from "@/lib/schemas";
-import {capitalize} from "@/lib/utils/formating";
+import {capitalize} from "@/lib/utils/text-formatting";
 import {useForm, useWatch} from "react-hook-form";
 import {useAuth} from "@/lib/client/hooks/use-auth";
 import {FormZodError} from "@/lib/utils/error-classes";
@@ -9,7 +9,7 @@ import {Switch} from "@/lib/client/components/ui/switch";
 import {Button} from "@/lib/client/components/ui/button";
 import {Separator} from "@/lib/client/components/ui/separator";
 import {CircleHelp, Download, TriangleAlert} from "lucide-react";
-import {convertToCsv, saveAsFile} from "@/lib/utils/blob-download";
+import {convertToCsv, saveAsFile} from "@/lib/utils/file-download";
 import {MainThemeIcon} from "@/lib/client/components/general/MainIcons";
 import {ApiProviderType, MediaType, RatingSystemType} from "@/lib/utils/enums";
 import {Popover, PopoverContent, PopoverTrigger} from "@/lib/client/components/ui/popover";

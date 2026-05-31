@@ -5,7 +5,7 @@ import {createFileRoute, Link} from "@tanstack/react-router";
 import {Payload} from "@/lib/client/components/general/Payload";
 import {MainThemeIcon} from "@/lib/client/components/general/MainIcons";
 import {SearchInput} from "@/lib/client/components/general/SearchInput";
-import {formatDateTime, formatRelativeTime} from "@/lib/utils/formating";
+import {formatDateTime, formatRelativeTime} from "@/lib/utils/date-formatting";
 import {useSearchNavigate} from "@/lib/client/hooks/use-search-navigate";
 import {DashboardShell} from "@/lib/client/components/admin/DashboardShell";
 import {DashboardHeader} from "@/lib/client/components/admin/DashboardHeader";

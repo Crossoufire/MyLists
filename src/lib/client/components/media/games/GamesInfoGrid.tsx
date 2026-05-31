@@ -1,7 +1,8 @@
 import React from "react";
 import {Link} from "@tanstack/react-router";
 import {MediaType} from "@/lib/utils/enums";
-import {formatDateTime, formatMinutes} from "@/lib/utils/formating";
+import {formatDateTime} from "@/lib/utils/date-formatting";
+import {formatMinutes} from "@/lib/utils/number-formatting";
 import {MediaConfig} from "@/lib/client/components/media/media-config";
 import {MediaInfoGridItem} from "@/lib/client/components/media/base/MediaDetailsComps";
 

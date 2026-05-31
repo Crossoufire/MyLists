@@ -1,6 +1,6 @@
 import {useState} from "react";
 import {cva} from "class-variance-authority";
-import {capitalize} from "@/lib/utils/formating";
+import {capitalize} from "@/lib/utils/text-formatting";
 import authClient from "@/lib/utils/auth-client";
 import {useAuth} from "@/lib/client/hooks/use-auth";
 import {useQueryClient} from "@tanstack/react-query";

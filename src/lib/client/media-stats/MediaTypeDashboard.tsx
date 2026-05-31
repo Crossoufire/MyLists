@@ -1,5 +1,5 @@
 import {MediaType} from "@/lib/utils/enums";
-import {formatAvgRating} from "@/lib/utils/ratings";
+import {formatAvgRating} from "@/lib/utils/ratings-formatting";
 import {getMediaNaming} from "@/lib/utils/stats-utils";
 import {ExtractStatsByType} from "@/lib/types/stats.types";
 import {StatCard} from "@/lib/client/media-stats/StatCard";
@@ -9,7 +9,8 @@ import {TopAffinityCard} from "@/lib/client/media-stats/TopAffinityCard";
 import {DistributionChart} from "@/lib/client/media-stats/DistributionChart";
 import {StatusDistribution} from "@/lib/client/media-stats/StatusDistribution";
 import {ActivityByMonthChart} from "@/lib/client/media-stats/ActivityByMonthChart";
-import {capitalize, formatCurrency, formatHours, formatNumber} from "@/lib/utils/formating";
+import {capitalize} from "@/lib/utils/text-formatting";
+import {formatCurrency, formatHours, formatNumber} from "@/lib/utils/number-formatting";
 import {ChartColumn, Clock, DollarSign, Heart, Play, SquareStack, Star, Tags, XLineTop} from "lucide-react";
 
 

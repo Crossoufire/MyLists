@@ -1,5 +1,5 @@
 import {MediaType} from "@/lib/utils/enums";
-import {statusUtils} from "@/lib/utils/mapping";
+import {statusUtils} from "@/lib/utils/media-mapping";
 import {useAuth} from "@/lib/client/hooks/use-auth";
 import {UserMediaItem} from "@/lib/types/query.options.types";
 import {MediaListItem} from "@/lib/client/components/media/base/MediaListItem";

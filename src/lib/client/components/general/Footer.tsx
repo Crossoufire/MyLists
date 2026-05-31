@@ -1,5 +1,5 @@
+import {clientEnv} from "@/env/client";
 import {FaGithub} from "react-icons/fa";
-import {mail} from "@/lib/utils/helpers";
 import {Link} from "@tanstack/react-router";
 import {Activity, Coffee, Mail} from "lucide-react";
 import {Button} from "@/lib/client/components/ui/button";
@@ -24,7 +24,7 @@ export const Footer = () => {
                             compare progress with friends, and climb the Hall of Fame.
                         </p>
                         <div className="flex flex-wrap items-center gap-3 mt-2">
-                            <a href={`mailto:${mail}`}>
+                            <a href={`mailto:${clientEnv.VITE_CONTACT_MAIL}`}>
                                 <Button variant="outline" size="sm" className="gap-2">
                                     <Mail className="size-4"/> Contact Me
                                 </Button>

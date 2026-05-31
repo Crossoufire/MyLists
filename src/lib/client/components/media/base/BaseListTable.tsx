@@ -1,7 +1,7 @@
 import {Link} from "@tanstack/react-router";
 import {MediaType} from "@/lib/utils/enums";
 import {ColumnDef} from "@tanstack/react-table";
-import {statusUtils} from "@/lib/utils/mapping";
+import {statusUtils} from "@/lib/utils/media-mapping";
 import {CircleCheck, Settings2} from "lucide-react";
 import {UserMediaItem} from "@/lib/types/query.options.types";
 import {QuickAddMedia} from "@/lib/client/components/media/base/QuickAddMedia";

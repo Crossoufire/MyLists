@@ -4,7 +4,9 @@ import {MediaType} from "@/lib/utils/enums";
 import {MediaConfig} from "@/lib/client/components/media/media-config";
 import {MediaInfoGridItem} from "@/lib/client/components/media/base/MediaDetailsComps";
 
-import {formatCurrency, formatDateTime, formatLocaleName} from "@/lib/utils/formating";
+import {formatCurrency} from "@/lib/utils/number-formatting";
+import {formatDateTime} from "@/lib/utils/date-formatting";
+import {formatLocaleName} from "@/lib/utils/text-formatting";
 
 
 type MoviesDetailsProps<T extends MediaType> = Parameters<MediaConfig[T]["infoGrid"]>[number];

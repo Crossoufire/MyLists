@@ -1,5 +1,5 @@
 import {MediaType} from "@/lib/utils/enums";
-import {isLatin1} from "@/lib/utils/formating";
+import {isLatin1} from "@/lib/utils/text-formatting";
 import {CoverType} from "@/lib/types/media-common.types";
 import {getImageUrl} from "@/lib/utils/image-url";
 import {saveImageFromUrl} from "@/lib/utils/image-saver";

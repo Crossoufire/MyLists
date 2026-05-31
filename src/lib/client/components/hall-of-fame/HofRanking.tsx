@@ -1,7 +1,7 @@
 import React from "react";
 import {Ban, TrendingUp} from "lucide-react";
-import {capitalize} from "@/lib/utils/formating";
-import {getThemeColor} from "@/lib/utils/colors-and-icons";
+import {capitalize} from "@/lib/utils/text-formatting";
+import {getThemeColor} from "@/lib/utils/theme-utils";
 import {HofUserRank} from "@/lib/types/query.options.types";
 import {Progress} from "@/lib/client/components/ui/progress";
 import {Card, CardContent} from "@/lib/client/components/ui/card";

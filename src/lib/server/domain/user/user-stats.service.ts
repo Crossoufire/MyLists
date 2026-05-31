@@ -1,5 +1,5 @@
 import {SearchType} from "@/lib/schemas";
-import {statusUtils} from "@/lib/utils/mapping";
+import {statusUtils} from "@/lib/utils/media-mapping";
 import {DeltaStats} from "@/lib/types/stats.types";
 import {MediaType, Status} from "@/lib/utils/enums";
 import {UserMediaStats} from "@/lib/types/user-media.types";

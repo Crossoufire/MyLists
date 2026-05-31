@@ -9,7 +9,7 @@ import {Payload} from "@/lib/client/components/general/Payload";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
 import {MainThemeIcon} from "@/lib/client/components/general/MainIcons";
 import {SearchInput} from "@/lib/client/components/general/SearchInput";
-import {formatDateTime, formatRelativeTime} from "@/lib/utils/formating";
+import {formatDateTime, formatRelativeTime} from "@/lib/utils/date-formatting";
 import {useSearchNavigate} from "@/lib/client/hooks/use-search-navigate";
 import {TablePagination} from "@/lib/client/components/general/TablePagination";
 import {allUpdatesOptions} from "@/lib/client/react-query/query-options/query-options";

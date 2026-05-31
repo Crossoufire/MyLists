@@ -1,6 +1,6 @@
 import {Clock} from "lucide-react";
 import {MediaType} from "@/lib/utils/enums";
-import {formatMinutes} from "@/lib/utils/formating";
+import {formatMinutes} from "@/lib/utils/number-formatting";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {MainThemeIcon} from "@/lib/client/components/general/MainIcons";
 import {getActivityUnitLabel, toActivityDisplayValue} from "@/lib/utils/activity-utils";

@@ -1,5 +1,5 @@
 import {Trash} from "lucide-react";
-import {cn} from "@/lib/utils/helpers";
+import {cn} from "@/lib/utils/classnames";
 import {Link} from "@tanstack/react-router";
 import {Button} from "@/lib/client/components/ui/button";
 import {UserUpdateType} from "@/lib/types/query.options.types";

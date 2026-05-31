@@ -1,12 +1,12 @@
 import {toast} from "sonner";
 import {useForm} from "react-hook-form";
 import {MediaType} from "@/lib/utils/enums";
-import {capitalize} from "@/lib/utils/formating";
+import {capitalize} from "@/lib/utils/text-formatting";
 import {Input} from "@/lib/client/components/ui/input";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {FormZodError} from "@/lib/utils/error-classes";
 import {Button} from "@/lib/client/components/ui/button";
-import {splitIntoColumns} from "@/lib/utils/split-columns";
+import {splitIntoColumns} from "@/lib/utils/arrays";
 import {Textarea} from "@/lib/client/components/ui/textarea";
 import {createFileRoute, useRouter} from "@tanstack/react-router";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";

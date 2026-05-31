@@ -1,7 +1,7 @@
 import React, {useState} from "react";
 import {MediaType} from "@/lib/utils/enums";
 import {useAuth} from "@/lib/client/hooks/use-auth";
-import {formatMinutes} from "@/lib/utils/formating";
+import {formatMinutes} from "@/lib/utils/number-formatting";
 import {Badge} from "@/lib/client/components/ui/badge";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {LayoutGrid, Plus, Settings2} from "lucide-react";

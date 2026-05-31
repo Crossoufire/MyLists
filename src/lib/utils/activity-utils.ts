@@ -1,5 +1,5 @@
 import {MediaType} from "@/lib/utils/enums";
-import {toDateInputValue} from "@/lib/utils/formating";
+import {toDateInputValue} from "@/lib/utils/date-formatting";
 
 
 type ActivityMediaConfig = {

@@ -1,10 +1,10 @@
 import {useState} from "react";
-import {cn} from "@/lib/utils/helpers";
+import {cn} from "@/lib/utils/classnames";
 import {Button} from "@/lib/client/components/ui/button";
 import {Calendar} from "@/lib/client/components/ui/calendar";
 import {Calendar as CalendarIcon, TriangleAlert} from "lucide-react";
-import {formatDateTime, toDateInputValue} from "@/lib/utils/formating";
 import {Popover, PopoverContent, PopoverTrigger} from "@/lib/client/components/ui/popover";
+import {dateInputValueToDate, formatDateTime, toDateInputValue} from "@/lib/utils/date-formatting";
 
 
 interface BacklogModeBannerProps {
@@ -60,7 +60,7 @@ export const BacklogModeSystem = ({ enabled, date, disabled, onDateChange, onEna
 
     const handleCalendarSelect = (selected?: Date) => {
         if (!selected) return;
-        handleCustomDate(toDateInputValueFromDate(selected));
+        handleCustomDate(toDateInputValue(selected));
         setCalendarOpen(false);
     };
 
@@ -129,20 +129,4 @@ export const BacklogModeSystem = ({ enabled, date, disabled, onDateChange, onEna
             }
         </div>
     );
-};
-
-
-const dateInputValueToDate = (value: string) => {
-    const [year, month, day] = value.split("-").map(Number);
-
-    return new Date(year, month - 1, day);
-};
-
-
-const toDateInputValueFromDate = (value: Date) => {
-    const year = value.getFullYear();
-    const month = String(value.getMonth() + 1).padStart(2, "0");
-    const day = String(value.getDate()).padStart(2, "0");
-
-    return `${year}-${month}-${day}`;
 };

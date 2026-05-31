@@ -1,13 +1,14 @@
 import {Link} from "@tanstack/react-router";
 import {CalendarDays, Users} from "lucide-react";
 import {useAuth} from "@/lib/client/hooks/use-auth";
-import {computeLevel} from "@/lib/utils/compute-level";
 import {useBreakpoint} from "@/lib/client/hooks/use-breakpoint";
-import {capitalize, formatDateTime} from "@/lib/utils/formating";
+import {capitalize} from "@/lib/utils/text-formatting";
+import {formatDateTime} from "@/lib/utils/date-formatting";
 import {PrivacyIcon} from "@/lib/client/components/general/MainIcons";
 import {ProfileIcon} from "@/lib/client/components/general/ProfileIcon";
 import {FollowButton} from "@/lib/client/components/user-profile/FollowButton";
 import {ProfileHeaderOptionsType, UserDataType} from "@/lib/types/query.options.types";
+import {computeLevel} from "@/lib/utils/number-formatting";
 
 
 interface ProfileHeaderProps {

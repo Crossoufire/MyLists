@@ -1,4 +1,4 @@
-import {capitalize} from "@/lib/utils/formating";
+import {capitalize} from "@/lib/utils/text-formatting";
 import {createFileRoute} from "@tanstack/react-router";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {ArrowUpFromLine, BadgePlus} from "lucide-react";

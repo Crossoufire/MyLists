@@ -1,6 +1,7 @@
 import {ReactNode} from "react";
 import {Loader2, SearchX} from "lucide-react";
-import {cn, displayContainerError} from "@/lib/utils/helpers";
+import {cn} from "@/lib/utils/classnames";
+import {displayContainerError} from "@/lib/utils/error-display";
 import {EmptyState} from "@/lib/client/components/general/EmptyState";
 
 

@@ -3,7 +3,8 @@ import {setCookie} from "@tanstack/react-start/server";
 
 const algorithm = { name: "HMAC", hash: "SHA-256" };
 
-const sign = async (value: string, secret: string) => {
+
+export const signCookieValue = async (value: string, secret: string) => {
     const key = await crypto.subtle.importKey(
         "raw",
         new TextEncoder().encode(secret),
@@ -21,7 +22,7 @@ const sign = async (value: string, secret: string) => {
 
 
 export const setSignedCookie = async (name: string, value: string, secret: string, maxAge?: number) => {
-    const sig = await sign(value, secret);
+    const sig = await signCookieValue(value, secret);
 
     setCookie(name, `${encodeURIComponent(value)}.${sig}`, {
         maxAge,

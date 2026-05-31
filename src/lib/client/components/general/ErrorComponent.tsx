@@ -1,5 +1,5 @@
 import React from "react";
-import {mail} from "@/lib/utils/helpers";
+import {clientEnv} from "@/env/client";
 import {Link} from "@tanstack/react-router";
 import {ArrowLeft, Home} from "lucide-react";
 import {Button} from "@/lib/client/components/ui/button";
@@ -49,7 +49,7 @@ export const ErrorComponent = ({ title, icon, text, footerText }: ErrorComponent
                         <div className="pt-3 border-t">
                             <p className="text-sm text-destructive-foreground">
                                 {footerText}{" "}
-                                <a href={`mailto:${mail}`} className="font-semibold text-app-accent">
+                                <a href={`mailto:${clientEnv.VITE_CONTACT_MAIL}`} className="font-semibold text-app-accent">
                                     Contact Me
                                 </a>
                             </p>

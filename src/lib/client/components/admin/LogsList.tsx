@@ -1,7 +1,7 @@
 import {useState} from "react";
-import {cn} from "@/lib/utils/helpers";
+import {cn} from "@/lib/utils/classnames";
 import {TaskLog} from "@/lib/types/tasks.types";
-import {formatDateTime} from "@/lib/utils/formating";
+import {formatDateTime} from "@/lib/utils/date-formatting";
 import {AlertTriangle, ChevronDown, XCircle} from "lucide-react";
 
 

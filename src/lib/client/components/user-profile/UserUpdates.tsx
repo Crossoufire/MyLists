@@ -1,6 +1,6 @@
 import {useState} from "react";
 import {Activity} from "lucide-react";
-import {cn} from "@/lib/utils/helpers";
+import {cn} from "@/lib/utils/classnames";
 import {Link} from "@tanstack/react-router";
 import {useAuth} from "@/lib/client/hooks/use-auth";
 import {Button} from "@/lib/client/components/ui/button";

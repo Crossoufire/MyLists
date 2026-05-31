@@ -1,7 +1,7 @@
-import {cn} from "@/lib/utils/helpers";
+import {cn} from "@/lib/utils/classnames";
 import {Globe, Lock, Shield} from "lucide-react";
 import {MediaType, PrivacyType} from "@/lib/utils/enums";
-import {getThemeColor, THEME_ICONS_MAP} from "@/lib/utils/colors-and-icons";
+import {getThemeColor, THEME_ICONS_MAP} from "@/lib/utils/theme-utils";
 
 
 interface MainThemeIconProps {

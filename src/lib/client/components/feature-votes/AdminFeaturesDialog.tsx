@@ -3,7 +3,7 @@ import {Settings2} from "lucide-react";
 import {FeatureStatus} from "@/lib/utils/enums";
 import {Label} from "@/lib/client/components/ui/label";
 import {Button} from "@/lib/client/components/ui/button";
-import {displayContainerError} from "@/lib/utils/helpers";
+import {displayContainerError} from "@/lib/utils/error-display";
 import {Textarea} from "@/lib/client/components/ui/textarea";
 import {InlineErrorContainer} from "@/lib/client/components/general/InlineErrorContainer";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/lib/client/components/ui/select";

@@ -1,5 +1,5 @@
 import * as React from "react";
-import {cn} from "@/lib/utils/helpers";
+import {cn} from "@/lib/utils/classnames";
 import {Button, buttonVariants} from "@/lib/client/components/ui/button";
 import {ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon,} from "lucide-react";
 import {type DayButton, DayPicker, getDefaultClassNames,} from "react-day-picker";

@@ -1,4 +1,4 @@
-import {cn} from "@/lib/utils/helpers";
+import {cn} from "@/lib/utils/classnames";
 import {Link} from "@tanstack/react-router";
 import {Pencil, RefreshCw} from "lucide-react";
 import {useAuth} from "@/lib/client/hooks/use-auth";

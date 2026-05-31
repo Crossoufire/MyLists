@@ -1,6 +1,6 @@
-import {cn} from "@/lib/utils/helpers";
-import {formatDateTime, formatRelativeTime} from "@/lib/utils/formating";
+import {cn} from "@/lib/utils/classnames";
 import {Popover, PopoverContent, PopoverTrigger} from "@/lib/client/components/ui/popover";
+import {formatDateTime, formatRelativeTime, toDateTimeAttribute} from "@/lib/utils/date-formatting";
 
 
 interface RelativeTimeProps {
@@ -8,20 +8,6 @@ interface RelativeTimeProps {
     className?: string;
     value: string | number | null | undefined;
 }
-
-
-const toDateTimeAttribute = (value: string | number | null | undefined) => {
-    if (!value) return undefined;
-
-    const date = typeof value === "number"
-        ? new Date(value * 1000) : new Date(value.includes(" ")
-            ? `${value.replace(" ", "T")}Z`
-            : value);
-
-    if (isNaN(date.getTime())) return undefined;
-
-    return date.toISOString();
-};
 
 
 export function RelativeTime({ value, className, prefix }: RelativeTimeProps) {

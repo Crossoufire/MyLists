@@ -1,4 +1,4 @@
-import {cn} from "@/lib/utils/helpers";
+import {cn} from "@/lib/utils/classnames";
 import {SocialState} from "@/lib/utils/enums";
 import {Button} from "@/lib/client/components/ui/button";
 import {Clock, Loader2, UserCheck, UserPlus, UserX} from "lucide-react";

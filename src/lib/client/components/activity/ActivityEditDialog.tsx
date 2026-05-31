@@ -1,5 +1,5 @@
 import {useForm} from "react-hook-form";
-import {toDateInputValue} from "@/lib/utils/formating";
+import {toDateInputValue} from "@/lib/utils/date-formatting";
 import {Input} from "@/lib/client/components/ui/input";
 import {Label} from "@/lib/client/components/ui/label";
 import {Button} from "@/lib/client/components/ui/button";
@@ -9,7 +9,7 @@ import {useDeleteActivityMutation, useUpdateActivityMutation} from "@/lib/client
 import {Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle} from "@/lib/client/components/ui/dialog";
 import {getActivityInputStep, getActivityUnitLabel, toActivityDisplayValue, toActivityStoredValue} from "@/lib/utils/activity-utils";
 import {InlineErrorContainer} from "@/lib/client/components/general/InlineErrorContainer";
-import {displayContainerError} from "@/lib/utils/helpers";
+import {displayContainerError} from "@/lib/utils/error-display";
 
 
 type FormValues = {

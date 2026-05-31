@@ -1,8 +1,8 @@
-import {formatAvgRating} from "@/lib/utils/ratings";
+import {formatAvgRating} from "@/lib/utils/ratings-formatting";
 import {ExtractStatsByType} from "@/lib/types/stats.types";
 import {StatCard} from "@/lib/client/media-stats/StatCard";
 import {DistributionChart} from "@/lib/client/media-stats/DistributionChart";
-import {formatHours, formatNumber, formatPercent} from "@/lib/utils/formating";
+import {formatHours, formatNumber, formatPercent} from "@/lib/utils/number-formatting";
 import {ActivityByMonthChart} from "@/lib/client/media-stats/ActivityByMonthChart";
 import {ChartColumn, Clock, Heart, MessageSquare, RefreshCw, Star, Tags, TrendingUp, Trophy, User} from "lucide-react";
 

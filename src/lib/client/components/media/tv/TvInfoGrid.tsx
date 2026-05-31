@@ -2,7 +2,9 @@ import React from "react";
 import {Link} from "@tanstack/react-router";
 import {MediaType} from "@/lib/utils/enums";
 import {MediaConfig} from "@/lib/client/components/media/media-config";
-import {formatDateTime, formatLocaleName, formatMinutes} from "@/lib/utils/formating";
+import {formatDateTime} from "@/lib/utils/date-formatting";
+import {formatLocaleName} from "@/lib/utils/text-formatting";
+import {formatMinutes} from "@/lib/utils/number-formatting";
 import {MediaInfoGridItem} from "@/lib/client/components/media/base/MediaDetailsComps";
 
 

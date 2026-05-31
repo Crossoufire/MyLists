@@ -1,4 +1,4 @@
-import {zeroPad} from "@/lib/utils/formating";
+import {zeroPad} from "@/lib/utils/number-formatting";
 import {MediaType, Status} from "@/lib/utils/enums";
 import {FormattedError} from "@/lib/utils/error-classes";
 import {calculateActivityTime} from "@/lib/utils/activity-utils";

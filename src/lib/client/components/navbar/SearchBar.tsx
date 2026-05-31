@@ -1,12 +1,13 @@
 import {useState} from "react";
-import {cn} from "@/lib/utils/helpers";
+import {cn} from "@/lib/utils/classnames";
 import {useQuery} from "@tanstack/react-query";
 import {useAuth} from "@/lib/client/hooks/use-auth";
 import {Input} from "@/lib/client/components/ui/input";
 import {Button} from "@/lib/client/components/ui/button";
 import {ApiProviderType, MediaType} from "@/lib/utils/enums";
 import {Separator} from "@/lib/client/components/ui/separator";
-import {capitalize, formatDateTime} from "@/lib/utils/formating";
+import {capitalize} from "@/lib/utils/text-formatting";
+import {formatDateTime} from "@/lib/utils/date-formatting";
 import {ProfileIcon} from "@/lib/client/components/general/ProfileIcon";
 import {useSearchContainer} from "@/lib/client/hooks/use-search-container";
 import {ChevronLeft, ChevronRight, Loader2, Search, X} from "lucide-react";

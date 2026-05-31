@@ -3,7 +3,7 @@ import {MediaType} from "@/lib/utils/enums";
 import {Calendar, BookOpen} from "lucide-react";
 import {MediaConfig} from "@/lib/client/components/media/media-config";
 import {MediaUnderItem} from "@/lib/client/components/media/base/MediaDetailsComps";
-import {getYear} from "@/lib/utils/formating";
+import {getYear} from "@/lib/utils/date-formatting";
 
 
 type BooksDetailsProps<T extends MediaType> = Parameters<MediaConfig[T]["underTitle"]>[number];

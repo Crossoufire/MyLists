@@ -1,4 +1,4 @@
-import {cn} from "@/lib/utils/helpers";
+import {cn} from "@/lib/utils/classnames";
 import {MediaType} from "@/lib/utils/enums";
 import {BookOpen, Plus} from "lucide-react";
 import {useAuth} from "@/lib/client/hooks/use-auth";

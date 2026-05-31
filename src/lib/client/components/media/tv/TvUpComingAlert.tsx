@@ -3,7 +3,7 @@ import {MediaType} from "@/lib/utils/enums";
 import {MediaConfig} from "@/lib/client/components/media/media-config";
 import {UpComingAlert} from "@/lib/client/components/media/base/MediaDetailsComps";
 
-import {zeroPad} from "@/lib/utils/formating";
+import {zeroPad} from "@/lib/utils/number-formatting";
 
 
 type TvDetailsProps<T extends MediaType> = Parameters<NonNullable<MediaConfig[T]["upComingAlert"]>>[number];

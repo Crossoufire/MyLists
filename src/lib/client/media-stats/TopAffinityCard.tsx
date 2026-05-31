@@ -1,6 +1,6 @@
 import React from "react";
 import {Link} from "@tanstack/react-router";
-import {capitalize} from "@/lib/utils/formating";
+import {capitalize} from "@/lib/utils/text-formatting";
 import {TopAffinity} from "@/lib/types/stats.types";
 import {JobType, MediaType} from "@/lib/utils/enums";
 import {Badge} from "@/lib/client/components/ui/badge";

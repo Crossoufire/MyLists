@@ -2,7 +2,7 @@ import {List} from "lucide-react";
 import {useMemo, useState} from "react";
 import {MediaType} from "@/lib/utils/enums";
 import {useSuspenseQuery} from "@tanstack/react-query";
-import {getDaysRemaining} from "@/lib/utils/formating";
+import {getDaysRemaining} from "@/lib/utils/date-formatting";
 import {ComingNextItem} from "@/lib/types/query.options.types";
 import {createFileRoute} from "@tanstack/react-router";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";

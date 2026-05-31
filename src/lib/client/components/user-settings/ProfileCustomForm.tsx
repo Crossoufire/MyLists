@@ -1,8 +1,8 @@
 import {toast} from "sonner";
-import {useQuery} from "@tanstack/react-query";
-import {toItemKey} from "@/lib/utils/formating";
-import {useForm, useWatch} from "react-hook-form";
 import {useMemo, useState} from "react";
+import {useQuery} from "@tanstack/react-query";
+import {useForm, useWatch} from "react-hook-form";
+import {toItemKey} from "@/lib/utils/media-mapping";
 import {Form} from "@/lib/client/components/ui/form";
 import {FormZodError} from "@/lib/utils/error-classes";
 import {Skeleton} from "@/lib/client/components/ui/skeleton";

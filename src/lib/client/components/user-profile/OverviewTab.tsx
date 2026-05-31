@@ -1,7 +1,7 @@
 import {Link} from "@tanstack/react-router";
 import {RatingSystemType} from "@/lib/utils/enums";
-import {getFeelingIcon} from "@/lib/utils/ratings";
-import {getThemeColor} from "@/lib/utils/colors-and-icons";
+import {getFeelingIcon} from "@/lib/utils/ratings-formatting";
+import {getThemeColor} from "@/lib/utils/theme-utils";
 import {Clock, ClockAlert, MoveRight, Star} from "lucide-react";
 import {EmptyState} from "@/lib/client/components/general/EmptyState";
 import {ResolvedHighlightedMediaTabConfig} from "@/lib/types/profile-custom.types";

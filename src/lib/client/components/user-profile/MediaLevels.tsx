@@ -1,10 +1,10 @@
 import {Link} from "@tanstack/react-router";
 import {MediaType} from "@/lib/utils/enums";
-import {computeLevel} from "@/lib/utils/compute-level";
-import {getThemeColor} from "@/lib/utils/colors-and-icons";
+import {getThemeColor} from "@/lib/utils/theme-utils";
 import {Progress} from "@/lib/client/components/ui/progress";
 import {MainThemeIcon} from "@/lib/client/components/general/MainIcons";
 import {Card, CardContent, CardHeader, CardTitle} from "@/lib/client/components/ui/card";
+import {computeLevel} from "@/lib/utils/number-formatting";
 
 
 interface MediaLevelsProps {

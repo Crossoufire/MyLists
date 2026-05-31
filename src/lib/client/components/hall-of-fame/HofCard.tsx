@@ -1,15 +1,15 @@
 import {useState} from "react";
 import {Trophy} from "lucide-react";
-import {cn} from "@/lib/utils/helpers";
+import {cn} from "@/lib/utils/classnames";
 import {Link} from "@tanstack/react-router";
 import {useAuth} from "@/lib/client/hooks/use-auth";
-import {computeLevel} from "@/lib/utils/compute-level";
 import {HofUserData} from "@/lib/types/query.options.types";
 import {useBreakpoint} from "@/lib/client/hooks/use-breakpoint";
 import {Card, CardContent} from "@/lib/client/components/ui/card";
 import {MediaLevel} from "@/lib/client/components/general/MediaLevel";
 import {PrivacyIcon} from "@/lib/client/components/general/MainIcons";
 import {ProfileIcon} from "@/lib/client/components/general/ProfileIcon";
+import {computeLevel} from "@/lib/utils/number-formatting";
 
 
 interface HofCardProps {

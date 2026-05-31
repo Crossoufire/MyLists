@@ -1,6 +1,7 @@
 import {MediaType} from "@/lib/utils/enums";
-import {getThemeColor} from "@/lib/utils/colors-and-icons";
-import {formatNumber} from "@/lib/utils/formating";
+import {getThemeColor} from "@/lib/utils/theme-utils";
+import {formatMonthYear} from "@/lib/utils/date-formatting";
+import {formatNumber} from "@/lib/utils/number-formatting";
 import {MonthlyActivityChartDatum} from "@/lib/types/activity.types";
 import {Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis} from "recharts";
 import {Card, CardContent, CardHeader, CardTitle} from "@/lib/client/components/ui/card";
@@ -33,7 +34,7 @@ export function ActivityByMonthChart({ title, data, mediaTypes, mediaType, stack
                             dataKey="month"
                             tickLine={false}
                             axisLine={false}
-                            tickFormatter={formatMonthLabel}
+                            tickFormatter={formatMonthYear}
                             tick={{ fontSize: 12, fill: "var(--primary)" }}
                         />
                         <YAxis
@@ -72,7 +73,7 @@ function ActivityTooltip({ active, payload, label, mediaTypes }: any & { mediaTy
 
     return (
         <div className="rounded-md bg-gray-800 px-4 py-2 text-sm text-white">
-            <p className="mb-1 font-medium">{formatMonthLabel(label)}</p>
+            <p className="mb-1 font-medium">{formatMonthYear(label)}</p>
             {rows.length === 0 ?
                 <p>No activity</p>
                 :
@@ -93,12 +94,4 @@ function ActivityTooltip({ active, payload, label, mediaTypes }: any & { mediaTy
             }
         </div>
     );
-}
-
-
-function formatMonthLabel(value: string) {
-    const [year, month] = value.split("-");
-    const date = new Date(Number(year), Number(month) - 1);
-
-    return date.toLocaleDateString("en-US", { month: "short", year: "numeric" });
 }

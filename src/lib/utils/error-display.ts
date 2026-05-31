@@ -1,14 +1,4 @@
-import {twMerge} from "tailwind-merge";
-import {type ClassValue, clsx} from "clsx";
 import {FormattedError, FormZodError} from "@/lib/utils/error-classes";
-
-
-export const mail = "contact.us.at.mylists@gmail.com";
-
-
-export function cn(...inputs: ClassValue[]) {
-    return twMerge(clsx(inputs));
-}
 
 
 export const displayContainerError = ({ error, withFormError = true }: { error: Error | null, withFormError?: boolean }) => {
