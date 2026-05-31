@@ -1,7 +1,7 @@
 import React from "react";
 import {cn} from "@/lib/utils/classnames";
 import {Calendar, Clock, LucideIcon, Star} from "lucide-react";
-import {getDaysRemaining} from "@/lib/utils/date-formatting";
+import {extractDate, formatRelativeTime, getMonthName} from "@/lib/utils/date-formatting";
 
 
 interface MediaInfoGridItemProps {
@@ -112,16 +112,18 @@ export const MediaUnderRating = ({ voteAverage, voteCount, divisor = 1 }: MediaU
 
 interface UpComingAlertProps {
     title: string;
-    dateString: string;
+    dateString: string | null;
     children?: React.ReactNode;
 }
 
 
 export const UpComingAlert = ({ children, title, dateString }: UpComingAlertProps) => {
-    const airDate = new Date(dateString);
-    const daysRemaining = getDaysRemaining(dateString);
+    const extractedDate = extractDate(dateString);
+    const { diffDays, relativeTime } = formatRelativeTime(dateString, { style: "long" });
 
-    if ((daysRemaining ?? 0) > 50) return null;
+    if (diffDays === null || diffDays < 0 || diffDays > 50) {
+        return null;
+    }
 
     return (
         <div className="relative overflow-hidden rounded-xl border bg-card p-4 text-card-foreground shadow-sm">
@@ -139,23 +141,17 @@ export const UpComingAlert = ({ children, title, dateString }: UpComingAlertProp
                         {children && <span>•</span>}
                         <div className="flex items-center gap-1.5">
                             <Calendar className="size-3.5"/>
-                            <span>
-                                {daysRemaining === 0 ?
-                                    "Releasing today"
-                                    :
-                                    `In ${daysRemaining} ${daysRemaining === 1 ? "day" : "days"}`
-                                }
-                            </span>
+                            {relativeTime}
                         </div>
                     </div>
                 </div>
 
                 <div className="flex min-w-10 flex-col items-center justify-center rounded-md bg-app-accent/20 px-3 py-1.5">
                     <span className="text-[10px] font-bold uppercase tracking-wider">
-                        {airDate.toLocaleString("en-US", { month: "short" })}
+                        {getMonthName(Number(extractedDate.month), { month: "short" })}
                     </span>
                     <span className="text-xl font-bold leading-none tabular-nums">
-                        {airDate.getDate()}
+                        {extractedDate.day}
                     </span>
                 </div>
             </div>

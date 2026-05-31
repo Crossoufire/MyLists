@@ -41,7 +41,7 @@ export const AchievementsCard = ({ username, achievements }: AchievementsProps) 
                                         </div>
                                     </div>
                                     <RelativeTime
-                                        value={ach.completedAt}
+                                        date={ach.completedAt}
                                         className="text-muted-foreground text-xs"
                                     />
                                 </div>

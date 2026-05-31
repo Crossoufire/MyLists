@@ -328,7 +328,7 @@ function ApiMonitoringPage() {
                                         <TableCell>{formatMs(Math.round(row.durationMsTotal / Math.max(row.total, 1)))}</TableCell>
                                         <TableCell>{formatNumber(row.maxSecondBurst)}</TableCell>
                                         <TableCell className="text-right text-muted-foreground">
-                                            <RelativeTime value={row.bucketStart}/>
+                                            <RelativeTime date={row.bucketStart}/>
                                         </TableCell>
                                     </TableRow>
                                 )}

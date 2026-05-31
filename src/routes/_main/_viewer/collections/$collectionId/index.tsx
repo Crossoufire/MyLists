@@ -3,9 +3,9 @@ import {useAuth} from "@/lib/client/hooks/use-auth";
 import {createFileRoute} from "@tanstack/react-router";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {Badge} from "@/lib/client/components/ui/badge";
-import {Button} from "@/lib/client/components/ui/button";
 import {capitalize} from "@/lib/utils/text-formatting";
-import {formatDateTime} from "@/lib/utils/date-formatting";
+import {formatDate} from "@/lib/utils/date-formatting";
+import {Button} from "@/lib/client/components/ui/button";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
 import {PrivacyIcon} from "@/lib/client/components/general/MainIcons";
 import {EmptyState} from "@/lib/client/components/general/EmptyState";
@@ -111,14 +111,14 @@ function CollectionViewer() {
                                 />
                             }
                             <div className="absolute bottom-0 w-full space-y-1 rounded-b-sm p-3">
-                                <div className="flex w-full items-center justify-between space-x-2 max-sm:text-sm">
+                                <div className="flex w-full items-center justify-between space-x-2 text-sm">
                                     <h3 className="grow truncate font-semibold text-primary" title={item.mediaName}>
                                         {item.mediaName}
                                     </h3>
                                 </div>
                                 <div className="flex w-full flex-wrap items-center justify-between">
                                     <div className="shrink-0 text-xs font-medium text-muted-foreground">
-                                        {formatDateTime(item.releaseDate, { noTime: true })}
+                                        {formatDate(item.releaseDate)}
                                     </div>
                                     {item.annotation &&
                                         <DisplayComment

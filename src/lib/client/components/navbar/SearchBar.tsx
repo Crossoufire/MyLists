@@ -6,8 +6,7 @@ import {Input} from "@/lib/client/components/ui/input";
 import {Button} from "@/lib/client/components/ui/button";
 import {ApiProviderType, MediaType} from "@/lib/utils/enums";
 import {Separator} from "@/lib/client/components/ui/separator";
-import {capitalize} from "@/lib/utils/text-formatting";
-import {formatDateTime} from "@/lib/utils/date-formatting";
+import {formatDate} from "@/lib/utils/date-formatting";
 import {ProfileIcon} from "@/lib/client/components/general/ProfileIcon";
 import {useSearchContainer} from "@/lib/client/hooks/use-search-container";
 import {ChevronLeft, ChevronRight, Loader2, Search, X} from "lucide-react";
@@ -210,11 +209,11 @@ const SearchComponent = ({ item, resetSearch, setMobileMenu }: SearchComponentPr
                         <div className="font-semibold mb-2 line-clamp-2">
                             {item.name}
                         </div>
-                        <div className="text-primary">
-                            {capitalize(item.itemType)}
+                        <div className="text-primary capitalize">
+                            {item.itemType}
                         </div>
                         <div className="text-muted-foreground text-sm">
-                            {formatDateTime(item.date, { noTime: true })}
+                            {formatDate(item.date)}
                         </div>
                     </div>
                 </div>

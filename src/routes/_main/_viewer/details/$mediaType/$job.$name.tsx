@@ -3,7 +3,7 @@ import {JobType, MediaType} from "@/lib/utils/enums";
 import {createFileRoute} from "@tanstack/react-router";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {capitalize} from "@/lib/utils/text-formatting";
-import {formatDateTime} from "@/lib/utils/date-formatting";
+import {formatDate} from "@/lib/utils/date-formatting";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
 import {Pagination} from "@/lib/client/components/general/Pagination";
 import {MediaCard} from "@/lib/client/components/media/base/MediaCard";
@@ -60,7 +60,7 @@ function JobInfoPage() {
                             </div>
                             <div className="flex w-full flex-wrap items-center justify-between">
                                 <div className="shrink-0 text-xs font-medium text-muted-foreground">
-                                    {formatDateTime(item.releaseDate, { noTime: true })}
+                                    {formatDate(item.releaseDate)}
                                 </div>
                             </div>
                         </div>

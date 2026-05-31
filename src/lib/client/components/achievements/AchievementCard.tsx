@@ -48,7 +48,7 @@ export const AchievementCard = ({ achievement }: AchievementCardProps) => {
                         <div className="flex flex-col">
                             {name}
                             <RelativeTime
-                                value={highestCompletedTier?.completedAt}
+                                date={highestCompletedTier?.completedAt}
                                 className="text-xs font-medium text-muted-foreground"
                             />
                         </div>

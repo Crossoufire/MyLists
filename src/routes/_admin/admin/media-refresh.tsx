@@ -316,7 +316,7 @@ function MediaRefreshPage() {
                                             </Link>
                                         </TableCell>
                                         <TableCell className="text-right text-muted-foreground">
-                                            <RelativeTime value={row.refreshedAt}/>
+                                            <RelativeTime date={row.refreshedAt}/>
                                         </TableCell>
                                     </TableRow>
                                 )}

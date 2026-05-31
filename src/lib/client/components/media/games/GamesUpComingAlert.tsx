@@ -8,8 +8,6 @@ type GamesDetailsProps<T extends MediaType> = Parameters<NonNullable<MediaConfig
 
 
 export const GamesUpComingAlert = ({ media }: GamesDetailsProps<typeof MediaType.GAMES>) => {
-    if (!media.releaseDate || new Date().getTime() > new Date(media.releaseDate).getTime()) return null;
-
     return (
         <UpComingAlert
             title="Game Release"

@@ -9,8 +9,8 @@ import {Payload} from "@/lib/client/components/general/Payload";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
 import {MainThemeIcon} from "@/lib/client/components/general/MainIcons";
 import {SearchInput} from "@/lib/client/components/general/SearchInput";
-import {formatDateTime, formatRelativeTime} from "@/lib/utils/date-formatting";
 import {useSearchNavigate} from "@/lib/client/hooks/use-search-navigate";
+import {RelativeTime} from "@/lib/client/components/general/RelativeTime";
 import {TablePagination} from "@/lib/client/components/general/TablePagination";
 import {allUpdatesOptions} from "@/lib/client/react-query/query-options/query-options";
 import {useDeleteAllUpdatesMutation} from "@/lib/client/react-query/query-mutations/user-media.mutations";
@@ -110,16 +110,7 @@ function AllUpdates() {
         {
             accessorKey: "timestamp",
             header: "Date",
-            cell: ({ row }) => {
-                return (
-                    <div className="flex gap-3 justify-start items-center">
-                        {formatRelativeTime(row.original.timestamp)}
-                        <div className="text-xs text-muted-foreground">
-                            {formatDateTime(row.original.timestamp)}
-                        </div>
-                    </div>
-                );
-            },
+            cell: ({ row }) => <RelativeTime date={row.original.timestamp}/>,
         },
     ], []);
 

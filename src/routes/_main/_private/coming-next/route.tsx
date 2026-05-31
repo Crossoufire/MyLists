@@ -1,16 +1,16 @@
 import {List} from "lucide-react";
 import {useMemo, useState} from "react";
 import {MediaType} from "@/lib/utils/enums";
-import {useSuspenseQuery} from "@tanstack/react-query";
-import {getDaysRemaining} from "@/lib/utils/date-formatting";
-import {ComingNextItem} from "@/lib/types/query.options.types";
 import {createFileRoute} from "@tanstack/react-router";
+import {useSuspenseQuery} from "@tanstack/react-query";
+import {formatRelativeTime} from "@/lib/utils/date-formatting";
+import {ComingNextItem} from "@/lib/types/query.options.types";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
 import {EmptyState} from "@/lib/client/components/general/EmptyState";
 import {MainThemeIcon} from "@/lib/client/components/general/MainIcons";
 import {TabHeader, TabItem} from "@/lib/client/components/general/TabHeader";
-import {ComingNextSection} from "@/lib/client/components/coming-next/ComingNextSection";
 import {upcomingOptions} from "@/lib/client/react-query/query-options/query-options";
+import {ComingNextSection} from "@/lib/client/components/coming-next/ComingNextSection";
 
 
 export const Route = createFileRoute("/_main/_private/coming-next")({
@@ -30,7 +30,7 @@ function ComingNextPage() {
 
         filtered = filtered.filter((item) => {
             if (!item.date) return true;
-            const days = getDaysRemaining(item.date);
+            const days = formatRelativeTime(item.date).diffDays;
             return days === null || days >= -7;
         });
 
@@ -48,7 +48,7 @@ function ComingNextPage() {
         };
 
         processedData.forEach((item) => {
-            const days = getDaysRemaining(item.date);
+            const days = formatRelativeTime(item.date).diffDays;
 
             if (item.date === null || days === null) groups.tba.push(item);
             else if (days <= 0) groups.today.push(item);

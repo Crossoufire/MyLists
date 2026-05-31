@@ -1,10 +1,10 @@
 import React from "react";
 import {Link} from "@tanstack/react-router";
 import {MediaType} from "@/lib/utils/enums";
-import {MediaConfig} from "@/lib/client/components/media/media-config";
-import {formatDateTime} from "@/lib/utils/date-formatting";
-import {formatLocaleName} from "@/lib/utils/text-formatting";
+import {formatDate} from "@/lib/utils/date-formatting";
 import {formatMinutes} from "@/lib/utils/number-formatting";
+import {formatLocaleName} from "@/lib/utils/text-formatting";
+import {MediaConfig} from "@/lib/client/components/media/media-config";
 import {MediaInfoGridItem} from "@/lib/client/components/media/base/MediaDetailsComps";
 
 
@@ -32,9 +32,9 @@ export const TvInfoGrid = ({ mediaType, media }: TvDetailsProps<typeof MediaType
                 }
             </MediaInfoGridItem>
             <MediaInfoGridItem label="Airing Dates">
-                {formatDateTime(media.releaseDate, { noTime: true })}
+                {formatDate(media.releaseDate)}
                 <br/>
-                {formatDateTime(media.lastAirDate, { noTime: true })}
+                {formatDate(media.lastAirDate)}
             </MediaInfoGridItem>
             <MediaInfoGridItem label="Origin">
                 {formatLocaleName(media.originCountry, "region")}

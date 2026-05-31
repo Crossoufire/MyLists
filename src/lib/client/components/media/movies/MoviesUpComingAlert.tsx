@@ -8,8 +8,6 @@ type MoviesDetailsProps<T extends MediaType> = Parameters<NonNullable<MediaConfi
 
 
 export const MoviesUpComingAlert = ({ media }: MoviesDetailsProps<typeof MediaType.MOVIES>) => {
-    if (!media.releaseDate || new Date().getTime() > new Date(media.releaseDate).getTime()) return null;
-
     return (
         <UpComingAlert
             title="Movie Premiere"

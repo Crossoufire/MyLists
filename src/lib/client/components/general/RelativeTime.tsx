@@ -6,14 +6,14 @@ import {formatDateTime, formatRelativeTime, toDateTimeAttribute} from "@/lib/uti
 interface RelativeTimeProps {
     prefix?: string;
     className?: string;
-    value: string | number | null | undefined;
+    date: string | number | null | undefined;
 }
 
 
-export function RelativeTime({ value, className, prefix }: RelativeTimeProps) {
-    const dateTime = formatDateTime(value);
-    const relativeTime = formatRelativeTime(value);
-    const dateTimeAttribute = toDateTimeAttribute(value);
+export function RelativeTime({ date, className, prefix }: RelativeTimeProps) {
+    const dateTime = formatDateTime(date);
+    const { relativeTime } = formatRelativeTime(date);
+    const dateTimeAttribute = toDateTimeAttribute(date);
     const readableDateTime = dateTime === "-" ? relativeTime : dateTime;
 
     return (

@@ -75,7 +75,7 @@ export const RefreshAndEdit = ({ mediaType, mediaId, apiId, external, lastUpdate
 
             <RelativeTime
                 prefix="Updated "
-                value={lastUpdate}
+                date={lastUpdate}
                 className="px-3 text-xs text-muted-foreground"
             />
         </div>

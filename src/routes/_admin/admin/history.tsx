@@ -5,8 +5,8 @@ import {createFileRoute, Link} from "@tanstack/react-router";
 import {Payload} from "@/lib/client/components/general/Payload";
 import {MainThemeIcon} from "@/lib/client/components/general/MainIcons";
 import {SearchInput} from "@/lib/client/components/general/SearchInput";
-import {formatDateTime, formatRelativeTime} from "@/lib/utils/date-formatting";
 import {useSearchNavigate} from "@/lib/client/hooks/use-search-navigate";
+import {RelativeTime} from "@/lib/client/components/general/RelativeTime";
 import {DashboardShell} from "@/lib/client/components/admin/DashboardShell";
 import {DashboardHeader} from "@/lib/client/components/admin/DashboardHeader";
 import {TablePagination} from "@/lib/client/components/general/TablePagination";
@@ -87,16 +87,7 @@ function AdminGlobalHistory() {
         {
             accessorKey: "timestamp",
             header: "Date",
-            cell: ({ row }) => {
-                return (
-                    <div className="flex gap-3 justify-start items-center">
-                        {formatRelativeTime(row.original.timestamp)}
-                        <div className="text-xs text-muted-foreground">
-                            {formatDateTime(row.original.timestamp)}
-                        </div>
-                    </div>
-                );
-            },
+            cell: ({ row }) => <RelativeTime date={row.original.timestamp}/>,
         },
     ], []);
 

@@ -10,7 +10,7 @@ import {TabHeader} from "@/lib/client/components/general/TabHeader";
 import {EmptyState} from "@/lib/client/components/general/EmptyState";
 import {ProfileIcon} from "@/lib/client/components/general/ProfileIcon";
 import {MainThemeIcon} from "@/lib/client/components/general/MainIcons";
-import {formatDateTime, formatRelativeTime} from "@/lib/utils/date-formatting";
+import {formatDate, formatRelativeTime} from "@/lib/utils/date-formatting";
 import {zeroPad} from "@/lib/utils/number-formatting";
 import {Popover, PopoverContent, PopoverTrigger} from "@/lib/client/components/ui/popover";
 import {Bell, LoaderCircle, MessageCircleOff, MoveRight, Play, Users, X} from "lucide-react";
@@ -155,7 +155,8 @@ export const Notifications = () => {
 
 const MediaNotificationItem = ({ notif }: { notif: MediaNotif }) => {
     const isUnread = !notif.read;
-    const isTv = notif.season !== null;
+    const isTvNotification = notif.season !== null;
+    const { relativeTime } = formatRelativeTime(notif.releaseDate, { style: "long" });
 
     return (
         <div className="relative flex gap-3 py-3 px-2 border-b hover:bg-muted/30 rounded-lg mt-1">
@@ -175,28 +176,25 @@ const MediaNotificationItem = ({ notif }: { notif: MediaNotif }) => {
                             to="/details/$mediaType/$mediaId"
                             params={{ mediaType: notif.mediaType, mediaId: notif.mediaId }}
                         >
-                                    <span title={notif.name} className="font-medium text-foreground line-clamp-1 max-w-55 hover:text-app-accent">
-                                        {notif.name}
-                                    </span>
+                            <span title={notif.name} className="font-medium text-foreground line-clamp-1 max-w-55 hover:text-app-accent">
+                                {notif.name}
+                            </span>
                         </Link>
                     </p>
                 </div>
                 <div className="flex items-baseline justify-between">
                     <div className="mt-1 flex items-center gap-1.5 text-xs font-semibold text-primary/80">
-                            <span>
-                                {isTv ?
-                                    `S${zeroPad(notif.season)}.E${zeroPad(notif.episode)} ${notif.isSeasonFinale ? "(Finale)" : ""}`
-                                    :
-                                    <div>Release</div>
-                                }
-                            </span>
-                        <MoveRight className="size-4 text-app-accent"/>
                         <span>
-                                {formatDateTime(notif.releaseDate, { noTime: true })}
-                            </span>
+                            {isTvNotification
+                                ? `S${zeroPad(notif.season)}.E${zeroPad(notif.episode)} ${notif.isSeasonFinale ? "(Finale)" : ""}`
+                                : <div>Release</div>
+                            }
+                        </span>
+                        <MoveRight className="size-4 text-app-accent"/>
+                        <span>{formatDate(notif.releaseDate)}</span>
                     </div>
                     <div className="text-xs text-muted-foreground">
-                        {formatRelativeTime(notif.releaseDate)}
+                        {relativeTime}
                     </div>
                 </div>
             </div>
@@ -212,6 +210,7 @@ const SocialNotificationItem = ({ notification }: { notification: SocialNotif })
     const isUnread = !notification.read;
     const deleteMutation = useDeleteSocialNotif();
     const respondMutation = useRespondFollowRequest();
+    const { relativeTime } = formatRelativeTime(notification.createdAt);
     const isFollowRequest = notification.type === SocialNotifType.FOLLOW_REQUESTED;
 
     const respond = async (action: "accept" | "decline") => {
@@ -269,7 +268,7 @@ const SocialNotificationItem = ({ notification }: { notification: SocialNotif })
                         }
                     </p>
                     <p className="text-xs text-muted-foreground">
-                        {formatRelativeTime(notification.createdAt)}
+                        {relativeTime}
                     </p>
                 </div>
                 {isUnread &&

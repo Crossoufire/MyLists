@@ -1,30 +1,128 @@
-const RELATIVE_TIME_UNITS: { unit: Intl.RelativeTimeFormatUnit; seconds: number }[] = [
-    { unit: "year", seconds: 31536000 },
-    { unit: "month", seconds: 2592000 },
-    { unit: "day", seconds: 86400 },
-    { unit: "hour", seconds: 3600 },
-    { unit: "minute", seconds: 60 },
-];
-
-const parseDate = (input: string | number) => {
+/** parse a date string or number (s not ms!) into a Date object **/
+const dateFromUTCInput = (input: string | number) => {
     if (typeof input === "number") {
         return new Date(input * 1000);
     }
 
-    if (input.includes("T")) {
-        return new Date(input);
+    const str = input.trim();
+
+    // "YYYY"
+    if (/^\d{4}$/.test(str)) {
+        return new Date(`${str}-01-01T00:00:00Z`);
     }
 
-    if (input.includes(" ")) {
-        return new Date(`${input.replace(" ", "T")}Z`);
+    // "YYYY-MM"
+    if (/^\d{4}-\d{2}$/.test(str)) {
+        return new Date(`${str}-01T00:00:00Z`);
     }
 
-    return new Date(input);
+    // "YYYY-MM-DD"
+    if (/^\d{4}-\d{2}-\d{2}$/.test(str)) {
+        return new Date(`${str}T00:00:00Z`);
+    }
+
+    // DateTimes with spaces ("2026-05-31 15:00:00")
+    let normalized = str.replace(" ", "T");
+
+    // Time but no explicit timezone, force UTC with 'Z'
+    const hasTimezone = /([Zz]|[+-]\d{2}:?\d{2})$/.test(normalized);
+    if (normalized.includes("T") && !hasTimezone) {
+        normalized += "Z";
+    }
+
+    return new Date(normalized);
 };
+
+
+/** returns a plain date string in the format: "2024-05-20" or null **/
+export const formatDateForDb = (value: number | string | null | undefined) => {
+    if (!value) return null;
+
+    const date = dateFromUTCInput(value);
+    if (isNaN(date.getTime())) return null;
+
+    return date.toISOString().split("T")[0];
+};
+
+
+/** entry format is 'YYYY-MM-DD', returns an object with year, month and day strings **/
+export const extractDate = (input?: string | null) => {
+    const year = input?.split("-")?.[0] ?? "-";
+    const month = input?.split("-")?.[1] ?? "-";
+    const day = input?.split("-")?.[2] ?? "-";
+    return { year, month, day };
+};
+
+
+/** entry format is 'YYYY-MM-DD', returns a year string or "-" **/
+export const extractYear = (date?: string | null) => {
+    return extractDate(date).year;
+};
+
+
+/** returns a plain date string in the format: "Jan 1, 2024" or "-" **/
+export const formatDate = (value: string | number | null | undefined) => {
+    if (!value) return "-";
+
+    const date = dateFromUTCInput(value);
+    if (isNaN(date.getTime())) return "-";
+
+    return new Intl.DateTimeFormat("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+        timeZone: "UTC",
+    }).format(date);
+}
+
+
+/** @returns relative time string from today to the given date (local time) **/
+export const formatRelativeTime = (input: string | number | null | undefined, opts: Intl.RelativeTimeFormatOptions = {}) => {
+    if (!input) return { diffDays: null, relativeTime: "never" } as const;
+
+    const utcDate = dateFromUTCInput(input);
+    if (isNaN(utcDate.getTime())) return { diffDays: null, relativeTime: "never" } as const;
+
+    const today = new Date();
+    const todayMidnight = new Date(
+        today.getFullYear(), today.getMonth(), today.getDate(),
+        today.getHours(), today.getMinutes(), today.getSeconds(),
+    );
+    const utcMidnight = new Date(
+        utcDate.getFullYear(), utcDate.getMonth(), utcDate.getDate(),
+        utcDate.getHours(), utcDate.getMinutes(), utcDate.getSeconds(),
+    );
+
+    const diffSeconds = Math.round((utcMidnight.getTime() - todayMidnight.getTime()) / 1000);
+
+    const THRESHOLDS: { max: number; divisor: number; unit: Intl.RelativeTimeFormatUnit }[] = [
+        { max: 60, divisor: 1, unit: "second" },
+        { max: 3600, divisor: 60, unit: "minute" },
+        { max: 86400, divisor: 3600, unit: "hour" },
+        { max: 604800, divisor: 86400, unit: "day" },
+        { max: 2592000, divisor: 604800, unit: "week" },
+        { max: 31536000, divisor: 2592000, unit: "month" },
+        { max: Infinity, divisor: 31536000, unit: "year" },
+    ];
+
+    const absDiff = Math.abs(diffSeconds);
+    const rtf = new Intl.RelativeTimeFormat("en-US", { numeric: "auto", style: "short", ...opts });
+    const rule = THRESHOLDS.find((t) => absDiff < t.max) || THRESHOLDS[THRESHOLDS.length - 1];
+
+    return {
+        diffDays: diffSeconds / (60 * 60 * 24),
+        relativeTime: rtf.format(Math.round(diffSeconds / rule.divisor), rule.unit),
+    } as const;
+};
+
+
+// ----------------------------------------------------------------------------------------------------
+
 
 const dateInputValueToUtcDate = (value: string) => {
     return new Date(`${value}T00:00:00.000Z`);
 };
+
 
 const withFallback = <T>(value: T | null | undefined, formatter: (v: T) => string, fallback = "-") => {
     return ((value === null) || (value === undefined) || (value === ""))
@@ -42,7 +140,7 @@ interface FmtOptions {
 
 export const formatDateTime = (value: string | number | null | undefined, opts: FmtOptions = {}) => {
     return withFallback(value, (input) => {
-        const date = parseDate(input);
+        const date = dateFromUTCInput(input);
         if (isNaN(date.getTime())) return "-";
 
         const { noTime, seconds, onlyYear } = opts;
@@ -61,41 +159,9 @@ export const formatDateTime = (value: string | number | null | undefined, opts: 
 };
 
 
-export const formatRelativeTime = (input: string | number | null | undefined) => {
-    if (!input) return "Never";
-
-    const date = parseDate(input);
-    if (isNaN(date.getTime())) return "Never";
-
-    const diffInSecs = Math.floor((date.getTime() - Date.now()) / 1000);
-    const rtf = new Intl.RelativeTimeFormat("en", { numeric: "always", style: "short" });
-
-    for (const { unit, seconds } of RELATIVE_TIME_UNITS) {
-        if (Math.abs(diffInSecs) >= seconds) {
-            return rtf.format(Math.floor(diffInSecs / seconds), unit);
-        }
-    }
-
-    return "Just now";
-};
-
-
-export const getDaysRemaining = (dateString: string | null) => {
-    if (!dateString) return null;
-    const diffTime = new Date(dateString).getTime() - new Date().getTime();
-
-    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-};
-
-
-export const getYear = (date?: string | null) => {
-    return date?.split("-")[0] ?? "-";
-};
-
-
-export const getMonthName = (month: string) => {
+export const getMonthName = (month: string | number, opts: Intl.DateTimeFormatOptions = {}) => {
     if (!isNaN(Number(month))) {
-        return new Date(0, Number(month) - 1).toLocaleString("en", { month: "long" });
+        return new Date(0, Number(month) - 1).toLocaleString("en", { month: "long", ...opts });
     }
 
     return month;
@@ -149,7 +215,7 @@ export const isPastOrTodayDateInputValue = (value: string) => {
 export const toDateTimeAttribute = (value: string | number | null | undefined) => {
     if (!value) return undefined;
 
-    const date = parseDate(value);
+    const date = dateFromUTCInput(value);
     if (isNaN(date.getTime())) return undefined;
 
     return date.toISOString();

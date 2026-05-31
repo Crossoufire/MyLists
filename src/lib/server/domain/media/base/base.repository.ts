@@ -616,13 +616,13 @@ export abstract class BaseRepository<TConfig extends MediaSchemaConfig> {
                 userId ? eq(listTable.userId, userId) : undefined,
                 maxAWeek ?
                     and(
-                        gte(mediaTable.releaseDate, sql`datetime('now')`),
-                        lte(mediaTable.releaseDate, sql`datetime('now', '+7 days')`),
+                        gte(mediaTable.releaseDate, sql`date('now')`),
+                        lte(mediaTable.releaseDate, sql`date('now', '+7 days')`),
                     )
                     :
                     or(
                         isNull(mediaTable.releaseDate),
-                        gte(mediaTable.releaseDate, sql`datetime('now')`),
+                        gte(mediaTable.releaseDate, sql`date('now')`),
                     )
             ))
             .orderBy(asc(mediaTable.releaseDate));

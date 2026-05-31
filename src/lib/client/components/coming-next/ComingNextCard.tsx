@@ -1,17 +1,17 @@
+import {Calendar} from "lucide-react";
 import {Link} from "@tanstack/react-router";
 import {MediaType} from "@/lib/utils/enums";
-import {Badge} from "@/lib/client/components/ui/badge";
-import {formatDateTime, getDaysRemaining} from "@/lib/utils/date-formatting";
 import {zeroPad} from "@/lib/utils/number-formatting";
+import {Badge} from "@/lib/client/components/ui/badge";
 import {ComingNextItem} from "@/lib/types/query.options.types";
-import {AlertCircle, Calendar, Clock, Hourglass} from "lucide-react";
 import {StatusBadge} from "@/lib/client/components/general/StatusBadge";
 import {MainThemeIcon} from "@/lib/client/components/general/MainIcons";
+import {formatDateTime, formatRelativeTime} from "@/lib/utils/date-formatting";
 
 
 export const ComingNextCard = ({ item, mediaType }: { item: ComingNextItem, mediaType: MediaType }) => {
-    const daysRemaining = getDaysRemaining(item.date);
-    const isTvShow = mediaType === MediaType.SERIES || mediaType === MediaType.ANIME;
+    const { relativeTime } = formatRelativeTime(item.date, { style: "long" });
+    const isTvShow = (mediaType === MediaType.SERIES || mediaType === MediaType.ANIME);
 
     return (
         <Link search={{ external: false }} to="/details/$mediaType/$mediaId" params={{ mediaType, mediaId: item.mediaId }}>
@@ -75,31 +75,15 @@ export const ComingNextCard = ({ item, mediaType }: { item: ComingNextItem, medi
                         <StatusBadge
                             status={item.status}
                         />
-                        <MediaCountdownBadge
-                            days={daysRemaining}
-                        />
+                        {relativeTime !== "never" &&
+                            <Badge variant="black" className="capitalize">
+                                <Calendar/>
+                                <span>{relativeTime}</span>
+                            </Badge>
+                        }
                     </div>
                 </div>
             </div>
         </Link>
-    );
-};
-
-
-const MediaCountdownBadge = ({ days }: { days: number | null }) => {
-    const getBadgeConfig = () => {
-        if (days === null) return { icon: <Hourglass/>, label: "TBA" };
-        if (days === 0) return { icon: <AlertCircle/>, label: "TODAY" };
-        if (days === 1) return { icon: <Clock/>, label: "TOMORROW" };
-        return { icon: <Calendar/>, label: `In ${days} Days` };
-    };
-
-    const { icon, label } = getBadgeConfig();
-
-    return (
-        <Badge variant="black">
-            {icon}
-            <span>{label}</span>
-        </Badge>
     );
 };

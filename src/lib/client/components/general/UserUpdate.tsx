@@ -50,7 +50,7 @@ export function UserUpdate({ update, username, onDelete, canDelete, isPending, m
                         </Link>
                     </p>
                     <RelativeTime
-                        value={update.timestamp}
+                        date={update.timestamp}
                         className="ml-2 whitespace-nowrap text-xs text-muted-foreground"
                     />
                 </div>

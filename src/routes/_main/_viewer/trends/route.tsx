@@ -30,7 +30,7 @@ function TrendsPage() {
     };
 
     const allTrends = [...seriesTrends, ...moviesTrends, ...gamesTrends]
-        .sort((a, b) => new Date(b.releaseDate).getTime() - new Date(a.releaseDate).getTime());
+        .sort((a, b) => new Date(b.releaseDate!).getTime() - new Date(a.releaseDate!).getTime());
 
     const getFilteredData = () => {
         if (activeTab === MediaType.GAMES) return gamesTrends;
