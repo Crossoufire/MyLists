@@ -1,7 +1,7 @@
 import React from "react";
 import {cn} from "@/lib/utils/classnames";
 import {Calendar, Clock, LucideIcon, Star} from "lucide-react";
-import {extractDate, formatRelativeTime, getMonthName} from "@/lib/utils/date-formatting";
+import {extractDate, formatCalendarRelativeDate, getMonthName} from "@/lib/utils/date-formatting";
 
 
 interface MediaInfoGridItemProps {
@@ -119,7 +119,7 @@ interface UpComingAlertProps {
 
 export const UpComingAlert = ({ children, title, dateString }: UpComingAlertProps) => {
     const extractedDate = extractDate(dateString);
-    const { diffDays, relativeTime } = formatRelativeTime(dateString, { style: "long" });
+    const { diffDays, relativeTime } = formatCalendarRelativeDate(dateString, { style: "long" });
 
     if (diffDays === null || diffDays < 0 || diffDays > 50) {
         return null;

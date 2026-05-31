@@ -6,11 +6,11 @@ import {Badge} from "@/lib/client/components/ui/badge";
 import {ComingNextItem} from "@/lib/types/query.options.types";
 import {StatusBadge} from "@/lib/client/components/general/StatusBadge";
 import {MainThemeIcon} from "@/lib/client/components/general/MainIcons";
-import {formatDateTime, formatRelativeTime} from "@/lib/utils/date-formatting";
+import {formatCalendarRelativeDate, formatDate} from "@/lib/utils/date-formatting";
 
 
 export const ComingNextCard = ({ item, mediaType }: { item: ComingNextItem, mediaType: MediaType }) => {
-    const { relativeTime } = formatRelativeTime(item.date, { style: "long" });
+    const { relativeTime } = formatCalendarRelativeDate(item.date, { style: "long" });
     const isTvShow = (mediaType === MediaType.SERIES || mediaType === MediaType.ANIME);
 
     return (
@@ -64,7 +64,7 @@ export const ComingNextCard = ({ item, mediaType }: { item: ComingNextItem, medi
 
                         <div className="text-right shrink-0">
                             <div className="text-lg font-bold">
-                                {formatDateTime(item.date, { noTime: true })}
+                                {formatDate(item.date)}
                             </div>
                             <div className="text-xs text-muted-foreground mt-0.5">
                                 {item.date ? new Date(item.date).getFullYear() : "-"}

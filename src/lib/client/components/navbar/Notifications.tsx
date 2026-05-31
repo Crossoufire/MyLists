@@ -2,6 +2,7 @@ import {useState} from "react";
 import {Link} from "@tanstack/react-router";
 import {useQuery} from "@tanstack/react-query";
 import {SocialNotifType} from "@/lib/utils/enums";
+import {zeroPad} from "@/lib/utils/number-formatting";
 import {Badge} from "@/lib/client/components/ui/badge";
 import {Button} from "@/lib/client/components/ui/button";
 import {NotifTab} from "@/lib/types/notifications.types";
@@ -10,10 +11,9 @@ import {TabHeader} from "@/lib/client/components/general/TabHeader";
 import {EmptyState} from "@/lib/client/components/general/EmptyState";
 import {ProfileIcon} from "@/lib/client/components/general/ProfileIcon";
 import {MainThemeIcon} from "@/lib/client/components/general/MainIcons";
-import {formatDate, formatRelativeTime} from "@/lib/utils/date-formatting";
-import {zeroPad} from "@/lib/utils/number-formatting";
 import {Popover, PopoverContent, PopoverTrigger} from "@/lib/client/components/ui/popover";
 import {Bell, LoaderCircle, MessageCircleOff, MoveRight, Play, Users, X} from "lucide-react";
+import {formatCalendarRelativeDate, formatDate, formatRelativeTime} from "@/lib/utils/date-formatting";
 import {notificationsCountOptions, notificationsOptions} from "@/lib/client/react-query/query-options/query-options";
 import {useDeleteSocialNotif, useMarkAllNotifAsRead, useRespondFollowRequest} from "@/lib/client/react-query/query-mutations/user.mutations";
 
@@ -156,7 +156,7 @@ export const Notifications = () => {
 const MediaNotificationItem = ({ notif }: { notif: MediaNotif }) => {
     const isUnread = !notif.read;
     const isTvNotification = notif.season !== null;
-    const { relativeTime } = formatRelativeTime(notif.releaseDate, { style: "long" });
+    const { relativeTime } = formatCalendarRelativeDate(notif.releaseDate, { style: "long" });
 
     return (
         <div className="relative flex gap-3 py-3 px-2 border-b hover:bg-muted/30 rounded-lg mt-1">
@@ -210,7 +210,7 @@ const SocialNotificationItem = ({ notification }: { notification: SocialNotif })
     const isUnread = !notification.read;
     const deleteMutation = useDeleteSocialNotif();
     const respondMutation = useRespondFollowRequest();
-    const { relativeTime } = formatRelativeTime(notification.createdAt);
+    const relativeTime = formatRelativeTime(notification.createdAt);
     const isFollowRequest = notification.type === SocialNotifType.FOLLOW_REQUESTED;
 
     const respond = async (action: "accept" | "decline") => {

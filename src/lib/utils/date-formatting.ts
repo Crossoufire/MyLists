@@ -76,24 +76,14 @@ export const formatDate = (value: string | number | null | undefined) => {
 }
 
 
-/** @returns relative time string from today to the given date (local time) **/
+/** @returns relative time string from now to the given timestamp **/
 export const formatRelativeTime = (input: string | number | null | undefined, opts: Intl.RelativeTimeFormatOptions = {}) => {
-    if (!input) return { diffDays: null, relativeTime: "never" } as const;
+    if (!input) return "never";
 
     const utcDate = dateFromUTCInput(input);
-    if (isNaN(utcDate.getTime())) return { diffDays: null, relativeTime: "never" } as const;
+    if (isNaN(utcDate.getTime())) return "never";
 
-    const today = new Date();
-    const todayMidnight = new Date(
-        today.getFullYear(), today.getMonth(), today.getDate(),
-        today.getHours(), today.getMinutes(), today.getSeconds(),
-    );
-    const utcMidnight = new Date(
-        utcDate.getFullYear(), utcDate.getMonth(), utcDate.getDate(),
-        utcDate.getHours(), utcDate.getMinutes(), utcDate.getSeconds(),
-    );
-
-    const diffSeconds = Math.round((utcMidnight.getTime() - todayMidnight.getTime()) / 1000);
+    const diffSeconds = Math.round((utcDate.getTime() - Date.now()) / 1000);
 
     const THRESHOLDS: { max: number; divisor: number; unit: Intl.RelativeTimeFormatUnit }[] = [
         { max: 60, divisor: 1, unit: "second" },
@@ -109,10 +99,30 @@ export const formatRelativeTime = (input: string | number | null | undefined, op
     const rtf = new Intl.RelativeTimeFormat("en-US", { numeric: "auto", style: "short", ...opts });
     const rule = THRESHOLDS.find((t) => absDiff < t.max) || THRESHOLDS[THRESHOLDS.length - 1];
 
-    return {
-        diffDays: diffSeconds / (60 * 60 * 24),
-        relativeTime: rtf.format(Math.round(diffSeconds / rule.divisor), rule.unit),
-    } as const;
+    return rtf.format(Math.round(diffSeconds / rule.divisor), rule.unit);
+};
+
+
+/** @returns whole-day relative time from today to the given calendar date **/
+export const formatCalendarRelativeDate = (input: string | null | undefined, opts: Intl.RelativeTimeFormatOptions = {}) => {
+    if (!input) return { diffDays: null, relativeTime: "never" } as const;
+
+    const ymd = extractDate(input);
+    const date = new Date(Number(ymd.year), Number(ymd.month) - 1, Number(ymd.day));
+    if (!date || isNaN(date.getTime())) return { diffDays: null, relativeTime: "never" } as const;
+
+    const today = new Date();
+    const todayDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const diffDays = Math.round((date.getTime() - todayDate.getTime()) / (1000 * 60 * 60 * 24));
+
+    const absDiff = Math.abs(diffDays);
+    const rtf = new Intl.RelativeTimeFormat("en-US", { numeric: "auto", style: "short", ...opts });
+
+    if (absDiff < 7) return { diffDays, relativeTime: rtf.format(diffDays, "day") } as const;
+    if (absDiff < 30) return { diffDays, relativeTime: rtf.format(Math.round(diffDays / 7), "week") } as const;
+    if (absDiff < 365) return { diffDays, relativeTime: rtf.format(Math.round(diffDays / 30), "month") } as const;
+
+    return { diffDays, relativeTime: rtf.format(Math.round(diffDays / 365), "year") } as const;
 };
 
 

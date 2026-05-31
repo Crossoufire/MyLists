@@ -12,7 +12,7 @@ interface RelativeTimeProps {
 
 export function RelativeTime({ date, className, prefix }: RelativeTimeProps) {
     const dateTime = formatDateTime(date);
-    const { relativeTime } = formatRelativeTime(date);
+    const relativeTime = formatRelativeTime(date);
     const dateTimeAttribute = toDateTimeAttribute(date);
     const readableDateTime = dateTime === "-" ? relativeTime : dateTime;
 

@@ -2,12 +2,12 @@ import {useState} from "react";
 import {cn} from "@/lib/utils/classnames";
 import {useQuery} from "@tanstack/react-query";
 import {Input} from "@/lib/client/components/ui/input";
+import {capitalize} from "@/lib/utils/text-formatting";
+import {formatDate} from "@/lib/utils/date-formatting";
 import {Button} from "@/lib/client/components/ui/button";
 import {ApiProviderType, MediaType} from "@/lib/utils/enums";
 import {Separator} from "@/lib/client/components/ui/separator";
 import {ProviderSearchResult} from "@/lib/types/provider.types";
-import {capitalize} from "@/lib/utils/text-formatting";
-import {formatDateTime} from "@/lib/utils/date-formatting";
 import {ChevronLeft, ChevronRight, Loader2, Search} from "lucide-react";
 import {useSearchContainer} from "@/lib/client/hooks/use-search-container";
 import {SearchContainer} from "@/lib/client/components/general/SearchContainer";
@@ -110,7 +110,7 @@ export const CollectionSearch = ({ mediaType, onAdd, disabled }: CollectionSearc
                                             {capitalize(item.itemType)}
                                         </div>
                                         <div className="text-muted-foreground text-xs">
-                                            {formatDateTime(item.date, { noTime: true })}
+                                            {formatDate(item.date)}
                                         </div>
                                     </div>
                                 </div>
