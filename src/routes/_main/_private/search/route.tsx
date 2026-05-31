@@ -2,7 +2,7 @@ import React, {useState} from "react";
 import {useQuery} from "@tanstack/react-query";
 import {useAuth} from "@/lib/client/hooks/use-auth";
 import {Card} from "@/lib/client/components/ui/card";
-import {formatDateTime} from "@/lib/utils/date-formatting";
+import {formatDate} from "@/lib/utils/date-formatting";
 import {Input} from "@/lib/client/components/ui/input";
 import {Badge} from "@/lib/client/components/ui/badge";
 import {ApiProviderType, MediaType} from "@/lib/utils/enums";
@@ -134,7 +134,7 @@ function SearchPage() {
                                     }
                                     <div className="absolute bottom-0 px-4 pt-2 pb-2 space-y-1 bg-gray-900 w-full rounded-b-sm text-center">
                                         <div className="truncate">{item.name}</div>
-                                        <div>{formatDateTime(item.date, { noTime: true })}</div>
+                                        <div>{formatDate(item.date)}</div>
                                     </div>
                                 </div>
                             </Card>

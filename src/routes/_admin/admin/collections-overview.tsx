@@ -3,16 +3,16 @@ import {SearchType} from "@/lib/schemas";
 import {PrivacyType} from "@/lib/utils/enums";
 import {Badge} from "@/lib/client/components/ui/badge";
 import {useSuspenseQuery} from "@tanstack/react-query";
+import {capitalize} from "@/lib/utils/text-formatting";
 import {Button} from "@/lib/client/components/ui/button";
+import {formatNumber} from "@/lib/utils/number-formatting";
 import {createFileRoute, Link} from "@tanstack/react-router";
 import {UserStats} from "@/lib/client/components/admin/UserStats";
 import {SearchInput} from "@/lib/client/components/general/SearchInput";
 import {useSearchNavigate} from "@/lib/client/hooks/use-search-navigate";
+import {RelativeTime} from "@/lib/client/components/general/RelativeTime";
 import {DashboardShell} from "@/lib/client/components/admin/DashboardShell";
 import {DashboardHeader} from "@/lib/client/components/admin/DashboardHeader";
-import {capitalize} from "@/lib/utils/text-formatting";
-import {formatDateTime} from "@/lib/utils/date-formatting";
-import {formatNumber} from "@/lib/utils/number-formatting";
 import {TablePagination} from "@/lib/client/components/general/TablePagination";
 import {Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis} from "recharts";
 import {MainThemeIcon, PrivacyIcon} from "@/lib/client/components/general/MainIcons";
@@ -155,11 +155,10 @@ function AdminCollectionsOverviewPage() {
                     Created <ChevronsUpDown className="size-3 text-muted-foreground"/>
                 </Button>
             ),
-            cell: ({ row: { original } }) => formatDateTime(original.createdAt),
+            cell: ({ row: { original } }) => <RelativeTime date={original.createdAt}/>,
         },
     ], []);
 
-    // eslint-disable-next-line react-hooks/incompatible-library
     const table = useReactTable({
         columns,
         onSortingChange,

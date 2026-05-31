@@ -1,14 +1,14 @@
 import {Link} from "@tanstack/react-router";
 import {CalendarDays, Users} from "lucide-react";
 import {useAuth} from "@/lib/client/hooks/use-auth";
-import {useBreakpoint} from "@/lib/client/hooks/use-breakpoint";
+import {formatDate} from "@/lib/utils/date-formatting";
 import {capitalize} from "@/lib/utils/text-formatting";
-import {formatDateTime} from "@/lib/utils/date-formatting";
+import {computeLevel} from "@/lib/utils/number-formatting";
+import {useBreakpoint} from "@/lib/client/hooks/use-breakpoint";
 import {PrivacyIcon} from "@/lib/client/components/general/MainIcons";
 import {ProfileIcon} from "@/lib/client/components/general/ProfileIcon";
 import {FollowButton} from "@/lib/client/components/user-profile/FollowButton";
 import {ProfileHeaderOptionsType, UserDataType} from "@/lib/types/query.options.types";
-import {computeLevel} from "@/lib/utils/number-formatting";
 
 
 interface ProfileHeaderProps {
@@ -27,7 +27,7 @@ export const ProfileHeader = ({ profileUser, social }: ProfileHeaderProps) => {
     );
 
     return (
-        <div className="relative mb-20 w-screen left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] max-sm:mb-2">
+        <div className="relative mb-20 w-screen left-1/2 right-1/2 ml-[-50vw] mr-[-50vw] max-sm:mb-2">
             <div className="h-64 w-full bg-neutral-800 overflow-hidden relative max-sm:h-42">
                 <div className="absolute inset-0 bg-linear-to-t from-neutral-950 to-transparent opacity-20 z-10"/>
                 <img
@@ -64,7 +64,7 @@ export const ProfileHeader = ({ profileUser, social }: ProfileHeaderProps) => {
                         <div className="flex flex-wrap items-center justify-start text-sm gap-x-4 gap-y-1 text-muted-foreground">
                             <span className="flex items-center gap-1">
                                 <CalendarDays className="size-4"/>{" "}
-                                Joined {formatDateTime(profileUser.createdAt, { noTime: true })}
+                                Joined {formatDate(profileUser.createdAt)}
                             </span>
                             <Link to="/profile/$username/follows" params={{ username: profileUser.name }}>
                                 <span className="flex items-center gap-1">
@@ -116,7 +116,7 @@ export const ProfileHeader = ({ profileUser, social }: ProfileHeaderProps) => {
                             <div className="text-sm flex flex-wrap items-center justify-start gap-4 text-muted-foreground">
                                 <span className="flex items-center gap-1">
                                     <CalendarDays className="size-4"/>{" "}
-                                    Joined {formatDateTime(profileUser.createdAt, { noTime: true })}
+                                    Joined {formatDate(profileUser.createdAt)}
                                 </span>
                                 <Link to="/profile/$username/follows" params={{ username: profileUser.name }}>
                                     <span className="flex items-center gap-1">

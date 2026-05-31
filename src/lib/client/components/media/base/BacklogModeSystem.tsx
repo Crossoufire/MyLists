@@ -4,7 +4,7 @@ import {Button} from "@/lib/client/components/ui/button";
 import {Calendar} from "@/lib/client/components/ui/calendar";
 import {Calendar as CalendarIcon, TriangleAlert} from "lucide-react";
 import {Popover, PopoverContent, PopoverTrigger} from "@/lib/client/components/ui/popover";
-import {dateInputValueToDate, formatDateTime, toDateInputValue} from "@/lib/utils/date-formatting";
+import {dateInputValueToDate, formatDate, toDateInputValue} from "@/lib/utils/date-formatting";
 
 
 interface BacklogModeBannerProps {
@@ -17,14 +17,13 @@ interface BacklogModeBannerProps {
 
 
 export const BacklogModeSystem = ({ enabled, date, disabled, onDateChange, onEnabledChange }: BacklogModeBannerProps) => {
-    // eslint-disable-next-line @eslint-react/purity
     const today = toDateInputValue(new Date().toISOString());
 
     const todayDate = dateInputValueToDate(today);
     const [calendarOpen, setCalendarOpen] = useState(false);
+    const selectedLabel = enabled && date ? formatDate(date) : "TODAY";
     const selectedDate = dateInputValueToDate(enabled && date ? date : today);
     const calendarStartDate = new Date(todayDate.getFullYear() - 20, 0, 1);
-    const selectedLabel = enabled && date ? formatDateTime(date, { noTime: true }) : "TODAY";
 
     const getPresetDate = (daysAgo: number) => {
         const preset = new Date();

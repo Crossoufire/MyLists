@@ -1,11 +1,11 @@
 import {createFileRoute} from "@tanstack/react-router";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {UserStats} from "@/lib/client/components/admin/UserStats";
+import {formatMs, formatNumber} from "@/lib/utils/number-formatting";
 import {Pagination} from "@/lib/client/components/general/Pagination";
+import {formatDate, formatDateTime} from "@/lib/utils/date-formatting";
 import {RelativeTime} from "@/lib/client/components/general/RelativeTime";
 import {DashboardShell} from "@/lib/client/components/admin/DashboardShell";
-import {formatDateTime} from "@/lib/utils/date-formatting";
-import {formatMs, formatNumber} from "@/lib/utils/number-formatting";
 import {DashboardHeader} from "@/lib/client/components/admin/DashboardHeader";
 import {Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis} from "recharts";
 import {Activity, AlertTriangle, BarChart3, Clock, Gauge, Radio} from "lucide-react";
@@ -238,7 +238,7 @@ function ApiMonitoringPage() {
                                     <TableRow>
                                         <TableCell className="font-medium">Busiest day</TableCell>
                                         <TableCell className="text-right">
-                                            {formatDateTime(apiData.summary.busiestDay, { noTime: true })} - {formatNumber(apiData.summary.busiestDayCount)}
+                                            {formatDate(apiData.summary.busiestDay)} - {formatNumber(apiData.summary.busiestDayCount)}
                                         </TableCell>
                                     </TableRow>
                                     <TableRow>

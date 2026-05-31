@@ -34,9 +34,7 @@ export function LogsList({ logs }: { logs: TaskLog[] }) {
                                 <div className="flex-1 min-w-0">
                                     <div className="flex items-baseline gap-2">
                                         <span className="text-xs text-muted-foreground font-mono">
-                                            {formatDateTime(log.time, {
-                                                seconds: true,
-                                            })}
+                                            {formatDateTime(log.time, { seconds: true })}
                                         </span>
                                         {log.step &&
                                             <span className="text-xs bg-muted px-1.5 py-0.5 rounded">

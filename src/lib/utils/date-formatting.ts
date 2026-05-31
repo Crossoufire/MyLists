@@ -126,6 +126,12 @@ export const formatCalendarRelativeDate = (input: string | null | undefined, opt
 };
 
 
+/** @returns month name from the given month number or string **/
+export const getMonthName = (month: string | number, opts: Intl.DateTimeFormatOptions = {}) => {
+    return isNaN(+month) ? month : new Date(0, +month - 1).toLocaleString("en", { month: "long", ...opts });
+}
+
+
 // ----------------------------------------------------------------------------------------------------
 
 
@@ -142,7 +148,6 @@ const withFallback = <T>(value: T | null | undefined, formatter: (v: T) => strin
 
 
 interface FmtOptions {
-    noTime?: boolean;
     seconds?: boolean;
     onlyYear?: boolean;
 }
@@ -153,28 +158,17 @@ export const formatDateTime = (value: string | number | null | undefined, opts: 
         const date = dateFromUTCInput(input);
         if (isNaN(date.getTime())) return "-";
 
-        const { noTime, seconds, onlyYear } = opts;
+        const { seconds, onlyYear } = opts;
         const dtfOptions: Intl.DateTimeFormatOptions = {
             year: "numeric",
             month: onlyYear ? undefined : "short",
             day: onlyYear ? undefined : "numeric",
-            hour: noTime || onlyYear ? undefined : "numeric",
-            minute: noTime || onlyYear ? undefined : "numeric",
             second: seconds ? "numeric" : undefined,
             hour12: false,
         };
 
         return new Intl.DateTimeFormat("en-US", dtfOptions).format(date);
     });
-};
-
-
-export const getMonthName = (month: string | number, opts: Intl.DateTimeFormatOptions = {}) => {
-    if (!isNaN(Number(month))) {
-        return new Date(0, Number(month) - 1).toLocaleString("en", { month: "long", ...opts });
-    }
-
-    return month;
 };
 
 
