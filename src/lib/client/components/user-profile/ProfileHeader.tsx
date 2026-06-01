@@ -3,7 +3,7 @@ import {CalendarDays, Users} from "lucide-react";
 import {useAuth} from "@/lib/client/hooks/use-auth";
 import {formatDate} from "@/lib/utils/date-formatting";
 import {capitalize} from "@/lib/utils/text-formatting";
-import {computeLevel} from "@/lib/utils/number-formatting";
+import {formatLevel} from "@/lib/utils/number-formatting";
 import {useBreakpoint} from "@/lib/client/hooks/use-breakpoint";
 import {PrivacyIcon} from "@/lib/client/components/general/MainIcons";
 import {ProfileIcon} from "@/lib/client/components/general/ProfileIcon";
@@ -22,7 +22,7 @@ export const ProfileHeader = ({ profileUser, social }: ProfileHeaderProps) => {
     const isConnected = (!!currentUser);
     const isBelowSm = useBreakpoint("sm");
     const isCurrent = (currentUser?.id === profileUser.id);
-    const profileLevel = computeLevel(profileUser.userMediaSettings
+    const profileLevel = formatLevel(profileUser.userMediaSettings
         .reduce((acc, cur) => cur.active ? acc + cur.timeSpent : acc, 0)
     );
 

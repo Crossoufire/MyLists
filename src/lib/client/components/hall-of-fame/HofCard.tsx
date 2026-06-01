@@ -9,7 +9,7 @@ import {Card, CardContent} from "@/lib/client/components/ui/card";
 import {MediaLevel} from "@/lib/client/components/general/MediaLevel";
 import {PrivacyIcon} from "@/lib/client/components/general/MainIcons";
 import {ProfileIcon} from "@/lib/client/components/general/ProfileIcon";
-import {computeLevel} from "@/lib/utils/number-formatting";
+import {formatLevel} from "@/lib/utils/number-formatting";
 
 
 interface HofCardProps {
@@ -60,7 +60,7 @@ export const HofCard = ({ userData }: HofCardProps) => {
                                 <div className="-ml-1.5">
                                     <div className="w-18 h-7 flex items-center justify-center text-left rounded-full font-bold
                                     text-xs bg-app-accent text-black border-4 border-background shadow-lg">
-                                        Lvl. {Math.floor(computeLevel(userData.totalTime))}
+                                        Lvl. {Math.floor(formatLevel(userData.totalTime))}
                                     </div>
                                 </div>
                             </div>

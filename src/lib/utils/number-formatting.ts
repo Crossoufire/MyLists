@@ -1,33 +1,26 @@
-const withFallback = <T>(value: T | null | undefined, formatter: (v: T) => string, fallback = "-") => {
-    return value === null || value === undefined || value === "" ? fallback : formatter(value);
-};
-
-
 export const zeroPad = (value: number | string | null | undefined) => {
     return String(value ?? 0).padStart(2, "0");
 };
 
 
-export const formatCurrency = (value: number | null, options: Intl.NumberFormatOptions = {}) => {
+export const formatCurrency = (value: number | null, opts: Intl.NumberFormatOptions = {}) => {
     if (value === null || value === 0) return "$ -";
 
-    return withFallback(value, (val) =>
-        new Intl.NumberFormat("en", {
-            currency: "USD",
-            style: "currency",
-            notation: "compact",
-            maximumFractionDigits: 1,
-            ...options,
-        }).format(val)
-    );
+    return new Intl.NumberFormat("en", {
+        currency: "USD",
+        style: "currency",
+        notation: "compact",
+        maximumFractionDigits: 1,
+        ...opts,
+    }).format(value);
 };
 
 
 export const formatHours = (hours: number) => {
     if (hours < 24) return `${hours.toFixed(1)}h`;
 
-    const days = Math.floor(hours / 24);
     const h = Math.floor(hours % 24);
+    const days = Math.floor(hours / 24);
 
     if (days < 30) return `${days}d ${h}h`;
     if (days < 365) return `${Math.floor(days / 30)}m ${days % 30}d`;
@@ -37,12 +30,14 @@ export const formatHours = (hours: number) => {
 
 
 export const formatPercent = (value: number | null | undefined) => {
-    return withFallback(value, (val) => `${val.toFixed(1)}%`);
+    if (!value) return "-";
+    return value.toFixed(1);
 };
 
 
-export const formatNumber = (value: number | null | undefined, options: Intl.NumberFormatOptions = {}) => {
-    return withFallback(value, (val) => val.toLocaleString("fr", options));
+export const formatNumber = (value: number | null | undefined, opts: Intl.NumberFormatOptions = {}) => {
+    if (!value) return "-";
+    return value.toLocaleString("fr", opts);
 };
 
 
@@ -55,13 +50,8 @@ export const formatMinutes = (minutes: number | string | null | undefined, optio
     const h = Math.floor(mins / 60);
     const m = Math.floor(mins % 60);
 
-    if (options.compact) {
-        return h > 0 ? `${h}h ${m}m` : `${m}m`;
-    }
-
-    if (options.onlyHours) {
-        return `${zeroPad(h)} h`;
-    }
+    if (options.onlyHours) return `${zeroPad(h)} h`;
+    if (options.compact) return h > 0 ? `${h}h ${m}m` : `${m}m`;
 
     return `${zeroPad(h)} h ${zeroPad(m)}`;
 };
@@ -77,6 +67,6 @@ export const formatMs = (ms: number) => {
 };
 
 
-export const computeLevel = (totalTime: number) => {
+export const formatLevel = (totalTime: number) => {
     return (Math.sqrt(400 + 80 * totalTime) - 20) / 40;
 }

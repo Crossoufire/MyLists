@@ -4,7 +4,7 @@ import {getThemeColor} from "@/lib/utils/theme-utils";
 import {Progress} from "@/lib/client/components/ui/progress";
 import {MainThemeIcon} from "@/lib/client/components/general/MainIcons";
 import {Card, CardContent, CardHeader, CardTitle} from "@/lib/client/components/ui/card";
-import {computeLevel} from "@/lib/utils/number-formatting";
+import {formatLevel} from "@/lib/utils/number-formatting";
 
 
 interface MediaLevelsProps {
@@ -32,7 +32,7 @@ export const MediaLevels = ({ username, settings }: MediaLevelsProps) => {
                             username={username}
                             key={data.mediaType}
                             mediaType={data.mediaType}
-                            level={computeLevel(data.timeSpent)}
+                            level={formatLevel(data.timeSpent)}
                         />
                     )}
                 </div>
