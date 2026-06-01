@@ -14,7 +14,6 @@ export function RelativeTime({ date, className, prefix }: RelativeTimeProps) {
     const dateTime = formatDateTime(date);
     const relativeTime = formatRelativeTime(date);
     const dateTimeAttribute = toDateTimeAttribute(date);
-    const readableDateTime = dateTime === "-" ? relativeTime : dateTime;
 
     return (
         <Popover>
@@ -33,7 +32,7 @@ export function RelativeTime({ date, className, prefix }: RelativeTimeProps) {
                 </button>
             </PopoverTrigger>
             <PopoverContent className="w-auto px-3 py-2 text-xs" side="top">
-                {readableDateTime}
+                {dateTime === "-" ? relativeTime : dateTime}
             </PopoverContent>
         </Popover>
     );

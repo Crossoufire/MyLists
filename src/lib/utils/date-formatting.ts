@@ -1,5 +1,5 @@
 /** parse a date string or number (s not ms!) into a Date object **/
-const dateFromUTCInput = (input: string | number) => {
+export const dateFromUTCInput = (input: string | number) => {
     if (typeof input === "number") {
         return new Date(input * 1000);
     }
@@ -162,18 +162,14 @@ export const dateInputValueToDate = (value: string) => {
 };
 
 
-// ----------------------------------------------------------------------------------------------------
+/** @returns an ISO date string **/
+export const toDateTimeAttribute = (value: string | number | null | undefined) => {
+    if (!value) return undefined;
 
+    const date = dateFromUTCInput(value);
+    if (isNaN(date.getTime())) return undefined;
 
-const dateInputValueToUtcDate = (value: string) => {
-    return new Date(`${value}T00:00:00.000Z`);
-};
-
-
-const withFallback = <T>(value: T | null | undefined, formatter: (v: T) => string, fallback = "-") => {
-    return ((value === null) || (value === undefined) || (value === ""))
-        ? fallback
-        : formatter(value);
+    return date.toISOString();
 };
 
 
@@ -183,43 +179,21 @@ interface FmtOptions {
 }
 
 
+/** @returns a date string human formatted or "-" **/
 export const formatDateTime = (value: string | number | null | undefined, opts: FmtOptions = {}) => {
-    return withFallback(value, (input) => {
-        const date = dateFromUTCInput(input);
-        if (isNaN(date.getTime())) return "-";
-
-        const { seconds, onlyYear } = opts;
-        const dtfOptions: Intl.DateTimeFormatOptions = {
-            year: "numeric",
-            month: onlyYear ? undefined : "short",
-            day: onlyYear ? undefined : "numeric",
-            second: seconds ? "numeric" : undefined,
-            hour12: false,
-        };
-
-        return new Intl.DateTimeFormat("en-US", dtfOptions).format(date);
-    });
-};
-
-
-export const isDateInputValue = (value: string) => {
-    const [year, month, day] = value.split("-").map(Number);
-    const date = dateInputValueToUtcDate(value);
-
-    return date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day;
-};
-
-
-export const isPastOrTodayDateInputValue = (value: string) => {
-    return dateInputValueToUtcDate(value).getTime() <= Date.now();
-};
-
-
-export const toDateTimeAttribute = (value: string | number | null | undefined) => {
-    if (!value) return undefined;
+    if (!value) return "-";
 
     const date = dateFromUTCInput(value);
-    if (isNaN(date.getTime())) return undefined;
+    if (isNaN(date.getTime())) return "-";
 
-    return date.toISOString();
+    const { seconds, onlyYear } = opts;
+    const dtfOptions: Intl.DateTimeFormatOptions = {
+        year: "numeric",
+        month: onlyYear ? undefined : "short",
+        day: onlyYear ? undefined : "numeric",
+        second: seconds ? "numeric" : undefined,
+        hour12: false,
+    };
+
+    return new Intl.DateTimeFormat("en-US", dtfOptions).format(date);
 };
