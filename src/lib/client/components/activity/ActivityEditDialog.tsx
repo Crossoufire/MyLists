@@ -96,7 +96,7 @@ export const ActivityEditDialog = ({ open, activity, onOpenChange }: ActivityEdi
                         <Input
                             type="date"
                             {...form.register("lastUpdate")}
-                            max={toDateInputValue(new Date().toISOString())}
+                            max={toDateInputValue(new Date())}
                         />
                     </div>
 

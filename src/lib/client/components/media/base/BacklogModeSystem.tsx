@@ -16,31 +16,28 @@ interface BacklogModeBannerProps {
 }
 
 
-export const BacklogModeSystem = ({ enabled, date, disabled, onDateChange, onEnabledChange }: BacklogModeBannerProps) => {
-    const today = toDateInputValue(new Date().toISOString());
-
-    const todayDate = dateInputValueToDate(today);
+export const BacklogModeSystem = ({ date, onDateChange, onEnabledChange, disabled, enabled }: BacklogModeBannerProps) => {
+    const todayCalendar = toDateInputValue(new Date());
+    const todayDate = dateInputValueToDate(todayCalendar);
     const [calendarOpen, setCalendarOpen] = useState(false);
     const selectedLabel = enabled && date ? formatDate(date) : "TODAY";
-    const selectedDate = dateInputValueToDate(enabled && date ? date : today);
+    const selectedDate = dateInputValueToDate(enabled && date ? date : todayCalendar);
     const calendarStartDate = new Date(todayDate.getFullYear() - 20, 0, 1);
 
     const getPresetDate = (daysAgo: number) => {
         const preset = new Date();
         preset.setDate(preset.getDate() - daysAgo);
-
-        return toDateInputValue(preset.toISOString());
+        return toDateInputValue(preset);
     };
 
     const getPresetMonthDate = () => {
         const preset = new Date();
         preset.setMonth(preset.getMonth() - 1);
-
-        return toDateInputValue(preset.toISOString());
+        return toDateInputValue(preset);
     };
 
     const presets = [
-        { label: "Today", value: today, enabled: false },
+        { label: "Today", value: todayCalendar, enabled: false },
         { label: "-2d", value: getPresetDate(2), enabled: true },
         { label: "-1 wk.", value: getPresetDate(7), enabled: true },
         { label: "-1 mo.", value: getPresetMonthDate(), enabled: true },
@@ -52,7 +49,7 @@ export const BacklogModeSystem = ({ enabled, date, disabled, onDateChange, onEna
     };
 
     const handleCustomDate = (value: string) => {
-        const isToday = value === today;
+        const isToday = value === todayCalendar;
         onDateChange(isToday ? "" : value);
         onEnabledChange(!!value && !isToday);
     };

@@ -127,9 +127,39 @@ export const formatCalendarRelativeDate = (input: string | null | undefined, opt
 
 
 /** @returns month name from the given month number or string **/
-export const getMonthName = (month: string | number, opts: Intl.DateTimeFormatOptions = {}) => {
-    return isNaN(+month) ? month : new Date(0, +month - 1).toLocaleString("en", { month: "long", ...opts });
+export const formatMonth = (month: string | number, opts: Intl.DateTimeFormatOptions = {}) => {
+    return isNaN(+month) ? month : new Date(0, +month - 1).toLocaleString("en-US", { month: "long", ...opts });
 }
+
+
+/** @returns month year from the given date string 'YYYY-MM' **/
+export const formatMonthYear = (value: string, opts: Intl.DateTimeFormatOptions = {}) => {
+    const ymd = extractDate(value);
+    const date = new Date(Number(ymd.year), Number(ymd.month) - 1);
+    return date.toLocaleDateString("en-US", { month: "short", year: "numeric", ...opts });
+};
+
+
+/** @returns 'YYYY-MM-DD' calendar string from date object or string **/
+export const toDateInputValue = (value?: string | Date) => {
+    if (!value) return "";
+
+    const date = value instanceof Date ? value : dateFromUTCInput(value);
+    if (isNaN(date.getTime())) return "";
+
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+
+    return `${year}-${month}-${day}`;
+};
+
+
+/** @returns a date from a 'YYYY-MM-DD' string **/
+export const dateInputValueToDate = (value: string) => {
+    const ymd = extractDate(value);
+    return new Date(Number(ymd.year), Number(ymd.month) - 1, Number(ymd.day));
+};
 
 
 // ----------------------------------------------------------------------------------------------------
@@ -169,37 +199,6 @@ export const formatDateTime = (value: string | number | null | undefined, opts: 
 
         return new Intl.DateTimeFormat("en-US", dtfOptions).format(date);
     });
-};
-
-
-export const formatMonthYear = (value: string) => {
-    const [year, month] = value.split("-");
-    const date = new Date(Number(year), Number(month) - 1);
-
-    return date.toLocaleDateString("en-US", { month: "short", year: "numeric" });
-};
-
-
-export const toDateInputValue = (value?: string | Date) => {
-    if (!value) return "";
-
-    const date = value instanceof Date
-        ? value
-        : new Date(value.includes(" ") ? `${value.replace(" ", "T")}Z` : value);
-    if (Number.isNaN(date.getTime())) return "";
-
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
-
-    return `${year}-${month}-${day}`;
-};
-
-
-export const dateInputValueToDate = (value: string) => {
-    const [year, month, day] = value.split("-").map(Number);
-
-    return new Date(year, month - 1, day);
 };
 
 

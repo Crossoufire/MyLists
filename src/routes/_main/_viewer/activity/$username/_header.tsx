@@ -1,4 +1,4 @@
-import {getMonthName} from "@/lib/utils/date-formatting";
+import {formatMonth} from "@/lib/utils/date-formatting";
 import {ActivitySearch} from "@/lib/types/activity.types";
 import {createFileRoute, Outlet} from "@tanstack/react-router";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
@@ -21,7 +21,7 @@ function ActivityHeader() {
     const { year, month } = Route.useSearch();
 
     return (
-        <PageTitle title={`${getMonthName(month)} Activity`} subtitle={`${username} activity for ${year}`}>
+        <PageTitle title={`${formatMonth(month)} Activity`} subtitle={`${username} activity for ${year}`}>
             <Outlet/>
         </PageTitle>
     );

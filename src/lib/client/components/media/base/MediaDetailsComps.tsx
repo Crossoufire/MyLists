@@ -1,7 +1,7 @@
 import React from "react";
 import {cn} from "@/lib/utils/classnames";
 import {Calendar, Clock, LucideIcon, Star} from "lucide-react";
-import {extractDate, formatCalendarRelativeDate, getMonthName} from "@/lib/utils/date-formatting";
+import {extractDate, formatCalendarRelativeDate, formatMonth} from "@/lib/utils/date-formatting";
 
 
 interface MediaInfoGridItemProps {
@@ -148,7 +148,7 @@ export const UpComingAlert = ({ children, title, dateString }: UpComingAlertProp
 
                 <div className="flex min-w-10 flex-col items-center justify-center rounded-md bg-app-accent/20 px-3 py-1.5">
                     <span className="text-[10px] font-bold uppercase tracking-wider">
-                        {getMonthName(Number(extractedDate.month), { month: "short" })}
+                        {formatMonth(Number(extractedDate.month), { month: "short" })}
                     </span>
                     <span className="text-xl font-bold leading-none tabular-nums">
                         {extractedDate.day}

@@ -34,8 +34,8 @@ export function ActivityByMonthChart({ title, data, mediaTypes, mediaType, stack
                             dataKey="month"
                             tickLine={false}
                             axisLine={false}
-                            tickFormatter={formatMonthYear}
                             tick={{ fontSize: 12, fill: "var(--primary)" }}
+                            tickFormatter={(value) => formatMonthYear(value)}
                         />
                         <YAxis
                             tickLine={false}

@@ -214,7 +214,7 @@ export const ActivityAddDialog = ({ open, year, month, mediaTypes, onOpenChange 
                             <Label>Progress date</Label>
                             <Input
                                 type="date"
-                                max={toDateInputValue(new Date().toISOString())}
+                                max={toDateInputValue(new Date())}
                                 {...form.register("lastUpdate", { required: true })}
                             />
                         </div>

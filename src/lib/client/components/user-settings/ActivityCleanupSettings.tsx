@@ -22,9 +22,9 @@ type FormValues = {
 export function ActivityCleanupSettings() {
     const mediaType = "all";
     const { currentUser } = useAuth();
+    const today = toDateInputValue(new Date());
     const bulkMutation = useBulkHideActivityMutation();
-    const today = toDateInputValue(new Date().toISOString());
-    const accountCreatedAt = currentUser?.createdAt ? toDateInputValue(currentUser.createdAt.toISOString()) : today;
+    const accountCreatedAt = currentUser?.createdAt ? toDateInputValue(currentUser.createdAt) : today;
     const availableMediaTypes = currentUser?.settings.filter(s => s.active).map(s => s.mediaType) ?? Object.values(MediaType);
     const form = useForm<FormValues>({
         values: {
@@ -167,7 +167,7 @@ export function ActivityCleanupSettings() {
 const addDays = (dateValue: string, days: number, maxDate: string) => {
     const date = new Date(`${dateValue}T00:00:00`);
     date.setDate(date.getDate() + days);
-    const value = toDateInputValue(date.toISOString());
+    const value = toDateInputValue(date);
 
     return value > maxDate ? maxDate : value;
 };
