@@ -42,7 +42,7 @@ const activityMediaConfig: Record<MediaType, ActivityMediaConfig> = {
         longUnit: "Hours Played",
         calculateTime: identity,
         toStoredValue: (hours) => hours * 60,
-        toDisplayValue: (minutes) => Number((minutes / 60).toFixed(2)),
+        toDisplayValue: (minutes) => Math.round((minutes / 60) * 100) / 100,
     },
     [MediaType.BOOKS]: {
         inputStep: 1,

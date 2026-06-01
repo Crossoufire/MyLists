@@ -1,7 +1,7 @@
 import {createFileRoute} from "@tanstack/react-router";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {UserStats} from "@/lib/client/components/admin/UserStats";
-import {formatMs, formatNumber} from "@/lib/utils/number-formatting";
+import {formatMs, formatNumber, formatPercent} from "@/lib/utils/number-formatting";
 import {Pagination} from "@/lib/client/components/general/Pagination";
 import {formatDate, formatDateTime} from "@/lib/utils/date-formatting";
 import {RelativeTime} from "@/lib/client/components/general/RelativeTime";
@@ -60,7 +60,7 @@ function ApiMonitoringPage() {
     const { range = "30d", dailyRange = "30d" } = filters;
 
     const totalErrors = apiData.summary.failed;
-    const errorRate = apiData.summary.total ? Number(((totalErrors / apiData.summary.total) * 100).toFixed(1)) : 0;
+    const errorRate = apiData.summary.total ? (totalErrors / apiData.summary.total) * 100 : 0;
     const providerColorMap = new Map(apiData.providers.map((provider, idx) => [provider, providerColors[idx % providerColors.length]]));
 
     const onNavigate = (params: AdminApiMonitoringParams) => {
@@ -106,7 +106,7 @@ function ApiMonitoringPage() {
                         title="Errors"
                         icon={AlertTriangle}
                         value={formatNumber(totalErrors)}
-                        description={`${formatNumber(errorRate)}% failure rate`}
+                        description={`${formatPercent(errorRate)} failure rate`}
                     />
                 </div>
 
@@ -205,7 +205,7 @@ function ApiMonitoringPage() {
                                                     {row.provider}
                                                 </span>
                                                 <span className="text-xs text-muted-foreground">
-                                                    {formatNumber(count)} ({pct}%)
+                                                    {formatNumber(count)} ({formatPercent(pct, { fractionDigits: 0 })})
                                                 </span>
                                             </div>
                                             <div className="h-2 rounded-full bg-muted">

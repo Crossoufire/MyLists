@@ -80,16 +80,17 @@ function ActivityTooltip({ active, payload, label, mediaTypes }: any & { mediaTy
                 rows.map((entry: any) =>
                     <p key={entry.dataKey} className="grid grid-cols-2 gap-2 capitalize">
                         <div>{entry.dataKey}:</div>
-                        <div>{formatNumber(Number(entry.value), { notation: "compact", maximumFractionDigits: 1 })}h</div>
+                        <div>{formatNumber(Number(entry.value), { fractionDigits: 1, notation: "compact" })}h</div>
                     </p>
                 )}
             {mediaTypes.length > 1 && rows.length > 0 &&
                 <p className="mt-1 border-t border-white/20 pt-1">
                     Total: {
-                    formatNumber(rows.reduce(
-                            (sum: number, entry: any) => sum + Number(entry.value), 0),
-                        { notation: "compact", maximumFractionDigits: 1 })
-                }h
+                        formatNumber(
+                            rows.reduce((sum: number, entry: any) => sum + Number(entry.value), 0),
+                            { fractionDigits: 1, notation: "compact" },
+                        )
+                    }h
                 </p>
             }
         </div>

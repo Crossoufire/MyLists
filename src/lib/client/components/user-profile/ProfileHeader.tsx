@@ -22,9 +22,9 @@ export const ProfileHeader = ({ profileUser, social }: ProfileHeaderProps) => {
     const isConnected = (!!currentUser);
     const isBelowSm = useBreakpoint("sm");
     const isCurrent = (currentUser?.id === profileUser.id);
-    const profileLevel = formatLevel(profileUser.userMediaSettings
+    const profileLevel = Math.floor(formatLevel(profileUser.userMediaSettings
         .reduce((acc, cur) => cur.active ? acc + cur.timeSpent : acc, 0)
-    );
+    ));
 
     return (
         <div className="relative mb-20 w-screen left-1/2 right-1/2 ml-[-50vw] mr-[-50vw] max-sm:mb-2">
@@ -47,7 +47,7 @@ export const ProfileHeader = ({ profileUser, social }: ProfileHeaderProps) => {
                         />
                         <div className="absolute -bottom-2 left-12 w-18 h-7 z-20 flex items-center justify-center
                     rounded-full font-bold text-xs bg-app-accent/70 border-4 border-background shadow-lg">
-                            Lvl. {profileLevel.toFixed(0)}
+                            Lvl. {profileLevel}
                         </div>
                     </div>
                     <div className="flex flex-col mb-1 px-4">
@@ -98,7 +98,7 @@ export const ProfileHeader = ({ profileUser, social }: ProfileHeaderProps) => {
                             />
                             <div className="absolute -bottom-2 -right-2 w-18 h-7 z-20 flex items-center justify-center
                             rounded-full font-bold text-xs bg-app-accent text-black border-4 border-background shadow-lg">
-                                Lvl. {profileLevel.toFixed(0)}
+                                Lvl. {profileLevel}
                             </div>
                         </div>
 

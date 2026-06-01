@@ -7,6 +7,7 @@ import {Progress} from "@/lib/client/components/ui/progress";
 import {Popover, PopoverContent, PopoverTrigger} from "@/lib/client/components/ui/popover";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/lib/client/components/ui/table";
 import {diffColors} from "@/lib/utils/theme-utils";
+import {formatPercent} from "@/lib/utils/number-formatting";
 
 
 interface TierDetailsProps {
@@ -57,7 +58,7 @@ export const TiersDetails = ({ achievement }: TierDetailsProps) => {
                                         </div>
                                     </TableCell>
                                     <TableCell className="text-end text-xs">
-                                        {tier.rarity ? tier.rarity.toFixed(1) : "- "}%
+                                        {tier.rarity ? formatPercent(tier.rarity) : "- %"}
                                     </TableCell>
                                 </TableRow>
                             );

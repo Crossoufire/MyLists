@@ -86,7 +86,7 @@ function AchievementPage() {
             {
                 ...tier,
                 criteria: {
-                    count: isNaN(count) ? 0 : count
+                    count: Number.isFinite(count) ? count : 0
                 }
             }
             : tier

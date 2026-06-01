@@ -1,4 +1,5 @@
 import {RatingSystemType} from "@/lib/utils/enums";
+import {formatNumber} from "@/lib/utils/number-formatting";
 import {FaAngry, FaFrown, FaGrinAlt, FaGrinStars, FaPoop, FaSmile} from "react-icons/fa";
 
 
@@ -8,10 +9,10 @@ export const formatRating = (system: RatingSystemType, rating: number | null, re
     }
 
     if (returnNull) {
-        return rating === null ? null : rating.toFixed(1);
+        return rating === null ? null : formatNumber(rating, { fractionDigits: 1, locale: "en" });
     }
 
-    return (rating === null) ? "-" : rating.toFixed(1);
+    return formatNumber(rating, { fractionDigits: 1, locale: "en" });
 }
 
 
@@ -26,7 +27,7 @@ export const getScoreList = () => {
         { label: null, value: "-" },
         ...scores.map((label) => ({
             label: label.toString(),
-            value: label === MAX_SCORE ? label.toString() : label.toFixed(1)
+            value: label === MAX_SCORE ? label.toString() : formatNumber(label, { fractionDigits: 1, locale: "en" })
         }))
     ];
 };
@@ -50,7 +51,7 @@ export const formatAvgRating = (ratingSystem: RatingSystemType, value: number | 
         return getFeelingIcon(value, { size: 30 });
     }
 
-    return value?.toFixed(2) ?? "-";
+    return formatNumber(value, { fractionDigits: 2, locale: "en" });
 };
 
 
@@ -62,23 +63,21 @@ interface GetFeelingIcon {
 
 
 export const getFeelingIcon = (value: number | null, { className, size, labelOnly }: GetFeelingIcon = {}) => {
-    if (!value || value < 0 || value > 10) return "-";
+    if (value === null || !Number.isFinite(value) || value < 0 || value > 10) return "-";
 
-    const feelingList = getFeelingList({ className, size });
+    const feelingList = getFeelingList({ className, size }).slice(1);
 
     let closest = feelingList[0];
     let smallestDelta = Math.abs(value - Number(feelingList[0].label));
     for (const mood of feelingList) {
         const delta = Math.abs(value - Number(mood.label));
-        if (delta < smallestDelta || (delta === smallestDelta && mood.label! < closest.label!)) {
+        if (delta < smallestDelta || (delta === smallestDelta && Number(mood.label) < Number(closest.label))) {
             closest = mood;
             smallestDelta = delta;
         }
     }
 
-    if (labelOnly) {
-        return closest.label;
-    }
+    if (labelOnly) return closest.label;
 
     return closest.value;
 };

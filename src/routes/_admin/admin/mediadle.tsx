@@ -1,6 +1,7 @@
 import React, {useMemo} from "react";
 import {SearchType} from "@/lib/schemas";
 import {formatDateTime} from "@/lib/utils/date-formatting";
+import {formatNumber} from "@/lib/utils/number-formatting";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {createFileRoute, Link} from "@tanstack/react-router";
 import {SearchInput} from "@/lib/client/components/general/SearchInput";
@@ -78,7 +79,7 @@ function AdminMediadlePage() {
             header: "Avg. Attempts",
             cell: ({ row: { original } }) => (
                 <div className="text-center">
-                    {original?.averageAttempts?.toFixed(1)}
+                    {formatNumber(original?.averageAttempts, { fractionDigits: 1, locale: "en" })}
                 </div>
             ),
         },

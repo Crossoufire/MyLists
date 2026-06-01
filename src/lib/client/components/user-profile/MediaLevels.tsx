@@ -4,7 +4,7 @@ import {getThemeColor} from "@/lib/utils/theme-utils";
 import {Progress} from "@/lib/client/components/ui/progress";
 import {MainThemeIcon} from "@/lib/client/components/general/MainIcons";
 import {Card, CardContent, CardHeader, CardTitle} from "@/lib/client/components/ui/card";
-import {formatLevel} from "@/lib/utils/number-formatting";
+import {formatLevel, formatPercent} from "@/lib/utils/number-formatting";
 
 
 interface MediaLevelsProps {
@@ -69,7 +69,7 @@ const MediaLevelBar = ({ mediaType, username, level }: MediaLevelBarProps) => {
                 </div>
                 <span className="inline-block font-semibold text-sm tracking-wide" style={{ color: getThemeColor(mediaType) }}>
                     <div className="inline-block text-[11px] text-muted-foreground text-right">
-                        ({Math.round(percent)}%)
+                        ({formatPercent(percent, { fractionDigits: 0 })})
                     </div>
                     &nbsp; Lvl {intLevel}
                 </span>

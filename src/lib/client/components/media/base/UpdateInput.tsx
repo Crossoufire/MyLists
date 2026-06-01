@@ -27,7 +27,7 @@ export const UpdateInput = ({ total, initValue, updateInput, payloadName, update
         }
 
         const parsed = Number(currentValue);
-        if (isNaN(parsed)) {
+        if (!Number.isFinite(parsed)) {
             setCurrentValue(initValue?.toString() ?? "0");
             return;
         }

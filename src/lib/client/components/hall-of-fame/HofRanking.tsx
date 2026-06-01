@@ -5,6 +5,7 @@ import {getThemeColor} from "@/lib/utils/theme-utils";
 import {HofUserRank} from "@/lib/types/query.options.types";
 import {Progress} from "@/lib/client/components/ui/progress";
 import {Card, CardContent} from "@/lib/client/components/ui/card";
+import {formatPercent} from "@/lib/utils/number-formatting";
 
 
 interface HofRankingProps {
@@ -41,7 +42,7 @@ export const HofRanking = ({ userRanks }: HofRankingProps) => {
                                     <div className="flex items-center gap-1">
                                         <TrendingUp className="text-app-accent size-4"/>
                                         {rank.percent
-                                            ? <>Top {rank.percent.toFixed(1)}%</>
+                                            ? <>Top {formatPercent(rank.percent)}</>
                                             : <>Top - %</>
                                         }
                                     </div>

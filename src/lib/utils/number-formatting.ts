@@ -1,72 +1,115 @@
-export const zeroPad = (value: number | string | null | undefined) => {
-    return String(value ?? 0).padStart(2, "0");
+type NumericValue = number | null | undefined;
+
+type FormatNumberOptions = Intl.NumberFormatOptions & {
+    locale?: string;
+    fallback?: string;
+    fractionDigits?: number;
+};
+
+const DEFAULT_FALLBACK = "-";
+const numberFormatters = new Map<string, Intl.NumberFormat>();
+
+
+const getNumberFormatter = (locale: string, options: Intl.NumberFormatOptions) => {
+    const cacheKey = `${locale}|${JSON.stringify(options)}`;
+
+    const cached = numberFormatters.get(cacheKey);
+    if (cached) return cached;
+
+    const formatter = new Intl.NumberFormat(locale, options);
+    numberFormatters.set(cacheKey, formatter);
+
+    return formatter;
 };
 
 
-export const formatCurrency = (value: number | null, opts: Intl.NumberFormatOptions = {}) => {
-    if (value === null || value === 0) return "$ -";
+export const zeroPad = (value: number | string | null | undefined) => {
+    const numericValue = Number(value ?? 0);
+    return String(Number.isFinite(numericValue) ? Math.trunc(numericValue) : 0).padStart(2, "0");
+};
 
-    return new Intl.NumberFormat("en", {
+
+export const formatNumber = (value: NumericValue, opts: FormatNumberOptions = {}) => {
+    const { locale = "fr", fractionDigits, fallback = DEFAULT_FALLBACK, ...formatOptions } = opts;
+
+    if (value === null || value === undefined || !Number.isFinite(value)) {
+        return fallback;
+    }
+
+    return getNumberFormatter(locale, {
+        ...(fractionDigits === undefined ? {} : { maximumFractionDigits: fractionDigits, minimumFractionDigits: fractionDigits }),
+        ...formatOptions,
+    }).format(value);
+};
+
+
+export const formatCurrency = (value: NumericValue, opts: Intl.NumberFormatOptions = {}) => {
+    if (value === null || value === undefined || !Number.isFinite(value) || value === 0) {
+        return `$ ${DEFAULT_FALLBACK}`;
+    }
+
+    return formatNumber(value, {
+        locale: "en",
         currency: "USD",
         style: "currency",
         notation: "compact",
         maximumFractionDigits: 1,
         ...opts,
-    }).format(value);
+    });
+};
+
+
+export const formatPercent = (value: NumericValue, opts: FormatNumberOptions = {}) => {
+    const { locale = "en", fractionDigits = 1, fallback = DEFAULT_FALLBACK, ...formatOptions } = opts;
+
+    const formattedValue = formatNumber(value, { fallback, fractionDigits, locale, ...formatOptions });
+
+    return formattedValue === fallback ? fallback : `${formattedValue}%`;
 };
 
 
 export const formatHours = (hours: number) => {
-    if (hours < 24) return `${hours.toFixed(1)}h`;
+    if (!Number.isFinite(hours) || hours < 0) return DEFAULT_FALLBACK;
 
-    const h = Math.floor(hours % 24);
+    if (hours < 24) return `${formatNumber(hours, { fractionDigits: 1, locale: "en" })}h`;
+
     const days = Math.floor(hours / 24);
+    const remainingHours = Math.floor(hours % 24);
 
-    if (days < 30) return `${days}d ${h}h`;
+    if (days < 30) return `${days}d ${remainingHours}h`;
     if (days < 365) return `${Math.floor(days / 30)}m ${days % 30}d`;
 
     return `${Math.floor(days / 365)}y ${Math.floor((days % 365) / 30)}m`;
 };
 
 
-export const formatPercent = (value: number | null | undefined) => {
-    if (!value) return "-";
-    return value.toFixed(1);
-};
-
-
-export const formatNumber = (value: number | null | undefined, opts: Intl.NumberFormatOptions = {}) => {
-    if (!value) return "-";
-    return value.toLocaleString("fr", opts);
-};
-
-
 export const formatMinutes = (minutes: number | string | null | undefined, options: { onlyHours?: boolean; compact?: boolean } = {}) => {
-    if (!minutes) return "-";
+    const totalMinutes = Number(minutes ?? 0);
+    if (!Number.isFinite(totalMinutes) || totalMinutes <= 0) return DEFAULT_FALLBACK;
 
-    const mins = Number(minutes);
-    if (isNaN(mins) || mins <= 0) return "-";
+    const hours = Math.floor(totalMinutes / 60);
+    const remainingMinutes = Math.floor(totalMinutes % 60);
 
-    const h = Math.floor(mins / 60);
-    const m = Math.floor(mins % 60);
+    if (options.onlyHours) return `${zeroPad(hours)} h`;
+    if (options.compact) return hours > 0 ? `${hours}h ${remainingMinutes}m` : `${remainingMinutes}m`;
 
-    if (options.onlyHours) return `${zeroPad(h)} h`;
-    if (options.compact) return h > 0 ? `${h}h ${m}m` : `${m}m`;
-
-    return `${zeroPad(h)} h ${zeroPad(m)}`;
+    return `${zeroPad(hours)} h ${zeroPad(remainingMinutes)}`;
 };
 
 
 export const formatMs = (ms: number) => {
-    if (ms < 1000) return `${ms}ms`;
-    if (ms < 60000) return `${(ms / 1000).toFixed(1)}s`;
-    const mins = Math.floor(ms / 60000);
-    const secs = Math.floor((ms % 60000) / 1000);
+    if (!Number.isFinite(ms) || ms < 0) return DEFAULT_FALLBACK;
+    if (ms < 1000) return `${Math.round(ms)}ms`;
+    if (ms < 60000) return `${formatNumber(ms / 1000, { fractionDigits: 1, locale: "en" })}s`;
 
-    return `${mins}m ${secs}s`;
+    const minutes = Math.floor(ms / 60000);
+    const seconds = Math.floor((ms % 60000) / 1000);
+
+    return `${minutes}m ${seconds}s`;
 };
 
 
 export const formatLevel = (totalTime: number) => {
+    if (!Number.isFinite(totalTime) || totalTime <= 0) return 0;
     return (Math.sqrt(400 + 80 * totalTime) - 20) / 40;
-}
+};

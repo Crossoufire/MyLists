@@ -1,7 +1,7 @@
 import {MediaType} from "@/lib/utils/enums";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {formatDate} from "@/lib/utils/date-formatting";
-import {formatNumber} from "@/lib/utils/number-formatting";
+import {formatNumber, formatPercent} from "@/lib/utils/number-formatting";
 import {createFileRoute, Link} from "@tanstack/react-router";
 import {UserStats} from "@/lib/client/components/admin/UserStats";
 import {AdminMediaRefreshStatsParams} from "@/lib/types/admin.types";
@@ -172,7 +172,7 @@ function MediaRefreshPage() {
                                                     {row.mediaType}
                                                 </span>
                                                 <span className="text-xs text-muted-foreground">
-                                                    {formatNumber(row.count)} ({pct}%)
+                                                    {formatNumber(row.count)} ({formatPercent(pct, { fractionDigits: 0 })})
                                                 </span>
                                             </div>
                                             <div className="h-2 rounded-full bg-muted">

@@ -37,7 +37,7 @@ export function OverviewDashboard({ stats }: OverviewDashboardProps) {
                     title="Total Time"
                     icon={<Clock className="size-4"/>}
                     value={formatHours(stats.totalHours)}
-                    subtitle={`${formatNumber(Math.round(stats.totalHours))} hours`}
+                    subtitle={`${formatNumber(stats.totalHours, { fractionDigits: 0 })} hours`}
                 />
                 <StatCard
                     title="Avg. Rating"
@@ -61,19 +61,19 @@ export function OverviewDashboard({ stats }: OverviewDashboardProps) {
                     title="Total Favorites"
                     icon={<Heart className="size-4"/>}
                     value={formatNumber(stats.totalFavorites)}
-                    subtitle={`Avg: ${stats.avgFavorites?.toFixed(2) ?? "-"}`}
+                    subtitle={`Avg: ${formatNumber(stats.avgFavorites, { fractionDigits: 2 })}`}
                 />
                 <StatCard
                     title="Total Comments"
                     value={formatNumber(stats.totalComments)}
                     icon={<MessageSquare className="size-4"/>}
-                    subtitle={`Avg: ${stats.avgComments?.toFixed(2) ?? "-"}`}
+                    subtitle={`Avg: ${formatNumber(stats.avgComments, { fractionDigits: 2 })}`}
                 />
                 <StatCard
                     title="Total Updates"
                     icon={<ChartColumn className="size-4"/>}
                     value={formatNumber(stats.updatesPerMonth.totalUpdates)}
-                    subtitle={`Avg: ${stats.updatesPerMonth.avgUpdates?.toFixed(2) ?? "-"}`}
+                    subtitle={`Avg: ${formatNumber(stats.updatesPerMonth.avgUpdates, { fractionDigits: 2 })}`}
                 />
                 <StatCard
                     title="Total Tags"

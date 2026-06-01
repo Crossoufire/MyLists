@@ -1,6 +1,7 @@
 import {cn} from "@/lib/utils/classnames";
 import {MediaType} from "@/lib/utils/enums";
 import {useAuth} from "@/lib/client/hooks/use-auth";
+import {formatNumber, formatPercent} from "@/lib/utils/number-formatting";
 import {PartyPopper, ThumbsDown} from "lucide-react";
 import {Button} from "@/lib/client/components/ui/button";
 import {createFileRoute, Link} from "@tanstack/react-router";
@@ -236,7 +237,7 @@ function UserStats({ userData, isAnonymous }: UserStatsProps) {
                 />
                 <SimpleStatCard
                     title="Win Rate"
-                    value={`${userData?.stats?.winRate?.toFixed(1) ?? "0.0"}%`}
+                    value={formatPercent(userData?.stats?.winRate ?? 0)}
                 />
                 <SimpleStatCard
                     title="Current Streak"
@@ -248,7 +249,7 @@ function UserStats({ userData, isAnonymous }: UserStatsProps) {
                 />
                 <SimpleStatCard
                     title="Avg. Attempts"
-                    value={userData?.stats?.averageAttempts?.toFixed(2) ?? "0.00"}
+                    value={formatNumber(userData?.stats?.averageAttempts ?? 0, { fractionDigits: 2, locale: "en" })}
                 />
             </div>
 

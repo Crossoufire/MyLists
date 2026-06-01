@@ -138,7 +138,7 @@ export class AdminService {
                 busiestDay: summary.busiestDay,
                 uniqueUsers: summary.uniqueUsers,
                 busiestCount: summary.busiestCount,
-                avgPerDay: summary.total && activeDays ? Number((summary.total / activeDays).toFixed(1)) : 0,
+                avgPerDay: summary.total && activeDays ? Math.round((summary.total / activeDays) * 10) / 10 : 0,
             },
         };
     }
@@ -195,8 +195,8 @@ export class AdminService {
             dailyWindowDays: daily.length,
             summary: {
                 ...summary,
-                avgPerDay: summary.total && activeDays ? Number((summary.total / activeDays).toFixed(1)) : 0,
-                avgPerSecond: summary.total && activeSeconds ? Number((summary.total / activeSeconds).toFixed(4)) : 0,
+                avgPerDay: summary.total && activeDays ? Math.round((summary.total / activeDays) * 10) / 10 : 0,
+                avgPerSecond: summary.total && activeSeconds ? Math.round((summary.total / activeSeconds) * 10000) / 10000 : 0,
             },
         };
     }
@@ -311,7 +311,7 @@ export class AdminService {
             lastMinuteTotal,
             peakSecondCount,
             currentSecondTotal,
-            avgPerSecondLastMinute: Number((lastMinuteTotal / 60).toFixed(2)),
+            avgPerSecondLastMinute: Math.round((lastMinuteTotal / 60) * 100) / 100,
         };
     };
 

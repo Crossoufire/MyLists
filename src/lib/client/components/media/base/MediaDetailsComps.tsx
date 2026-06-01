@@ -2,6 +2,7 @@ import React from "react";
 import {cn} from "@/lib/utils/classnames";
 import {Calendar, Clock, LucideIcon, Star} from "lucide-react";
 import {extractDate, formatCalendarRelativeDate, formatMonth} from "@/lib/utils/date-formatting";
+import {formatNumber} from "@/lib/utils/number-formatting";
 
 
 interface MediaInfoGridItemProps {
@@ -98,11 +99,14 @@ export const MediaUnderRating = ({ voteAverage, voteCount, divisor = 1 }: MediaU
         <div className="flex items-center gap-1.5">
             <Star className="size-4 fill-app-rating text-app-rating"/>
             <span className="text-lg text-primary">
-                {(voteAverage / divisor).toFixed(1)}
+                {formatNumber(voteAverage / divisor, {
+                    fractionDigits: 1,
+                    locale: "en",
+                })}
             </span>
             {voteCount &&
                 <span className="text-xs text-muted-foreground">
-                    ({voteCount.toLocaleString()})
+                    ({formatNumber(voteCount)})
                 </span>
             }
         </div>
