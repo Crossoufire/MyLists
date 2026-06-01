@@ -15,12 +15,6 @@ interface ShiftDateInputValueOptions {
 }
 
 
-interface FmtOptions {
-    seconds?: boolean;
-    onlyYear?: boolean;
-}
-
-
 const dateTimeFormatters = new Map<string, Intl.DateTimeFormat>();
 const relativeTimeFormatters = new Map<string, Intl.RelativeTimeFormat>();
 const shortDateFormatter = new Intl.DateTimeFormat("en-US", {
@@ -204,24 +198,26 @@ export const toDateTimeAttribute = (value: string | number | null | undefined) =
 
 
 /** @returns a date string human formatted or "-" */
-export const formatDateTime = (value: string | number | null | undefined, opts: FmtOptions = {}) => {
+export const formatDateTime = (value: string | number | null | undefined, opts: { seconds?: boolean } = {}) => {
     if (!value) return "-";
 
     const date = dateFromUTCInput(value);
     if (isNaN(date.getTime())) return "-";
 
-    const { seconds = false, onlyYear = false } = opts;
-    const cacheKey = `${seconds}-${onlyYear}`;
-    let formatter = dateTimeFormatters.get(cacheKey);
+    const { seconds = false } = opts;
+    let formatter = dateTimeFormatters.get(`${seconds}`);
+
     if (!formatter) {
         formatter = new Intl.DateTimeFormat("en-US", {
-            day: onlyYear ? undefined : "numeric",
             hour12: false,
-            month: onlyYear ? undefined : "short",
-            second: seconds ? "numeric" : undefined,
             year: "numeric",
+            day: "numeric",
+            month: "short",
+            hour: "2-digit",
+            minute: "2-digit",
+            second: seconds ? "numeric" : undefined,
         });
-        dateTimeFormatters.set(cacheKey, formatter);
+        dateTimeFormatters.set(`${seconds}`, formatter);
     }
 
     return formatter.format(date);

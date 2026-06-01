@@ -66,16 +66,12 @@ function AdminMediadlePage() {
         {
             accessorKey: "createdAt",
             header: "Registered",
-            cell: ({ row: { original } }) => {
-                return formatDateTime(original.createdAt);
-            }
+            cell: ({ row: { original } }) => formatDateTime(original.createdAt),
         },
         {
             accessorKey: "updatedAt",
             header: "Last Seen",
-            cell: ({ row: { original } }) => {
-                return formatDateTime(original.updatedAt);
-            },
+            cell: ({ row: { original } }) => formatDateTime(original.updatedAt),
         },
         {
             accessorKey: "averageAttempts",
