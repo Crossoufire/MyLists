@@ -1,6 +1,7 @@
 import {SearchType} from "@/lib/schemas";
 import {SaveTaskToDb} from "@/lib/types/tasks.types";
 import {MediaType, PrivacyType} from "@/lib/utils/enums";
+import {formatMonthYear} from "@/lib/utils/date-formatting";
 import {getDbClient} from "@/lib/server/database/async-storage";
 import {AdminErrorLog, ProviderApiRollup} from "@/lib/types/admin.types";
 import {paginate, resolveSorting} from "@/lib/server/database/pagination";
@@ -77,7 +78,7 @@ export class AdminRepository {
 
         return results.map((row) => ({
             count: Number(row.count),
-            month: new Date(`${row.month}-01T00:00:00.000Z`).toLocaleString("en-US", { month: "short", year: "numeric" }),
+            month: formatMonthYear(row.month),
         }));
     }
 

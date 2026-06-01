@@ -4,7 +4,7 @@ import {Button} from "@/lib/client/components/ui/button";
 import {Calendar} from "@/lib/client/components/ui/calendar";
 import {Calendar as CalendarIcon, TriangleAlert} from "lucide-react";
 import {Popover, PopoverContent, PopoverTrigger} from "@/lib/client/components/ui/popover";
-import {dateInputValueToDate, formatDate, toDateInputValue} from "@/lib/utils/date-formatting";
+import {dateInputValueToDate, formatDate, shiftDateInputValue, toDateInputValue} from "@/lib/utils/date-formatting";
 
 
 interface BacklogModeBannerProps {
@@ -24,23 +24,11 @@ export const BacklogModeSystem = ({ date, onDateChange, onEnabledChange, disable
     const selectedDate = dateInputValueToDate(enabled && date ? date : todayCalendar);
     const calendarStartDate = new Date(todayDate.getFullYear() - 20, 0, 1);
 
-    const getPresetDate = (daysAgo: number) => {
-        const preset = new Date();
-        preset.setDate(preset.getDate() - daysAgo);
-        return toDateInputValue(preset);
-    };
-
-    const getPresetMonthDate = () => {
-        const preset = new Date();
-        preset.setMonth(preset.getMonth() - 1);
-        return toDateInputValue(preset);
-    };
-
     const presets = [
         { label: "Today", value: todayCalendar, enabled: false },
-        { label: "-2d", value: getPresetDate(2), enabled: true },
-        { label: "-1 wk.", value: getPresetDate(7), enabled: true },
-        { label: "-1 mo.", value: getPresetMonthDate(), enabled: true },
+        { label: "-2d", value: shiftDateInputValue(todayCalendar, { days: -2 }), enabled: true },
+        { label: "-1 wk.", value: shiftDateInputValue(todayCalendar, { days: -7 }), enabled: true },
+        { label: "-1 mo.", value: shiftDateInputValue(todayCalendar, { months: -1 }), enabled: true },
     ];
 
     const selectDate = (value: string, shouldEnable: boolean) => {

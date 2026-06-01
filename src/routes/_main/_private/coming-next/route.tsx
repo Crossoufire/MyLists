@@ -6,11 +6,11 @@ import {useSuspenseQuery} from "@tanstack/react-query";
 import {ComingNextItem} from "@/lib/types/query.options.types";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
 import {EmptyState} from "@/lib/client/components/general/EmptyState";
-import {formatCalendarRelativeDate} from "@/lib/utils/date-formatting";
 import {MainThemeIcon} from "@/lib/client/components/general/MainIcons";
 import {TabHeader, TabItem} from "@/lib/client/components/general/TabHeader";
 import {upcomingOptions} from "@/lib/client/react-query/query-options/query-options";
 import {ComingNextSection} from "@/lib/client/components/coming-next/ComingNextSection";
+import {compareCalendarDates, formatCalendarRelativeDate} from "@/lib/utils/date-formatting";
 
 
 export const Route = createFileRoute("/_main/_private/coming-next")({
@@ -34,12 +34,7 @@ function ComingNextPage() {
             return days === null || days >= -7;
         });
 
-        return filtered.sort((a, b) => {
-            if (!a.date && !b.date) return 0;
-            if (!a.date) return 1;
-            if (!b.date) return -1;
-            return new Date(a.date).getTime() - new Date(b.date).getTime();
-        });
+        return filtered.sort((a, b) => compareCalendarDates(a.date, b.date));
     }, [allItems, activeTab]);
 
     const sections = useMemo(() => {

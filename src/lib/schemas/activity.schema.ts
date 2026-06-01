@@ -1,5 +1,6 @@
 import z from "zod";
 import {MediaType} from "@/lib/utils/enums";
+import {calendarDateRangeToISOString} from "@/lib/utils/date-formatting";
 
 
 export type AddActivity = z.infer<typeof addActivitySchema>;
@@ -58,10 +59,10 @@ export const addActivitySchema = z.object({
 });
 
 export const bulkHideActivitySchema = z.object({
-    endDate: z.string(),
-    startDate: z.string(),
+    endDate: z.string().trim().pipe(z.iso.date()),
+    startDate: z.string().trim().pipe(z.iso.date()),
     mediaType: z.enum(MediaType).optional(),
-}).refine((data) => new Date(data.startDate).getTime() <= new Date(data.endDate).getTime(), {
+}).refine((data) => calendarDateRangeToISOString(data.startDate, data.endDate) !== null, {
     message: "Start date must be before end date.", path: ["endDate"],
 });
 

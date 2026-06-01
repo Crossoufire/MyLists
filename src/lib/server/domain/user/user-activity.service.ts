@@ -1,9 +1,10 @@
-import {zeroPad} from "@/lib/utils/number-formatting";
 import {MediaType, Status} from "@/lib/utils/enums";
+import {zeroPad} from "@/lib/utils/number-formatting";
 import {FormattedError} from "@/lib/utils/error-classes";
 import {calculateActivityTime} from "@/lib/utils/activity-utils";
 import {MediaServiceRegistry} from "@/lib/server/domain/media/media.registries";
 import {UserActivityRepository} from "@/lib/server/domain/user/user-activity.repository";
+import {calendarDateRangeToISOString, compareDateInputs} from "@/lib/utils/date-formatting";
 import {AddActivity, MonthlyActivityFilters, MonthlyActivityStatsFilters, UpdateActivity} from "@/lib/schemas";
 import {ActivityEditor as ActivityEditorRow, ActivityMediaRef, LogActivityFromDelta, MediaInfo, MonthlyActivityChartDatum, WrappedActivityResult} from "@/lib/types/activity.types";
 
@@ -114,7 +115,7 @@ export class UserActivityService {
             });
         }
 
-        const items = rows.sort((a, b) => new Date(b.lastUpdate).getTime() - new Date(a.lastUpdate).getTime());
+        const items = rows.sort((a, b) => compareDateInputs(b.lastUpdate, a.lastUpdate));
 
         return { ...result, items, mediaTypes: availableMediaTypes };
     }
@@ -146,13 +147,13 @@ export class UserActivityService {
     }
 
     async bulkHideActivity(userId: number, filters: { startDate: string, endDate: string, mediaType?: MediaType }) {
-        const end = new Date(`${filters.endDate}T23:59:59.999Z`);
-        const start = new Date(`${filters.startDate}T00:00:00.000Z`);
+        const range = calendarDateRangeToISOString(filters.startDate, filters.endDate);
+        if (!range) throw new FormattedError("Invalid activity cleanup date range");
 
         return this.repository.bulkHideActivity(userId, {
-            endDate: end.toISOString(),
+            endDate: range.endDate,
             mediaType: filters.mediaType,
-            startDate: start.toISOString(),
+            startDate: range.startDate,
         });
     }
 

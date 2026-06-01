@@ -1,5 +1,6 @@
 import {MediaType} from "@/lib/utils/enums";
-import {toDateInputValue} from "@/lib/utils/date-formatting";
+import {zeroPad} from "@/lib/utils/number-formatting";
+import {shiftDateInputValue, toDateInputValue} from "@/lib/utils/date-formatting";
 
 
 type ActivityMediaConfig = {
@@ -92,10 +93,9 @@ export const calculateActivityTime = (mediaType: MediaType, specificGained: numb
 export const getDefaultActivityDate = (year: number, month: number) => {
     const today = new Date();
     const isCurrentMonth = today.getFullYear() === year && today.getMonth() + 1 === month;
-    if (isCurrentMonth) return toDateInputValue(today.toISOString());
+    if (isCurrentMonth) return toDateInputValue(today);
 
-    const lastDayOfMonth = new Date(year, month, 0).getDate();
-    return `${year}-${String(month).padStart(2, "0")}-${String(lastDayOfMonth).padStart(2, "0")}`;
+    return shiftDateInputValue(`${year}-${zeroPad(month)}-01`, { days: -1, months: 1 });
 };
 
 

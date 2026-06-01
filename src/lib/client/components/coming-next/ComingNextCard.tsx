@@ -6,7 +6,7 @@ import {Badge} from "@/lib/client/components/ui/badge";
 import {ComingNextItem} from "@/lib/types/query.options.types";
 import {StatusBadge} from "@/lib/client/components/general/StatusBadge";
 import {MainThemeIcon} from "@/lib/client/components/general/MainIcons";
-import {formatCalendarRelativeDate, formatDate} from "@/lib/utils/date-formatting";
+import {extractYear, formatCalendarRelativeDate, formatDate} from "@/lib/utils/date-formatting";
 
 
 export const ComingNextCard = ({ item, mediaType }: { item: ComingNextItem, mediaType: MediaType }) => {
@@ -67,7 +67,7 @@ export const ComingNextCard = ({ item, mediaType }: { item: ComingNextItem, medi
                                 {formatDate(item.date)}
                             </div>
                             <div className="text-xs text-muted-foreground mt-0.5">
-                                {item.date ? new Date(item.date).getFullYear() : "-"}
+                                {extractYear(item.date)}
                             </div>
                         </div>
                     </div>

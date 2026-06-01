@@ -1,4 +1,5 @@
 import {alias} from "drizzle-orm/sqlite-core";
+import {formatMonthYear} from "@/lib/utils/date-formatting";
 import {AdminUpdatePayload, SearchType} from "@/lib/schemas";
 import {getDbClient} from "@/lib/server/database/async-storage";
 import {paginate, resolveSorting} from "@/lib/server/database/pagination";
@@ -127,7 +128,7 @@ export class UserRepository {
 
         return results.map((row) => ({
             count: row.count,
-            month: new Date(row.month).toLocaleString("en-US", { month: "short", year: "numeric" }),
+            month: formatMonthYear(row.month),
         }));
     }
 

@@ -3,6 +3,7 @@ import {Link} from "@tanstack/react-router";
 import {Pencil, RefreshCw} from "lucide-react";
 import {useAuth} from "@/lib/client/hooks/use-auth";
 import {Button} from "@/lib/client/components/ui/button";
+import {dateFromUTCInput} from "@/lib/utils/date-formatting";
 import {isAtLeastRole, MediaType, RoleType} from "@/lib/utils/enums";
 import {RelativeTime} from "@/lib/client/components/general/RelativeTime";
 import {useRefreshMediaMutation} from "@/lib/client/react-query/query-mutations/media.mutations";
@@ -20,7 +21,7 @@ interface RefreshAndEditProps {
 export const RefreshAndEdit = ({ mediaType, mediaId, apiId, external, lastUpdate }: RefreshAndEditProps) => {
     const { currentUser } = useAuth();
     const isBook = (mediaType === MediaType.BOOKS);
-    const lastUpdateDate = lastUpdate ? new Date(lastUpdate) : null;
+    const lastUpdateDate = lastUpdate ? dateFromUTCInput(lastUpdate) : null;
     const isManagerOrAbove = isAtLeastRole(currentUser?.role, RoleType.MANAGER);
     const refreshMutation = useRefreshMediaMutation(mediaType, external ? apiId : mediaId, external);
 

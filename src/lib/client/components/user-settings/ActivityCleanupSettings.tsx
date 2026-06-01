@@ -3,13 +3,13 @@ import {useForm} from "react-hook-form";
 import {MediaType} from "@/lib/utils/enums";
 import {useAuth} from "@/lib/client/hooks/use-auth";
 import {Input} from "@/lib/client/components/ui/input";
-import {toDateInputValue} from "@/lib/utils/date-formatting";
+import {FormZodError} from "@/lib/utils/error-classes";
 import {Button} from "@/lib/client/components/ui/button";
 import {MainThemeIcon} from "@/lib/client/components/general/MainIcons";
+import {shiftDateInputValue, toDateInputValue} from "@/lib/utils/date-formatting";
 import {useBulkHideActivityMutation} from "@/lib/client/react-query/query-mutations/activity.mutations";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/lib/client/components/ui/form";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/lib/client/components/ui/select";
-import {FormZodError} from "@/lib/utils/error-classes";
 
 
 type FormValues = {
@@ -30,13 +30,13 @@ export function ActivityCleanupSettings() {
         values: {
             mediaType,
             startDate: accountCreatedAt,
-            endDate: addDays(accountCreatedAt, 60, today),
+            endDate: shiftDateInputValue(accountCreatedAt, { days: 60, max: today }),
         },
     });
 
     const applyPreset = (days: number) => {
         form.setValue("startDate", accountCreatedAt, { shouldDirty: true });
-        form.setValue("endDate", addDays(accountCreatedAt, days, today), { shouldDirty: true });
+        form.setValue("endDate", shiftDateInputValue(accountCreatedAt, { days, max: today }), { shouldDirty: true });
     };
 
     const handleSubmit = (values: FormValues) => {
@@ -162,12 +162,3 @@ export function ActivityCleanupSettings() {
         </Form>
     );
 }
-
-
-const addDays = (dateValue: string, days: number, maxDate: string) => {
-    const date = new Date(`${dateValue}T00:00:00`);
-    date.setDate(date.getDate() + days);
-    const value = toDateInputValue(date);
-
-    return value > maxDate ? maxDate : value;
-};

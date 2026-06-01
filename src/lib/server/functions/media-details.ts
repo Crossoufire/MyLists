@@ -1,6 +1,7 @@
 import {createServerFn} from "@tanstack/react-start";
 import {getContainer} from "@/lib/server/core/container";
 import {FormattedError} from "@/lib/utils/error-classes";
+import {dateFromUTCInput} from "@/lib/utils/date-formatting";
 import {isAtLeastRole, MediaType, RoleType} from "@/lib/utils/enums";
 import {tryFormZodError, tryNotFound} from "@/lib/utils/try-not-found";
 import {transactionMiddleware} from "@/lib/server/middlewares/transaction";
@@ -62,7 +63,7 @@ export const refreshMediaDetails = createServerFn({ method: "POST" })
 
             const media = await mediaService.findByApiId(apiId);
             if (media?.lastApiUpdate) {
-                const lastUpdateTime = new Date(media.lastApiUpdate).getTime();
+                const lastUpdateTime = dateFromUTCInput(media.lastApiUpdate).getTime();
                 // 24 hours cooldown
                 const nextAvailableRefresh = lastUpdateTime + (24 * 60 * 60 * 1000);
 

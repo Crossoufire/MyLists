@@ -1,6 +1,7 @@
 import {SearchType} from "@/lib/schemas";
 import {alias} from "drizzle-orm/sqlite-core";
 import {paginate} from "@/lib/server/database/pagination";
+import {dateFromUTCInput} from "@/lib/utils/date-formatting";
 import {LogUpdateParams} from "@/lib/types/user-updates.types";
 import {getDbClient} from "@/lib/server/database/async-storage";
 import {followers, user, userMediaUpdate} from "@/lib/server/database/schema";
@@ -195,7 +196,7 @@ export class UserUpdatesRepository {
 
         if (!previousUpdate || previousUpdate.payload?.old_value !== null) return;
 
-        const elapsedSec = (Date.now() - new Date(previousUpdate.timestamp + "Z").getTime()) / 1000;
+        const elapsedSec = (Date.now() - dateFromUTCInput(previousUpdate.timestamp).getTime()) / 1000;
         if (elapsedSec > this.updateThresholdSec) return;
 
         await getDbClient()
@@ -226,8 +227,7 @@ export class UserUpdatesRepository {
             .get();
 
         if (previousUpdate && !timestamp) {
-            const referenceMs = timestamp ? new Date(timestamp).getTime() : Date.now();
-            const elapsedSec = (referenceMs - new Date(previousUpdate.timestamp + "Z").getTime()) / 1000;
+            const elapsedSec = (Date.now() - dateFromUTCInput(previousUpdate.timestamp).getTime()) / 1000;
             if (elapsedSec >= 0 && elapsedSec <= this.updateThresholdSec) {
                 await getDbClient()
                     .delete(userMediaUpdate)

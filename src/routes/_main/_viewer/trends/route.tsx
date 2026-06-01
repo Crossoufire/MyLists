@@ -1,6 +1,7 @@
 import {MediaType} from "@/lib/utils/enums";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {createFileRoute} from "@tanstack/react-router";
+import {compareDateInputs} from "@/lib/utils/date-formatting";
 import {TrendGrid} from "@/lib/client/components/trends/TrendGrid";
 import {TrendHero} from "@/lib/client/components/trends/TrendHero";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
@@ -30,7 +31,7 @@ function TrendsPage() {
     };
 
     const allTrends = [...seriesTrends, ...moviesTrends, ...gamesTrends]
-        .sort((a, b) => new Date(b.releaseDate!).getTime() - new Date(a.releaseDate!).getTime());
+        .sort((a, b) => compareDateInputs(b.releaseDate, a.releaseDate));
 
     const getFilteredData = () => {
         if (activeTab === MediaType.GAMES) return gamesTrends;
