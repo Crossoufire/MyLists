@@ -1,6 +1,4 @@
-const withFallback = <T>(value: T | null | undefined, formatter: (v: T) => string, fallback = "-") => {
-    return value === null || value === undefined || value === "" ? fallback : formatter(value);
-};
+const DEFAULT_FALLBACK = "-";
 
 
 export const isLatin1 = (input: string) => {
@@ -16,15 +14,16 @@ export const capitalize = (input: string | null | undefined) => {
 
 
 export const formatLocaleName = (code: string | undefined | null, type: "language" | "region") => {
-    return withFallback(code?.trim(), (c) => {
-        if (type === "language" && c.toLowerCase() === "cn") return "Chinese";
-        try {
-            return new Intl.DisplayNames(["en"], { type }).of(c) || c;
-        }
-        catch {
-            return c;
-        }
-    });
+    if (!code?.trim()) return DEFAULT_FALLBACK;
+
+    if (type === "language" && code.toLowerCase() === "cn") return "Chinese";
+
+    try {
+        return new Intl.DisplayNames(["en"], { type }).of(code) || code;
+    }
+    catch {
+        return code;
+    }
 };
 
 

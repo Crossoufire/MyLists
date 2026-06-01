@@ -1,3 +1,4 @@
+const DEFAULT_FALLBACK = "-";
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 const CALENDAR_DATE = /^(\d{4})-(\d{2})-(\d{2})$/; // YYYY-MM-DD
 
@@ -72,23 +73,23 @@ export const formatDateForDb = (value: number | string | null | undefined) => {
 
 /** entry format is 'YYYY-MM-DD', returns an object with year, month and day strings */
 export const extractDate = (input?: string | null) => {
-    const [year = "-", month = "-", day = "-"] = input?.split("-", 3) ?? [];
+    const [year = DEFAULT_FALLBACK, month = DEFAULT_FALLBACK, day = DEFAULT_FALLBACK] = input?.split("-", 3) ?? [];
     return { year, month, day };
 };
 
 
-/** entry format is 'YYYY-MM-DD', returns a year string or "-" */
+/** entry format is 'YYYY-MM-DD', returns a year string or DEFAULT_FALLBACK */
 export const extractYear = (date?: string | null) => {
     return extractDate(date).year;
 };
 
 
-/** returns a plain date string in the format: "Jan 1, 2024" or "-" */
+/** returns a plain date string in the format: "Jan 1, 2024" or DEFAULT_FALLBACK */
 export const formatDate = (value: string | number | null | undefined) => {
-    if (!value) return "-";
+    if (!value) return DEFAULT_FALLBACK;
 
     const date = dateFromUTCInput(value);
-    if (isNaN(date.getTime())) return "-";
+    if (isNaN(date.getTime())) return DEFAULT_FALLBACK;
 
     return shortDateFormatter.format(date);
 };
@@ -197,12 +198,12 @@ export const toDateTimeAttribute = (value: string | number | null | undefined) =
 };
 
 
-/** @returns a date string human formatted or "-" */
+/** @returns a date string human formatted or DEFAULT_FALLBACK */
 export const formatDateTime = (value: string | number | null | undefined, opts: { seconds?: boolean } = {}) => {
-    if (!value) return "-";
+    if (!value) return DEFAULT_FALLBACK;
 
     const date = dateFromUTCInput(value);
-    if (isNaN(date.getTime())) return "-";
+    if (isNaN(date.getTime())) return DEFAULT_FALLBACK;
 
     const { seconds = false } = opts;
     let formatter = dateTimeFormatters.get(`${seconds}`);
