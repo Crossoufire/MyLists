@@ -4,7 +4,7 @@ import type {TopAffinityDefinition} from "@/lib/types/stats.types";
 import type {MediaDefinition} from "@/lib/media-definitions/base/media.definition";
 import type {ApiProviderType, JobType, MediaType, Status} from "@/lib/utils/enums";
 import type {AnySQLiteColumn, AnySQLiteTable, SelectedFieldsFlat} from "drizzle-orm/sqlite-core";
-import type {FilterDefinitions, FilterOptionLoaders} from "@/lib/server/domain/media/base/media-list.query";
+import {FilterDefinitions, FilterOptionLoaders} from "@/lib/server/domain/media/base/media-list.queries";
 
 
 type NotNullColumn<T> = AnySQLiteColumn<{ data: T; notNull: true }>;
