@@ -9,7 +9,7 @@ export class ImportJobProcessor {
     ) {
     }
 
-    async requeueStaleProcessingJobs(staleAfterMinutes: number) {
+    requeueStaleProcessingJobs(staleAfterMinutes: number) {
         return this.importService.requeueStaleProcessingJobs(staleAfterMinutes);
     }
 

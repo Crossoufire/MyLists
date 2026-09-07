@@ -5,18 +5,18 @@ import {InactiveAccountService} from "@/lib/server/domain/account/inactive-accou
 
 
 vi.mock("@/lib/server/database/async-storage", () => ({
-    withTransaction: async <T>(action: () => Promise<T>) => action(),
+    withTransaction: <T>(action: () => T) => action(),
 }));
 
 
 const createService = () => {
     const accountRepository = {
-        deleteUserAccount: vi.fn().mockResolvedValue(undefined),
+        deleteUserAccount: vi.fn().mockReturnValue(undefined),
     } as unknown as typeof AccountRepository;
 
     const inactiveAccountService = {
-        markAsDeleted: vi.fn().mockResolvedValue(true),
-        deleteRowsForUser: vi.fn().mockResolvedValue(undefined),
+        markAsDeleted: vi.fn().mockReturnValue(true),
+        deleteRowsForUser: vi.fn().mockReturnValue(undefined),
     } as unknown as InactiveAccountService;
 
     return {
@@ -31,7 +31,7 @@ describe("AccountService.deleteUserAccount", () => {
     it("deletes manual accounts after removing inactive account lifecycle rows", async () => {
         const { service, accountRepository, inactiveAccountService } = createService();
 
-        await expect(service.deleteUserAccount({ type: "manual", userId: 42 })).resolves.toBe(true);
+        await expect(service.deleteUserAccount({ type: "manual", userId: 42 })).toBe(true);
 
         expect(accountRepository.deleteUserAccount).toHaveBeenCalledOnce();
         expect(accountRepository.deleteUserAccount).toHaveBeenCalledWith(42);
@@ -48,7 +48,7 @@ describe("AccountService.deleteUserAccount", () => {
             lifecycleId: 7,
             type: "inactive",
             username: "inactive-user",
-        })).resolves.toBe(true);
+        })).toBe(true);
 
         expect(accountRepository.deleteUserAccount).toHaveBeenCalledOnce();
         expect(accountRepository.deleteUserAccount).toHaveBeenCalledWith(42);
@@ -59,14 +59,14 @@ describe("AccountService.deleteUserAccount", () => {
 
     it("does not delete inactive accounts when the lifecycle row cannot be marked as deleted", async () => {
         const { service, accountRepository, inactiveAccountService } = createService();
-        vi.mocked(inactiveAccountService.markAsDeleted).mockResolvedValue(false);
+        vi.mocked(inactiveAccountService.markAsDeleted).mockReturnValue(false);
 
         await expect(service.deleteUserAccount({
             userId: 42,
             lifecycleId: 7,
             type: "inactive",
             username: "active-again-user",
-        })).resolves.toBe(false);
+        })).toBe(false);
 
         expect(accountRepository.deleteUserAccount).not.toHaveBeenCalled();
         expect(inactiveAccountService.markAsDeleted).toHaveBeenCalledOnce();

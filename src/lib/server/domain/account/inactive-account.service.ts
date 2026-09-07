@@ -36,11 +36,11 @@ export class InactiveAccountService {
         return this.repository.getDeletionTargets(maxRetries);
     }
 
-    async markAsDeleted(lifecycleId: number, userId: number, username: string) {
+    markAsDeleted(lifecycleId: number, userId: number, username: string) {
         return this.repository.markAsDeleted(lifecycleId, userId, username);
     }
 
-    async deleteRowsForUser(userId: number) {
+    deleteRowsForUser(userId: number) {
         return this.repository.deleteRowsForUser(userId);
     }
 }

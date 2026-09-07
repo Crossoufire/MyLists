@@ -11,8 +11,8 @@ import {afterEach, beforeEach, describe, expect, it, vi} from "vitest";
 const dbContext = vi.hoisted(() => ({ db: undefined as any }));
 
 
-vi.mock("@/lib/server/database/async-storage", () => ({
-    getDbClient: () => dbContext.db,
+vi.mock("@/lib/server/database/db", () => ({
+    get db() { return dbContext.db; },
 }));
 
 
@@ -83,6 +83,21 @@ describe("BaseRepository", () => {
         await expect(repository.bulkInsertUserMedia([])).resolves.toEqual([]);
     });
 
+    it("rolls back earlier insert batches if a later batch fails", async () => {
+        const media = Array.from({ length: 201 }, (_,index) => ({
+            id: 1000 + index, apiId: 10000 + index, name: `Batch movie ${index}`, imageCover: "movie.jpg", duration: 120,
+        }));
+        db.insert(movies).values(media).run();
+        sqlite.exec(`CREATE TRIGGER fail_later_batch BEFORE INSERT ON movies_list
+            WHEN NEW.media_id = 1200 BEGIN SELECT RAISE(ABORT, 'later batch failed'); END`);
+
+        await expect(repository.bulkInsertUserMedia(media.map(({ id }) => ({
+            userId: 42, mediaId: id, status: Status.COMPLETED,
+        })))).rejects.toThrow();
+
+        expect(db.select().from(moviesList).all()).toEqual([]);
+    });
+
     it("searches a user list by both localized and original media names", async () => {
         await db.insert(moviesList).values([
             { userId: 42, mediaId: 100, status: Status.COMPLETED },
@@ -134,7 +149,7 @@ describe("BaseRepository", () => {
             mediaType: MediaType.MOVIES,
         });
 
-        await expect(repository.getOrphanedMediaIds()).resolves.toEqual([102]);
+        await expect(repository.getOrphanedMediaIds()).toEqual([102]);
     });
 
     it("scopes tag filters to the owner of the requested list", async () => {

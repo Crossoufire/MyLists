@@ -75,7 +75,7 @@ const getFilteredActivityConditions = (userId: number, filters: PaginatedMonthly
 
 
 export class MonthlyActivityRepository {
-    static async addContribution(activity: LogMonthlyActivity) {
+    static addContribution(activity: LogMonthlyActivity) {
         const date = activity.activityDate ? dateFromUTCInput(activity.activityDate) : new Date();
 
         const { activityDate: _activityDate, ...contribution } = activity;
@@ -88,7 +88,7 @@ export class MonthlyActivityRepository {
 
         if (newActivity.progressGained <= 0 && !newActivity.hadCompletion && newActivity.redoGained <= 0) return;
 
-        await getDbClient()
+        getDbClient()
             .insert(userMediaMonthlyActivity)
             .values(newActivity)
             .onConflictDoUpdate({
@@ -105,7 +105,7 @@ export class MonthlyActivityRepository {
                     progressGained: sql`${userMediaMonthlyActivity.progressGained} + excluded.progress_gained`,
                     lastActivityAt: sql`MAX(${userMediaMonthlyActivity.lastActivityAt}, excluded.last_activity_at)`,
                 },
-            });
+            }).run();
     }
 
     static async getMonthlyStatsContributions(userId: number, mediaTypes: MediaType[], startMonth: string, endMonth: string) {
@@ -334,11 +334,11 @@ export class MonthlyActivityRepository {
         };
     }
 
-    static async updateMonthlyActivity(userId: number, activityId: number, payload: UpdateMonthlyActivity) {
-        const [existing] = await getDbClient()
+    static updateMonthlyActivity(userId: number, activityId: number, payload: UpdateMonthlyActivity) {
+        const [existing] = getDbClient()
             .select()
             .from(userMediaMonthlyActivity)
-            .where(and(eq(userMediaMonthlyActivity.id, activityId), eq(userMediaMonthlyActivity.userId, userId)));
+            .where(and(eq(userMediaMonthlyActivity.id, activityId), eq(userMediaMonthlyActivity.userId, userId))).all();
 
         if (!existing) return null;
 
@@ -353,7 +353,7 @@ export class MonthlyActivityRepository {
             const movedRedoGained = payload.redoGained ?? existing.redoGained;
             const movedHadCompletion = payload.hadCompletion ?? existing.hadCompletion;
 
-            const [upserted] = await getDbClient()
+            const [upserted] = getDbClient()
                 .insert(userMediaMonthlyActivity)
                 .values({
                     ...existingWithoutId,
@@ -375,35 +375,35 @@ export class MonthlyActivityRepository {
                         hidden: sql`${userMediaMonthlyActivity.hidden} AND ${payload.hidden ?? existing.hidden}`,
                     },
                 })
-                .returning();
+                .returning().all();
 
-            await getDbClient()
+            getDbClient()
                 .delete(userMediaMonthlyActivity)
-                .where(eq(userMediaMonthlyActivity.id, activityId));
+                .where(eq(userMediaMonthlyActivity.id, activityId)).run();
 
             return upserted;
         }
 
-        const [updated] = await getDbClient()
+        const [updated] = getDbClient()
             .update(userMediaMonthlyActivity)
             .set(payload)
             .where(and(eq(userMediaMonthlyActivity.id, activityId), eq(userMediaMonthlyActivity.userId, userId)))
-            .returning();
+            .returning().all();
 
         return updated;
     }
 
-    static async removeFromMonth(userId: number, activityId: number) {
-        await getDbClient()
+    static removeFromMonth(userId: number, activityId: number) {
+        getDbClient()
             .delete(userMediaMonthlyActivity)
-            .where(and(eq(userMediaMonthlyActivity.id, activityId), eq(userMediaMonthlyActivity.userId, userId)));
+            .where(and(eq(userMediaMonthlyActivity.id, activityId), eq(userMediaMonthlyActivity.userId, userId))).run();
     }
 
-    static async bulkHideMonthlyActivity(userId: number, filters: { startDate: string, endDate: string, mediaType?: MediaType }) {
+    static bulkHideMonthlyActivity(userId: number, filters: { startDate: string, endDate: string, mediaType?: MediaType }) {
         const conditions = [];
         if (filters.mediaType) conditions.push(eq(userMediaMonthlyActivity.mediaType, filters.mediaType));
 
-        const updated = await getDbClient()
+        const updated = getDbClient()
             .update(userMediaMonthlyActivity)
             .set({ hidden: true })
             .where(and(
@@ -413,19 +413,19 @@ export class MonthlyActivityRepository {
                 gte(userMediaMonthlyActivity.lastActivityAt, filters.startDate),
                 ...conditions,
             ))
-            .returning({ id: userMediaMonthlyActivity.id });
+            .returning({ id: userMediaMonthlyActivity.id }).all();
 
         return { count: updated.length };
     }
 
-    static async deleteAssociatedActivities(userId: number, mediaType: MediaType, mediaId: number) {
-        await getDbClient()
+    static deleteAssociatedActivities(userId: number, mediaType: MediaType, mediaId: number) {
+        getDbClient()
             .delete(userMediaMonthlyActivity)
             .where(and(
                 eq(userMediaMonthlyActivity.userId, userId),
                 eq(userMediaMonthlyActivity.mediaId, mediaId),
                 eq(userMediaMonthlyActivity.mediaType, mediaType),
-            ));
+            )).run();
     }
 
     private static _likelyBulkImportUserMonths() {

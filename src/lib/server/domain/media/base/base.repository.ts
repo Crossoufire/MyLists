@@ -2,10 +2,10 @@ import {notFound} from "@tanstack/react-router";
 import {MediaInfo} from "@/lib/types/activity.types";
 import {FormattedError} from "@/lib/utils/error-classes";
 import {UpComingMedia} from "@/lib/types/notifications.types";
-import {getDbClient} from "@/lib/server/database/async-storage";
 import {ProviderSearchResult} from "@/lib/types/provider.types";
 import {MediaListArgs, SearchType, SimpleSearch} from "@/lib/schemas";
 import {AddedMediaDetails, Tag} from "@/lib/types/media-common.types";
+import {getDbClient, withTransaction} from "@/lib/server/database/async-storage";
 import {resolvePagination, resolveSorting} from "@/lib/server/database/pagination";
 import {JobType, MediaType, SocialState, Status, TagAction} from "@/lib/utils/enums";
 import {Actor, communityProfileVisibilityCondition} from "@/lib/server/authorization";
@@ -103,20 +103,22 @@ export abstract class BaseRepository<
 
         if (rows.length === 0) return [];
 
-        const insertedRows: TRepoDef["tables"]["listTable"]["$inferSelect"][] = [];
+        return withTransaction(() => {
+            const insertedRows: TRepoDef["tables"]["listTable"]["$inferSelect"][] = [];
 
-        for (let offset = 0; offset < rows.length; offset += USER_MEDIA_INSERT_BATCH_SIZE) {
-            const batch = rows.slice(offset, offset + USER_MEDIA_INSERT_BATCH_SIZE);
-            const inserted = await getDbClient()
-                .insert(listTable)
-                .values(batch)
-                .onConflictDoNothing({ target: [listTable.userId, listTable.mediaId] })
-                .returning();
+            for (let offset = 0; offset < rows.length; offset += USER_MEDIA_INSERT_BATCH_SIZE) {
+                const batch = rows.slice(offset, offset + USER_MEDIA_INSERT_BATCH_SIZE);
+                const inserted = getDbClient()
+                    .insert(listTable)
+                    .values(batch)
+                    .onConflictDoNothing({ target: [listTable.userId, listTable.mediaId] })
+                    .returning().all();
 
-            insertedRows.push(...inserted);
-        }
+                insertedRows.push(...inserted);
+            }
 
-        return insertedRows;
+            return insertedRows;
+        });
     }
 
     async getCoverFilenames() {
@@ -127,7 +129,7 @@ export abstract class BaseRepository<
             .from(mediaTable);
     }
 
-    async getPopularMediaRefs() {
+    getPopularMediaRefs() {
         const { popularity, tables: { mediaTable } } = this.repoDefinition;
 
         if (!popularity) return [];
@@ -144,11 +146,10 @@ export abstract class BaseRepository<
                 ne(mediaTable.imageCover, ""),
                 ne(mediaTable.releaseDate, ""),
                 lte(mediaTable.releaseDate, sql`date('now')`),
-            ))
-            .then((rows) => rows.map((row) => ({
+            )).all().map((row) => ({
                 id: row.id as number,
                 releaseDate: row.releaseDate! as string,
-            })));
+            }));
     }
 
     async getCustomCoverFilenames() {
@@ -160,12 +161,12 @@ export abstract class BaseRepository<
             .where(isNotNull(listTable.customCover));
     }
 
-    async getOrphanedMediaIds() {
+    getOrphanedMediaIds() {
         const { mediaType } = this.identity;
         const { mediaTable, listTable } = this.repoDefinition.tables;
 
         const tx = getDbClient();
-        const mediaToDelete = await tx
+        const mediaToDelete = tx
             .select({ id: mediaTable.id })
             .from(mediaTable)
             .where(and(
@@ -177,7 +178,7 @@ export abstract class BaseRepository<
                     .from(collectionItems)
                     .where(and(eq(collectionItems.mediaId, mediaTable.id), eq(collectionItems.mediaType, mediaType)))
                 )
-            ));
+            )).all();
 
         return mediaToDelete.map((media) => media.id);
     }
@@ -192,20 +193,20 @@ export abstract class BaseRepository<
             .orderBy(asc(tagTable.name));
     }
 
-    async removeMediaByIds(mediaIds: number[]) {
+    removeMediaByIds(mediaIds: number[]) {
         const { mediaTable, deleteDependents } = this.repoDefinition.tables;
 
         // Delete on other tables
         for (const table of deleteDependents) {
-            await getDbClient()
+            getDbClient()
                 .delete(table)
-                .where(inArray(table.mediaId, mediaIds));
+                .where(inArray(table.mediaId, mediaIds)).run();
         }
 
         // Delete on main table
-        await getDbClient()
+        getDbClient()
             .delete(mediaTable)
-            .where(inArray(mediaTable.id, mediaIds));
+            .where(inArray(mediaTable.id, mediaIds)).run();
     }
 
     async searchMediadleSuggestion(query: string, limit = 20) {
@@ -241,16 +242,16 @@ export abstract class BaseRepository<
         return results.map((r) => ({ ...r, itemType: mediaType }));
     }
 
-    async removeMediaFromUserList(userId: number, mediaId: number) {
+    removeMediaFromUserList(userId: number, mediaId: number) {
         const { listTable, tagTable } = this.repoDefinition.tables;
 
-        await getDbClient()
+        getDbClient()
             .delete(listTable)
-            .where(and(eq(listTable.userId, userId), eq(listTable.mediaId, mediaId)));
+            .where(and(eq(listTable.userId, userId), eq(listTable.mediaId, mediaId))).run();
 
-        await getDbClient()
+        getDbClient()
             .delete(tagTable)
-            .where(and(eq(tagTable.userId, userId), eq(tagTable.mediaId, mediaId)));
+            .where(and(eq(tagTable.userId, userId), eq(tagTable.mediaId, mediaId))).run();
     }
 
     async findSimilarMedia(mediaId: number) {
@@ -387,16 +388,16 @@ export abstract class BaseRepository<
             .limit(limit);
     }
 
-    async editUserTag(userId: number, tag: Tag, action: TagAction, mediaId?: number) {
+    editUserTag(userId: number, tag: Tag, action: TagAction, mediaId?: number) {
         const { tagTable } = this.repoDefinition.tables;
 
         const db = getDbClient();
 
         if (action === TagAction.ADD) {
-            const [tagData] = await db
+            const [tagData] = db
                 .insert(tagTable)
                 .values({ userId, name: tag.name, mediaId })
-                .returning({ name: tagTable.name });
+                .returning({ name: tagTable.name }).all();
 
             return tagData satisfies Tag;
         }
@@ -413,30 +414,30 @@ export abstract class BaseRepository<
                 throw new FormattedError("A tag with this name already exists.");
             }
 
-            const [tagData] = await db
+            const [tagData] = db
                 .update(tagTable)
                 .set({ name: tag.name })
                 .where(and(
                     eq(tagTable.userId, userId),
                     eq(tagTable.name, tag.oldName)
-                )).returning({ name: tagTable.name });
+                )).returning({ name: tagTable.name }).all();
             return tagData satisfies Tag;
         }
         else if (action === TagAction.DELETE_ONE) {
             if (!mediaId) return;
 
-            await db
+            db
                 .delete(tagTable)
-                .where(and(eq(tagTable.userId, userId), eq(tagTable.name, tag.name), eq(tagTable.mediaId, mediaId)));
+                .where(and(eq(tagTable.userId, userId), eq(tagTable.name, tag.name), eq(tagTable.mediaId, mediaId))).run();
         }
         else if (action === TagAction.DELETE_ALL) {
-            await db
+            db
                 .delete(tagTable)
-                .where(and(eq(tagTable.userId, userId), eq(tagTable.name, tag.name)));
+                .where(and(eq(tagTable.userId, userId), eq(tagTable.name, tag.name))).run();
         }
     }
 
-    async findById(mediaId: number): Promise<TRepoDef["tables"]["mediaTable"]["$inferSelect"] | undefined> {
+    findById(mediaId: number): TRepoDef["tables"]["mediaTable"]["$inferSelect"] | undefined {
         const { mediaTable } = this.repoDefinition.tables;
 
         return getDbClient()
@@ -517,22 +518,22 @@ export abstract class BaseRepository<
         return matches;
     }
 
-    async updateUserMediaDetails(userId: number, mediaId: number, updateData: TRepoDef["tables"]["listTable"]["$inferSelect"]): Promise<TRepoDef["tables"]["listTable"]["$inferSelect"]> {
+    updateUserMediaDetails(userId: number, mediaId: number, updateData: TRepoDef["tables"]["listTable"]["$inferSelect"]): TRepoDef["tables"]["listTable"]["$inferSelect"] {
         const { listTable } = this.repoDefinition.tables;
 
-        const [result] = await getDbClient()
+        const [result] = getDbClient()
             .update(listTable)
             .set({
                 ...updateData,
                 lastUpdated: sql`datetime('now')`,
             })
             .where(and(eq(listTable.userId, userId), eq(listTable.mediaId, mediaId)))
-            .returning();
+            .returning().all();
 
         return result;
     }
 
-    async findUserMedia(userId: number | undefined, mediaId: number): Promise<UserMediaWithTags<TRepoDef["tables"]["listTable"]["$inferSelect"]> | null> {
+    findUserMedia(userId: number | undefined, mediaId: number): UserMediaWithTags<TRepoDef["tables"]["listTable"]["$inferSelect"]> | null {
         const { listTable, tagTable } = this.repoDefinition.tables;
 
         if (!userId) return null;
@@ -551,11 +552,11 @@ export abstract class BaseRepository<
             return null;
         }
 
-        const associatedTags = await getDbClient()
+        const associatedTags = getDbClient()
             .select({ name: sql<string>`${tagTable.name}` })
             .from(tagTable)
             .where(and(eq(tagTable.mediaId, mediaId), eq(tagTable.userId, userId)))
-            .orderBy(asc(tagTable.name));
+            .orderBy(asc(tagTable.name)).all();
 
         if (!associatedTags) {
             return null;
@@ -1027,11 +1028,11 @@ export abstract class BaseRepository<
 
     // --- Abstract Methods -----------------------------------------------------------------
 
-    abstract storeMediaWithDetails(params: any): Promise<number>;
+    abstract storeMediaWithDetails(params: any): number;
 
-    abstract updateMediaWithDetails(params: any): Promise<boolean>;
+    abstract updateMediaWithDetails(params: any): boolean;
 
-    abstract addMediaToUserList(userId: number, media: any, newStatus: Status): Promise<TRepoDef["tables"]["listTable"]["$inferSelect"]>;
+    abstract addMediaToUserList(userId: number, media: any, newStatus: Status): TRepoDef["tables"]["listTable"]["$inferSelect"];
 
     abstract findAllAssociatedDetails(mediaId: number): Promise<(TRepoDef["tables"]["mediaTable"]["$inferSelect"] & AddedMediaDetails) | undefined>;
 }

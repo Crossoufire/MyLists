@@ -192,10 +192,10 @@ export class InactiveAccountRepository {
             .orderBy(asc(inactiveAccountDeletion.deletionScheduledAt));
     }
 
-    static async markAsDeleted(lifecycleId: number, userId: number, username: string) {
+    static markAsDeleted(lifecycleId: number, userId: number, username: string) {
         const db = getDbClient();
 
-        const rows = await db
+        const rows = db
             .update(inactiveAccountDeletion)
             .set({
                 username,
@@ -221,15 +221,15 @@ export class InactiveAccountRepository {
                         lte(user.updatedAt, inactiveAccountDeletion.lastSeenAt),
                     ))),
             ))
-            .returning({ id: inactiveAccountDeletion.id });
+            .returning({ id: inactiveAccountDeletion.id }).all();
 
         return rows.length > 0;
     }
 
-    static async deleteRowsForUser(userId: number) {
-        await getDbClient()
+    static deleteRowsForUser(userId: number) {
+        getDbClient()
             .delete(inactiveAccountDeletion)
-            .where(eq(inactiveAccountDeletion.userId, userId));
+            .where(eq(inactiveAccountDeletion.userId, userId)).run();
     }
 
     static async getAdminOverview(data: SearchType) {

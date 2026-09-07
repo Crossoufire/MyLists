@@ -1,4 +1,4 @@
-import {eq} from "drizzle-orm";
+import {eq, getTableName} from "drizzle-orm";
 import Database from "bun:sqlite";
 import {MediaType, Status} from "@/lib/utils/enums";
 import {statusUtils} from "@/lib/utils/media-mapping";
@@ -21,12 +21,13 @@ import {
 const dbContext = vi.hoisted(() => ({ db: undefined as any }));
 
 
-vi.mock("@/lib/server/database/async-storage", () => ({
-    getDbClient: () => dbContext.db,
+vi.mock("@/lib/server/database/db", () => ({
+    get db() { return dbContext.db; },
 }));
 
 
 const { TvRepository } = await import("@/lib/server/domain/media/tv/tv.repository");
+const { createMediaIngestionService } = await import("@/lib/server/api-providers/media-ingestion.service");
 
 
 const completedSeriesStatusCounts = () => Object.fromEntries(
@@ -66,6 +67,46 @@ describe("TvRepository season refresh", () => {
     afterEach(() => {
         sqlite.close();
         dbContext.db = undefined;
+    });
+
+    it("rolls back metadata, user progress, and season replacement when ingestion fails", async () => {
+        db.insert(user).values({
+            id: 42, name: "refresh-user", email: "refresh@example.com", emailVerified: true,
+            createdAt: "2026-01-01 00:00:00", updatedAt: "2026-01-01 00:00:00",
+        }).run();
+        db.insert(seriesList).values({
+            userId: 42, mediaId: 100, status: Status.COMPLETED,
+            currentSeason: 2, currentEpisode: 8, redo: [0, 0], total: 16,
+        }).run();
+        const beforeMedia = db.select().from(series).all();
+        const beforeList = db.select().from(seriesList).all();
+        const beforeSeasons = db.select().from(seriesEpisodesPerSeason).all();
+        sqlite.exec(`CREATE TRIGGER fail_seasons BEFORE INSERT ON ${getTableName(seriesEpisodesPerSeason)}
+            BEGIN SELECT RAISE(ABORT, 'season failure'); END`);
+
+        const ingestion = createMediaIngestionService({
+            repository,
+            provider: {
+                search: vi.fn(),
+                getDetails: async () => {
+                    expect(sqlite.inTransaction).toBe(false);
+                    await Promise.resolve();
+                    return {
+                        mediaData: { apiId: 1000, name: "Updated title", totalSeasons: 3 },
+                        seasonsData: [
+                            { season: 1, episodes: 8 },
+                            { season: 2, episodes: 8 },
+                            { season: 3, episodes: 10 },
+                        ],
+                    };
+                },
+            },
+        });
+
+        await expect(ingestion.refreshFromExternal(1000)).rejects.toThrow();
+        expect(db.select().from(series).all()).toEqual(beforeMedia);
+        expect(db.select().from(seriesList).all()).toEqual(beforeList);
+        expect(db.select().from(seriesEpisodesPerSeason).all()).toEqual(beforeSeasons);
     });
 
     it("moves caught-up users to On Hold when enabled and preserves their progress metadata", async () => {

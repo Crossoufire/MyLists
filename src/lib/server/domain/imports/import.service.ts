@@ -26,7 +26,7 @@ export class ImportService {
         return this.repository.claimNextQueuedJob();
     }
 
-    async requeueStaleProcessingJobs(staleAfterMinutes: number) {
+    requeueStaleProcessingJobs(staleAfterMinutes: number) {
         return withTransaction(() => this.repository.requeueStaleProcessingJobs(staleAfterMinutes));
     }
 
@@ -49,8 +49,8 @@ export class ImportService {
             const batch = outcomes.slice(offset, offset + OUTCOME_BATCH_SIZE);
             const uniqueBatch = [...new Map(batch.map(outcome => [outcome.itemId, outcome])).values()];
 
-            const committedItems = await withTransaction(async () => {
-                const items = await this.repository.settleProcessingItems(jobId, uniqueBatch);
+            const committedItems = withTransaction(() => {
+                const items = this.repository.settleProcessingItems(jobId, uniqueBatch);
                 if (items.length === 0) return [];
 
                 const delta = {
@@ -60,7 +60,7 @@ export class ImportService {
                     completedCount: items.filter(item => item.status === ImportItemStatus.COMPLETED).length,
                 };
 
-                const updatedJob = await this.repository.incrementJobCounters(jobId, delta);
+                const updatedJob = this.repository.incrementJobCounters(jobId, delta);
                 if (!updatedJob) {
                     throw new Error(`Import job ${jobId} is no longer in processing state`);
                 }
@@ -144,14 +144,15 @@ export class ImportService {
             if (!parser) throw new Error(`Import source "${source}" is not supported yet`);
 
             const parsed = parser(contents);
-            const queuedJob = await withTransaction(async () => {
-                await this.repository.insertParsedItems(job.id, parsed.items);
-                return this.repository.markJobQueued(job.id, parsed.totalCount, parsed.failedCount);
-            });
+            const queuedJob = withTransaction(() => {
+                this.repository.insertParsedItems(job.id, parsed.items);
+                const queuedJob = this.repository.markJobQueued(job.id, parsed.totalCount, parsed.failedCount);
+                if (!queuedJob) {
+                    throw new Error(`Import job ${job.id} is no longer in parsing state`);
+                }
 
-            if (!queuedJob) {
-                throw new Error(`Import job ${job.id} is no longer in parsing state`);
-            }
+                return queuedJob;
+            });
 
             return queuedJob;
         }

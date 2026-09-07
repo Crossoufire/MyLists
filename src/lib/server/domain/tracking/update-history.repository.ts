@@ -84,7 +84,7 @@ export class UpdateHistoryRepository {
         return { total, items };
     }
 
-    static async getUserMediaHistory(userId: number, mediaType: MediaType, mediaId: number) {
+    static getUserMediaHistory(userId: number, mediaType: MediaType, mediaId: number) {
         return getDbClient()
             .select()
             .from(userMediaUpdate)
@@ -93,7 +93,7 @@ export class UpdateHistoryRepository {
                 eq(userMediaUpdate.mediaType, mediaType),
                 eq(userMediaUpdate.mediaId, mediaId),
             ))
-            .orderBy(desc(userMediaUpdate.timestamp));
+            .orderBy(desc(userMediaUpdate.timestamp)).all();
     }
 
     static async getFollowsUpdates(profileOwnerId: number, actor: Actor, limit = 10) {
@@ -204,13 +204,13 @@ export class UpdateHistoryRepository {
         };
     }
 
-    static async deleteUserUpdates(userId: number, updateIds: number[], returnData: boolean) {
-        await getDbClient()
+    static deleteUserUpdates(userId: number, updateIds: number[], returnData: boolean) {
+        getDbClient()
             .delete(userMediaUpdate)
-            .where(and(eq(userMediaUpdate.userId, userId), inArray(userMediaUpdate.id, updateIds)));
+            .where(and(eq(userMediaUpdate.userId, userId), inArray(userMediaUpdate.id, updateIds))).run();
 
         if (returnData) {
-            return getDbClient()
+            const updates = getDbClient()
                 .select({ ...getTableColumns(userMediaUpdate) })
                 .from(userMediaUpdate)
                 .innerJoin(userMediaSettings, and(
@@ -220,17 +220,20 @@ export class UpdateHistoryRepository {
                 ))
                 .where(eq(userMediaUpdate.userId, userId))
                 .orderBy(desc(userMediaUpdate.timestamp))
-                .limit(8).then((res) => res[res.length - 1] ?? null);
+                .limit(8)
+                .all();
+
+            return updates.at(-1) ?? null;
         }
     }
 
-    static async deleteMediaUpdates(mediaType: MediaType, mediaIds: number[]) {
-        await getDbClient()
+    static deleteMediaUpdates(mediaType: MediaType, mediaIds: number[]) {
+        getDbClient()
             .delete(userMediaUpdate)
-            .where(and(eq(userMediaUpdate.mediaType, mediaType), inArray(userMediaUpdate.mediaId, mediaIds)));
+            .where(and(eq(userMediaUpdate.mediaType, mediaType), inArray(userMediaUpdate.mediaId, mediaIds))).run();
     }
 
-    static async deleteRecentInitialAdd(userId: number, mediaType: MediaType, mediaId: number) {
+    static deleteRecentInitialAdd(userId: number, mediaType: MediaType, mediaId: number) {
         const previousUpdate = getDbClient()
             .select()
             .from(userMediaUpdate)
@@ -248,12 +251,12 @@ export class UpdateHistoryRepository {
         const elapsedSec = (Date.now() - dateFromUTCInput(previousUpdate.timestamp).getTime()) / 1000;
         if (elapsedSec > this.updateThresholdSec) return;
 
-        await getDbClient()
+        getDbClient()
             .delete(userMediaUpdate)
-            .where(eq(userMediaUpdate.id, previousUpdate.id));
+            .where(eq(userMediaUpdate.id, previousUpdate.id)).run();
     }
 
-    static async logUpdate({ userId, mediaType, media, updateType, payload, timestamp }: LogUpdateParams) {
+    static logUpdate({ userId, mediaType, media, updateType, payload, timestamp }: LogUpdateParams) {
         const newUpdate = {
             userId,
             payload,
@@ -278,15 +281,15 @@ export class UpdateHistoryRepository {
         if (previousUpdate && !timestamp) {
             const elapsedSec = (Date.now() - dateFromUTCInput(previousUpdate.timestamp).getTime()) / 1000;
             if (elapsedSec >= 0 && elapsedSec <= this.updateThresholdSec) {
-                await getDbClient()
+                getDbClient()
                     .delete(userMediaUpdate)
-                    .where(eq(userMediaUpdate.id, previousUpdate.id));
+                    .where(eq(userMediaUpdate.id, previousUpdate.id)).run();
             }
         }
 
-        await getDbClient()
+        getDbClient()
             .insert(userMediaUpdate)
-            .values(newUpdate);
+            .values(newUpdate).run();
     }
 
     private static _likelyBulkImportUserMonths() {

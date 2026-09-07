@@ -3,6 +3,7 @@ import {Status, UpdateType} from "@/lib/utils/enums";
 import {saveImageFromUrl} from "@/lib/utils/image-saver";
 import {FormattedError} from "@/lib/utils/error-classes";
 import {LogPayload} from "@/lib/types/user-updates.types";
+import {withTransaction} from "@/lib/server/database/async-storage";
 import {TvList, TvType} from "@/lib/server/domain/media/tv/tv.types";
 import {BaseService} from "@/lib/server/domain/media/base/base.service";
 import {TvRepository} from "@/lib/server/domain/media/tv/tv.repository";
@@ -30,7 +31,7 @@ export class TvService extends BaseService<TvDefinition, TvRepository> {
         const { editableFields } = this.servicePolicy;
 
         const fields: Record<string, any> = {};
-        const media = await this.repository.findById(mediaId);
+        const media = this.repository.findById(mediaId);
         if (!media) throw notFound();
 
         editableFields.forEach((field) => {
@@ -42,7 +43,7 @@ export class TvService extends BaseService<TvDefinition, TvRepository> {
         return { fields };
     }
 
-    async getMediaEpsPerSeason(mediaId: number) {
+    getMediaEpsPerSeason(mediaId: number) {
         return this.repository.getMediaEpsPerSeason(mediaId);
     }
 
@@ -50,7 +51,7 @@ export class TvService extends BaseService<TvDefinition, TvRepository> {
         const { editableFields } = this.servicePolicy;
         const { coverDirectory } = this.identity;
 
-        const media = await this.repository.findById(mediaId);
+        const media = this.repository.findById(mediaId);
         if (!media) throw notFound();
 
         type FieldsType = typeof editableFields[number];
@@ -71,11 +72,11 @@ export class TvService extends BaseService<TvDefinition, TvRepository> {
             }
         }
 
-        await this.repository.updateMediaWithDetails({ mediaData: fields as any });
+        withTransaction(() => this.repository.updateMediaWithDetails({ mediaData: fields as any }));
     }
 
-    async updateRedoHandler(currentState: TvList, payload: RedoTvPayload, media: TvType): Promise<[TvList, LogPayload]> {
-        const epsPerSeason = await this.repository.getMediaEpsPerSeason(media.id);
+    updateRedoHandler(currentState: TvList, payload: RedoTvPayload, media: TvType): [TvList, LogPayload] {
+        const epsPerSeason = this.repository.getMediaEpsPerSeason(media.id);
         const currentRedo = Array.from({ length: epsPerSeason.length }, (_, index) => currentState.redo[index] ?? 0);
         const nextRedo = Array.from({ length: epsPerSeason.length }, (_, index) => payload.redo[index] ?? 0);
 
@@ -93,10 +94,10 @@ export class TvService extends BaseService<TvDefinition, TvRepository> {
         return [newState, logPayload];
     }
 
-    async updateStatusHandler(currentState: TvList, payload: StatusPayload, media: TvType): Promise<[TvList, LogPayload]> {
+    updateStatusHandler(currentState: TvList, payload: StatusPayload, media: TvType): [TvList, LogPayload] {
         const newState = { ...currentState, status: payload.status };
         const specialStatuses: Status[] = [Status.RANDOM, Status.PLAN_TO_WATCH];
-        const epsPerSeason = await this.repository.getMediaEpsPerSeason(media.id);
+        const epsPerSeason = this.repository.getMediaEpsPerSeason(media.id);
         const logPayload = { oldValue: currentState.status, newValue: payload.status };
 
         if (specialStatuses.includes(currentState.status) && !specialStatuses.includes(newState.status)) {
@@ -121,8 +122,8 @@ export class TvService extends BaseService<TvDefinition, TvRepository> {
         return [newState, logPayload];
     }
 
-    async updateEpsSeasonsHandler(currentState: TvList, payload: EpsSeasonPayload, media: TvType): Promise<[TvList, LogPayload]> {
-        const epsPerSeason = await this.repository.getMediaEpsPerSeason(media.id);
+    updateEpsSeasonsHandler(currentState: TvList, payload: EpsSeasonPayload, media: TvType): [TvList, LogPayload] {
+        const epsPerSeason = this.repository.getMediaEpsPerSeason(media.id);
         const epsPerSeasList = epsPerSeason.map((eps) => eps.episodes);
 
         if (payload.currentSeason) {

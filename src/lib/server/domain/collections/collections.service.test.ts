@@ -6,6 +6,10 @@ import type {MediaServiceRegistry} from "@/lib/server/domain/media/media.registr
 import {CollectionsService} from "@/lib/server/domain/collections/collections.service";
 import {CollectionsRepository} from "@/lib/server/domain/collections/collections.repository";
 
+vi.mock("@/lib/server/database/async-storage", () => ({
+    withTransaction: <T>(action: () => T) => action(),
+}));
+
 
 const createService = () => {
     const collection = {
@@ -21,8 +25,8 @@ const createService = () => {
     };
 
     const repository = {
-        getCollectionById: vi.fn().mockResolvedValue(collection),
-        getCollectionItems: vi.fn().mockResolvedValue([]),
+        getCollectionById: vi.fn().mockReturnValue(collection),
+        getCollectionItems: vi.fn().mockReturnValue([]),
         getPaginatedCollectionItems: vi.fn().mockResolvedValue({
             page: 1,
             pages: 0,
@@ -30,20 +34,20 @@ const createService = () => {
             items: [],
             perPage: 24,
         }),
-        findLikedCollection: vi.fn().mockResolvedValue(null),
+        findLikedCollection: vi.fn().mockReturnValue(null),
         incrementViewCount: vi.fn().mockResolvedValue(undefined),
-        getMaxCollectionItemOrder: vi.fn().mockResolvedValue(0),
-        insertCollectionItem: vi.fn().mockResolvedValue(undefined),
-        deleteCollectionItem: vi.fn().mockResolvedValue(undefined),
-        updateCollection: vi.fn().mockResolvedValue(undefined),
-        replaceCollectionItems: vi.fn().mockResolvedValue(undefined),
-        deleteCollection: vi.fn().mockResolvedValue(undefined),
-        insertLike: vi.fn().mockResolvedValue(undefined),
-        incrementLikeCount: vi.fn().mockResolvedValue(undefined),
-        deleteLike: vi.fn().mockResolvedValue(undefined),
-        decrementLikeCount: vi.fn().mockResolvedValue(undefined),
-        createCollection: vi.fn().mockResolvedValue(99),
-        incrementCopyCount: vi.fn().mockResolvedValue(undefined),
+        getMaxCollectionItemOrder: vi.fn().mockReturnValue(0),
+        insertCollectionItem: vi.fn().mockReturnValue(undefined),
+        deleteCollectionItem: vi.fn().mockReturnValue(undefined),
+        updateCollection: vi.fn().mockReturnValue(undefined),
+        replaceCollectionItems: vi.fn().mockReturnValue(undefined),
+        deleteCollection: vi.fn().mockReturnValue(undefined),
+        insertLike: vi.fn().mockReturnValue(undefined),
+        incrementLikeCount: vi.fn().mockReturnValue(undefined),
+        deleteLike: vi.fn().mockReturnValue(undefined),
+        decrementLikeCount: vi.fn().mockReturnValue(undefined),
+        createCollection: vi.fn().mockReturnValue(99),
+        incrementCopyCount: vi.fn().mockReturnValue(undefined),
         getUserCollections: vi.fn().mockResolvedValue([]),
         getPaginatedUserCollections: vi.fn().mockResolvedValue({
             page: 1,
@@ -64,7 +68,7 @@ const createService = () => {
         removeItem: false,
     };
     const authorizationService = {
-        decideCollection: vi.fn().mockResolvedValue({ allowed: true }),
+        decideCollection: vi.fn().mockReturnValue({ allowed: true }),
         getCollectionCapabilities: vi.fn().mockResolvedValue(capabilities),
     } as unknown as AuthorizationService;
     const mediaService = {
@@ -116,7 +120,7 @@ describe("CollectionsService authorization", () => {
         const { authorizationService, repository, service } = createService();
         const actor = toActor();
 
-        vi.mocked(authorizationService.decideCollection).mockResolvedValue({
+        vi.mocked(authorizationService.decideCollection).mockReturnValue({
             allowed: false,
             reason: DenialReason.PROFILE_RESTRICTED,
         });
@@ -178,14 +182,14 @@ describe("CollectionsService authorization", () => {
         const { repository, service } = createService();
         const actor = toActor({ id: 20, role: RoleType.USER });
 
-        await expect(service.updateCollection({
+        await expect(() => service.updateCollection({
             actor,
             collectionId: 7,
             title: "Changed",
             ordered: false,
             privacy: PrivacyType.PUBLIC,
             items: [{ mediaId: 1 }],
-        })).rejects.toThrow(FormattedError);
+        })).toThrow(FormattedError);
 
         expect(repository.updateCollection).not.toHaveBeenCalled();
         expect(repository.replaceCollectionItems).not.toHaveBeenCalled();
@@ -201,8 +205,8 @@ describe("CollectionsService authorization", () => {
             collectionId: 7,
         };
 
-        await expect(service.addMediaToCollection(params)).rejects.toThrow(FormattedError);
-        await expect(service.removeMediaFromCollection(params)).rejects.toThrow(FormattedError);
+        await expect(() => service.addMediaToCollection(params)).toThrow(FormattedError);
+        await expect(() => service.removeMediaFromCollection(params)).toThrow(FormattedError);
 
         expect(repository.getMaxCollectionItemOrder).not.toHaveBeenCalled();
         expect(repository.insertCollectionItem).not.toHaveBeenCalled();
@@ -214,15 +218,15 @@ describe("CollectionsService authorization", () => {
         const actor = toActor({ id: 20, role: RoleType.MANAGER });
         collection.privacy = PrivacyType.PRIVATE;
 
-        await expect(service.updateCollection({
+        await expect(() => service.updateCollection({
             actor,
             collectionId: 7,
             title: "Changed",
             ordered: false,
             privacy: PrivacyType.PRIVATE,
             items: [{ mediaId: 1 }],
-        })).rejects.toThrow(FormattedError);
-        await expect(service.deleteCollection(7, actor)).rejects.toThrow(FormattedError);
+        })).toThrow(FormattedError);
+        await expect(() => service.deleteCollection(7, actor)).toThrow(FormattedError);
 
         expect(repository.updateCollection).not.toHaveBeenCalled();
         expect(repository.replaceCollectionItems).not.toHaveBeenCalled();
@@ -253,12 +257,12 @@ describe("CollectionsService authorization", () => {
         const { authorizationService, repository, service } = createService();
         const actor = toActor({ id: 20, role: RoleType.USER });
 
-        vi.mocked(authorizationService.decideCollection).mockResolvedValue({
+        vi.mocked(authorizationService.decideCollection).mockReturnValue({
             allowed: false,
             reason: DenialReason.RESOURCE_PRIVATE,
         });
 
-        await expect(service.toggleLike(7, actor)).rejects.toThrow(UnauthorizedError);
+        await expect(() => service.toggleLike(7, actor)).toThrow(UnauthorizedError);
 
         expect(repository.findLikedCollection).not.toHaveBeenCalled();
         expect(repository.insertLike).not.toHaveBeenCalled();
@@ -269,12 +273,12 @@ describe("CollectionsService authorization", () => {
         const { authorizationService, repository, service } = createService();
         const actor = toActor({ id: 20, role: RoleType.USER });
 
-        vi.mocked(authorizationService.decideCollection).mockResolvedValue({
+        vi.mocked(authorizationService.decideCollection).mockReturnValue({
             allowed: false,
             reason: DenialReason.RESOURCE_PRIVATE,
         });
 
-        await expect(service.copyCollection(7, actor)).rejects.toThrow(UnauthorizedError);
+        await expect(() => service.copyCollection(7, actor)).toThrow(UnauthorizedError);
 
         expect(repository.getCollectionItems).not.toHaveBeenCalled();
         expect(repository.createCollection).not.toHaveBeenCalled();

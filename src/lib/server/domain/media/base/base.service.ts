@@ -4,6 +4,7 @@ import {DeltaStats} from "@/lib/types/stats.types";
 import {Tag} from "@/lib/types/media-common.types";
 import {FormattedError} from "@/lib/utils/error-classes";
 import {MyListsCSVImport} from "@/lib/types/imports.types";
+import {withTransaction} from "@/lib/server/database/async-storage";
 import {JobType, Status, TagAction, UpdateType} from "@/lib/utils/enums";
 import {saveImageFromUrl, saveUploadedImage} from "@/lib/utils/image-saver";
 import {BaseRepository} from "@/lib/server/domain/media/base/base.repository";
@@ -42,7 +43,7 @@ export abstract class BaseService<TDef extends AnyServerMediaDefinition, R exten
         return coverFilenames.map(({ imageCover }) => imageCover.split("/").pop() as string);
     }
 
-    async getPopularMediaRefs() {
+    getPopularMediaRefs() {
         return this.repository.getPopularMediaRefs();
     }
 
@@ -61,7 +62,7 @@ export abstract class BaseService<TDef extends AnyServerMediaDefinition, R exten
         return this.repository.searchUserListByName(userId, query, limit);
     }
 
-    async getOrphanedMediaIds() {
+    getOrphanedMediaIds() {
         return this.repository.getOrphanedMediaIds();
     }
 
@@ -77,7 +78,7 @@ export abstract class BaseService<TDef extends AnyServerMediaDefinition, R exten
         return this.repository.searchByName(query, limit);
     }
 
-    async removeMediaByIds(mediaIds: number[]) {
+    removeMediaByIds(mediaIds: number[]) {
         return this.repository.removeMediaByIds(mediaIds);
     }
 
@@ -97,7 +98,7 @@ export abstract class BaseService<TDef extends AnyServerMediaDefinition, R exten
         return this.repository.bulkInsertUserMedia(rows);
     }
 
-    async findById(mediaId: number) {
+    findById(mediaId: number) {
         return this.repository.findById(mediaId);
     }
 
@@ -138,14 +139,16 @@ export abstract class BaseService<TDef extends AnyServerMediaDefinition, R exten
     }
 
     async getMediaCommunityActivity(actor: Actor, mediaId: number, search: SearchType) {
-        const media = await this.repository.findById(mediaId);
+        const media = this.repository.findById(mediaId);
         if (!media) throw notFound();
 
         return this.repository.getMediaCommunityActivity(actor, mediaId, search);
     }
 
-    async editUserTag(userId: number, tag: Tag, action: TagAction, mediaId?: number) {
-        return this.repository.editUserTag(userId, tag, action, mediaId);
+    editUserTag(userId: number, tag: Tag, action: TagAction, mediaId?: number) {
+        return withTransaction(() => {
+            return this.repository.editUserTag(userId, tag, action, mediaId);
+        });
     }
 
     async getMediaList(currentUserId: number | undefined, userId: number, args: MediaListArgs) {
@@ -156,16 +159,16 @@ export abstract class BaseService<TDef extends AnyServerMediaDefinition, R exten
         return this.repository.getTagsView(userId, search);
     }
 
-    async addMediaToUserList(userId: number, mediaId: number, status?: Status) {
+    addMediaToUserList(userId: number, mediaId: number, status?: Status) {
         const newStatus = status ?? this.servicePolicy.defaultStatus;
 
-        const media = await this.repository.findById(mediaId);
+        const media = this.repository.findById(mediaId);
         if (!media) throw notFound();
 
-        const oldState = await this.repository.findUserMedia(userId, mediaId);
+        const oldState = this.repository.findUserMedia(userId, mediaId);
         if (oldState) throw new FormattedError("Media already in your list");
 
-        const newState = await this.repository.addMediaToUserList(userId, media, newStatus);
+        const newState = this.repository.addMediaToUserList(userId, media, newStatus);
         const delta = this.calculateDeltaStats(null, newState, media);
 
         const logPayload = { oldValue: null, newValue: newState.status };
@@ -178,28 +181,28 @@ export abstract class BaseService<TDef extends AnyServerMediaDefinition, R exten
         };
     }
 
-    async updateUserMediaDetails(userId: number, mediaId: number, payload: UpdateUserMedia["payload"]): Promise<UpdateUserMediaDetails<any, any>> {
-        const media = await this.repository.findById(mediaId);
+    updateUserMediaDetails(userId: number, mediaId: number, payload: UpdateUserMedia["payload"]): UpdateUserMediaDetails<any, any> {
+        const media = this.repository.findById(mediaId);
         if (!media) throw notFound();
 
-        const oldState = await this.repository.findUserMedia(userId, mediaId);
+        const oldState = this.repository.findUserMedia(userId, mediaId);
         if (!oldState) throw new FormattedError("Media not in your list");
 
         const updateHandler = this.updateHandlers[payload.type];
         if (!updateHandler) throw new Error(`No handler found for command type: ${payload.type}`);
-        const [completeNewData, logPayload] = await updateHandler(oldState, payload, media);
+        const [completeNewData, logPayload] = updateHandler(oldState, payload, media);
 
-        const newState = await this.repository.updateUserMediaDetails(userId, mediaId, completeNewData);
+        const newState = this.repository.updateUserMediaDetails(userId, mediaId, completeNewData);
         const delta = this.calculateDeltaStats(oldState, newState, media);
 
         return { media, delta, newState, logPayload };
     }
 
     async updateUserCustomCover(userId: number, payload: UpdateUserCustomCover) {
-        const media = await this.repository.findById(payload.mediaId);
+        const media = this.repository.findById(payload.mediaId);
         if (!media) throw notFound();
 
-        const userMedia = await this.repository.findUserMedia(userId, payload.mediaId);
+        const userMedia = this.repository.findUserMedia(userId, payload.mediaId);
         if (!userMedia) throw new FormattedError("Media not in your list");
 
         let imageName: string | null = null;
@@ -221,28 +224,28 @@ export abstract class BaseService<TDef extends AnyServerMediaDefinition, R exten
         return this.repository.updateUserMediaDetails(userId, payload.mediaId, { customCover: imageName });
     }
 
-    async removeMediaFromUserList(userId: number, mediaId: number) {
-        const media = await this.repository.findById(mediaId);
+    removeMediaFromUserList(userId: number, mediaId: number) {
+        const media = this.repository.findById(mediaId);
         if (!media) throw notFound();
 
-        const oldState = await this.repository.findUserMedia(userId, mediaId);
+        const oldState = this.repository.findUserMedia(userId, mediaId);
         if (!oldState) throw new FormattedError("Media not in your list");
 
-        await this.repository.removeMediaFromUserList(userId, mediaId);
+        this.repository.removeMediaFromUserList(userId, mediaId);
         const delta = this.calculateDeltaStats(oldState, null, media);
 
         return delta;
     }
 
     async getMediaAndUserDetails(userId: number | undefined, mediaId: number) {
-        const media = await this.repository.findById(mediaId);
+        const media = this.repository.findById(mediaId);
         if (!media) throw notFound();
 
         const mediaWithDetails = await this.repository.findAllAssociatedDetails(media.id);
         if (!mediaWithDetails) throw notFound();
 
+        const userMedia = this.repository.findUserMedia(userId, mediaWithDetails.id);
         const similarMedia = await this.repository.findSimilarMedia(mediaWithDetails.id);
-        const userMedia = await this.repository.findUserMedia(userId, mediaWithDetails.id);
         const followsData = await this.repository.getUserFollowsMediaData(userId, mediaWithDetails.id);
 
         return {

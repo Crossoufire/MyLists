@@ -14,7 +14,7 @@ vi.mock("@/lib/server/database/async-storage", () => transactionMocks);
 describe("createMediaIngestionService", () => {
     beforeEach(() => {
         transactionMocks.withTransaction.mockReset();
-        transactionMocks.withTransaction.mockImplementation(async (action) => action({}));
+        transactionMocks.withTransaction.mockImplementation((action) => action({}));
     });
 
     it("stops bulk one-by-one refresh when the refresh policy aborts on an error", async () => {
@@ -62,7 +62,7 @@ describe("createMediaIngestionService", () => {
 
         const repository = {
             getMediaIdsToBeRefreshed: vi.fn().mockResolvedValue([110492, 247718]),
-            updateMediaWithDetails: vi.fn().mockResolvedValue(true),
+            updateMediaWithDetails: vi.fn().mockReturnValue(true),
         };
 
         const service = createMediaIngestionService({
@@ -88,10 +88,10 @@ describe("createMediaIngestionService", () => {
 
     it("opens a transaction only after external store details are prepared", async () => {
         let transactionActive = false;
-        transactionMocks.withTransaction.mockImplementation(async (action) => {
+        transactionMocks.withTransaction.mockImplementation((action) => {
             transactionActive = true;
             try {
-                return await action({});
+                return action({});
             }
             finally {
                 transactionActive = false;
@@ -112,7 +112,7 @@ describe("createMediaIngestionService", () => {
         });
         const repository = {
             findByApiId: vi.fn().mockResolvedValue(undefined),
-            storeMediaWithDetails: vi.fn().mockImplementation(async () => {
+            storeMediaWithDetails: vi.fn().mockImplementation(() => {
                 expect(transactionActive).toBe(true);
                 return 42;
             }),
@@ -130,10 +130,10 @@ describe("createMediaIngestionService", () => {
 
     it("opens a transaction only after external refresh details are prepared", async () => {
         let transactionActive = false;
-        transactionMocks.withTransaction.mockImplementation(async (action) => {
+        transactionMocks.withTransaction.mockImplementation((action) => {
             transactionActive = true;
             try {
-                return await action({});
+                return action({});
             }
             finally {
                 transactionActive = false;
@@ -153,7 +153,7 @@ describe("createMediaIngestionService", () => {
             return details;
         });
         const repository = {
-            updateMediaWithDetails: vi.fn().mockImplementation(async () => {
+            updateMediaWithDetails: vi.fn().mockImplementation(() => {
                 expect(transactionActive).toBe(true);
                 return true;
             }),
@@ -179,7 +179,7 @@ describe("createMediaIngestionService", () => {
         };
         const repository = {
             findByApiIds: vi.fn().mockResolvedValue([{ id: 10, apiId: 1 }]),
-            storeMediaWithDetails: vi.fn().mockResolvedValue(20),
+            storeMediaWithDetails: vi.fn().mockReturnValue(20),
         };
         const enricher = vi.fn().mockImplementation(async (details) => ({ ...details, enriched: true }));
         const service = createMediaIngestionService({
@@ -209,8 +209,8 @@ describe("createMediaIngestionService", () => {
         };
         const repository = {
             storeMediaWithDetails: vi.fn()
-                .mockResolvedValueOnce(40)
-                .mockResolvedValueOnce(50),
+                .mockReturnValueOnce(40)
+                .mockReturnValueOnce(50),
         };
         const service = createMediaIngestionService({
             provider,

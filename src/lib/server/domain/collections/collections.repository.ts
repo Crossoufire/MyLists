@@ -9,45 +9,47 @@ import {collectionItems, collectionLikes, collections, user} from "@/lib/server/
 
 
 export class CollectionsRepository {
-    static async createCollection(values: typeof collections.$inferInsert) {
-        return getDbClient()
+    static createCollection(values: typeof collections.$inferInsert) {
+        const collection = getDbClient()
             .insert(collections)
             .values(values)
             .returning({ id: collections.id })
-            .then((res) => res[0].id);
+            .get();
+
+        return collection.id;
     }
 
-    static async updateCollection(collectionId: number, values: Partial<typeof collections.$inferInsert>) {
-        await getDbClient()
+    static updateCollection(collectionId: number, values: Partial<typeof collections.$inferInsert>) {
+        getDbClient()
             .update(collections)
             .set({
                 ...values,
                 updatedAt: sql`datetime('now')`,
             })
-            .where(eq(collections.id, collectionId));
+            .where(eq(collections.id, collectionId)).run();
     }
 
-    static async deleteCollection(collectionId: number) {
+    static deleteCollection(collectionId: number) {
         const tx = getDbClient();
 
-        await tx
+        tx
             .delete(collections)
-            .where(eq(collections.id, collectionId));
+            .where(eq(collections.id, collectionId)).run();
     }
 
-    static async replaceCollectionItems(collectionId: number, items: (typeof collectionItems.$inferInsert)[]) {
-        await getDbClient()
+    static replaceCollectionItems(collectionId: number, items: (typeof collectionItems.$inferInsert)[]) {
+        getDbClient()
             .delete(collectionItems)
-            .where(eq(collectionItems.collectionId, collectionId));
+            .where(eq(collectionItems.collectionId, collectionId)).run();
 
         if (items.length === 0) return;
 
-        await getDbClient()
+        getDbClient()
             .insert(collectionItems)
-            .values(items);
+            .values(items).run();
     }
 
-    static async getCollectionById(collectionId: number) {
+    static getCollectionById(collectionId: number) {
         return getDbClient()
             .select({
                 ownerName: user.name,
@@ -64,12 +66,12 @@ export class CollectionsRepository {
             .get();
     }
 
-    static async getCollectionItems(collectionId: number) {
+    static getCollectionItems(collectionId: number) {
         return getDbClient()
             .select()
             .from(collectionItems)
             .where(eq(collectionItems.collectionId, collectionId))
-            .orderBy(asc(collectionItems.orderIndex));
+            .orderBy(asc(collectionItems.orderIndex)).all();
     }
 
     static async getPaginatedCollectionItems(collectionId: number, page?: number) {
@@ -118,7 +120,7 @@ export class CollectionsRepository {
             .orderBy(asc(collections.title));
     }
 
-    static async getMaxCollectionItemOrder(collectionId: number) {
+    static getMaxCollectionItemOrder(collectionId: number) {
         return getDbClient()
             .select({ maxOrder: max(collectionItems.orderIndex) })
             .from(collectionItems)
@@ -126,17 +128,17 @@ export class CollectionsRepository {
             .get()?.maxOrder ?? 0;
     }
 
-    static async insertCollectionItem(item: typeof collectionItems.$inferInsert) {
-        await getDbClient()
+    static insertCollectionItem(item: typeof collectionItems.$inferInsert) {
+        getDbClient()
             .insert(collectionItems)
             .values(item)
-            .onConflictDoNothing();
+            .onConflictDoNothing().run();
     }
 
-    static async deleteCollectionItem(collectionId: number, mediaId: number) {
-        await getDbClient()
+    static deleteCollectionItem(collectionId: number, mediaId: number) {
+        getDbClient()
             .delete(collectionItems)
-            .where(and(eq(collectionItems.collectionId, collectionId), eq(collectionItems.mediaId, mediaId)));
+            .where(and(eq(collectionItems.collectionId, collectionId), eq(collectionItems.mediaId, mediaId))).run();
     }
 
     static async getUserCollections(targetUserId: number, actor: Actor, mediaType?: MediaType) {
@@ -325,7 +327,7 @@ export class CollectionsRepository {
             .limit(6);
     }
 
-    static async findLikedCollection(userId: number, collectionId: number) {
+    static findLikedCollection(userId: number, collectionId: number) {
         return getDbClient()
             .select()
             .from(collectionLikes)
@@ -333,16 +335,16 @@ export class CollectionsRepository {
             .get();
     }
 
-    static async insertLike(userId: number, collectionId: number) {
-        await getDbClient()
+    static insertLike(userId: number, collectionId: number) {
+        getDbClient()
             .insert(collectionLikes)
-            .values({ userId, collectionId });
+            .values({ userId, collectionId }).run();
     }
 
-    static async deleteLike(likeId: number) {
-        await getDbClient()
+    static deleteLike(likeId: number) {
+        getDbClient()
             .delete(collectionLikes)
-            .where(eq(collectionLikes.id, likeId));
+            .where(eq(collectionLikes.id, likeId)).run();
     }
 
     static async incrementViewCount(collectionId: number) {
@@ -352,26 +354,26 @@ export class CollectionsRepository {
             .where(eq(collections.id, collectionId));
     }
 
-    static async incrementLikeCount(collectionId: number) {
-        await getDbClient()
+    static incrementLikeCount(collectionId: number) {
+        getDbClient()
             .update(collections)
             .set({ likeCount: sql`${collections.likeCount} + 1` })
-            .where(eq(collections.id, collectionId));
+            .where(eq(collections.id, collectionId)).run();
     }
 
-    static async decrementLikeCount(collectionId: number) {
-        await getDbClient()
+    static decrementLikeCount(collectionId: number) {
+        getDbClient()
             .update(collections)
             .set({
                 likeCount: sql`CASE WHEN ${collections.likeCount} > 0 THEN ${collections.likeCount} - 1 ELSE 0 END`,
             })
-            .where(eq(collections.id, collectionId));
+            .where(eq(collections.id, collectionId)).run();
     }
 
-    static async incrementCopyCount(collectionId: number) {
-        await getDbClient()
+    static incrementCopyCount(collectionId: number) {
+        getDbClient()
             .update(collections)
             .set({ copiedCount: sql`${collections.copiedCount} + 1` })
-            .where(eq(collections.id, collectionId));
+            .where(eq(collections.id, collectionId)).run();
     }
 }

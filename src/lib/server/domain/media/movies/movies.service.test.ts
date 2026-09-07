@@ -1,4 +1,4 @@
-import {describe, expect, it} from "vitest";
+import {describe, expect, it, vi} from "vitest";
 import type {Movie, MoviesList} from "./movies.types";
 import {convertToCsv} from "@/lib/utils/file-download";
 import type {UserMediaWithTags} from "@/lib/types/user-media.types";
@@ -7,6 +7,10 @@ import {parseMyListsCsv} from "@/lib/server/domain/imports/parsers/mylists.parse
 import {ApiProviderType, MediaType, RatingSystemType, Status} from "@/lib/utils/enums";
 import type {MoviesRepository} from "@/lib/server/domain/media/movies/movies.repository";
 import {createListTableStub, createRepoStub} from "@/lib/server/domain/media/service-test-utils";
+
+vi.mock("@/lib/server/database/async-storage", () => ({
+    withTransaction: <T>(action: () => T) => action(),
+}));
 
 
 describe("MoviesService", () => {

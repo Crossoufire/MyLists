@@ -29,8 +29,8 @@ export const seedAchievementsTask = defineTask({
                     return;
                 }
 
-                await withTransaction(async () => {
-                    await achievementsService.seedAchievements(catalog.mediaType, achievementsDefinitions);
+                withTransaction(() => {
+                    achievementsService.seedAchievements(catalog.mediaType, achievementsDefinitions);
                 });
 
                 ctx.metric(`${mediaType}.seeded`, definitionCount);

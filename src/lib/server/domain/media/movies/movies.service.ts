@@ -2,6 +2,7 @@ import {notFound} from "@tanstack/react-router";
 import {Status, UpdateType} from "@/lib/utils/enums";
 import {saveImageFromUrl} from "@/lib/utils/image-saver";
 import {LogPayload} from "@/lib/types/user-updates.types";
+import {withTransaction} from "@/lib/server/database/async-storage";
 import {BaseService} from "@/lib/server/domain/media/base/base.service";
 import {RedoPayload, StatusPayload} from "@/lib/types/user-media.types";
 import {Movie, MoviesList} from "@/lib/server/domain/media/movies/movies.types";
@@ -32,7 +33,7 @@ export class MoviesService extends BaseService<MovieServerDefinition, MoviesRepo
         const { editableFields } = this.servicePolicy;
 
         const fields: Record<string, any> = {};
-        const media = await this.repository.findById(mediaId);
+        const media = this.repository.findById(mediaId);
         if (!media) throw notFound();
 
         editableFields.forEach((field) => {
@@ -48,7 +49,7 @@ export class MoviesService extends BaseService<MovieServerDefinition, MoviesRepo
         const { editableFields } = this.servicePolicy;
         const { coverDirectory } = this.identity;
 
-        const media = await this.repository.findById(mediaId);
+        const media = this.repository.findById(mediaId);
         if (!media) throw notFound();
 
         const fields = {} as Record<Partial<keyof Movie>, any>;
@@ -69,7 +70,7 @@ export class MoviesService extends BaseService<MovieServerDefinition, MoviesRepo
             }
         }
 
-        await this.repository.updateMediaWithDetails({ mediaData: fields });
+        withTransaction(() => this.repository.updateMediaWithDetails({ mediaData: fields }));
     }
 
     updateStatusHandler(currentState: MoviesList, payload: StatusPayload, _media: Movie): [MoviesList, LogPayload] {

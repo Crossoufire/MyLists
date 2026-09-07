@@ -39,26 +39,24 @@ export class FeatureVotesRepository {
         return { features, voteAgg, userVotes };
     }
 
-    static async findFeatureWithUserVote(featureId: number, userId: number) {
+    static findFeatureWithUserVote(featureId: number, userId: number) {
         const tx = getDbClient();
 
-        const [feature, existingVote] = await Promise.all([
-            tx
+        const [feature, existingVote] = [tx
                 .select()
                 .from(featureRequests)
                 .where(eq(featureRequests.id, featureId))
                 .get(),
-            tx
+                tx
                 .select()
                 .from(featureVotes)
                 .where(and(eq(featureVotes.userId, userId), eq(featureVotes.featureId, featureId)))
-                .get(),
-        ]);
+                .get()];
 
         return { feature, existingVote };
     }
 
-    static async createFeatureRequest(values: typeof featureRequests.$inferInsert) {
+    static createFeatureRequest(values: typeof featureRequests.$inferInsert) {
         const existing = getDbClient()
             .select({ id: featureRequests.id })
             .from(featureRequests)
@@ -69,22 +67,22 @@ export class FeatureVotesRepository {
             return { duplicate: true as const };
         }
 
-        const [feature] = await getDbClient()
+        const [feature] = getDbClient()
             .insert(featureRequests)
             .values(values)
-            .returning({ id: featureRequests.id });
+            .returning({ id: featureRequests.id }).all();
 
         return { duplicate: false as const, featureId: feature.id };
     }
 
-    static async getAdminUserIds() {
+    static getAdminUserIds() {
         return getDbClient()
             .select({ id: user.id })
             .from(user)
-            .where(eq(user.role, RoleType.ADMIN));
+            .where(eq(user.role, RoleType.ADMIN)).all();
     }
 
-    static async getFeatureRequest(featureId: number) {
+    static getFeatureRequest(featureId: number) {
         return getDbClient()
             .select()
             .from(featureRequests)
@@ -92,26 +90,26 @@ export class FeatureVotesRepository {
             .get();
     }
 
-    static async deleteVoteById(voteId: number) {
-        await getDbClient()
+    static deleteVoteById(voteId: number) {
+        getDbClient()
             .delete(featureVotes)
-            .where(eq(featureVotes.id, voteId));
+            .where(eq(featureVotes.id, voteId)).run();
     }
 
-    static async insertVote(values: typeof featureVotes.$inferInsert) {
-        await getDbClient().insert(featureVotes).values(values);
+    static insertVote(values: typeof featureVotes.$inferInsert) {
+        getDbClient().insert(featureVotes).values(values).run();
     }
 
-    static async updateFeatureStatus(featureId: number, status: FeatureStatus, adminComment?: string | null) {
-        await getDbClient()
+    static updateFeatureStatus(featureId: number, status: FeatureStatus, adminComment?: string | null) {
+        getDbClient()
             .update(featureRequests)
             .set({ status, adminComment })
-            .where(eq(featureRequests.id, featureId));
+            .where(eq(featureRequests.id, featureId)).run();
     }
 
-    static async deleteFeatureRequest(featureId: number) {
-        await getDbClient()
+    static deleteFeatureRequest(featureId: number) {
+        getDbClient()
             .delete(featureRequests)
-            .where(eq(featureRequests.id, featureId));
+            .where(eq(featureRequests.id, featureId)).run();
     }
 }

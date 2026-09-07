@@ -1,5 +1,6 @@
 import {MediaType} from "@/lib/utils/enums";
 import {FormattedError} from "@/lib/utils/error-classes";
+import {withTransaction} from "@/lib/server/database/async-storage";
 import {WCF_MAX_ROUNDS, WCF_MEDIA_TYPES} from "@/lib/schemas/wcf.schema";
 import {MediaServiceRegistry} from "@/lib/server/domain/media/media.registries";
 import {WcfRepository} from "@/lib/server/domain/which-came-first/wcf.repository";
@@ -15,41 +16,43 @@ export class WcfService {
     ) {
     }
 
-    async curatePool() {
+    curatePool() {
         for (const mediaType of WCF_MEDIA_TYPES) {
             const mediaService = this.mediaServiceRegistry.get(mediaType);
-            const popularMediaRefs = await mediaService.getPopularMediaRefs();
-            await this.repository.syncCuratedPool(mediaType, popularMediaRefs);
+            const popularMediaRefs = mediaService.getPopularMediaRefs();
+            this.repository.syncCuratedPool(mediaType, popularMediaRefs);
         }
 
         return this.repository.countPool();
     }
 
-    async getGameData(userId: number) {
-        let poolCounts = await this.repository.countPool();
-        if (countPoolMedia(poolCounts) < 2) {
-            poolCounts = await this.curatePool();
-        }
+    getGameData(userId: number) {
+        return withTransaction(() => {
+            let poolCounts = this.repository.countPool();
+            if (countPoolMedia(poolCounts) < 2) {
+                poolCounts = this.curatePool();
+            }
 
-        if (countPoolMedia(poolCounts) < 2) {
-            throw new FormattedError("Not enough media found to create a Which Came First game.");
-        }
+            if (countPoolMedia(poolCounts) < 2) {
+                throw new FormattedError("Not enough media found to create a Which Came First game.");
+            }
 
-        const activeRun = this.repository.getActiveRun(userId);
-        const leaderboard = this.repository.getLeaderboard(userId);
+            const activeRun = this.repository.getActiveRun(userId);
+            const leaderboard = this.repository.getLeaderboard(userId);
 
-        const { highestRound, ...stats } = await this.repository.getStats(userId);
-        const serializedActiveRun = activeRun ? await this._serializeActiveRun(activeRun) : null;
+            const { highestRound, ...stats } = this.repository.getStats(userId);
+            const serializedActiveRun = activeRun ? this._serializeActiveRun(activeRun) : null;
 
-        return {
-            leaderboard,
-            activeRun: serializedActiveRun,
-            stats: {
-                ...stats,
-                highestTier: highestRound > 0 ? getGameDifficulty(highestRound).tier : 0,
-                accuracy: stats.totalAnswers > 0 ? (stats.correctAnswers / stats.totalAnswers) * 100 : 0,
-            },
-        };
+            return {
+                leaderboard,
+                activeRun: serializedActiveRun,
+                stats: {
+                    ...stats,
+                    highestTier: highestRound > 0 ? getGameDifficulty(highestRound).tier : 0,
+                    accuracy: stats.totalAnswers > 0 ? (stats.correctAnswers / stats.totalAnswers) * 100 : 0,
+                },
+            };
+        });
     }
 
     async getAdminStats() {
@@ -123,85 +126,89 @@ export class WcfService {
         };
     }
 
-    async startRun(userId: number, mediaTypes: MediaType[]) {
-        const poolCounts = await this.repository.countPool(mediaTypes);
-        const totalEligible = poolCounts.reduce((total, row) => total + row.count, 0);
-        if (totalEligible < 2) {
-            throw new FormattedError("There are not enough media in the selected categories.");
-        }
-
-        const newRun = await this.repository.createRun(userId, mediaTypes);
-        await this._createNextRound(newRun);
-
-        const activeRun = this.repository.getActiveRun(userId);
-        if (!activeRun) throw new FormattedError("Unable to start a new run.");
-
-        return this._serializeActiveRun(activeRun);
-    }
-
-    async answerRound(userId: number, runId: number, roundId: number, selectedSide: "left" | "right") {
-        const result = await this.repository.answerRound(userId, runId, roundId, selectedSide);
-        const dateDifferenceDays = Math.round(Math.abs(
-            new Date(`${result.round.leftReleaseDate}T00:00:00Z`).getTime()
-            - new Date(`${result.round.rightReleaseDate}T00:00:00Z`).getTime(),
-        ) / (24 * 60 * 60 * 1000));
-
-        let poolExhausted = false;
-        if (result.correct && result.run.score < WCF_MAX_ROUNDS) {
-            const nextRound = await this._tryCreateNextRound(result.run);
-            if (!nextRound) {
-                await this.repository.exhaustRun(result.run.id);
-                poolExhausted = true;
+    startRun(userId: number, mediaTypes: MediaType[]) {
+        return withTransaction(() => {
+            const poolCounts = this.repository.countPool(mediaTypes);
+            const totalEligible = poolCounts.reduce((total, row) => total + row.count, 0);
+            if (totalEligible < 2) {
+                throw new FormattedError("There are not enough media in the selected categories.");
             }
-        }
 
-        return {
-            selectedSide,
-            dateDifferenceDays,
-            score: result.run.score,
-            correct: result.correct,
-            won: result.run.status === "won",
-            poolExhausted,
-            runEnded: result.run.status !== "active" || poolExhausted,
-            correctSide: result.correctSide,
-            leftReleaseDate: result.round.leftReleaseDate,
-            rightReleaseDate: result.round.rightReleaseDate,
-        };
+            const newRun = this.repository.createRun(userId, mediaTypes);
+            this._createNextRound(newRun);
+
+            const activeRun = this.repository.getActiveRun(userId);
+            if (!activeRun) throw new FormattedError("Unable to start a new run.");
+
+            return this._serializeActiveRun(activeRun);
+        });
     }
 
-    async abandonRun(userId: number, runId: number) {
-        await this.repository.abandonRun(userId, runId);
+    answerRound(userId: number, runId: number, roundId: number, selectedSide: "left" | "right") {
+        return withTransaction(() => {
+            const result = this.repository.answerRound(userId, runId, roundId, selectedSide);
+            const dateDifferenceDays = Math.round(Math.abs(
+                new Date(`${result.round.leftReleaseDate}T00:00:00Z`).getTime()
+                - new Date(`${result.round.rightReleaseDate}T00:00:00Z`).getTime(),
+            ) / (24 * 60 * 60 * 1000));
+
+            let poolExhausted = false;
+            if (result.correct && result.run.score < WCF_MAX_ROUNDS) {
+                const nextRound = this._tryCreateNextRound(result.run);
+                if (!nextRound) {
+                    this.repository.exhaustRun(result.run.id);
+                    poolExhausted = true;
+                }
+            }
+
+            return {
+                selectedSide,
+                dateDifferenceDays,
+                score: result.run.score,
+                correct: result.correct,
+                won: result.run.status === "won",
+                poolExhausted,
+                runEnded: result.run.status !== "active" || poolExhausted,
+                correctSide: result.correctSide,
+                leftReleaseDate: result.round.leftReleaseDate,
+                rightReleaseDate: result.round.rightReleaseDate,
+            };
+        });
     }
 
-    async resetStats(userId: number) {
-        if (this.repository.getActiveRun(userId)) {
-            throw new FormattedError("Finish or abandon your active run before resetting statistics.");
-        }
-
-        await this.repository.deleteUserRuns(userId);
+    abandonRun(userId: number, runId: number) {
+        return withTransaction(() => {
+            this.repository.abandonRun(userId, runId);
+        });
     }
 
-    async deletePoolMedia(mediaType: MediaType, mediaIds: number[]) {
-        await this.repository.deletePoolMedia(mediaType, mediaIds);
+    resetStats(userId: number) {
+        return withTransaction(() => {
+            if (this.repository.getActiveRun(userId)) {
+                throw new FormattedError("Finish or abandon your active run before resetting statistics.");
+            }
+
+            this.repository.deleteUserRuns(userId);
+        });
     }
 
-    private async _serializeActiveRun(activeRun: ActiveRun) {
+    deletePoolMedia(mediaType: MediaType, mediaIds: number[]) {
+        this.repository.deletePoolMedia(mediaType, mediaIds);
+    }
+
+    private _serializeActiveRun(activeRun: ActiveRun) {
         const difficulty = getGameDifficulty(activeRun.score + 1);
-        let activeRound = this.repository.getActiveRound(activeRun.id) ?? await this._createNextRound(activeRun);
+        let activeRound = this.repository.getActiveRound(activeRun.id) ?? this._createNextRound(activeRun);
 
-        let [leftMedia, rightMedia] = await Promise.all([
-            this._getMedia(activeRound.leftMediaType, activeRound.leftMediaId),
-            this._getMedia(activeRound.rightMediaType, activeRound.rightMediaId),
-        ]);
+        let [leftMedia, rightMedia] = [this._getMedia(activeRound.leftMediaType, activeRound.leftMediaId),
+            this._getMedia(activeRound.rightMediaType, activeRound.rightMediaId)];
 
         if (!leftMedia || !rightMedia) {
-            await this.repository.deleteOpenRound(activeRound.id);
-            activeRound = await this._createNextRound(activeRun);
+            this.repository.deleteOpenRound(activeRound.id);
+            activeRound = this._createNextRound(activeRun);
 
-            [leftMedia, rightMedia] = await Promise.all([
-                this._getMedia(activeRound.leftMediaType, activeRound.leftMediaId),
-                this._getMedia(activeRound.rightMediaType, activeRound.rightMediaId),
-            ]);
+            [leftMedia, rightMedia] = [this._getMedia(activeRound.leftMediaType, activeRound.leftMediaId),
+                this._getMedia(activeRound.rightMediaType, activeRound.rightMediaId)];
         }
 
         if (!leftMedia || !rightMedia) {
@@ -222,9 +229,9 @@ export class WcfService {
         };
     }
 
-    private async _getMedia(mediaType: MediaType, mediaId: number) {
+    private _getMedia(mediaType: MediaType, mediaId: number) {
         const mediaService = this.mediaServiceRegistry.get(mediaType);
-        const mediaDetails = await mediaService.findById(mediaId);
+        const mediaDetails = mediaService.findById(mediaId);
         if (!mediaDetails) return undefined;
 
         return {
@@ -235,18 +242,18 @@ export class WcfService {
         };
     }
 
-    private async _createNextRound(activeRun: ActiveRun) {
-        const round = await this._tryCreateNextRound(activeRun);
+    private _createNextRound(activeRun: ActiveRun) {
+        const round = this._tryCreateNextRound(activeRun);
         if (round) return round;
 
         const difficulty = getGameDifficulty(activeRun.score + 1);
         throw new FormattedError(`No media pair available for the ${difficulty.label} difficulty.`);
     }
 
-    private async _tryCreateNextRound(activeRun: ActiveRun) {
+    private _tryCreateNextRound(activeRun: ActiveRun) {
         const difficulty = getGameDifficulty(activeRun.score + 1);
-        const pair = await this._findPair(activeRun, difficulty.minDays, difficulty.maxDays, true)
-            ?? await this._findPair(activeRun, difficulty.minDays, difficulty.maxDays, false);
+        const pair = this._findPair(activeRun, difficulty.minDays, difficulty.maxDays, true)
+            ?? this._findPair(activeRun, difficulty.minDays, difficulty.maxDays, false);
 
         if (!pair) return;
 
@@ -262,14 +269,14 @@ export class WcfService {
         });
     }
 
-    private async _findPair(activeRun: ActiveRun, minDays: number, maxDays: number | null, excludeRecent: boolean) {
+    private _findPair(activeRun: ActiveRun, minDays: number, maxDays: number | null, excludeRecent: boolean) {
         const mediaTypes = activeRun.selectedMediaTypes;
 
         for (let attempt = 0; attempt < 50; attempt += 1) {
             const leftType = randomItem(mediaTypes);
             const rightType = randomItem(mediaTypes);
 
-            const mediaPair = await this.repository.findPair(activeRun.id, leftType, rightType, minDays, maxDays, excludeRecent);
+            const mediaPair = this.repository.findPair(activeRun.id, leftType, rightType, minDays, maxDays, excludeRecent);
             if (mediaPair) {
                 return mediaPair;
             }

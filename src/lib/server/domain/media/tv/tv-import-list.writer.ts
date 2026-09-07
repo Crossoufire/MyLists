@@ -39,7 +39,7 @@ export class TvImportListWriter implements ImportListWriter {
     }
 
     private async _materializeTvListPayload(mediaId: number, payload: TvImportPayload) {
-        const seasons = await this.tvService.getMediaEpsPerSeason(mediaId);
+        const seasons = this.tvService.getMediaEpsPerSeason(mediaId);
 
         const redo = this._checkRedo(payload.redo, seasons.length);
         const currentSeason = payload.currentSeason ?? this._defaultCurrentSeason(payload.status, seasons);

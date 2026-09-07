@@ -1,5 +1,6 @@
 import {UpdateUserMedia} from "@/lib/schemas";
 import {MediaType, Status, UpdateType} from "@/lib/utils/enums";
+import {withTransaction} from "@/lib/server/database/async-storage";
 import {StatsService} from "@/lib/server/domain/stats/stats.service";
 import {MediaServiceRegistry} from "@/lib/server/domain/media/media.registries";
 import {UpdateHistoryService} from "@/lib/server/domain/tracking/update-history.service";
@@ -24,66 +25,72 @@ export class MediaTrackingService {
     ) {
     }
 
-    async addMediaToList({ userId, mediaType, mediaId, status }: MediaAction & { status?: Status; silent?: boolean }) {
-        const mediaService = this.mediaServiceRegistry.get(mediaType);
+    addMediaToList({ userId, mediaType, mediaId, status }: MediaAction & { status?: Status; silent?: boolean }) {
+        return withTransaction(() => {
+            const mediaService = this.mediaServiceRegistry.get(mediaType);
 
-        const { newState, media, delta, logPayload } = await mediaService.addMediaToUserList(userId, mediaId, status);
-        await this.statsService.updateUserPreComputedStatsWithDelta(userId, mediaType, mediaId, delta);
+            const { newState, media, delta, logPayload } = mediaService.addMediaToUserList(userId, mediaId, status);
+            this.statsService.updateUserPreComputedStatsWithDelta(userId, mediaType, mediaId, delta);
 
-        await this.activityService.logActivityFromDelta({ userId, mediaType, mediaId, delta, updateType: UpdateType.STATUS });
-        await this.updateHistoryService.logUpdate({
-            media,
-            userId,
-            mediaType,
-            updateType: UpdateType.STATUS,
-            payload: { old_value: logPayload.oldValue, new_value: logPayload.newValue },
-        });
-
-        return newState;
-    }
-
-    async updateUserMedia({ userId, mediaType, mediaId, payload }: MediaAction & Pick<UpdateUserMedia, "payload">) {
-        const { loggedAt, ...mediaPayload } = payload;
-
-        const timestamp = loggedAt ? `${loggedAt} 12:00:00` : undefined;
-        if (timestamp) {
-            await this.updateHistoryService.deleteRecentInitialAdd(userId, mediaType, mediaId);
-        }
-
-        const mediaService = this.mediaServiceRegistry.get(mediaType);
-        const { newState, media, delta, logPayload } = await mediaService.updateUserMediaDetails(userId, mediaId, mediaPayload);
-
-        await this.statsService.updateUserPreComputedStatsWithDelta(userId, mediaType, mediaId, delta);
-        await this.activityService.logActivityFromDelta({
-            delta,
-            userId,
-            mediaId,
-            mediaType,
-            activityDate: timestamp,
-            updateType: mediaPayload.type,
-        });
-
-        if (logPayload) {
-            await this.updateHistoryService.logUpdate({
+            this.activityService.logActivityFromDelta({ userId, mediaType, mediaId, delta, updateType: UpdateType.STATUS });
+            this.updateHistoryService.logUpdate({
                 media,
                 userId,
                 mediaType,
-                timestamp,
-                updateType: mediaPayload.type,
+                updateType: UpdateType.STATUS,
                 payload: { old_value: logPayload.oldValue, new_value: logPayload.newValue },
             });
-        }
 
-        return newState;
+            return newState;
+        });
     }
 
-    async removeMediaFromList({ userId, mediaType, mediaId }: MediaAction) {
-        const mediaService = this.mediaServiceRegistry.get(mediaType);
+    updateUserMedia({ userId, mediaType, mediaId, payload }: MediaAction & Pick<UpdateUserMedia, "payload">) {
+        return withTransaction(() => {
+            const { loggedAt, ...mediaPayload } = payload;
 
-        const delta = await mediaService.removeMediaFromUserList(userId, mediaId);
-        await this.updateHistoryService.deleteMediaUpdatesForUser(userId, mediaType, mediaId);
-        await this.notificationsService.deleteUserMediaNotifications(userId, mediaType, mediaId);
-        await this.statsService.updateUserPreComputedStatsWithDelta(userId, mediaType, mediaId, delta);
-        await this.activityService.deleteAssociatedActivities(userId, mediaType, mediaId);
+            const timestamp = loggedAt ? `${loggedAt} 12:00:00` : undefined;
+            if (timestamp) {
+                this.updateHistoryService.deleteRecentInitialAdd(userId, mediaType, mediaId);
+            }
+
+            const mediaService = this.mediaServiceRegistry.get(mediaType);
+            const { newState, media, delta, logPayload } = mediaService.updateUserMediaDetails(userId, mediaId, mediaPayload);
+
+            this.statsService.updateUserPreComputedStatsWithDelta(userId, mediaType, mediaId, delta);
+            this.activityService.logActivityFromDelta({
+                delta,
+                userId,
+                mediaId,
+                mediaType,
+                activityDate: timestamp,
+                updateType: mediaPayload.type,
+            });
+
+            if (logPayload) {
+                this.updateHistoryService.logUpdate({
+                    media,
+                    userId,
+                    mediaType,
+                    timestamp,
+                    updateType: mediaPayload.type,
+                    payload: { old_value: logPayload.oldValue, new_value: logPayload.newValue },
+                });
+            }
+
+            return newState;
+        });
+    }
+
+    removeMediaFromList({ userId, mediaType, mediaId }: MediaAction) {
+        return withTransaction(() => {
+            const mediaService = this.mediaServiceRegistry.get(mediaType);
+
+            const delta = mediaService.removeMediaFromUserList(userId, mediaId);
+            this.updateHistoryService.deleteMediaUpdatesForUser(userId, mediaType, mediaId);
+            this.notificationsService.deleteUserMediaNotifications(userId, mediaType, mediaId);
+            this.statsService.updateUserPreComputedStatsWithDelta(userId, mediaType, mediaId, delta);
+            this.activityService.deleteAssociatedActivities(userId, mediaType, mediaId);
+        });
     }
 }

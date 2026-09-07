@@ -20,16 +20,16 @@ export class StatsService {
     ) {
     }
 
-    async updateUserMediaListSettings(userId: number, payload: Partial<Record<MediaType, boolean>>) {
-        await this.repository.updateUserMediaListSettings(userId, payload);
+    updateUserMediaListSettings(userId: number, payload: Partial<Record<MediaType, boolean>>) {
+        this.repository.updateUserMediaListSettings(userId, payload);
     }
 
-    async updateUserPreComputedStatsWithDelta(userId: number, mediaType: MediaType, mediaId: number, delta: DeltaStats) {
-        await this.repository.updateUserPreComputedStatsWithDelta(userId, mediaType, mediaId, delta);
+    updateUserPreComputedStatsWithDelta(userId: number, mediaType: MediaType, mediaId: number, delta: DeltaStats) {
+        this.repository.updateUserPreComputedStatsWithDelta(userId, mediaType, mediaId, delta);
     }
 
-    async updateAllUsersPreComputedStats(mediaType: MediaType, userStats: UserMediaStats[]) {
-        await this.repository.updateAllUsersPreComputedStats(mediaType, userStats);
+    updateAllUsersPreComputedStats(mediaType: MediaType, userStats: UserMediaStats[]) {
+        this.repository.updateAllUsersPreComputedStats(mediaType, userStats);
     }
 
     async userHallOfFameData(filters: HallOfFameSearch, userId?: number) {

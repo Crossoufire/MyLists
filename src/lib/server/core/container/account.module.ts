@@ -10,6 +10,7 @@ import {TasteSimilarityService} from "@/lib/server/domain/social/taste-similarit
 import {InactiveAccountService} from "@/lib/server/domain/account/inactive-account.service";
 import {TasteSimilarityRepository} from "@/lib/server/domain/social/taste-similarity.repository";
 import {InactiveAccountRepository} from "@/lib/server/domain/account/inactive-account.repository";
+import {NotificationsRepository} from "@/lib/server/domain/notifications/notifications.repository";
 
 
 export function setupAccountModule(mediaModule: MediaModule) {
@@ -21,7 +22,7 @@ export function setupAccountModule(mediaModule: MediaModule) {
         tasteSimilarity: TasteSimilarityRepository,
     };
 
-    const socialService = new SocialService(repositories.social);
+    const socialService = new SocialService(repositories.social, NotificationsRepository);
     const inactiveAccountService = new InactiveAccountService(repositories.inactiveAccount);
     const accountService = new AccountService(repositories.account, inactiveAccountService);
 

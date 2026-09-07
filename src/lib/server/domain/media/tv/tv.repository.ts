@@ -18,7 +18,7 @@ export class TvRepository extends BaseRepository<TvDefinition> {
         super(definition);
     }
 
-    async getMediaEpsPerSeason(mediaId: number) {
+    getMediaEpsPerSeason(mediaId: number) {
         const { epsPerSeasonTable } = this.repoDefinition.tables;
 
         return getDbClient()
@@ -28,7 +28,7 @@ export class TvRepository extends BaseRepository<TvDefinition> {
             })
             .from(epsPerSeasonTable)
             .where(eq(epsPerSeasonTable.mediaId, mediaId))
-            .orderBy(asc(epsPerSeasonTable.season));
+            .orderBy(asc(epsPerSeasonTable.season)).all();
     }
 
     async getMediaIdsToBeRefreshed(apiIds: number[]) {
@@ -91,9 +91,9 @@ export class TvRepository extends BaseRepository<TvDefinition> {
             .orderBy(asc(mediaTable.nextEpisodeToAir));
     }
 
-    async addMediaToUserList(userId: number, media: TvType, newStatus: Status) {
+    addMediaToUserList(userId: number, media: TvType, newStatus: Status) {
         const { listTable } = this.repoDefinition.tables;
-        const epsPerSeason = await this.getMediaEpsPerSeason(media.id);
+        const epsPerSeason = this.getMediaEpsPerSeason(media.id);
 
         let newTotal = 1;
         let newSeason = 1;
@@ -109,7 +109,7 @@ export class TvRepository extends BaseRepository<TvDefinition> {
             newEpisode = 0;
         }
 
-        const [newMedia] = await getDbClient()
+        const [newMedia] = getDbClient()
             .insert(listTable)
             .values({
                 userId,
@@ -120,7 +120,7 @@ export class TvRepository extends BaseRepository<TvDefinition> {
                 currentEpisode: newEpisode,
                 redo: Array(epsPerSeason.length).fill(0),
             })
-            .returning();
+            .returning().all();
 
         return newMedia;
     }
@@ -161,12 +161,12 @@ export class TvRepository extends BaseRepository<TvDefinition> {
         return result;
     }
 
-    async storeMediaWithDetails({ mediaData, actorsData, seasonsData, networkData, genresData }: UpsertTvWithDetails) {
+    storeMediaWithDetails({ mediaData, actorsData, seasonsData, networkData, genresData }: UpsertTvWithDetails) {
         const { mediaTable, actorTable, genreTable, epsPerSeasonTable, networkTable } = this.repoDefinition.tables;
 
         const tx = getDbClient();
 
-        const [media] = await tx
+        const [media] = tx
             .insert(mediaTable)
             .values({
                 ...mediaData,
@@ -176,75 +176,75 @@ export class TvRepository extends BaseRepository<TvDefinition> {
                 target: mediaTable.apiId,
                 set: { lastApiUpdate: sql`datetime('now')` },
             })
-            .returning();
+            .returning().all();
 
         const mediaId = media.id;
         if (actorsData && actorsData.length > 0) {
             const actorsToAdd = actorsData.map((a) => ({ mediaId, ...a }));
-            await tx.insert(actorTable).values(actorsToAdd).onConflictDoNothing();
+            tx.insert(actorTable).values(actorsToAdd).onConflictDoNothing().run();
         }
 
         if (genresData && genresData.length > 0) {
             const genresToAdd = genresData.map((g) => ({ mediaId, ...g }));
-            await tx.insert(genreTable).values(genresToAdd).onConflictDoNothing();
+            tx.insert(genreTable).values(genresToAdd).onConflictDoNothing().run();
         }
 
         if (seasonsData && seasonsData.length > 0) {
             const epsPerSeasonToAdd = seasonsData.map((data) => ({ mediaId, ...data }));
-            await tx.insert(epsPerSeasonTable).values(epsPerSeasonToAdd).onConflictDoNothing();
+            tx.insert(epsPerSeasonTable).values(epsPerSeasonToAdd).onConflictDoNothing().run();
         }
 
         if (networkData && networkData.length > 0) {
             const networkToAdd = networkData.map((n) => ({ mediaId, ...n }));
-            await tx.insert(networkTable).values(networkToAdd).onConflictDoNothing();
+            tx.insert(networkTable).values(networkToAdd).onConflictDoNothing().run();
         }
 
         return mediaId;
     }
 
-    async updateMediaWithDetails({ mediaData, actorsData, seasonsData, networkData, genresData }: UpsertTvWithDetails) {
+    updateMediaWithDetails({ mediaData, actorsData, seasonsData, networkData, genresData }: UpsertTvWithDetails) {
         const { mediaTable, actorTable, genreTable, epsPerSeasonTable, networkTable } = this.repoDefinition.tables;
 
-        const [media] = await getDbClient()
+        const [media] = getDbClient()
             .update(mediaTable)
             .set({
                 ...mediaData,
                 lastApiUpdate: sql`datetime('now')`,
             })
             .where(eq(mediaTable.apiId, mediaData.apiId))
-            .returning();
+            .returning().all();
 
         const mediaId = media.id;
 
         if (actorsData !== undefined) {
-            await getDbClient().delete(actorTable).where(eq(actorTable.mediaId, mediaId));
+            getDbClient().delete(actorTable).where(eq(actorTable.mediaId, mediaId)).run();
             if (actorsData.length > 0) {
                 const actorsToAdd = actorsData.map((a) => ({ mediaId, ...a }));
-                await getDbClient().insert(actorTable).values(actorsToAdd).onConflictDoNothing();
+                getDbClient().insert(actorTable).values(actorsToAdd).onConflictDoNothing().run();
             }
         }
 
         if (Array.isArray(genresData)) {
-            await getDbClient().delete(genreTable).where(eq(genreTable.mediaId, mediaId));
+            getDbClient().delete(genreTable).where(eq(genreTable.mediaId, mediaId)).run();
             if (genresData.length > 0) {
                 const genresToAdd = genresData.map((g) => ({ mediaId, ...g }));
-                await getDbClient().insert(genreTable).values(genresToAdd).onConflictDoNothing();
+                getDbClient().insert(genreTable).values(genresToAdd).onConflictDoNothing().run();
             }
         }
 
         if (seasonsData && seasonsData.length > 0) {
-            await this._updateUsersWithMedia(mediaId, seasonsData);
+            this._updateUsersWithMedia(mediaId, seasonsData);
 
-            await getDbClient().delete(epsPerSeasonTable).where(eq(epsPerSeasonTable.mediaId, mediaId));
+            getDbClient().delete(epsPerSeasonTable).where(eq(epsPerSeasonTable.mediaId, mediaId)).run();
             const epsPerSeasonToAdd = seasonsData.map((data) => ({ mediaId, ...data }));
-            await getDbClient().insert(epsPerSeasonTable).values(epsPerSeasonToAdd).onConflictDoNothing();
+            getDbClient().insert(epsPerSeasonTable).values(epsPerSeasonToAdd).onConflictDoNothing().run();
         }
 
         if (networkData !== undefined) {
-            await getDbClient().delete(networkTable).where(eq(networkTable.mediaId, mediaId));
+            getDbClient().delete(networkTable).where(eq(networkTable.mediaId, mediaId)).run();
             if (networkData.length > 0) {
                 const networkToAdd = networkData.map((n) => ({ mediaId, ...n }));
-                await getDbClient().insert(networkTable).values(networkToAdd).onConflictDoNothing();
+                getDbClient().insert(networkTable).values(networkToAdd).onConflictDoNothing().run();
             }
         }
 
@@ -253,9 +253,9 @@ export class TvRepository extends BaseRepository<TvDefinition> {
 
     // --- Logic When Updating Seasons data -----------------------------------
 
-    private async _updateUsersWithMedia(mediaId: number, seasonsData: EpsPerSeasonType[]) {
+    private _updateUsersWithMedia(mediaId: number, seasonsData: EpsPerSeasonType[]) {
         const { listTable } = this.repoDefinition.tables;
-        const oldSeasonsData = await this.getMediaEpsPerSeason(mediaId);
+        const oldSeasonsData = this.getMediaEpsPerSeason(mediaId);
 
         // If nothing changed, do nothing
         if (JSON.stringify(oldSeasonsData) === JSON.stringify(seasonsData)) {
@@ -267,65 +267,52 @@ export class TvRepository extends BaseRepository<TvDefinition> {
         const oldMaxSeason = Math.max(...oldSeasonsData.map((season) => season.season), 0);
         const newMaxSeason = Math.max(...seasonsData.map((season) => season.season), 0);
         const hasNewSeason = newMaxSeason > oldMaxSeason;
-        const usersWithMediaInTheirList = await this._getAllUsersWithMediaInTheirList(mediaId);
+        const usersWithMediaInTheirList = this._getAllUsersWithMediaInTheirList(mediaId);
 
-        // Process in batches to avoid overwhelming db
-        const batches = [];
-        const BATCH_SIZE = 50;
-        for (let i = 0; i < usersWithMediaInTheirList.length; i += BATCH_SIZE) {
-            batches.push(usersWithMediaInTheirList.slice(i, i + BATCH_SIZE));
-        }
+        for (const userMedia of usersWithMediaInTheirList) {
+            // Calculate how many eps watched in re-watches (oldSeasonsData)
+            const oldRedoTotal = userMedia.redo.reduce((acc, count, idx) => {
+                const epsInSeason = oldSeasonsData[idx]?.episodes || 0;
+                return acc + (count * epsInSeason);
+            }, 0);
 
-        // Process each batch
-        for (const batch of batches) {
-            const updatePromises = batch.map(async (userMedia) => {
-                // Calculate how many eps watched in re-watches (oldSeasonsData)
-                const oldRedoTotal = userMedia.redo.reduce((acc, count, idx) => {
-                    const epsInSeason = oldSeasonsData[idx]?.episodes || 0;
-                    return acc + (count * epsInSeason);
-                }, 0);
+            // Calculate Absolute Progress
+            const absoluteProgress = Math.max(0, userMedia.total - oldRedoTotal);
+            const shouldMoveToOnHold = hasNewSeason
+                && userMedia.autoMoveCompletedTvToOnHold
+                && userMedia.status === Status.COMPLETED
+                && absoluteProgress >= oldTotalEpisodes;
 
-                // Calculate Absolute Progress
-                const absoluteProgress = Math.max(0, userMedia.total - oldRedoTotal);
-                const shouldMoveToOnHold = hasNewSeason
-                    && userMedia.autoMoveCompletedTvToOnHold
-                    && userMedia.status === Status.COMPLETED
-                    && absoluteProgress >= oldTotalEpisodes;
+            // Keep per-season re-watches aligned when seasons are added or removed.
+            const newRedo = Array.from({ length: seasonsData.length }, (_, index) => userMedia.redo[index] ?? 0);
 
-                // Keep per-season re-watches aligned when seasons are added or removed.
-                const newRedo = Array.from({ length: seasonsData.length }, (_, index) => userMedia.redo[index] ?? 0);
+            // Calculate new Redo Total (seasonsData)
+            const newRedoTotal = newRedo.reduce((acc, count, index) => {
+                const epsInSeason = seasonsData[index]?.episodes || 0;
+                return acc + (count * epsInSeason);
+            }, 0);
 
-                // Calculate new Redo Total (seasonsData)
-                const newRedoTotal = newRedo.reduce((acc, count, index) => {
-                    const epsInSeason = seasonsData[index]?.episodes || 0;
-                    return acc + (count * epsInSeason);
-                }, 0);
+            // Calculate New Total
+            const newTotal = absoluteProgress + newRedoTotal;
 
-                // Calculate New Total
-                const newTotal = absoluteProgress + newRedoTotal;
+            // Map Absolute Progress to new Season/Episode structure
+            const newPosition = this._reorderSeasEps(absoluteProgress, newEpsList);
 
-                // Map Absolute Progress to new Season/Episode structure
-                const newPosition = this._reorderSeasEps(absoluteProgress, newEpsList);
-
-                // Precomputed user stats are rebuilt after bulk refresh by the maintenance task.
-                return getDbClient()
-                    .update(listTable)
-                    .set({
-                        total: newTotal,
-                        redo: newRedo,
-                        currentSeason: newPosition.season,
-                        currentEpisode: newPosition.episode,
-                        status: shouldMoveToOnHold ? Status.ON_HOLD : userMedia.status,
-                    })
-                    .where(and(eq(listTable.userId, userMedia.userId), eq(listTable.mediaId, mediaId)));
-            });
-
-            // Process batch concurrently
-            await Promise.all(updatePromises);
+            // The maintenance task rebuilds precomputed user stats after bulk refresh.
+            getDbClient()
+                .update(listTable)
+                .set({
+                    total: newTotal,
+                    redo: newRedo,
+                    currentSeason: newPosition.season,
+                    currentEpisode: newPosition.episode,
+                    status: shouldMoveToOnHold ? Status.ON_HOLD : userMedia.status,
+                })
+                .where(and(eq(listTable.userId, userMedia.userId), eq(listTable.mediaId, mediaId))).run();
         }
     }
 
-    private async _getAllUsersWithMediaInTheirList(mediaId: number) {
+    private _getAllUsersWithMediaInTheirList(mediaId: number) {
         const { listTable } = this.repoDefinition.tables;
 
         return getDbClient()
@@ -335,7 +322,7 @@ export class TvRepository extends BaseRepository<TvDefinition> {
             })
             .from(listTable)
             .innerJoin(user, eq(listTable.userId, user.id))
-            .where(eq(listTable.mediaId, mediaId));
+            .where(eq(listTable.mediaId, mediaId)).all();
     }
 
     private _reorderSeasEps(absoluteProgress: number, epsList: number[]) {

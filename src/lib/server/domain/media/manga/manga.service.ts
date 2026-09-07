@@ -1,9 +1,10 @@
+import {uniqueBy} from "@/lib/utils/arrays";
 import {notFound} from "@tanstack/react-router";
 import {Status, UpdateType} from "@/lib/utils/enums";
-import {uniqueBy} from "@/lib/utils/arrays";
 import {saveImageFromUrl} from "@/lib/utils/image-saver";
 import {FormattedError} from "@/lib/utils/error-classes";
 import {LogPayload} from "@/lib/types/user-updates.types";
+import {withTransaction} from "@/lib/server/database/async-storage";
 import {BaseService} from "@/lib/server/domain/media/base/base.service";
 import {Manga, MangaList} from "@/lib/server/domain/media/manga/manga.types";
 import {MangaRepository} from "@/lib/server/domain/media/manga/manga.repository";
@@ -43,7 +44,7 @@ export class MangaService extends BaseService<MangaServerDefinition, MangaReposi
         const { editableFields } = this.servicePolicy;
         const { coverDirectory } = this.identity;
 
-        const media = await this.repository.findById(mediaId);
+        const media = this.repository.findById(mediaId);
         if (!media) throw notFound();
 
         const { genres, ...mediaData } = payload;
@@ -77,7 +78,7 @@ export class MangaService extends BaseService<MangaServerDefinition, MangaReposi
             )
             : genres;
 
-        await this.repository.updateMediaWithDetails({ mediaData: fieldsToUpdate, genresData });
+        withTransaction(() => this.repository.updateMediaWithDetails({ mediaData: fieldsToUpdate, genresData }));
     }
 
     updateRedoHandler(currentState: MangaList, payload: RedoPayload, media: Manga): [MangaList, LogPayload] {

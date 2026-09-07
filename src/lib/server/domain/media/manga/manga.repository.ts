@@ -35,10 +35,10 @@ export class MangaRepository extends BaseRepository<MangaServerDefinition> {
 
     // --- Implemented Methods ------------------------------------------------
 
-    async addMediaToUserList(userId: number, media: Manga, newStatus: Status) {
+    addMediaToUserList(userId: number, media: Manga, newStatus: Status) {
         const newTotal = (newStatus === Status.COMPLETED) ? (media.chapters ?? 0) : 0;
 
-        const [newMedia] = await getDbClient()
+        const [newMedia] = getDbClient()
             .insert(mangaList)
             .values({
                 userId: userId,
@@ -47,7 +47,7 @@ export class MangaRepository extends BaseRepository<MangaServerDefinition> {
                 mediaId: media.id,
                 currentChapter: newTotal,
             })
-            .returning();
+            .returning().all();
 
         return newMedia;
     }
@@ -80,10 +80,10 @@ export class MangaRepository extends BaseRepository<MangaServerDefinition> {
         return result;
     }
 
-    async storeMediaWithDetails({ mediaData, authorsData, genresData }: UpsertMangaWithDetails) {
+    storeMediaWithDetails({ mediaData, authorsData, genresData }: UpsertMangaWithDetails) {
         const tx = getDbClient();
 
-        const [media] = await tx
+        const [media] = tx
             .insert(manga)
             .values({
                 ...mediaData,
@@ -91,63 +91,63 @@ export class MangaRepository extends BaseRepository<MangaServerDefinition> {
             }).onConflictDoUpdate({
                 target: manga.apiId,
                 set: { lastApiUpdate: sql`datetime('now')` },
-            }).returning();
+            }).returning().all();
 
         const mediaId = media.id;
         if (authorsData && authorsData.length > 0) {
-            await tx
+            tx
                 .insert(mangaAuthors)
                 .values(authorsData.map(author => ({ mediaId, ...author })))
-                .onConflictDoNothing();
+                .onConflictDoNothing().run();
         }
 
         if (genresData && genresData.length > 0) {
-            await tx
+            tx
                 .insert(mangaGenre)
                 .values(genresData.map(genre => ({ mediaId, ...genre })))
-                .onConflictDoNothing();
+                .onConflictDoNothing().run();
         }
 
         return mediaId;
     }
 
-    async updateMediaWithDetails({ mediaData, authorsData, genresData }: UpsertMangaWithDetails) {
+    updateMediaWithDetails({ mediaData, authorsData, genresData }: UpsertMangaWithDetails) {
         const tx = getDbClient();
 
-        const [media] = await tx
+        const [media] = tx
             .update(manga)
             .set({
                 ...mediaData,
                 lastApiUpdate: sql`datetime('now')`,
             })
             .where(eq(manga.apiId, mediaData.apiId))
-            .returning({ id: manga.id });
+            .returning({ id: manga.id }).all();
 
         const mediaId = media.id;
 
         if (authorsData !== undefined) {
-            await tx
+            tx
                 .delete(mangaAuthors)
-                .where(eq(mangaAuthors.mediaId, mediaId));
+                .where(eq(mangaAuthors.mediaId, mediaId)).run();
 
             if (authorsData.length > 0) {
-                await tx
+                tx
                     .insert(mangaAuthors)
                     .values(authorsData.map(author => ({ mediaId, ...author })))
-                    .onConflictDoNothing();
+                    .onConflictDoNothing().run();
             }
         }
 
         if (genresData !== undefined) {
-            await tx
+            tx
                 .delete(mangaGenre)
-                .where(eq(mangaGenre.mediaId, mediaId));
+                .where(eq(mangaGenre.mediaId, mediaId)).run();
 
             if (genresData.length > 0) {
-                await tx
+                tx
                     .insert(mangaGenre)
                     .values(genresData.map(genre => ({ mediaId, ...genre })))
-                    .onConflictDoNothing();
+                    .onConflictDoNothing().run();
             }
         }
 

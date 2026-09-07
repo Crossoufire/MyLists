@@ -16,7 +16,7 @@ export class BooksImportListWriter implements ImportListWriter {
 
         for (const { item, mediaId } of matches) {
             const payload = booksImportPayloadSchema.parse(item.payload);
-            const media = await this.booksService.findById(mediaId);
+            const media = this.booksService.findById(mediaId);
             if (!media) throw new Error(`Matched book media ${mediaId} does not exist`);
 
             const fullPayload = this._materializeBookListPayload(payload, media);

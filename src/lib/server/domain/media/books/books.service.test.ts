@@ -1,10 +1,14 @@
-import {describe, expect, it} from "vitest";
+import {describe, expect, it, vi} from "vitest";
 import type {Book, BooksList} from "./books.types";
 import {RatingSystemType, Status} from "@/lib/utils/enums";
 import type {UserMediaWithTags} from "@/lib/types/user-media.types";
 import {BooksService} from "@/lib/server/domain/media/books/books.service";
 import type {BooksRepository} from "@/lib/server/domain/media/books/books.repository";
 import {createListTableStub, createRepoStub} from "@/lib/server/domain/media/service-test-utils";
+
+vi.mock("@/lib/server/database/async-storage", () => ({
+    withTransaction: <T>(action: () => T) => action(),
+}));
 
 
 describe("BooksService", () => {

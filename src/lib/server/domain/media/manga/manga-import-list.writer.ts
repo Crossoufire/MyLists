@@ -16,7 +16,7 @@ export class MangaImportListWriter implements ImportListWriter {
 
         for (const { item, mediaId } of matches) {
             const payload = mangaImportPayloadSchema.parse(item.payload);
-            const media = await this.mangaService.findById(mediaId);
+            const media = this.mangaService.findById(mediaId);
             if (!media) throw new Error(`Matched manga media ${mediaId} does not exist`);
 
             const fullPayload = this._materializeMangaListPayload(payload, media);

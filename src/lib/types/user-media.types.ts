@@ -102,5 +102,4 @@ export type UpdateUserMediaDetails<TMedia, TList> = {
     logPayload: LogPayload;
 }
 
-export type UpdateHandlerFn<TState, TPayload, TMedia> =
-    (currentState: TState, payload: TPayload, media: TMedia) => [TState, LogPayload] | Promise<[TState, LogPayload]>;
+export type UpdateHandlerFn<TState, TPayload, TMedia> = (currentState: TState, payload: TPayload, media: TMedia) => [TState, LogPayload];

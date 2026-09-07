@@ -1,10 +1,14 @@
-import {describe, expect, it} from "vitest";
+import {describe, expect, it, vi} from "vitest";
 import type {Manga, MangaList} from "./manga.types";
 import {RatingSystemType, Status} from "@/lib/utils/enums";
 import type {UserMediaWithTags} from "@/lib/types/user-media.types";
 import {MangaService} from "@/lib/server/domain/media/manga/manga.service";
 import type {MangaRepository} from "@/lib/server/domain/media/manga/manga.repository";
 import {createListTableStub, createRepoStub} from "@/lib/server/domain/media/service-test-utils";
+
+vi.mock("@/lib/server/database/async-storage", () => ({
+    withTransaction: <T>(action: () => T) => action(),
+}));
 
 
 describe("MangaService", () => {

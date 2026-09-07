@@ -12,12 +12,13 @@ import {ImportItemStatus, ImportJobStatus, ImportSource, MediaType} from "@/lib/
 const dbContext = vi.hoisted(() => ({ db: undefined as any }));
 
 
-vi.mock("@/lib/server/database/async-storage", () => ({
-    getDbClient: () => dbContext.db,
+vi.mock("@/lib/server/database/db", () => ({
+    get db() { return dbContext.db; },
 }));
 
 
 const { ImportRepository } = await import("@/lib/server/domain/imports/import.repository");
+const { ImportService } = await import("@/lib/server/domain/imports/import.service");
 
 
 describe("ImportRepository", () => {
@@ -57,6 +58,29 @@ describe("ImportRepository", () => {
             source: ImportSource.MYLISTS,
             status: ImportJobStatus.PARSING,
         });
+    });
+
+    it("rolls back settled items when updating the job counters fails", async () => {
+        const job = await ImportRepository.createJob(42, ImportSource.MYLISTS);
+        ImportRepository.insertParsedItems(job.id, [createItem(2)]);
+        ImportRepository.markJobQueued(job.id, 1, 0);
+        await ImportRepository.claimNextQueuedJob();
+        const [item] = db.select().from(importItems).all();
+        await ImportRepository.markItemsProcessing(job.id, [item.id]);
+
+        const beforeItems = db.select().from(importItems).all();
+        const beforeJobs = db.select().from(importJobs).all();
+        sqlite.exec(`CREATE TRIGGER fail_counters BEFORE UPDATE ON import_jobs
+            BEGIN SELECT RAISE(ABORT, 'counter failure'); END`);
+
+        await expect(new ImportService(ImportRepository).applyItemOutcomes(job.id, [{
+            itemId: item.id,
+            matchedMediaId: 100,
+            status: ImportItemStatus.COMPLETED,
+        }])).rejects.toThrow();
+
+        expect(db.select().from(importItems).all()).toEqual(beforeItems);
+        expect(db.select().from(importJobs).all()).toEqual(beforeJobs);
     });
 
     it("allows only one active job per user", async () => {
@@ -218,7 +242,7 @@ describe("ImportRepository", () => {
             processedCount: 1,
         });
 
-        await expect(ImportRepository.requeueStaleProcessingJobs(360)).resolves.toEqual([]);
+        await expect(ImportRepository.requeueStaleProcessingJobs(360)).toEqual([]);
 
         await db
             .update(importJobs)
@@ -343,7 +367,7 @@ describe("ImportRepository", () => {
         const job = await ImportRepository.createJob(42, ImportSource.MYLISTS);
         await ImportRepository.markJobQueued(job.id, 0, 0);
 
-        await expect(ImportRepository.markJobQueued(job.id, 0, 0)).resolves.toBeNull();
+        await expect(ImportRepository.markJobQueued(job.id, 0, 0)).toBeNull();
     });
 
     it("marks parsing failures as terminal and truncates stored errors", async () => {

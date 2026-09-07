@@ -13,14 +13,14 @@ const dbContext = vi.hoisted(() => ({ db: undefined as any }));
 
 vi.mock("@/lib/server/database/async-storage", () => ({
     getDbClient: () => dbContext.db,
-    withTransaction: async <T>(action: () => Promise<T>) => action(),
+    withTransaction: <T>(action: () => T) => action(),
 }));
 
 
 const { ImportService } = await import("@/lib/server/domain/imports/import.service");
 const { MoviesService } = await import("@/lib/server/domain/media/movies/movies.service");
 const { ImportRepository } = await import("@/lib/server/domain/imports/import.repository");
-const { createMoviesMatcher } = await import("@/lib/server/domain/imports/matchers/movies.matcher");
+const { createMoviesMatcher } = await import("@/lib/server/domain/media/movies/movies.matcher");
 const { MoviesRepository } = await import("@/lib/server/domain/media/movies/movies.repository");
 const { ImportJobProcessor } = await import("@/lib/server/domain/imports/import-job.processor");
 const { MediaMatcherRegistry } = await import("@/lib/server/domain/imports/matchers/media-matcher.registry");

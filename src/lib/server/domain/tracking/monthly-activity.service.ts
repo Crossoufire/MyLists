@@ -1,6 +1,7 @@
 import {MediaType} from "@/lib/utils/enums";
 import {FormattedError} from "@/lib/utils/error-classes";
 import {getActivityMonthRange} from "@/lib/utils/activity-utils";
+import {withTransaction} from "@/lib/server/database/async-storage";
 import {fillMonthlyActivityTimeline} from "@/lib/utils/stats-utils";
 import {MediaMonthlyActivityRegistry} from "@/lib/server/domain/media/media.registries";
 import {calendarDateRangeToISOString, compareDateInputs} from "@/lib/utils/date-formatting";
@@ -17,9 +18,9 @@ export class MonthlyActivityService {
     ) {
     }
 
-    async logActivityFromDelta({ userId, mediaType, mediaId, delta, updateType, activityDate }: LogMonthlyActivityFromDelta) {
+    logActivityFromDelta({ userId, mediaType, mediaId, delta, updateType, activityDate }: LogMonthlyActivityFromDelta) {
         const contribution = this.mediaMonthlyActivityRegistry.get(mediaType).createContribution(delta, updateType);
-        await this.repository.addContribution({ ...contribution, userId, mediaId, mediaType, activityDate });
+        this.repository.addContribution({ ...contribution, userId, mediaId, mediaType, activityDate });
     }
 
     async getMonthlyActivityStats(userId: number, filters: MonthlyActivityStatsFilters) {
@@ -124,38 +125,46 @@ export class MonthlyActivityService {
         return { ...result, items, mediaTypes: availableMediaTypes };
     }
 
-    async addMonthlyActivity(userId: number, payload: AddMonthlyActivity) {
-        const monthlyActivity = this.mediaMonthlyActivityRegistry.get(payload.mediaType);
-        const { mediaExists, inUserList } = await monthlyActivity.hasUserMedia(userId, payload.mediaId);
+    addMonthlyActivity(userId: number, payload: AddMonthlyActivity) {
+        return withTransaction(() => {
+            const monthlyActivity = this.mediaMonthlyActivityRegistry.get(payload.mediaType);
+            const { mediaExists, inUserList } = monthlyActivity.hasUserMedia(userId, payload.mediaId);
 
-        if (!mediaExists) throw new FormattedError("Media not found");
-        if (!inUserList) throw new FormattedError("Media not in your list");
+            if (!mediaExists) throw new FormattedError("Media not found");
+            if (!inUserList) throw new FormattedError("Media not in your list");
 
-        const { lastActivityAt, ...contribution } = payload;
-        await this.repository.addContribution({ ...contribution, userId, activityDate: lastActivityAt });
-    }
-
-    async updateMonthlyActivity(userId: number, activityId: number, payload: UpdateMonthlyActivity) {
-        return this.repository.updateMonthlyActivity(userId, activityId, payload);
-    }
-
-    async removeFromMonth(userId: number, activityId: number) {
-        await this.repository.removeFromMonth(userId, activityId);
-    }
-
-    async bulkHideMonthlyActivity(userId: number, filters: { startDate: string, endDate: string, mediaType?: MediaType }) {
-        const range = calendarDateRangeToISOString(filters.startDate, filters.endDate);
-        if (!range) throw new FormattedError("Invalid activity cleanup date range");
-
-        return this.repository.bulkHideMonthlyActivity(userId, {
-            endDate: range.endDate,
-            startDate: range.startDate,
-            mediaType: filters.mediaType,
+            const { lastActivityAt, ...contribution } = payload;
+            this.repository.addContribution({ ...contribution, userId, activityDate: lastActivityAt });
         });
     }
 
-    async deleteAssociatedActivities(userId: number, mediaType: MediaType, mediaId: number) {
-        await this.repository.deleteAssociatedActivities(userId, mediaType, mediaId);
+    updateMonthlyActivity(userId: number, activityId: number, payload: UpdateMonthlyActivity) {
+        return withTransaction(() => {
+            return this.repository.updateMonthlyActivity(userId, activityId, payload);
+        });
+    }
+
+    removeFromMonth(userId: number, activityId: number) {
+        return withTransaction(() => {
+            this.repository.removeFromMonth(userId, activityId);
+        });
+    }
+
+    bulkHideMonthlyActivity(userId: number, filters: { startDate: string, endDate: string, mediaType?: MediaType }) {
+        return withTransaction(() => {
+            const range = calendarDateRangeToISOString(filters.startDate, filters.endDate);
+            if (!range) throw new FormattedError("Invalid activity cleanup date range");
+
+            return this.repository.bulkHideMonthlyActivity(userId, {
+                endDate: range.endDate,
+                startDate: range.startDate,
+                mediaType: filters.mediaType,
+            });
+        });
+    }
+
+    deleteAssociatedActivities(userId: number, mediaType: MediaType, mediaId: number) {
+        this.repository.deleteAssociatedActivities(userId, mediaType, mediaId);
     }
 
     async getActivityStatsByMonth(filters: { userId?: number, mediaType?: MediaType, startYear?: number, excludeBulkImports?: boolean } = {}) {

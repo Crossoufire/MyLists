@@ -18,23 +18,23 @@ type WcfPair = {
 
 
 export class WcfRepository {
-    static async syncCuratedPool(mediaType: MediaType, mediaRefs: { id: number; releaseDate: string }[]) {
-        await getDbClient()
+    static syncCuratedPool(mediaType: MediaType, mediaRefs: { id: number; releaseDate: string }[]) {
+        getDbClient()
             .delete(whichCameFirstMedia)
-            .where(eq(whichCameFirstMedia.mediaType, mediaType));
+            .where(eq(whichCameFirstMedia.mediaType, mediaType)).run();
 
         if (mediaRefs.length === 0) return;
 
-        await getDbClient()
+        getDbClient()
             .insert(whichCameFirstMedia)
             .values(mediaRefs.map((media) => ({
                 mediaType,
                 mediaId: media.id,
                 releaseDate: media.releaseDate,
-            })));
+            }))).run();
     }
 
-    static async countPool(mediaTypes?: MediaType[]) {
+    static countPool(mediaTypes?: MediaType[]) {
         return getDbClient()
             .select({
                 count: sql<number>`count(*)`,
@@ -42,10 +42,10 @@ export class WcfRepository {
             })
             .from(whichCameFirstMedia)
             .where(mediaTypes?.length ? inArray(whichCameFirstMedia.mediaType, mediaTypes) : undefined)
-            .groupBy(whichCameFirstMedia.mediaType);
+            .groupBy(whichCameFirstMedia.mediaType).all();
     }
 
-    static async findPair(runId: number, leftType: MediaType, rightType: MediaType, minDays: number, maxDays: number | null, excludeRecent: boolean) {
+    static findPair(runId: number, leftType: MediaType, rightType: MediaType, minDays: number, maxDays: number | null, excludeRecent: boolean) {
         const dateDiff = sql`ABS(julianday(first_candidate.release_date) - julianday(second_candidate.release_date))`;
         const dateFilter = maxDays === null
             ? sql`${dateDiff} >= ${minDays}`
@@ -131,16 +131,16 @@ export class WcfRepository {
             .get();
     }
 
-    static async createRun(userId: number, mediaTypes: MediaType[]) {
-        await getDbClient()
+    static createRun(userId: number, mediaTypes: MediaType[]) {
+        getDbClient()
             .update(whichCameFirstRuns)
             .set({ status: "abandoned", completedAt: sql`CURRENT_TIMESTAMP` })
-            .where(and(eq(whichCameFirstRuns.userId, userId), eq(whichCameFirstRuns.status, "active")));
+            .where(and(eq(whichCameFirstRuns.userId, userId), eq(whichCameFirstRuns.status, "active"))).run();
 
-        const [run] = await getDbClient()
+        const [run] = getDbClient()
             .insert(whichCameFirstRuns)
             .values({ userId, selectedMediaTypes: mediaTypes })
-            .returning();
+            .returning().all();
 
         return run;
     }
@@ -153,22 +153,22 @@ export class WcfRepository {
             .get();
     }
 
-    static async createRound(data: typeof whichCameFirstRounds.$inferInsert) {
-        const [round] = await getDbClient()
+    static createRound(data: typeof whichCameFirstRounds.$inferInsert) {
+        const [round] = getDbClient()
             .insert(whichCameFirstRounds)
             .values(data)
-            .returning();
+            .returning().all();
 
         return round;
     }
 
-    static async deleteOpenRound(roundId: number) {
-        await getDbClient()
+    static deleteOpenRound(roundId: number) {
+        getDbClient()
             .delete(whichCameFirstRounds)
-            .where(and(eq(whichCameFirstRounds.id, roundId), isNull(whichCameFirstRounds.answeredAt)));
+            .where(and(eq(whichCameFirstRounds.id, roundId), isNull(whichCameFirstRounds.answeredAt))).run();
     }
 
-    static async answerRound(userId: number, runId: number, roundId: number, selectedSide: "left" | "right") {
+    static answerRound(userId: number, runId: number, roundId: number, selectedSide: "left" | "right") {
         const run = getDbClient()
             .select()
             .from(whichCameFirstRuns)
@@ -193,14 +193,14 @@ export class WcfRepository {
 
         const correctSide = round.leftReleaseDate < round.rightReleaseDate ? "left" : "right";
         const correct = selectedSide === correctSide;
-        const [updatedRound] = await getDbClient()
+        const [updatedRound] = getDbClient()
             .update(whichCameFirstRounds)
             .set({ selectedSide, correct, answeredAt: sql`CURRENT_TIMESTAMP` })
             .where(and(eq(whichCameFirstRounds.id, roundId), isNull(whichCameFirstRounds.answeredAt)))
-            .returning();
+            .returning().all();
         if (!updatedRound) throw new FormattedError("This round has already been answered.");
 
-        const [updatedRun] = await getDbClient()
+        const [updatedRun] = getDbClient()
             .update(whichCameFirstRuns)
             .set(correct
                 ? {
@@ -216,7 +216,7 @@ export class WcfRepository {
                 }
                 : { status: "lost", completedAt: sql`CURRENT_TIMESTAMP` })
             .where(and(eq(whichCameFirstRuns.id, runId), eq(whichCameFirstRuns.status, "active")))
-            .returning();
+            .returning().all();
 
         return {
             correct,
@@ -226,34 +226,34 @@ export class WcfRepository {
         };
     }
 
-    static async abandonRun(userId: number, runId: number) {
-        await getDbClient()
+    static abandonRun(userId: number, runId: number) {
+        getDbClient()
             .update(whichCameFirstRuns)
             .set({ status: "abandoned", completedAt: sql`CURRENT_TIMESTAMP` })
             .where(and(
                 eq(whichCameFirstRuns.id, runId),
                 eq(whichCameFirstRuns.userId, userId),
                 eq(whichCameFirstRuns.status, "active"),
-            ));
+            )).run();
     }
 
-    static async exhaustRun(runId: number) {
-        await getDbClient()
+    static exhaustRun(runId: number) {
+        getDbClient()
             .update(whichCameFirstRuns)
             .set({ status: "exhausted", completedAt: sql`CURRENT_TIMESTAMP` })
             .where(and(
                 eq(whichCameFirstRuns.id, runId),
                 eq(whichCameFirstRuns.status, "active"),
-            ));
+            )).run();
     }
 
-    static async deleteUserRuns(userId: number) {
-        await getDbClient()
+    static deleteUserRuns(userId: number) {
+        getDbClient()
             .delete(whichCameFirstRuns)
-            .where(eq(whichCameFirstRuns.userId, userId));
+            .where(eq(whichCameFirstRuns.userId, userId)).run();
     }
 
-    static async getStats(userId: number) {
+    static getStats(userId: number) {
         const runStats = getDbClient()
             .select({
                 runsPlayed: sql<number>`count(*)`,
@@ -767,13 +767,13 @@ export class WcfRepository {
             .limit(limit);
     }
 
-    static async deletePoolMedia(mediaType: MediaType, mediaIds: number[]) {
-        await getDbClient()
+    static deletePoolMedia(mediaType: MediaType, mediaIds: number[]) {
+        getDbClient()
             .delete(whichCameFirstMedia)
             .where(and(
                 eq(whichCameFirstMedia.mediaType, mediaType),
                 inArray(whichCameFirstMedia.mediaId, mediaIds),
-            ));
+            )).run();
     }
 }
 

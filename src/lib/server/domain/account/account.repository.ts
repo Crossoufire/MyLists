@@ -137,7 +137,7 @@ export class AccountRepository {
             .where(eq(user.id, userId));
     }
 
-    static async findUserByName(name: string) {
+    static findUserByName(name: string) {
         return getDbClient()
             .select()
             .from(user)
@@ -156,11 +156,11 @@ export class AccountRepository {
             .orderBy(orderByMediaType);
     }
 
-    static async updateUserSettings(userId: number, payload: Partial<typeof user.$inferInsert>) {
-        await getDbClient()
+    static updateUserSettings(userId: number, payload: Partial<typeof user.$inferInsert>) {
+        getDbClient()
             .update(user)
             .set(payload)
-            .where(eq(user.id, userId));
+            .where(eq(user.id, userId)).run();
     }
 
     static async getAdminPaginatedUsers(data: SearchType) {
@@ -208,10 +208,10 @@ export class AccountRepository {
             .where(eq(user.id, userId));
     }
 
-    static async deleteUserAccount(userId: number) {
-        await getDbClient()
+    static deleteUserAccount(userId: number) {
+        getDbClient()
             .delete(user)
-            .where(eq(user.id, userId));
+            .where(eq(user.id, userId)).run();
     }
 
     static async adminUpdateGlobalFlag(payload: AdminUpdatePayload) {
@@ -253,10 +253,10 @@ export class AccountRepository {
             .where(eq(user.id, userId));
     }
 
-    static async findById(userId: number) {
+    static findById(userId: number) {
         return getDbClient().query.user.findFirst({
             where: eq(user.id, userId),
             with: { userMediaSettings: true },
-        });
+        }).sync();
     }
 }

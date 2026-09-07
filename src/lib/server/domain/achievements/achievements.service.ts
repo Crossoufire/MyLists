@@ -11,7 +11,7 @@ export class AchievementsService {
 
     // --- Admin & Tasks -----------------------------------------------------------------
 
-    async seedAchievements(mediaType: MediaType, achievements: readonly AchievementSeedData[]) {
+    seedAchievements(mediaType: MediaType, achievements: readonly AchievementSeedData[]) {
         return this.repository.seedAchievements(mediaType, achievements);
     }
 
@@ -19,7 +19,7 @@ export class AchievementsService {
         await this.repository.updateAchievementForAdmin(achId, name, description);
     }
 
-    async updateTiersForAdmin(tiers: AchievementTier[]) {
+    updateTiersForAdmin(tiers: AchievementTier[]) {
         return this.repository.updateTiersForAdmin(tiers);
     }
 

@@ -1,4 +1,4 @@
-import {describe, expect, it} from "vitest";
+import {describe, expect, it, vi} from "vitest";
 import {UserMediaWithTags} from "@/lib/types/user-media.types";
 import {TvService} from "@/lib/server/domain/media/tv/tv.service";
 import {TvList, TvType} from "@/lib/server/domain/media/tv/tv.types";
@@ -6,6 +6,10 @@ import {RatingSystemType, Status} from "@/lib/utils/enums";
 import {TvRepository} from "@/lib/server/domain/media/tv/tv.repository";
 import {createListTableStub, createRepoStub} from "@/lib/server/domain/media/service-test-utils";
 import {seriesServerDefinition} from "@/lib/media-definitions/tv/series/series.definition.server";
+
+vi.mock("@/lib/server/database/async-storage", () => ({
+    withTransaction: <T>(action: () => T) => action(),
+}));
 
 
 const epsPerSeasonMock = [
@@ -20,7 +24,7 @@ describe("TvService", () => {
     describe("shared TV behavior", () => {
         const tvRepository = createRepoStub(
             { listTable: createListTableStub() },
-            { getMediaEpsPerSeason: async () => epsPerSeasonMock },
+            { getMediaEpsPerSeason: () => epsPerSeasonMock },
         ) as unknown as TvRepository;
         const tvService = new TvService(tvRepository, seriesServerDefinition);
 

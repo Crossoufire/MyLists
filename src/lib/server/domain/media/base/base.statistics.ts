@@ -61,7 +61,7 @@ const createMediaStatsQueries = <const TDefinition extends AnyServerMediaDefinit
         return result?.count ?? 0;
     };
 
-    const computeAllUsersStats = async () => {
+    const computeAllUsersStats = () => {
         const { mediaType } = definition.identity;
         const { listTable, mediaTable } = definition.repository.tables;
         const { timeSpent, totalSpecific, totalRedo } = definition.statistics.allUsers;
@@ -69,7 +69,7 @@ const createMediaStatsQueries = <const TDefinition extends AnyServerMediaDefinit
         const expectedStatuses = statusUtils.byMediaType(mediaType) ?? [];
         const redoStat = totalRedo ?? (listTable.redo ? sql`COALESCE(SUM(${listTable.redo}), 0)` : sql`0`);
 
-        const results = await getDbClient()
+        const results = getDbClient()
             .select({
                 userId: listTable.userId,
                 timeSpent: timeSpent.as("timeSpent"),
@@ -103,7 +103,7 @@ const createMediaStatsQueries = <const TDefinition extends AnyServerMediaDefinit
             })
             .from(listTable)
             .innerJoin(mediaTable, eq(listTable.mediaId, mediaTable.id))
-            .groupBy(listTable.userId);
+            .groupBy(listTable.userId).all();
 
         return results.map((row) => {
             let parsed: unknown = row.statusCounts;

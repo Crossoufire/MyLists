@@ -30,10 +30,10 @@ export class BooksRepository extends BaseRepository<BookServerDefinition> {
 
     // --- Implemented Methods ------------------------------------------------
 
-    async addMediaToUserList(userId: number, media: Book, newStatus: Status) {
+    addMediaToUserList(userId: number, media: Book, newStatus: Status) {
         const newTotal = (newStatus === Status.COMPLETED) ? media.pages : 0;
 
-        const [newMedia] = await getDbClient()
+        const [newMedia] = getDbClient()
             .insert(booksList)
             .values({
                 userId,
@@ -42,7 +42,7 @@ export class BooksRepository extends BaseRepository<BookServerDefinition> {
                 mediaId: media.id,
                 actualPage: newTotal,
             })
-            .returning();
+            .returning().all();
 
         return newMedia;
     }
@@ -75,10 +75,10 @@ export class BooksRepository extends BaseRepository<BookServerDefinition> {
         return result;
     }
 
-    async storeMediaWithDetails({ mediaData, authorsData }: InsertBooksWithDetails) {
+    storeMediaWithDetails({ mediaData, authorsData }: InsertBooksWithDetails) {
         const tx = getDbClient();
 
-        const [media] = await tx
+        const [media] = tx
             .insert(books)
             .values({
                 ...mediaData,
@@ -88,54 +88,54 @@ export class BooksRepository extends BaseRepository<BookServerDefinition> {
                 target: books.apiId,
                 set: { lastApiUpdate: sql`datetime('now')` },
             })
-            .returning();
+            .returning().all();
 
         const mediaId = media.id;
         if (authorsData && authorsData.length > 0) {
             const authorsToAdd = authorsData.map(a => ({ mediaId, ...a }));
-            await tx.insert(booksAuthors).values(authorsToAdd).onConflictDoNothing();
+            tx.insert(booksAuthors).values(authorsToAdd).onConflictDoNothing().run();
         }
 
         return mediaId;
     }
 
-    async updateMediaWithDetails({ mediaData, authorsData, genresData }: UpdateBooksWithDetails) {
+    updateMediaWithDetails({ mediaData, authorsData, genresData }: UpdateBooksWithDetails) {
         const tx = getDbClient();
 
-        const [media] = await tx
+        const [media] = tx
             .update(books)
             .set({
                 ...mediaData,
                 lastApiUpdate: sql`datetime('now')`,
             })
             .where(eq(books.apiId, mediaData.apiId))
-            .returning({ id: books.id });
+            .returning({ id: books.id }).all();
 
         const mediaId = media.id;
 
         if (authorsData !== undefined) {
-            await tx
+            tx
                 .delete(booksAuthors)
-                .where(eq(booksAuthors.mediaId, mediaId));
+                .where(eq(booksAuthors.mediaId, mediaId)).run();
 
             if (authorsData.length > 0) {
-                await tx
+                tx
                     .insert(booksAuthors)
                     .values(authorsData.map(author => ({ mediaId, ...author })))
-                    .onConflictDoNothing();
+                    .onConflictDoNothing().run();
             }
         }
 
         if (genresData !== undefined) {
-            await tx
+            tx
                 .delete(booksGenre)
-                .where(eq(booksGenre.mediaId, mediaId));
+                .where(eq(booksGenre.mediaId, mediaId)).run();
 
             if (genresData.length > 0) {
-                await tx
+                tx
                     .insert(booksGenre)
                     .values(genresData.map(genre => ({ mediaId, ...genre })))
-                    .onConflictDoNothing();
+                    .onConflictDoNothing().run();
             }
         }
 

@@ -1,6 +1,7 @@
 import {notFound} from "@tanstack/react-router";
 import {MediaInfo} from "@/lib/types/activity.types";
 import {CollectionItemInput} from "@/lib/types/collections.types";
+import {withTransaction} from "@/lib/server/database/async-storage";
 import {CommunitySearch, UserCollectionsSearch} from "@/lib/schemas";
 import {DenialReason, MediaType, PrivacyType} from "@/lib/utils/enums";
 import {FormattedError, UnauthorizedError} from "@/lib/utils/error-classes";
@@ -18,24 +19,25 @@ export class CollectionsService {
     }
 
     async getCollectionDetails(collectionId: number, mode: "read" | "edit", actor: Actor, page?: number) {
-        const collection = await this.repository.getCollectionById(collectionId);
+        const collection = this.repository.getCollectionById(collectionId);
         if (!collection) throw notFound();
 
-        const decision = await this.authorizationService.decideCollection(actor, mode, collection);
+        const decision = this.authorizationService.decideCollection(actor, mode, collection);
         if (!decision.allowed) {
             throw new UnauthorizedError(decision.reason === DenialReason.PROFILE_RESTRICTED ? "restricted" : "private");
         }
 
+        const editableItems = mode === "edit" ? this.repository.getCollectionItems(collectionId) : [];
         const [itemResults, isLiked] = await Promise.all([
             mode === "read"
                 ? this.repository.getPaginatedCollectionItems(collectionId, page)
-                : this.repository.getCollectionItems(collectionId).then((items) => ({
-                    items,
+                : {
+                    items: editableItems,
                     page: 1,
-                    total: items.length,
-                    pages: items.length > 0 ? 1 : 0,
-                    perPage: Math.max(items.length, 1),
-                })),
+                    total: editableItems.length,
+                    pages: editableItems.length > 0 ? 1 : 0,
+                    perPage: Math.max(editableItems.length, 1),
+                },
             actor.kind === "user" ? this.repository.findLikedCollection(actor.id, collectionId) : Promise.resolve(null),
             this.repository.incrementViewCount(collectionId),
         ]);
@@ -102,38 +104,42 @@ export class CollectionsService {
         return this.repository.getUserCollectionMemberships(ownerId, mediaId, mediaType);
     }
 
-    async addMediaToCollection(params: { actor: Actor; mediaId: number; mediaType: MediaType; collectionId: number }) {
-        const collection = await this.repository.getCollectionById(params.collectionId);
-        if (!collection || collection.mediaType !== params.mediaType) {
-            throw new FormattedError("Unauthorized to update this collection.");
-        }
-        this._assertAction(collection, params.actor, "addItem", "Unauthorized to update this collection.");
+    addMediaToCollection(params: { actor: Actor; mediaId: number; mediaType: MediaType; collectionId: number }) {
+        return withTransaction(() => {
+            const collection = this.repository.getCollectionById(params.collectionId);
+            if (!collection || collection.mediaType !== params.mediaType) {
+                throw new FormattedError("Unauthorized to update this collection.");
+            }
+            this._assertAction(collection, params.actor, "addItem", "Unauthorized to update this collection.");
 
-        const nextOrderIndex = await this.repository.getMaxCollectionItemOrder(params.collectionId) + 1;
-        await this.repository.insertCollectionItem({
-            annotation: null,
-            mediaId: params.mediaId,
-            orderIndex: nextOrderIndex,
-            mediaType: params.mediaType,
-            collectionId: params.collectionId,
+            const nextOrderIndex = this.repository.getMaxCollectionItemOrder(params.collectionId) + 1;
+            this.repository.insertCollectionItem({
+                annotation: null,
+                mediaId: params.mediaId,
+                orderIndex: nextOrderIndex,
+                mediaType: params.mediaType,
+                collectionId: params.collectionId,
+            });
         });
     }
 
-    async removeMediaFromCollection(params: { actor: Actor; mediaId: number; mediaType: MediaType; collectionId: number }) {
-        const collection = await this.repository.getCollectionById(params.collectionId);
-        if (!collection || collection.mediaType !== params.mediaType) {
-            throw new FormattedError("Unauthorized to update this collection.");
-        }
-        this._assertAction(collection, params.actor, "removeItem", "Unauthorized to update this collection.");
+    removeMediaFromCollection(params: { actor: Actor; mediaId: number; mediaType: MediaType; collectionId: number }) {
+        return withTransaction(() => {
+            const collection = this.repository.getCollectionById(params.collectionId);
+            if (!collection || collection.mediaType !== params.mediaType) {
+                throw new FormattedError("Unauthorized to update this collection.");
+            }
+            this._assertAction(collection, params.actor, "removeItem", "Unauthorized to update this collection.");
 
-        if (collection.itemsCount <= 1) {
-            throw new FormattedError("A collection must contain at least one item.");
-        }
+            if (collection.itemsCount <= 1) {
+                throw new FormattedError("A collection must contain at least one item.");
+            }
 
-        await this.repository.deleteCollectionItem(params.collectionId, params.mediaId);
+            this.repository.deleteCollectionItem(params.collectionId, params.mediaId);
+        });
     }
 
-    async createCollection(params: {
+    createCollection(params: {
         title: string;
         ownerId: number;
         ordered: boolean;
@@ -142,22 +148,24 @@ export class CollectionsService {
         description?: string | null;
         items: CollectionItemInput[];
     }) {
-        const { items, ...collectionData } = params;
-        const uniqueItems = this._normalizeItems(items);
+        return withTransaction(() => {
+            const { items, ...collectionData } = params;
+            const uniqueItems = this._normalizeItems(items);
 
-        const collectionId = await this.repository.createCollection({ ...collectionData });
-        await this.repository.replaceCollectionItems(collectionId, uniqueItems.map((item, index) => ({
-            collectionId,
-            mediaId: item.mediaId,
-            orderIndex: index + 1,
-            mediaType: params.mediaType,
-            annotation: item.annotation ?? null,
-        })));
+            const collectionId = this.repository.createCollection({ ...collectionData });
+            this.repository.replaceCollectionItems(collectionId, uniqueItems.map((item, index) => ({
+                collectionId,
+                mediaId: item.mediaId,
+                orderIndex: index + 1,
+                mediaType: params.mediaType,
+                annotation: item.annotation ?? null,
+            })));
 
-        return collectionId;
+            return collectionId;
+        });
     }
 
-    async updateCollection(params: {
+    updateCollection(params: {
         actor: Actor;
         title: string;
         ordered: boolean;
@@ -166,87 +174,95 @@ export class CollectionsService {
         description?: string | null;
         items: CollectionItemInput[];
     }) {
-        const collection = await this.repository.getCollectionById(params.collectionId);
-        if (!collection) throw notFound();
+        return withTransaction(() => {
+            const collection = this.repository.getCollectionById(params.collectionId);
+            if (!collection) throw notFound();
 
-        this._assertAction(collection, params.actor, "edit", "Unauthorized to update this collection.");
+            this._assertAction(collection, params.actor, "edit", "Unauthorized to update this collection.");
 
-        const sanitizedItems = this._normalizeItems(params.items);
-        await this.repository.updateCollection(params.collectionId, {
-            title: params.title,
-            privacy: params.privacy,
-            ordered: params.ordered,
-            description: params.description ?? null,
-        });
+            const sanitizedItems = this._normalizeItems(params.items);
+            this.repository.updateCollection(params.collectionId, {
+                title: params.title,
+                privacy: params.privacy,
+                ordered: params.ordered,
+                description: params.description ?? null,
+            });
 
-        await this.repository.replaceCollectionItems(params.collectionId, sanitizedItems.map((item, index) => ({
-            mediaId: item.mediaId,
-            orderIndex: index + 1,
-            mediaType: collection.mediaType,
-            collectionId: params.collectionId,
-            annotation: item.annotation ?? null,
-        })));
-    }
-
-    async deleteCollection(collectionId: number, actor: Actor) {
-        const collection = await this.repository.getCollectionById(collectionId);
-        if (!collection) throw notFound();
-
-        this._assertAction(collection, actor, "delete", "Unauthorized to delete this collection.");
-
-        await this.repository.deleteCollection(collectionId);
-    }
-
-    async toggleLike(collectionId: number, actor: Actor) {
-        const collection = await this.repository.getCollectionById(collectionId);
-        if (!collection) throw notFound();
-        if (actor.kind === "anonymous") throw new FormattedError("Unauthorized to like this collection.");
-
-        const decision = await this.authorizationService.decideCollection(actor, "like", collection);
-        if (!decision.allowed) throw new UnauthorizedError("private");
-
-        const existingLike = await this.repository.findLikedCollection(actor.id, collectionId);
-        if (existingLike) {
-            await this.repository.deleteLike(existingLike.id);
-            await this.repository.decrementLikeCount(collectionId);
-        }
-        else {
-            await this.repository.insertLike(actor.id, collectionId);
-            await this.repository.incrementLikeCount(collectionId);
-        }
-    }
-
-    async copyCollection(collectionId: number, actor: Actor) {
-        const collection = await this.repository.getCollectionById(collectionId);
-        if (!collection) throw notFound();
-        if (actor.kind === "anonymous") throw new FormattedError("Unauthorized to copy this collection.");
-
-        const decision = await this.authorizationService.decideCollection(actor, "copy", collection);
-        if (!decision.allowed) throw new UnauthorizedError("private");
-
-        const items = await this.repository.getCollectionItems(collectionId);
-        const createdId = await this.repository.createCollection({
-            ownerId: actor.id,
-            ordered: collection.ordered,
-            privacy: PrivacyType.PRIVATE,
-            mediaType: collection.mediaType,
-            description: collection.description,
-            title: `Copy of ${collection.title}`,
-        });
-
-        if (items.length > 0) {
-            await this.repository.replaceCollectionItems(createdId, items.map((item) => ({
+            this.repository.replaceCollectionItems(params.collectionId, sanitizedItems.map((item, index) => ({
                 mediaId: item.mediaId,
-                collectionId: createdId,
-                annotation: item.annotation,
-                orderIndex: item.orderIndex,
+                orderIndex: index + 1,
                 mediaType: collection.mediaType,
+                collectionId: params.collectionId,
+                annotation: item.annotation ?? null,
             })));
-        }
+        });
+    }
 
-        await this.repository.incrementCopyCount(collectionId);
+    deleteCollection(collectionId: number, actor: Actor) {
+        return withTransaction(() => {
+            const collection = this.repository.getCollectionById(collectionId);
+            if (!collection) throw notFound();
 
-        return { id: createdId };
+            this._assertAction(collection, actor, "delete", "Unauthorized to delete this collection.");
+
+            this.repository.deleteCollection(collectionId);
+        });
+    }
+
+    toggleLike(collectionId: number, actor: Actor) {
+        return withTransaction(() => {
+            const collection = this.repository.getCollectionById(collectionId);
+            if (!collection) throw notFound();
+            if (actor.kind === "anonymous") throw new FormattedError("Unauthorized to like this collection.");
+
+            const decision = this.authorizationService.decideCollection(actor, "like", collection);
+            if (!decision.allowed) throw new UnauthorizedError("private");
+
+            const existingLike = this.repository.findLikedCollection(actor.id, collectionId);
+            if (existingLike) {
+                this.repository.deleteLike(existingLike.id);
+                this.repository.decrementLikeCount(collectionId);
+            }
+            else {
+                this.repository.insertLike(actor.id, collectionId);
+                this.repository.incrementLikeCount(collectionId);
+            }
+        });
+    }
+
+    copyCollection(collectionId: number, actor: Actor) {
+        return withTransaction(() => {
+            const collection = this.repository.getCollectionById(collectionId);
+            if (!collection) throw notFound();
+            if (actor.kind === "anonymous") throw new FormattedError("Unauthorized to copy this collection.");
+
+            const decision = this.authorizationService.decideCollection(actor, "copy", collection);
+            if (!decision.allowed) throw new UnauthorizedError("private");
+
+            const items = this.repository.getCollectionItems(collectionId);
+            const createdId = this.repository.createCollection({
+                ownerId: actor.id,
+                ordered: collection.ordered,
+                privacy: PrivacyType.PRIVATE,
+                mediaType: collection.mediaType,
+                description: collection.description,
+                title: `Copy of ${collection.title}`,
+            });
+
+            if (items.length > 0) {
+                this.repository.replaceCollectionItems(createdId, items.map((item) => ({
+                    mediaId: item.mediaId,
+                    collectionId: createdId,
+                    annotation: item.annotation,
+                    orderIndex: item.orderIndex,
+                    mediaType: collection.mediaType,
+                })));
+            }
+
+            this.repository.incrementCopyCount(collectionId);
+
+            return { id: createdId };
+        });
     }
 
     private _normalizeItems(items: CollectionItemInput[]) {

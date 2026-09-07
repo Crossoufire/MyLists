@@ -18,18 +18,18 @@ export class StatsRepository {
             .where(and(eq(userMediaSettings.userId, userId), eq(userMediaSettings.active, true)));
     }
 
-    static async updateUserMediaListSettings(userId: number, payload: Partial<Record<MediaType, boolean>>) {
+    static updateUserMediaListSettings(userId: number, payload: Partial<Record<MediaType, boolean>>) {
         const updateCases = Object.entries(payload).map(([mediaType, active]) => {
             return sql`WHEN ${userMediaSettings.mediaType} = ${mediaType} THEN ${active}`;
         });
 
-        await getDbClient()
+        getDbClient()
             .update(userMediaSettings)
             .set({ active: sql`CASE ${sql.join(updateCases, sql` `)} ELSE ${userMediaSettings.active} END` })
-            .where(eq(userMediaSettings.userId, userId))
+            .where(eq(userMediaSettings.userId, userId)).run()
     }
 
-    static async updateUserPreComputedStatsWithDelta(userId: number, mediaType: MediaType, mediaId: number, delta: DeltaStats) {
+    static updateUserPreComputedStatsWithDelta(userId: number, mediaType: MediaType, mediaId: number, delta: DeltaStats) {
         type UserMediaSettingsUpdate = Partial<{
             [K in keyof typeof userMediaSettings]: (typeof userMediaSettings)[K] | ReturnType<typeof sql>;
         }>;
@@ -76,20 +76,20 @@ export class StatsRepository {
             return;
         }
 
-        const [lastUpdate] = await getDbClient()
+        const [lastUpdate] = getDbClient()
             .update(userMediaSettings)
             .set(setUpdates)
             .where(and(eq(userMediaSettings.userId, userId), eq(userMediaSettings.mediaType, mediaType)))
-            .returning();
+            .returning().all();
 
         if (lastUpdate) {
             const { id: _id, ...updateSnapshot } = lastUpdate;
-            await getDbClient()
+            getDbClient()
                 .insert(userMediaStatsHistory)
                 .values({
                     mediaId: mediaId,
                     ...updateSnapshot,
-                });
+                }).run();
         }
     }
 
@@ -289,14 +289,14 @@ export class StatsRepository {
         };
     }
 
-    static async updateAllUsersPreComputedStats(mediaType: MediaType, userStats: UserMediaStats[]) {
+    static updateAllUsersPreComputedStats(mediaType: MediaType, userStats: UserMediaStats[]) {
         const tx = getDbClient();
 
         for (const stats of userStats) {
-            await tx
+            tx
                 .update(userMediaSettings)
                 .set({ ...stats, mediaType })
-                .where(and(eq(userMediaSettings.userId, stats.userId), eq(userMediaSettings.mediaType, mediaType)));
+                .where(and(eq(userMediaSettings.userId, stats.userId), eq(userMediaSettings.mediaType, mediaType))).run();
         }
     }
 

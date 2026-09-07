@@ -59,10 +59,10 @@ export class MoviesRepository extends BaseRepository<MovieServerDefinition> {
 
     // --- Implemented Methods ------------------------------------------------
 
-    async addMediaToUserList(userId: number, media: Movie, newStatus: Status) {
+    addMediaToUserList(userId: number, media: Movie, newStatus: Status) {
         const newTotal = (newStatus === Status.COMPLETED) ? 1 : 0;
 
-        const [newMedia] = await getDbClient()
+        const [newMedia] = getDbClient()
             .insert(moviesList)
             .values({
                 userId,
@@ -70,7 +70,7 @@ export class MoviesRepository extends BaseRepository<MovieServerDefinition> {
                 status: newStatus,
                 mediaId: media.id,
             })
-            .returning();
+            .returning().all();
 
         return newMedia;
     }
@@ -133,10 +133,10 @@ export class MoviesRepository extends BaseRepository<MovieServerDefinition> {
         return result;
     }
 
-    async storeMediaWithDetails({ mediaData, actorsData, genresData }: UpsertMovieWithDetails) {
+    storeMediaWithDetails({ mediaData, actorsData, genresData }: UpsertMovieWithDetails) {
         const tx = getDbClient();
 
-        const [media] = await tx
+        const [media] = tx
             .insert(movies)
             .values({
                 ...mediaData,
@@ -146,59 +146,59 @@ export class MoviesRepository extends BaseRepository<MovieServerDefinition> {
                 target: movies.apiId,
                 set: { lastApiUpdate: sql`datetime('now')` },
             })
-            .returning();
+            .returning().all();
 
         const mediaId = media.id;
         if (actorsData && actorsData.length > 0) {
             const actorsToAdd = actorsData.map((a) => ({ mediaId, ...a }));
-            await tx.insert(moviesActors).values(actorsToAdd).onConflictDoNothing();
+            tx.insert(moviesActors).values(actorsToAdd).onConflictDoNothing().run();
         }
 
         if (genresData && genresData.length > 0) {
             const genresToAdd = genresData.map((g) => ({ mediaId, ...g }));
-            await tx.insert(moviesGenre).values(genresToAdd).onConflictDoNothing();
+            tx.insert(moviesGenre).values(genresToAdd).onConflictDoNothing().run();
         }
 
         return mediaId;
     }
 
-    async updateMediaWithDetails({ mediaData, actorsData, genresData }: UpsertMovieWithDetails) {
+    updateMediaWithDetails({ mediaData, actorsData, genresData }: UpsertMovieWithDetails) {
         const tx = getDbClient();
 
-        const [media] = await tx
+        const [media] = tx
             .update(movies)
             .set({
                 ...mediaData,
                 lastApiUpdate: sql`datetime('now')`,
             })
             .where(eq(movies.apiId, mediaData.apiId))
-            .returning({ id: movies.id });
+            .returning({ id: movies.id }).all();
 
         const mediaId = media.id;
 
         if (actorsData !== undefined) {
-            await tx
+            tx
                 .delete(moviesActors)
-                .where(eq(moviesActors.mediaId, mediaId));
+                .where(eq(moviesActors.mediaId, mediaId)).run();
 
             if (actorsData.length > 0) {
-                await tx
+                tx
                     .insert(moviesActors)
                     .values(actorsData.map(actor => ({ mediaId, ...actor })))
-                    .onConflictDoNothing();
+                    .onConflictDoNothing().run();
             }
         }
 
         if (genresData !== undefined) {
-            await tx
+            tx
                 .delete(moviesGenre)
-                .where(eq(moviesGenre.mediaId, mediaId));
+                .where(eq(moviesGenre.mediaId, mediaId)).run();
 
             if (genresData.length > 0) {
-                await tx
+                tx
                     .insert(moviesGenre)
                     .values(genresData.map(genre => ({ mediaId, ...genre })))
-                    .onConflictDoNothing();
+                    .onConflictDoNothing().run();
             }
         }
 

@@ -12,7 +12,7 @@ const dbContext = vi.hoisted(() => ({ db: undefined as any }));
 
 vi.mock("@/lib/server/database/async-storage", () => ({
     getDbClient: () => dbContext.db,
-    withTransaction: async <T>(action: () => Promise<T>) => action(),
+    withTransaction: <T>(action: () => T) => action(),
 }));
 
 
@@ -178,14 +178,14 @@ describe("InactiveAccountRepository.markAsDeleted", () => {
             userId: inactiveUserId,
             username: "inactive-user",
             lifecycleId: inactiveLifecycleId,
-        })).resolves.toBe(true);
+        })).toBe(true);
 
         await expect(service.deleteUserAccount({
             type: "inactive",
             userId: activeAgainUserId,
             username: "active-again-user",
             lifecycleId: activeAgainLifecycleId,
-        })).resolves.toBe(false);
+        })).toBe(false);
 
         expect(await getUser(inactiveUserId)).toBeUndefined();
         expect(await getUser(activeAgainUserId)).toBeDefined();

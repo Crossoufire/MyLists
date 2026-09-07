@@ -17,22 +17,22 @@ const TERMINAL_JOB_STATUSES = [
 
 
 export class ImportRepository {
-    static async requeueStaleProcessingJobs(staleAfterMinutes: number) {
+    static requeueStaleProcessingJobs(staleAfterMinutes: number) {
         const db = getDbClient();
 
-        const staleJobs = await db
+        const staleJobs = db
             .select({ id: importJobs.id })
             .from(importJobs)
             .where(and(
                 eq(importJobs.status, ImportJobStatus.PROCESSING),
                 lt(importJobs.updatedAt, sql`datetime('now', ${`-${staleAfterMinutes} minutes`})`),
-            ));
+            )).all();
 
         if (staleJobs.length === 0) return [];
 
         const staleJobIds = staleJobs.map(job => job.id);
 
-        await db
+        db
             .update(importItems)
             .set({
                 updatedAt: sql`datetime('now')`,
@@ -41,7 +41,7 @@ export class ImportRepository {
             .where(and(
                 inArray(importItems.jobId, staleJobIds),
                 eq(importItems.status, ImportItemStatus.PROCESSING),
-            ));
+            )).run();
 
         return db
             .update(importJobs)
@@ -55,7 +55,7 @@ export class ImportRepository {
                 inArray(importJobs.id, staleJobIds),
                 eq(importJobs.status, ImportJobStatus.PROCESSING),
             ))
-            .returning();
+            .returning().all();
     }
 
     static async markProcessingJobFailed(jobId: number, error: string) {
@@ -137,7 +137,7 @@ export class ImportRepository {
             .returning({ id: importItems.id });
     }
 
-    static async settleProcessingItems(jobId: number, outcomes: ImportItemOutcome[]) {
+    static settleProcessingItems(jobId: number, outcomes: ImportItemOutcome[]) {
         if (outcomes.length === 0) return [];
 
         const values = sql.join(outcomes.map(outcome => sql`(
@@ -170,8 +170,8 @@ export class ImportRepository {
         `);
     }
 
-    static async incrementJobCounters(jobId: number, delta: ImportJobCounterDelta) {
-        const [job] = await getDbClient()
+    static incrementJobCounters(jobId: number, delta: ImportJobCounterDelta) {
+        const [job] = getDbClient()
             .update(importJobs)
             .set({
                 updatedAt: sql`datetime('now')`,
@@ -181,7 +181,7 @@ export class ImportRepository {
                 processedCount: sql`${importJobs.processedCount} + ${delta.processedCount}`,
             })
             .where(and(eq(importJobs.id, jobId), eq(importJobs.status, ImportJobStatus.PROCESSING)))
-            .returning();
+            .returning().all();
 
         return job ?? null;
     }
@@ -359,11 +359,11 @@ export class ImportRepository {
         });
     }
 
-    static async insertParsedItems(jobId: number, items: ParsedImportItem[]) {
+    static insertParsedItems(jobId: number, items: ParsedImportItem[]) {
         for (let offset = 0; offset < items.length; offset += INSERT_BATCH_SIZE) {
             const batch = items.slice(offset, offset + INSERT_BATCH_SIZE);
 
-            await getDbClient()
+            getDbClient()
                 .insert(importItems)
                 .values(batch.map((item) => ({
                     jobId,
@@ -376,12 +376,12 @@ export class ImportRepository {
                     statusReason: item.statusReason,
                     externalApiId: item.externalApiId,
                     externalApiSource: item.externalApiSource,
-                })));
+                }))).run();
         }
     }
 
-    static async markJobQueued(jobId: number, totalCount: number, failedCount: number) {
-        const [job] = await getDbClient()
+    static markJobQueued(jobId: number, totalCount: number, failedCount: number) {
+        const [job] = getDbClient()
             .update(importJobs)
             .set({
                 totalCount,
@@ -391,7 +391,7 @@ export class ImportRepository {
                 updatedAt: sql`datetime('now')`,
             })
             .where(and(eq(importJobs.id, jobId), eq(importJobs.status, ImportJobStatus.PARSING)))
-            .returning();
+            .returning().all();
 
         return job ?? null;
     }

@@ -41,6 +41,6 @@ describe("drainImportJobs", () => {
 
 
 const createProcessor = (overrides: { processNextJob: ReturnType<typeof vi.fn> }) => ({
-    requeueStaleProcessingJobs: vi.fn().mockResolvedValue([]),
+    requeueStaleProcessingJobs: vi.fn().mockReturnValue([]),
     ...overrides,
 });

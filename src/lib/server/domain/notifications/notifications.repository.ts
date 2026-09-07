@@ -1,5 +1,5 @@
-import {NotifTab} from "@/lib/types/notifications.types";
 import {and, desc, eq, inArray, sql} from "drizzle-orm";
+import {NotifTab} from "@/lib/types/notifications.types";
 import {MediaType, SocialNotifType} from "@/lib/utils/enums";
 import {getDbClient} from "@/lib/server/database/async-storage";
 import {mediaNotifications, socialNotifications} from "@/lib/server/database/schema";
@@ -9,32 +9,32 @@ export class NotificationsRepository {
 
     // --- Social Notifications ---------------------------
 
-    static async createSocialNotification(data: typeof socialNotifications.$inferInsert) {
+    static createSocialNotification(data: typeof socialNotifications.$inferInsert) {
         if (data.featureRequestId) {
-            await getDbClient()
+            getDbClient()
                 .delete(socialNotifications)
                 .where(and(
                     eq(socialNotifications.type, data.type),
                     eq(socialNotifications.userId, data.userId),
                     eq(socialNotifications.actorId, data.actorId),
                     eq(socialNotifications.featureRequestId, data.featureRequestId),
-                ));
+                )).run();
         }
 
-        await getDbClient()
+        getDbClient()
             .insert(socialNotifications)
             .values(data)
-            .onConflictDoNothing();
+            .onConflictDoNothing().run();
     }
 
-    static async deleteSocialNotifsBetweenUsers(recipientId: number, actorId: number, types: SocialNotifType[]) {
-        await getDbClient()
+    static deleteSocialNotifsBetweenUsers(recipientId: number, actorId: number, types: SocialNotifType[]) {
+        getDbClient()
             .delete(socialNotifications)
             .where(and(
                 eq(socialNotifications.userId, recipientId),
                 eq(socialNotifications.actorId, actorId),
                 inArray(socialNotifications.type, types),
-            ));
+            )).run();
     }
 
     static async deleteSocialNotif(userId: number, notificationId: number) {
@@ -45,13 +45,14 @@ export class NotificationsRepository {
 
     // --- Media Notifications ---------------------------
 
-    static async createMediaNotification(data: typeof mediaNotifications.$inferInsert) {
-        await getDbClient()
+    static createMediaNotification(data: typeof mediaNotifications.$inferInsert) {
+        getDbClient()
             .insert(mediaNotifications)
-            .values(data);
+            .values(data)
+            .run();
     }
 
-    static async searchMediaNotification(userId: number, mediaType: MediaType, mediaId: number) {
+    static searchMediaNotification(userId: number, mediaType: MediaType, mediaId: number) {
         return getDbClient()
             .select()
             .from(mediaNotifications)
@@ -60,24 +61,24 @@ export class NotificationsRepository {
                 eq(mediaNotifications.mediaId, mediaId),
                 eq(mediaNotifications.mediaType, mediaType),
             ))
-            .orderBy(desc(mediaNotifications.createdAt))
+            .orderBy(desc(mediaNotifications.createdAt), desc(mediaNotifications.id))
             .get();
     }
 
-    static async deleteMediaNotifications(mediaType: MediaType, mediaIds: number[]) {
-        await getDbClient()
+    static deleteMediaNotifications(mediaType: MediaType, mediaIds: number[]) {
+        getDbClient()
             .delete(mediaNotifications)
-            .where(and(eq(mediaNotifications.mediaType, mediaType), inArray(mediaNotifications.mediaId, mediaIds)));
+            .where(and(eq(mediaNotifications.mediaType, mediaType), inArray(mediaNotifications.mediaId, mediaIds))).run();
     }
 
-    static async deleteUserMediaNotifications(userId: number, mediaType: MediaType, mediaId: number) {
-        await getDbClient()
+    static deleteUserMediaNotifications(userId: number, mediaType: MediaType, mediaId: number) {
+        getDbClient()
             .delete(mediaNotifications)
             .where(and(
                 eq(mediaNotifications.userId, userId),
                 eq(mediaNotifications.mediaId, mediaId),
                 eq(mediaNotifications.mediaType, mediaType),
-            ));
+            )).run();
     }
 
     // --- Both notifications ---------------------------

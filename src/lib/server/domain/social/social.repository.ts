@@ -1,25 +1,27 @@
 import {alias} from "drizzle-orm/sqlite-core";
-import {and, asc, eq, sql} from "drizzle-orm";
 import {SocialState} from "@/lib/utils/enums";
+import {and, asc, eq, sql} from "drizzle-orm";
 import {followers, user} from "@/lib/server/database/schema";
 import {getDbClient} from "@/lib/server/database/async-storage";
 
 
 export class SocialRepository {
-    static async follow(followerId: number, followedId: number, status: SocialState) {
-        await getDbClient()
+    static follow(followerId: number, followedId: number, status: SocialState) {
+        getDbClient()
             .insert(followers)
             .values({ followerId, followedId, status })
-            .onConflictDoNothing();
+            .onConflictDoNothing()
+            .run();
     }
 
-    static async unfollow(followerId: number, followedId: number) {
-        await getDbClient()
+    static unfollow(followerId: number, followedId: number) {
+        getDbClient()
             .delete(followers)
-            .where(and(eq(followers.followerId, followerId), eq(followers.followedId, followedId)));
+            .where(and(eq(followers.followerId, followerId), eq(followers.followedId, followedId)))
+            .run();
     }
 
-    static async acceptFollowRequest(followerId: number, followedId: number) {
+    static acceptFollowRequest(followerId: number, followedId: number) {
         return getDbClient()
             .update(followers)
             .set({ status: SocialState.ACCEPTED })
@@ -27,19 +29,19 @@ export class SocialRepository {
                 eq(followers.followerId, followerId),
                 eq(followers.followedId, followedId),
                 eq(followers.status, SocialState.REQUESTED),
-            ))
-            .returning({ id: followers.followerId });
+            )).returning({ id: followers.followerId })
+            .all();
     }
 
-    static async declineFollowRequest(followerId: number, followedId: number) {
+    static declineFollowRequest(followerId: number, followedId: number) {
         return getDbClient()
             .delete(followers)
             .where(and(
                 eq(followers.followerId, followerId),
                 eq(followers.followedId, followedId),
                 eq(followers.status, SocialState.REQUESTED),
-            ))
-            .returning({ id: followers.followerId });
+            )).returning({ id: followers.followerId })
+            .all();
     }
 
     static async getUserFollowers(currentUserId: number | undefined, userId: number, limit = 8) {
@@ -113,7 +115,7 @@ export class SocialRepository {
         return { followersCount, followsCount };
     }
 
-    static async getFollowingStatus(userId: number, followedId: number) {
+    static getFollowingStatus(userId: number, followedId: number) {
         return getDbClient()
             .select()
             .from(followers)

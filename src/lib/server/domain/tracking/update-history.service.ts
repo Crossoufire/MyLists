@@ -2,6 +2,7 @@ import {SimpleSearch} from "@/lib/schemas";
 import {MediaType} from "@/lib/utils/enums";
 import {Actor} from "@/lib/server/authorization";
 import {LogUpdateParams} from "@/lib/types/user-updates.types";
+import {withTransaction} from "@/lib/server/database/async-storage";
 import {UpdateHistoryRepository} from "@/lib/server/domain/tracking/update-history.repository";
 
 
@@ -13,21 +14,21 @@ export class UpdateHistoryService {
         return this.repository.getUserUpdates(userId, limit);
     }
 
-    async getUserMediaHistory(userId: number, mediaType: MediaType, mediaId: number) {
+    getUserMediaHistory(userId: number, mediaType: MediaType, mediaId: number) {
         return this.repository.getUserMediaHistory(userId, mediaType, mediaId);
     }
 
-    async deleteMediaUpdatesForUser(userId: number, mediaType: MediaType, mediaId: number) {
-        const updates = await this.repository.getUserMediaHistory(userId, mediaType, mediaId);
+    deleteMediaUpdatesForUser(userId: number, mediaType: MediaType, mediaId: number) {
+        const updates = this.repository.getUserMediaHistory(userId, mediaType, mediaId);
         const updateIds = updates.map((update) => update.id);
-        await this.repository.deleteUserUpdates(userId, updateIds, false);
+        this.repository.deleteUserUpdates(userId, updateIds, false);
     }
 
-    async deleteMediaUpdates(mediaType: MediaType, mediaIds: number[]) {
+    deleteMediaUpdates(mediaType: MediaType, mediaIds: number[]) {
         return this.repository.deleteMediaUpdates(mediaType, mediaIds);
     }
 
-    async deleteRecentInitialAdd(userId: number, mediaType: MediaType, mediaId: number) {
+    deleteRecentInitialAdd(userId: number, mediaType: MediaType, mediaId: number) {
         return this.repository.deleteRecentInitialAdd(userId, mediaType, mediaId);
     }
 
@@ -39,11 +40,11 @@ export class UpdateHistoryService {
         return this.repository.getFollowsUpdates(profileOwnerId, actor, limit);
     }
 
-    async deleteUserUpdates(userId: number, updateIds: number[], returnData: boolean) {
-        return this.repository.deleteUserUpdates(userId, updateIds, returnData);
+    deleteUserUpdates(userId: number, updateIds: number[], returnData: boolean) {
+        return withTransaction(() => this.repository.deleteUserUpdates(userId, updateIds, returnData));
     }
 
-    async logUpdate({ userId, mediaType, media, updateType, payload, timestamp }: LogUpdateParams) {
-        await this.repository.logUpdate({ userId, mediaType, media, updateType, payload, timestamp });
+    logUpdate({ userId, mediaType, media, updateType, payload, timestamp }: LogUpdateParams) {
+        this.repository.logUpdate({ userId, mediaType, media, updateType, payload, timestamp });
     }
 }

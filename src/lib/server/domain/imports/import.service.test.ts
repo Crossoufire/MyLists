@@ -43,7 +43,7 @@ describe("ImportService.createImportJob", () => {
 
     beforeEach(() => {
         vi.resetAllMocks();
-        transactionMocks.withTransaction.mockImplementation(async (action) => action());
+        transactionMocks.withTransaction.mockImplementation((action) => action());
         repository.createJob.mockResolvedValue({
             id: 10,
             userId: 42,
@@ -55,9 +55,9 @@ describe("ImportService.createImportJob", () => {
 
     it("re-queues stale processing jobs within a transaction", async () => {
         const jobs = [{ id: 10, status: ImportJobStatus.QUEUED }];
-        repository.requeueStaleProcessingJobs.mockResolvedValue(jobs);
+        repository.requeueStaleProcessingJobs.mockReturnValue(jobs);
 
-        await expect(service.requeueStaleProcessingJobs(6 * 60)).resolves.toBe(jobs);
+        await expect(service.requeueStaleProcessingJobs(6 * 60)).toBe(jobs);
         expect(transactionMocks.withTransaction).toHaveBeenCalledOnce();
         expect(repository.requeueStaleProcessingJobs).toHaveBeenCalledWith(6 * 60);
     });
@@ -80,11 +80,11 @@ describe("ImportService.createImportJob", () => {
             { itemId: 3, status: ImportItemStatus.FAILED, statusReason: "Provider error" },
         ] as const;
 
-        repository.settleProcessingItems.mockResolvedValue([
+        repository.settleProcessingItems.mockReturnValue([
             { id: 1, status: ImportItemStatus.COMPLETED },
             { id: 3, status: ImportItemStatus.FAILED },
         ]);
-        repository.incrementJobCounters.mockResolvedValue({ id: 10 });
+        repository.incrementJobCounters.mockReturnValue({ id: 10 });
 
         await expect(service.applyItemOutcomes(10, [...outcomes]))
             .resolves.toEqual([
@@ -107,10 +107,10 @@ describe("ImportService.createImportJob", () => {
             status: ImportItemStatus.COMPLETED,
         }));
 
-        repository.settleProcessingItems.mockImplementation(async (_jobId: number, batch: ImportItemOutcome[]) => {
+        repository.settleProcessingItems.mockImplementation((_jobId: number, batch: ImportItemOutcome[]) => {
             return batch.map(outcome => ({ id: outcome.itemId, status: outcome.status }));
         });
-        repository.incrementJobCounters.mockResolvedValue({ id: 10 });
+        repository.incrementJobCounters.mockReturnValue({ id: 10 });
 
         const applied = await service.applyItemOutcomes(10, outcomes);
 
@@ -129,7 +129,7 @@ describe("ImportService.createImportJob", () => {
         };
 
         parser.mockReturnValue(parsed);
-        repository.markJobQueued.mockResolvedValue(queuedJob);
+        repository.markJobQueued.mockReturnValue(queuedJob);
 
         await expect(service.createImportJob(42, ImportSource.MYLISTS, "csv")).resolves.toBe(queuedJob);
 
@@ -187,7 +187,7 @@ describe("ImportService.createImportJob", () => {
     it("rejects when the parsing job changes state before it can be queued", async () => {
         parser.mockReturnValue(createParsedImport());
 
-        repository.markJobQueued.mockResolvedValue(null);
+        repository.markJobQueued.mockReturnValue(null);
         repository.markJobFailed.mockResolvedValue(null);
 
         await expect(service.createImportJob(42, ImportSource.MYLISTS, "csv"))

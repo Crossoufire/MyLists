@@ -9,7 +9,7 @@ import {clearAdminCookie} from "@/lib/utils/admin-utils";
 import {ValidationError} from "@/lib/utils/error-classes";
 import {saveUploadedImage} from "@/lib/utils/image-saver";
 import {getUserStatsCacheKey} from "@/lib/server/core/cache-keys";
-import {transactionMiddleware} from "@/lib/server/middlewares/transaction";
+import {withTransaction} from "@/lib/server/database/async-storage";
 import {requiredAuthMiddleware} from "@/lib/server/middlewares/authentication";
 import {
     downloadListAsCsvSchema,
@@ -23,14 +23,14 @@ import {
 
 
 export const postGeneralSettings = createServerFn({ method: "POST" })
-    .middleware([requiredAuthMiddleware, transactionMiddleware])
+    .middleware([requiredAuthMiddleware])
     .validator((data) => generalSettingsSchema.parse(data instanceof FormData ? Object.fromEntries(data.entries()) : data))
     .handler(async ({ data, context: { currentUser } }) => {
         const accountService = await getContainer().then((c) => c.services.account);
         const updatesToApply: Partial<typeof user.$inferInsert> = { privacy: data.privacy };
 
         if (data.username !== currentUser.name.trim()) {
-            await accountService.findUserByName(data.username);
+            accountService.findUserByName(data.username);
             updatesToApply.name = data.username;
         }
 
@@ -52,12 +52,12 @@ export const postGeneralSettings = createServerFn({ method: "POST" })
             updatesToApply.backgroundImage = backgroundImageName;
         }
 
-        await accountService.updateUserSettings(currentUser.id, updatesToApply);
+        accountService.updateUserSettings(currentUser.id, updatesToApply);
     });
 
 
 export const postMediaListSettings = createServerFn({ method: "POST" })
-    .middleware([requiredAuthMiddleware, transactionMiddleware])
+    .middleware([requiredAuthMiddleware])
     .validator(mediaListSettingsSchema)
     .handler(async ({ data, context: { currentUser } }) => {
         const container = await getContainer();
@@ -78,8 +78,10 @@ export const postMediaListSettings = createServerFn({ method: "POST" })
             autoMoveCompletedTvToOnHold: data.autoMoveCompletedTvToOnHold,
         }
 
-        await accountService.updateUserSettings(currentUser.id, toUpdateInUser);
-        await statsService.updateUserMediaListSettings(currentUser.id, toUpdateInUserStats);
+        withTransaction(() => {
+            accountService.updateUserSettings(currentUser.id, toUpdateInUser);
+            statsService.updateUserMediaListSettings(currentUser.id, toUpdateInUserStats);
+        });
 
         // Re compute user's overview stats
         await container.cacheManager.del(getUserStatsCacheKey(currentUser.id, "overview"))
@@ -110,7 +112,7 @@ export const getProfileCustomSearch = createServerFn({ method: "GET" })
 
 
 export const postProfileCustomSettings = createServerFn({ method: "POST" })
-    .middleware([requiredAuthMiddleware, transactionMiddleware])
+    .middleware([requiredAuthMiddleware])
     .validator(highlightedMediaSettingsSchema)
     .handler(async ({ data, context: { currentUser } }) => {
         const profileService = await getContainer().then((c) => c.services.profile);
@@ -152,7 +154,7 @@ export const postDeleteUserAccount = createServerFn({ method: "POST" })
     .middleware([requiredAuthMiddleware])
     .handler(async ({ context: { currentUser } }) => {
         const accountService = await getContainer().then((c) => c.services.account);
-        const result = await accountService.deleteUserAccount({ userId: currentUser.id, type: "manual" });
+        const result = accountService.deleteUserAccount({ userId: currentUser.id, type: "manual" });
         clearAdminCookie();
         return result;
     });

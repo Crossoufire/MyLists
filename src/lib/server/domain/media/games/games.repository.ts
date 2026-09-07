@@ -31,8 +31,8 @@ export class GamesRepository extends BaseRepository<GamesServerDefinition> {
 
     // --- Implemented Methods ----------------------------------------------
 
-    async addMediaToUserList(userId: number, media: Game, newStatus: Status) {
-        const [newMedia] = await getDbClient()
+    addMediaToUserList(userId: number, media: Game, newStatus: Status) {
+        const [newMedia] = getDbClient()
             .insert(gamesList)
             .values({
                 userId,
@@ -40,13 +40,13 @@ export class GamesRepository extends BaseRepository<GamesServerDefinition> {
                 status: newStatus,
                 playtime: 0,
             })
-            .returning();
+            .returning().all();
 
         return newMedia;
     }
 
     async getCompatiblePlatforms(mediaId: number) {
-        // Get IGDB platforms names and then normalize then considering my GameEnum
+        // Get IGDB platforms names and normalize then considering my GameEnum
 
         const igdbPlatforms = await getDbClient()
             .select({ name: gamesPlatforms.name })
@@ -118,10 +118,10 @@ export class GamesRepository extends BaseRepository<GamesServerDefinition> {
         return result;
     }
 
-    async storeMediaWithDetails({ mediaData, companiesData, platformsData, genresData }: UpsertGameWithDetails) {
+    storeMediaWithDetails({ mediaData, companiesData, platformsData, genresData }: UpsertGameWithDetails) {
         const tx = getDbClient();
 
-        const [media] = await tx
+        const [media] = tx
             .insert(games)
             .values({
                 ...mediaData,
@@ -131,72 +131,72 @@ export class GamesRepository extends BaseRepository<GamesServerDefinition> {
                 target: games.apiId,
                 set: { lastApiUpdate: sql`datetime('now')` },
             })
-            .returning();
+            .returning().all();
 
         const mediaId = media.id;
         if (companiesData && companiesData.length > 0) {
             const companiesToAdd = companiesData.map(comp => ({ mediaId, ...comp }));
-            await tx.insert(gamesCompanies).values(companiesToAdd).onConflictDoNothing();
+            tx.insert(gamesCompanies).values(companiesToAdd).onConflictDoNothing().run();
         }
         if (platformsData && platformsData.length > 0) {
             const platformsToAdd = platformsData.map(plt => ({ mediaId, ...plt }));
-            await tx.insert(gamesPlatforms).values(platformsToAdd).onConflictDoNothing();
+            tx.insert(gamesPlatforms).values(platformsToAdd).onConflictDoNothing().run();
         }
         if (genresData && genresData.length > 0) {
             const genresToAdd = genresData.map(g => ({ mediaId, ...g }));
-            await tx.insert(gamesGenre).values(genresToAdd).onConflictDoNothing();
+            tx.insert(gamesGenre).values(genresToAdd).onConflictDoNothing().run();
         }
 
         return mediaId;
     }
 
-    async updateMediaWithDetails({ mediaData, companiesData, platformsData, genresData }: UpsertGameWithDetails) {
+    updateMediaWithDetails({ mediaData, companiesData, platformsData, genresData }: UpsertGameWithDetails) {
         const tx = getDbClient();
 
-        const [media] = await tx
+        const [media] = tx
             .update(games)
             .set({
                 ...mediaData,
                 lastApiUpdate: sql`datetime('now')`,
             })
             .where(eq(games.apiId, mediaData.apiId))
-            .returning({ id: games.id })
+            .returning({ id: games.id }).all()
 
         const mediaId = media.id;
         if (companiesData !== undefined) {
-            await tx
+            tx
                 .delete(gamesCompanies)
-                .where(eq(gamesCompanies.mediaId, mediaId));
+                .where(eq(gamesCompanies.mediaId, mediaId)).run();
 
             if (companiesData.length > 0) {
-                await tx
+                tx
                     .insert(gamesCompanies)
                     .values(companiesData.map(comp => ({ mediaId, ...comp })))
-                    .onConflictDoNothing();
+                    .onConflictDoNothing().run();
             }
         }
         if (platformsData !== undefined) {
-            await tx
+            tx
                 .delete(gamesPlatforms)
-                .where(eq(gamesPlatforms.mediaId, mediaId));
+                .where(eq(gamesPlatforms.mediaId, mediaId)).run();
 
             if (platformsData.length > 0) {
-                await tx
+                tx
                     .insert(gamesPlatforms)
                     .values(platformsData.map(plt => ({ mediaId, ...plt })))
-                    .onConflictDoNothing();
+                    .onConflictDoNothing().run();
             }
         }
         if (genresData !== undefined) {
-            await tx
+            tx
                 .delete(gamesGenre)
-                .where(eq(gamesGenre.mediaId, mediaId));
+                .where(eq(gamesGenre.mediaId, mediaId)).run();
 
             if (genresData.length > 0) {
-                await tx
+                tx
                     .insert(gamesGenre)
                     .values(genresData.map(genre => ({ mediaId, ...genre })))
-                    .onConflictDoNothing();
+                    .onConflictDoNothing().run();
             }
         }
 

@@ -1,11 +1,14 @@
 import {db} from "@/lib/server/database/db";
+import {isAsyncFunction} from "node:util/types";
 import {AsyncLocalStorage} from "node:async_hooks";
 import * as schema from "@/lib/server/database/schema";
 import {ExtractTablesWithRelations} from "drizzle-orm";
 import {SQLiteBunTransaction} from "drizzle-orm/bun-sqlite";
 
 
-export type TransactionClient = SQLiteBunTransaction<typeof schema, ExtractTablesWithRelations<typeof schema>>;
+type ActionType<T> = (tx: TransactionClient) => T & (T extends PromiseLike<unknown> ? never : unknown);
+type TransactionClient = SQLiteBunTransaction<typeof schema, ExtractTablesWithRelations<typeof schema>>;
+
 
 const dbTransactionLocalStorage = new AsyncLocalStorage<TransactionClient>();
 
@@ -16,16 +19,30 @@ export const getDbClient = () => {
 };
 
 
-export const withTransaction = async <T>(action: (tx: TransactionClient) => Promise<T>) => {
-    const existingTransaction = dbTransactionLocalStorage.getStore();
-    if (existingTransaction) {
-        return action(existingTransaction);
+// Bun SQLite commits when callback returns. Promises must never escape transaction callback.
+export const withTransaction = <T>(action: ActionType<T>) => {
+    if (isAsyncFunction(action)) {
+        throw new TypeError("Transaction callbacks must be synchronous");
     }
 
-    const result = await db.transaction(async (tx) => {
-        const handlerResult = await dbTransactionLocalStorage.run(tx, async () => await action(tx));
-        return handlerResult;
-    });
+    const run = (tx: TransactionClient) => {
+        const result = action(tx);
+        if (result != null && typeof (result as { then?: unknown }).then === "function") {
+            throw new TypeError("Transaction callbacks must return synchronous result; execute Drizzle queries " +
+                "with .run(), .get(), or .all()");
+        }
 
-    return result;
+        return result;
+    };
+
+    const existingTransaction = dbTransactionLocalStorage.getStore();
+    if (existingTransaction) {
+        return run(existingTransaction);
+    }
+
+    // Acquire the write lock before reading to avoid snapshot upgrade failures.
+    return db
+        .transaction((tx) => {
+            return dbTransactionLocalStorage.run(tx, () => run(tx));
+        }, { behavior: "immediate" });
 };

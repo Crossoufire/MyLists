@@ -52,9 +52,9 @@ export class ProfileService {
         return this._resolveSettingsDefaults(savedSettings);
     }
 
-    async saveHighlightedMediaSettings(userId: number, settings: HighlightedMediaSettings) {
+    saveHighlightedMediaSettings(userId: number, settings: HighlightedMediaSettings) {
         const normalizedSettings = this._resolveSettingsDefaults(settings);
-        await this.repository.upsertHighlightedMediaSettings(userId, normalizedSettings);
+        this.repository.upsertHighlightedMediaSettings(userId, normalizedSettings);
 
         return normalizedSettings;
     }

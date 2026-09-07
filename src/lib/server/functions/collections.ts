@@ -1,12 +1,11 @@
 import {toActor} from "@/lib/server/authorization";
 import {createServerFn} from "@tanstack/react-start";
 import {getContainer} from "@/lib/server/core/container";
-import {transactionMiddleware} from "@/lib/server/middlewares/transaction";
 import {contentAuthorizationMiddleware} from "@/lib/server/middlewares/authorization";
 import {publicAuthMiddleware, requiredAuthMiddleware} from "@/lib/server/middlewares/authentication";
 import {
-    collectionIdSchema,
     collectionDetailsReadSchema,
+    collectionIdSchema,
     collectionMediaItemActionSchema,
     collectionMediaMembershipsSchema,
     communityCollectionsSchema,
@@ -78,59 +77,59 @@ export const getEditCollectionDetails = createServerFn({ method: "GET" })
 
 
 export const postCreateCollection = createServerFn({ method: "POST" })
-    .middleware([requiredAuthMiddleware, transactionMiddleware])
+    .middleware([requiredAuthMiddleware])
     .validator(createCollectionSchema)
     .handler(async ({ data, context: { currentUser } }) => {
         const container = await getContainer();
         const collectionService = container.services.collections;
-        const collectionId = await collectionService.createCollection({ ...data, ownerId: currentUser.id });
+        const collectionId = collectionService.createCollection({ ...data, ownerId: currentUser.id });
 
         return { id: collectionId };
     });
 
 
 export const postUpdateCollection = createServerFn({ method: "POST" })
-    .middleware([requiredAuthMiddleware, transactionMiddleware])
+    .middleware([requiredAuthMiddleware])
     .validator(updateCollectionSchema)
     .handler(async ({ data, context: { currentUser } }) => {
         const container = await getContainer();
         const collectionService = container.services.collections;
-        await collectionService.updateCollection({ ...data, actor: toActor(currentUser) });
+        collectionService.updateCollection({ ...data, actor: toActor(currentUser) });
     });
 
 
 export const postAddMediaToCollection = createServerFn({ method: "POST" })
-    .middleware([requiredAuthMiddleware, transactionMiddleware])
+    .middleware([requiredAuthMiddleware])
     .validator(collectionMediaItemActionSchema)
     .handler(async ({ data, context: { currentUser } }) => {
         const container = await getContainer();
         const collectionService = container.services.collections;
-        await collectionService.addMediaToCollection({ ...data, actor: toActor(currentUser) });
+        collectionService.addMediaToCollection({ ...data, actor: toActor(currentUser) });
     });
 
 
 export const postRemoveMediaFromCollection = createServerFn({ method: "POST" })
-    .middleware([requiredAuthMiddleware, transactionMiddleware])
+    .middleware([requiredAuthMiddleware])
     .validator(collectionMediaItemActionSchema)
     .handler(async ({ data, context: { currentUser } }) => {
         const container = await getContainer();
         const collectionService = container.services.collections;
-        await collectionService.removeMediaFromCollection({ ...data, actor: toActor(currentUser) });
+        collectionService.removeMediaFromCollection({ ...data, actor: toActor(currentUser) });
     });
 
 
 export const postDeleteCollection = createServerFn({ method: "POST" })
-    .middleware([requiredAuthMiddleware, transactionMiddleware])
+    .middleware([requiredAuthMiddleware])
     .validator(collectionIdSchema)
     .handler(async ({ data: { collectionId }, context: { currentUser } }) => {
         const container = await getContainer();
         const collectionService = container.services.collections;
-        await collectionService.deleteCollection(collectionId, toActor(currentUser));
+        collectionService.deleteCollection(collectionId, toActor(currentUser));
     });
 
 
 export const postToggleCollectionLike = createServerFn({ method: "POST" })
-    .middleware([requiredAuthMiddleware, transactionMiddleware])
+    .middleware([requiredAuthMiddleware])
     .validator(collectionIdSchema)
     .handler(async ({ data: { collectionId }, context: { currentUser } }) => {
         const container = await getContainer();
@@ -140,7 +139,7 @@ export const postToggleCollectionLike = createServerFn({ method: "POST" })
 
 
 export const postCopyCollection = createServerFn({ method: "POST" })
-    .middleware([requiredAuthMiddleware, transactionMiddleware])
+    .middleware([requiredAuthMiddleware])
     .validator(collectionIdSchema)
     .handler(async ({ data: { collectionId }, context: { currentUser } }) => {
         const container = await getContainer();

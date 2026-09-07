@@ -18,7 +18,7 @@ export class AuthorizationService {
         return profilePolicy.decide(actor, profile);
     }
 
-    async decideCollection(actor: Actor, action: CollectionAction, collection: CollectionSubject): Promise<AccessDecision> {
+    decideCollection(actor: Actor, action: CollectionAction, collection: CollectionSubject): AccessDecision {
         const needsFollowerRelationship = (
             actor.kind === "user"
             && actor.id !== collection.ownerId
@@ -28,7 +28,7 @@ export class AuthorizationService {
         );
 
         if (needsFollowerRelationship) {
-            const followStatus = await this.socialService.getFollowingStatus(actor.id, collection.ownerId);
+            const followStatus = this.socialService.getFollowingStatus(actor.id, collection.ownerId);
             return collectionPolicy.decide(actor, action, collection, { acceptedFollower: followStatus?.status === SocialState.ACCEPTED });
         }
 

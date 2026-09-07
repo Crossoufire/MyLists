@@ -6,7 +6,7 @@ import {AuthorizationService} from "@/lib/server/authorization/authorization.ser
 
 
 const createService = (status?: SocialState) => {
-    const getFollowingStatus = vi.fn().mockResolvedValue(status ? { status } : null);
+    const getFollowingStatus = vi.fn().mockReturnValue(status ? { status } : null);
     const socialService = { getFollowingStatus } as unknown as SocialService;
 
     return {
@@ -68,8 +68,7 @@ describe("AuthorizationService", () => {
         };
 
         for (const action of ["read", "like", "copy"] as const) {
-            await expect(service.decideCollection(actor, action, collection))
-                .resolves.toEqual({ allowed: true });
+            await expect(service.decideCollection(actor, action, collection)).toEqual({ allowed: true });
         }
 
         expect(getFollowingStatus).toHaveBeenCalledTimes(3);
@@ -122,8 +121,7 @@ describe("AuthorizationService", () => {
             ownerPrivacy: PrivacyType.PRIVATE,
         };
 
-        await expect(service.decideCollection(actor, "read", collection))
-            .resolves.toEqual({ allowed: true });
+        await expect(service.decideCollection(actor, "read", collection)).toEqual({ allowed: true });
 
         expect(getFollowingStatus).not.toHaveBeenCalled();
     });

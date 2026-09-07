@@ -20,14 +20,14 @@ export const computeAllUsersStatsTask = defineTask({
             await ctx.step(`stats-${mediaType}`, async () => {
                 const mediaStatistics = mediaStatsRegistry.get(mediaType);
 
-                await withTransaction(async () => {
-                    const userMediaStats = await mediaStatistics.computeAllUsersStats();
+                withTransaction(() => {
+                    const userMediaStats = mediaStatistics.computeAllUsersStats();
 
                     if (userMediaStats.length === 0) {
                         ctx.warn(`No users found with ${mediaType} data to compute.`);
                     }
 
-                    await statsService.updateAllUsersPreComputedStats(mediaType, userMediaStats);
+                    statsService.updateAllUsersPreComputedStats(mediaType, userMediaStats);
                 });
             });
         }

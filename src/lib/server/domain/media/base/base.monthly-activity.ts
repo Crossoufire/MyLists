@@ -117,11 +117,9 @@ export const createMediaMonthlyActivity = ({ definition, repository, durationCol
             return media.map(({ customCover, ...item }) => ({ ...item, imageCover: customCover ?? item.imageCover }));
         },
 
-        async hasUserMedia(userId: number, mediaId: number) {
-            const [media, userMedia] = await Promise.all([
-                repository.findById(mediaId),
-                repository.findUserMedia(userId, mediaId),
-            ]);
+        hasUserMedia(userId: number, mediaId: number) {
+            const [media, userMedia] = [repository.findById(mediaId),
+                repository.findUserMedia(userId, mediaId)];
 
             return {
                 mediaExists: !!media,

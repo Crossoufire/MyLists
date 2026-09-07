@@ -2,6 +2,7 @@ import {notFound} from "@tanstack/react-router";
 import {Status, UpdateType} from "@/lib/utils/enums";
 import {saveImageFromUrl} from "@/lib/utils/image-saver";
 import {LogPayload} from "@/lib/types/user-updates.types";
+import {withTransaction} from "@/lib/server/database/async-storage";
 import {BaseService} from "@/lib/server/domain/media/base/base.service";
 import {Game, GamesList} from "@/lib/server/domain/media/games/games.types";
 import {PlaytimePayload, StatusPayload} from "@/lib/types/user-media.types";
@@ -25,7 +26,7 @@ export class GamesService extends BaseService<GamesServerDefinition, GamesReposi
         const { editableFields } = this.servicePolicy;
 
         const fields: Record<string, any> = {};
-        const media = await this.repository.findById(mediaId);
+        const media = this.repository.findById(mediaId);
         if (!media) throw notFound();
 
         editableFields.forEach((field) => {
@@ -38,7 +39,7 @@ export class GamesService extends BaseService<GamesServerDefinition, GamesReposi
     }
 
     async getCompatiblePlatforms(mediaId: number) {
-        const media = await this.repository.findById(mediaId);
+        const media = this.repository.findById(mediaId);
         if (!media) throw notFound();
 
         return this.repository.getCompatiblePlatforms(mediaId);
@@ -48,7 +49,7 @@ export class GamesService extends BaseService<GamesServerDefinition, GamesReposi
         const { editableFields } = this.servicePolicy;
         const { coverDirectory } = this.identity;
 
-        const media = await this.repository.findById(mediaId);
+        const media = this.repository.findById(mediaId);
         if (!media) throw notFound();
 
         const fields = {} as Record<Partial<keyof Game>, any>;
@@ -70,7 +71,7 @@ export class GamesService extends BaseService<GamesServerDefinition, GamesReposi
             }
         }
 
-        await this.repository.updateMediaWithDetails({ mediaData: fields });
+        withTransaction(() => this.repository.updateMediaWithDetails({ mediaData: fields }));
     }
 
     updateStatusHandler(currentState: GamesList, payload: StatusPayload, _media: Game): [GamesList, LogPayload] {

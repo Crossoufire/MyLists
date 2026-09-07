@@ -1,6 +1,5 @@
 import {createServerFn} from "@tanstack/react-start";
 import {getContainer} from "@/lib/server/core/container";
-import {transactionMiddleware} from "@/lib/server/middlewares/transaction";
 import {requiredAuthMiddleware} from "@/lib/server/middlewares/authentication";
 import {contentAuthorizationMiddleware} from "@/lib/server/middlewares/authorization";
 import {
@@ -42,7 +41,7 @@ export const getMonthlyActivityMediaSearch = createServerFn({ method: "GET" })
 
 
 export const postUpdateMonthlyActivity = createServerFn({ method: "POST" })
-    .middleware([requiredAuthMiddleware, transactionMiddleware])
+    .middleware([requiredAuthMiddleware])
     .validator(updateMonthlyActivitySchema)
     .handler(async ({ data: { activityId, payload }, context: { currentUser } }) => {
         const activityService = await getContainer().then(c => c.services.activity);
@@ -51,25 +50,25 @@ export const postUpdateMonthlyActivity = createServerFn({ method: "POST" })
 
 
 export const postAddMonthlyActivity = createServerFn({ method: "POST" })
-    .middleware([requiredAuthMiddleware, transactionMiddleware])
+    .middleware([requiredAuthMiddleware])
     .validator(addMonthlyActivitySchema)
     .handler(async ({ data, context: { currentUser } }) => {
         const activityService = await getContainer().then(c => c.services.activity);
-        await activityService.addMonthlyActivity(currentUser.id, data);
+        activityService.addMonthlyActivity(currentUser.id, data);
     });
 
 
 export const postRemoveMonthlyActivity = createServerFn({ method: "POST" })
-    .middleware([requiredAuthMiddleware, transactionMiddleware])
+    .middleware([requiredAuthMiddleware])
     .validator(removeMonthlyActivitySchema)
     .handler(async ({ data: { activityId }, context: { currentUser } }) => {
         const activityService = await getContainer().then(c => c.services.activity);
-        await activityService.removeFromMonth(currentUser.id, activityId);
+        activityService.removeFromMonth(currentUser.id, activityId);
     });
 
 
 export const postBulkHideActivity = createServerFn({ method: "POST" })
-    .middleware([requiredAuthMiddleware, transactionMiddleware])
+    .middleware([requiredAuthMiddleware])
     .validator(bulkHideActivitySchema)
     .handler(async ({ data, context: { currentUser } }) => {
         const activityService = await getContainer().then(c => c.services.activity);

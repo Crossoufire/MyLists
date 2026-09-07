@@ -1,7 +1,7 @@
 import {alias} from "drizzle-orm/sqlite-core";
 import {getDbClient} from "@/lib/server/database/async-storage";
-import {ApiProviderType, MediaType, PrivacyType} from "@/lib/utils/enums";
 import {HighlightedMediaSettings} from "@/lib/types/profile-custom.types";
+import {ApiProviderType, MediaType, PrivacyType} from "@/lib/utils/enums";
 import {and, asc, count, eq, gte, isNotNull, like, sql, sum} from "drizzle-orm";
 import {ProviderSearchResult, ProviderSearchResults} from "@/lib/types/provider.types";
 import {followers, profileCustom, user, userMediaSettings} from "@/lib/server/database/schema";
@@ -108,8 +108,8 @@ export class ProfileRepository {
         return settings?.value as HighlightedMediaSettings | undefined;
     }
 
-    static async upsertHighlightedMediaSettings(userId: number, value: HighlightedMediaSettings) {
-        await getDbClient()
+    static upsertHighlightedMediaSettings(userId: number, value: HighlightedMediaSettings) {
+        getDbClient()
             .insert(profileCustom)
             .values({ userId, key: "highlightedMedia", value })
             .onConflictDoUpdate({
@@ -118,6 +118,6 @@ export class ProfileRepository {
                     value,
                     updatedAt: sql`datetime('now')`,
                 },
-            });
+            }).run();
     }
 }

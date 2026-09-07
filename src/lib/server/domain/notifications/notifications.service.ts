@@ -1,5 +1,6 @@
 import {MediaType, SocialNotifType} from "@/lib/utils/enums";
 import {compareCalendarDates} from "@/lib/utils/date-formatting";
+import {withTransaction} from "@/lib/server/database/async-storage";
 import {NotifTab, UpComingMedia} from "@/lib/types/notifications.types";
 import {NotificationsRepository} from "@/lib/server/domain/notifications/notifications.repository";
 
@@ -11,11 +12,11 @@ export class NotificationsService {
     // --- Social Notifications -----------------------------
 
     async deleteSocialNotifsBetweenUsers(recipientId: number, actorId: number, types: SocialNotifType[]) {
-        await this.repository.deleteSocialNotifsBetweenUsers(recipientId, actorId, types);
+        this.repository.deleteSocialNotifsBetweenUsers(recipientId, actorId, types);
     }
 
-    async createSocialNotification(data: { userId: number; actorId: number; type: SocialNotifType; featureRequestId?: number | null }) {
-        await this.repository.createSocialNotification(data);
+    createSocialNotification(data: { userId: number; actorId: number; type: SocialNotifType; featureRequestId?: number | null }) {
+        this.repository.createSocialNotification(data);
     }
 
     async deleteSocialNotif(userId: number, notificationId: number) {
@@ -26,50 +27,52 @@ export class NotificationsService {
 
     async createMediaNotifications(mediaType: MediaType, mediaArray: UpComingMedia[]) {
         for (const item of mediaArray) {
-            const notification = await this.repository.searchMediaNotification(item.userId, mediaType, item.mediaId);
+            withTransaction(() => {
+                const notification = this.repository.searchMediaNotification(item.userId, mediaType, item.mediaId);
 
-            if (mediaType === MediaType.SERIES || mediaType === MediaType.ANIME) {
-                if (
-                    notification
-                    && compareCalendarDates(notification.releaseDate, item.date) === 0 &&
-                    notification.episode === item.episodeToAir &&
-                    notification.season === item.seasonToAir
-                ) {
-                    continue;
+                if (mediaType === MediaType.SERIES || mediaType === MediaType.ANIME) {
+                    if (
+                        notification
+                        && compareCalendarDates(notification.releaseDate, item.date) === 0 &&
+                        notification.episode === item.episodeToAir &&
+                        notification.season === item.seasonToAir
+                    ) {
+                        return;
+                    }
+
+                    this.repository.createMediaNotification({
+                        userId: item.userId,
+                        name: item.mediaName,
+                        mediaType: mediaType,
+                        mediaId: item.mediaId,
+                        releaseDate: item.date,
+                        season: item.seasonToAir,
+                        episode: item.episodeToAir,
+                        isSeasonFinale: item.lastEpisode === item.episodeToAir && item.episodeToAir !== 1,
+                    });
                 }
+                else {
+                    if (notification && compareCalendarDates(notification.releaseDate, item.date) === 0) {
+                        return;
+                    }
 
-                await this.repository.createMediaNotification({
-                    userId: item.userId,
-                    name: item.mediaName,
-                    mediaType: mediaType,
-                    mediaId: item.mediaId,
-                    releaseDate: item.date,
-                    season: item.seasonToAir,
-                    episode: item.episodeToAir,
-                    isSeasonFinale: item.lastEpisode === item.episodeToAir && item.episodeToAir !== 1,
-                });
-            }
-            else {
-                if (notification && compareCalendarDates(notification.releaseDate, item.date) === 0) {
-                    continue;
+                    this.repository.createMediaNotification({
+                        userId: item.userId,
+                        name: item.mediaName,
+                        mediaType: mediaType,
+                        mediaId: item.mediaId,
+                        releaseDate: item.date,
+                    });
                 }
-
-                await this.repository.createMediaNotification({
-                    userId: item.userId,
-                    name: item.mediaName,
-                    mediaType: mediaType,
-                    mediaId: item.mediaId,
-                    releaseDate: item.date,
-                });
-            }
+            });
         }
     }
 
-    async deleteMediaNotifications(mediaType: MediaType, mediaIds: number[]) {
+    deleteMediaNotifications(mediaType: MediaType, mediaIds: number[]) {
         return this.repository.deleteMediaNotifications(mediaType, mediaIds);
     }
 
-    async deleteUserMediaNotifications(userId: number, mediaType: MediaType, mediaId: number) {
+    deleteUserMediaNotifications(userId: number, mediaType: MediaType, mediaId: number) {
         return this.repository.deleteUserMediaNotifications(userId, mediaType, mediaId);
     }
 

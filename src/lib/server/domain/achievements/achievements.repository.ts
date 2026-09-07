@@ -1,20 +1,19 @@
-import {db} from "@/lib/server/database/db";
 import {AchievementTier} from "@/lib/schemas";
 import {StatsCTE} from "@/lib/types/media-common.types";
-import {getDbClient} from "@/lib/server/database/async-storage";
 import {AchievementDifficulty, MediaType} from "@/lib/utils/enums";
 import {Achievement, AchievementSeedData} from "@/lib/types/achievements.types";
+import {getDbClient, withTransaction} from "@/lib/server/database/async-storage";
 import {and, asc, count, desc, eq, inArray, max, notInArray, sql} from "drizzle-orm";
 import {achievement, achievementTier, user, userAchievement, userMediaSettings} from "@/lib/server/database/schema";
 
 
 export class AchievementsRepository {
-    static async seedAchievements(mediaType: MediaType, achievementsDef: readonly AchievementSeedData[]) {
+    static seedAchievements(mediaType: MediaType, achievementsDef: readonly AchievementSeedData[]) {
         const tx = getDbClient();
 
         // Upsert achievements and tiers
-        await Promise.all(achievementsDef.map(async (achievementData) => {
-            const [syncedAchievement] = await tx
+        achievementsDef.forEach((achievementData) => {
+            const [syncedAchievement] = tx
                 .insert(achievement)
                 .values({
                     name: achievementData.name,
@@ -32,18 +31,18 @@ export class AchievementsRepository {
                         description: achievementData.description,
                     },
                 })
-                .returning();
+                .returning().all();
 
             const tierDiffs = achievementData.tiers.map((tier) => tier.difficulty);
 
-            await tx
+            tx
                 .delete(achievementTier)
                 .where(and(
                     notInArray(achievementTier.difficulty, tierDiffs),
                     eq(achievementTier.achievementId, syncedAchievement.id),
-                ));
+                )).run();
 
-            await tx
+            tx
                 .insert(achievementTier)
                 .values(achievementData.tiers.map((tierData) => ({
                     criteria: tierData.criteria,
@@ -53,22 +52,21 @@ export class AchievementsRepository {
                 .onConflictDoUpdate({
                     target: [achievementTier.achievementId, achievementTier.difficulty],
                     set: { criteria: sql`excluded.criteria` },
-                });
-        }));
+                }).run();
+        });
 
         // Remove orphaned achievements and tiers
         const achCodeNames = achievementsDef.map((ach) => ach.codeName);
 
-        const orphanedAchievementIds = await tx
+        const orphanedAchievementIds = tx
             .select({ id: achievement.id })
             .from(achievement)
-            .where(and(eq(achievement.mediaType, mediaType), notInArray(achievement.codeName, achCodeNames)))
-            .then((rows) => rows.map((r) => r.id));
+            .where(and(eq(achievement.mediaType, mediaType), notInArray(achievement.codeName, achCodeNames))).all().map((r) => r.id);
 
         if (orphanedAchievementIds.length > 0) {
-            await tx
+            tx
                 .delete(achievement)
-                .where(inArray(achievement.id, orphanedAchievementIds));
+                .where(inArray(achievement.id, orphanedAchievementIds)).run();
         }
     }
 
@@ -79,13 +77,13 @@ export class AchievementsRepository {
             .where(eq(achievement.id, achId));
     }
 
-    static async updateTiersForAdmin(tiers: AchievementTier[]) {
-        return db.transaction(async (tx) => {
+    static updateTiersForAdmin(tiers: AchievementTier[]) {
+        return withTransaction((tx) => {
             for (const tier of tiers) {
-                await tx
+                tx
                     .update(achievementTier)
                     .set({ criteria: tier.criteria })
-                    .where(eq(achievementTier.id, tier.id));
+                    .where(eq(achievementTier.id, tier.id)).run();
             }
         });
     }

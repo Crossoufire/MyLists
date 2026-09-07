@@ -1,6 +1,7 @@
 import {SearchType} from "@/lib/schemas";
 import {FormattedError} from "@/lib/utils/error-classes";
 import {pixelateImage} from "@/lib/utils/image-pixelation";
+import {withTransaction} from "@/lib/server/database/async-storage";
 import {MoviesService} from "@/lib/server/domain/media/movies/movies.service";
 import {MediadleRepository} from "@/lib/server/domain/mediadle/mediadle.repository";
 
@@ -13,47 +14,51 @@ export class MediadleService {
         return this.repository.getAllUsersStatsForAdmin(data);
     }
 
-    async getLeaderboard(currentUserId?: number) {
+    getLeaderboard(currentUserId?: number) {
         return this.repository.getLeaderboard(currentUserId);
     }
 
-    async getUserMediadleStats(userId: number) {
-        const userMediadleStats = await this.repository.getUserMediadleStats(userId);
+    getUserMediadleStats(userId: number) {
+        const userMediadleStats = this.repository.getUserMediadleStats(userId);
         if (!userMediadleStats) {
             return null;
         }
 
-        const attempts = await this.repository.getUserAttempts(userId);
+        const attempts = this.repository.getUserAttempts(userId);
 
         return { ...userMediadleStats, attempts };
     }
 
     async getDailyMediadleData(mediaService: MoviesService, userId?: number) {
-        let dailyMediadle = await this.repository.getTodayMoviedle();
-        if (!dailyMediadle) {
-            dailyMediadle = await this.repository.createDailyMoviedle();
-        }
-
-        const selectedMovie = await mediaService.findById(dailyMediadle.mediaId);
-        if (!selectedMovie) {
-            throw new Error("mediaId for mediadle not found");
-        }
-
-        let userData = undefined;
-        if (userId) {
-            const userStats = await this.getUserMediadleStats(userId);
-            let userProgress = await this.repository.getUserProgress(userId, dailyMediadle.id);
-            if (!userProgress) {
-                userProgress = await this.repository.createUserProgress(userId, dailyMediadle.id);
+        const { dailyMediadle, selectedMovie, userData } = withTransaction(() => {
+            let dailyMediadle = this.repository.getTodayMoviedle();
+            if (!dailyMediadle) {
+                dailyMediadle = this.repository.createDailyMoviedle();
             }
 
-            userData = {
-                stats: userStats,
-                attempts: userProgress.attempts,
-                completed: userProgress.completed,
-                succeeded: userProgress.succeeded,
-            };
-        }
+            const selectedMovie = mediaService.findById(dailyMediadle.mediaId);
+            if (!selectedMovie) {
+                throw new Error("mediaId for mediadle not found");
+            }
+
+            let userData = undefined;
+            if (userId) {
+                const userStats = this.getUserMediadleStats(userId);
+                let userProgress = this.repository.getUserProgress(userId, dailyMediadle.id);
+                if (!userProgress) {
+                    userProgress = this.repository.createUserProgress(userId, dailyMediadle.id);
+                }
+
+                userData = {
+                    stats: userStats,
+                    attempts: userProgress.attempts,
+                    completed: userProgress.completed,
+                    succeeded: userProgress.succeeded,
+                };
+            }
+
+            return { dailyMediadle, selectedMovie, userData };
+        });
 
         const currentAttempts = userData ? userData.attempts : 0;
         const isCompleted = userData ? userData.completed : false;
@@ -74,35 +79,37 @@ export class MediadleService {
         };
     }
 
-    async addMediadleGuess(userId: number, guess: string, movieService: MoviesService) {
-        const dailyMediadle = await this.repository.getTodayMoviedle();
-        if (!dailyMediadle) {
-            throw new FormattedError("Today's mediadle not found");
-        }
+    addMediadleGuess(userId: number, guess: string, movieService: MoviesService) {
+        return withTransaction(() => {
+            const dailyMediadle = this.repository.getTodayMoviedle();
+            if (!dailyMediadle) {
+                throw new FormattedError("Today's mediadle not found");
+            }
 
-        const progress = await this.repository.getUserProgress(userId, dailyMediadle.id);
-        if (!progress) throw new FormattedError("Progress not found");
-        if (progress.completed) throw new FormattedError("Mediadle already completed");
+            const progress = this.repository.getUserProgress(userId, dailyMediadle.id);
+            if (!progress) throw new FormattedError("Progress not found");
+            if (progress.completed) throw new FormattedError("Mediadle already completed");
 
-        const selectedMovie = await movieService.findById(dailyMediadle.mediaId);
-        if (!selectedMovie) throw new Error("mediaId for mediadle not found");
+            const selectedMovie = movieService.findById(dailyMediadle.mediaId);
+            if (!selectedMovie) throw new Error("mediaId for mediadle not found");
 
-        const correct = selectedMovie.name.toLowerCase().trim() === guess.toLowerCase().trim();
-        const potentialAttempts = progress.attempts + 1;
-        const isCompleted = correct || (potentialAttempts >= dailyMediadle.pixelationLevels);
+            const correct = selectedMovie.name.toLowerCase().trim() === guess.toLowerCase().trim();
+            const potentialAttempts = progress.attempts + 1;
+            const isCompleted = correct || (potentialAttempts >= dailyMediadle.pixelationLevels);
 
-        const updatedProgress = await this.repository.incrementUserAttempts(userId, dailyMediadle.id, isCompleted, correct);
-        if (updatedProgress.completed) {
-            let stats = await this.repository.getUserMediadleStats(userId);
-            if (!stats) stats = await this.repository.createMediadleStats(userId, dailyMediadle.mediaType);
-            await this.repository.updateMediadleStats(stats.id, isCompleted, correct, updatedProgress.attempts!);
-        }
+            const updatedProgress = this.repository.incrementUserAttempts(userId, dailyMediadle.id, isCompleted, correct);
+            if (updatedProgress.completed) {
+                let stats = this.repository.getUserMediadleStats(userId);
+                if (!stats) stats = this.repository.createMediadleStats(userId, dailyMediadle.mediaType);
+                this.repository.updateMediadleStats(stats.id, isCompleted, correct, updatedProgress.attempts!);
+            }
 
-        return {
-            correct,
-            completed: isCompleted,
-            attempts: updatedProgress.attempts!,
-            maxAttempts: dailyMediadle.pixelationLevels!,
-        };
+            return {
+                correct,
+                completed: isCompleted,
+                attempts: updatedProgress.attempts!,
+                maxAttempts: dailyMediadle.pixelationLevels!,
+            };
+        });
     }
 }

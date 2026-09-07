@@ -20,18 +20,18 @@ export const removeAllOrphansMediaTask = defineTask({
         for (const mediaType of mediaTypes) {
             await ctx.step(`remove-${mediaType}`, async () => {
 
-                await withTransaction(async (_tx) => {
+                withTransaction((_tx) => {
                     const mediaService = mediaRegistry.get(mediaType);
-                    const mediaIdsToRemove = await mediaService.getOrphanedMediaIds();
+                    const mediaIdsToRemove = mediaService.getOrphanedMediaIds();
                     ctx.metric(`${mediaType}.removed`, mediaIdsToRemove.length);
 
                     // Remove in other services
-                    await updateHistoryService.deleteMediaUpdates(mediaType, mediaIdsToRemove);
-                    await notificationsService.deleteMediaNotifications(mediaType, mediaIdsToRemove);
-                    await container.services.whichCameFirst.deletePoolMedia(mediaType, mediaIdsToRemove);
+                    updateHistoryService.deleteMediaUpdates(mediaType, mediaIdsToRemove);
+                    notificationsService.deleteMediaNotifications(mediaType, mediaIdsToRemove);
+                    container.services.whichCameFirst.deletePoolMedia(mediaType, mediaIdsToRemove);
 
                     // Remove main media and associated tables: actors, genres, companies, authors...
-                    await mediaService.removeMediaByIds(mediaIdsToRemove);
+                    mediaService.removeMediaByIds(mediaIdsToRemove);
                 });
             });
         }

@@ -5,7 +5,6 @@ import {getContainer} from "@/lib/server/core/container";
 import {FormattedError} from "@/lib/utils/error-classes";
 import {dateFromUTCInput} from "@/lib/utils/date-formatting";
 import {hasRequiredRole, toActor} from "@/lib/server/authorization";
-import {transactionMiddleware} from "@/lib/server/middlewares/transaction";
 import {publicAuthMiddleware, requiredAuthAndManagerRoleMiddleware, requiredAuthMiddleware} from "@/lib/server/middlewares/authentication";
 import {
     editMediaDetailsSchema,
@@ -21,7 +20,7 @@ import {
 
 
 export const getMediaDetails = createServerFn({ method: "GET" })
-    .middleware([publicAuthMiddleware, transactionMiddleware])
+    .middleware([publicAuthMiddleware])
     .validator(mediaDetailsSchema)
     .handler(async ({ data: { mediaType, mediaId }, context: { currentUser } }) => {
         const container = await getContainer();
@@ -39,7 +38,7 @@ export const getMediaDetails = createServerFn({ method: "GET" })
 
 
 export const getMediaCommunityActivity = createServerFn({ method: "GET" })
-    .middleware([publicAuthMiddleware, transactionMiddleware])
+    .middleware([publicAuthMiddleware])
     .validator(mediaCommunityActivitySchema)
     .handler(async ({ data: { mediaType, mediaId, search }, context: { currentUser } }) => {
         const container = await getContainer();
@@ -83,7 +82,7 @@ export const refreshMediaDetails = createServerFn({ method: "POST" })
             throw new FormattedError("Unauthorized to refresh book metadata.");
         }
 
-        const media = await mediaService.findById(mediaId);
+        const media = mediaService.findById(mediaId);
         if (!media) throw new FormattedError("Media not found, cannot refresh metadata.");
 
         if (!isManagerOrAbove && media.lastApiUpdate) {
@@ -119,7 +118,7 @@ export const getGameCompatiblePlatforms = createServerFn({ method: "GET" })
 
 
 export const postUpdateBookCover = createServerFn({ method: "POST" })
-    .middleware([requiredAuthMiddleware, transactionMiddleware])
+    .middleware([requiredAuthMiddleware])
     .validator((data) => updateBookCoverSchema.parse(data instanceof FormData ? Object.fromEntries(data.entries()) : data))
     .handler(async ({ data: { mediaId, imageUrl, imageFile } }) => {
         const container = await getContainer();
@@ -129,7 +128,7 @@ export const postUpdateBookCover = createServerFn({ method: "POST" })
 
 
 export const getMediaDetailsToEdit = createServerFn({ method: "GET" })
-    .middleware([requiredAuthAndManagerRoleMiddleware, transactionMiddleware])
+    .middleware([requiredAuthAndManagerRoleMiddleware])
     .validator(mediaDetailsToEditSchema)
     .handler(async ({ data: { mediaType, mediaId } }) => {
         const container = await getContainer();
@@ -139,7 +138,7 @@ export const getMediaDetailsToEdit = createServerFn({ method: "GET" })
 
 
 export const postEditMediaDetails = createServerFn({ method: "POST" })
-    .middleware([requiredAuthAndManagerRoleMiddleware, transactionMiddleware])
+    .middleware([requiredAuthAndManagerRoleMiddleware])
     .validator(editMediaDetailsSchema)
     .handler(async ({ data: { mediaType, mediaId, payload } }) => {
         const container = await getContainer();

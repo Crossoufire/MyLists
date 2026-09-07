@@ -3,6 +3,7 @@ import {notFound} from "@tanstack/react-router";
 import {Status, UpdateType} from "@/lib/utils/enums";
 import {FormattedError} from "@/lib/utils/error-classes";
 import {LogPayload} from "@/lib/types/user-updates.types";
+import {withTransaction} from "@/lib/server/database/async-storage";
 import {BaseService} from "@/lib/server/domain/media/base/base.service";
 import {Book, BooksList} from "@/lib/server/domain/media/books/books.types";
 import {saveImageFromUrl, saveUploadedImage} from "@/lib/utils/image-saver";
@@ -47,7 +48,7 @@ export class BooksService extends BaseService<BookServerDefinition, BooksReposit
         const { editableFields } = this.servicePolicy;
         const { coverDirectory } = this.identity;
 
-        const media = await this.repository.findById(mediaId);
+        const media = this.repository.findById(mediaId);
         if (!media) throw notFound();
 
         const fields = {} as Record<Partial<keyof Book>, any>;
@@ -82,13 +83,13 @@ export class BooksService extends BaseService<BookServerDefinition, BooksReposit
             }
         }
 
-        await this.repository.updateMediaWithDetails({ mediaData: fields, authorsData });
+        withTransaction(() => this.repository.updateMediaWithDetails({ mediaData: fields, authorsData }));
     }
 
     async updateDefaultCover(mediaId: number, payload: { imageUrl?: string; imageFile?: File }) {
         const { coverDirectory } = this.identity;
 
-        const media = await this.repository.findById(mediaId);
+        const media = this.repository.findById(mediaId);
         if (!media) throw notFound();
 
         const currentCover = media.imageCover.split("/").pop();
@@ -108,7 +109,7 @@ export class BooksService extends BaseService<BookServerDefinition, BooksReposit
             throw new FormattedError("Could not update the book cover. Please choose another one.");
         }
 
-        await this.repository.updateMediaWithDetails({ mediaData: { apiId: media.apiId, imageCover: imageName } });
+        withTransaction(() => this.repository.updateMediaWithDetails({ mediaData: { apiId: media.apiId, imageCover: imageName } }));
     }
 
     async batchBooksWithoutGenres(batchSize: number) {
@@ -137,7 +138,7 @@ description: ${book.synopsis}
         const mediaData = { apiId: bookApiId };
         const genresData = uniqueBy(booksGenres.map((name) => ({ name })), (genre) => genre.name);
 
-        await this.repository.updateMediaWithDetails({ mediaData, genresData });
+        withTransaction(() => this.repository.updateMediaWithDetails({ mediaData, genresData }));
     }
 
     getAvailableGenres() {

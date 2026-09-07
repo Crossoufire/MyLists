@@ -2,6 +2,10 @@ import {describe, expect, it, vi} from "vitest";
 import {ActivityKind, MediaType} from "@/lib/utils/enums";
 import {MonthlyActivityService} from "@/lib/server/domain/tracking/monthly-activity.service";
 
+vi.mock("@/lib/server/database/async-storage", () => ({
+    withTransaction: <T>(action: () => T) => action(),
+}));
+
 
 describe("MonthlyActivityService visibility", () => {
     const filters = {

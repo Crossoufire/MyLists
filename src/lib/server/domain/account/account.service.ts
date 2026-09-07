@@ -74,18 +74,18 @@ export class AccountService {
         return this.repository.updateUserLastSeen(userId);
     }
 
-    async deleteUserAccount(payload: DeleteUserAccountPayload) {
-        return withTransaction(async () => {
+    deleteUserAccount(payload: DeleteUserAccountPayload) {
+        return withTransaction(() => {
             if (payload.type === "manual") {
-                await this.inactiveAccountService.deleteRowsForUser(payload.userId);
+                this.inactiveAccountService.deleteRowsForUser(payload.userId);
             }
 
             if (payload.type === "inactive") {
-                const markedDeleted = await this.inactiveAccountService.markAsDeleted(payload.lifecycleId, payload.userId, payload.username);
+                const markedDeleted = this.inactiveAccountService.markAsDeleted(payload.lifecycleId, payload.userId, payload.username);
                 if (!markedDeleted) return false;
             }
 
-            await this.repository.deleteUserAccount(payload.userId);
+            this.repository.deleteUserAccount(payload.userId);
             return true;
         });
     }
@@ -94,8 +94,8 @@ export class AccountService {
         return this.repository.getMinimalUserSettings(userId);
     }
 
-    async updateUserSettings(userId: number, payload: Partial<typeof user.$inferInsert>) {
-        await this.repository.updateUserSettings(userId, payload);
+    updateUserSettings(userId: number, payload: Partial<typeof user.$inferInsert>) {
+        this.repository.updateUserSettings(userId, payload);
     }
 
     async updateShowOnboarding(userId: number) {
@@ -114,8 +114,8 @@ export class AccountService {
         return this.repository.findById(userId);
     }
 
-    async findUserByName(name: string) {
-        const isUsernameTaken = await this.repository.findUserByName(name);
+    findUserByName(name: string) {
+        const isUsernameTaken = this.repository.findUserByName(name);
         if (isUsernameTaken) {
             throw new ValidationError<GeneralSettings>("username", "Invalid username. Please select another one.");
         }
