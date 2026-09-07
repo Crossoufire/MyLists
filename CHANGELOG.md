@@ -1,5 +1,24 @@
 # Changelog
 
+## [3.5.1](https://github.com/vincedelmas/MyLists/compare/v3.5.0...v3.5.1) (2026-09-07)
+
+
+### Bug Fixes
+
+* **cache:** periodically remove expired in-memory entries ([20c5703](https://github.com/vincedelmas/MyLists/commit/20c57031987ee2924cce9eed8044208e1401ee3e))
+* **database:** atomic transactions and better write contention ([b7aab5a](https://github.com/vincedelmas/MyLists/commit/b7aab5afd3367d43503fd7a9e1d0eeb4793b3c06))
+* **docker:** align deployment config and doc ([3f88211](https://github.com/vincedelmas/MyLists/commit/3f88211f0eb7e2366c7c7e444e7be03834375fcd))
+* refresh media lists after editing ends ([fe906fe](https://github.com/vincedelmas/MyLists/commit/fe906fe0ec36278cd24bdc49a12f4fefe7a34fdd))
+* **security:** prevent SSRF in cover image downloads ([7f03866](https://github.com/vincedelmas/MyLists/commit/7f03866c2db40dc0428fc1714e14200c02d6380d))
+* track Bun lockfile for reproducible deployments ([cbde185](https://github.com/vincedelmas/MyLists/commit/cbde185b767306daddb1b25008076976f3df373d))
+
+
+### Code Refactoring
+
+* **auth:** refactor auth flow ([ba1154a](https://github.com/vincedelmas/MyLists/commit/ba1154ab8cf4d23138cd62c077f0367bb1953975))
+* **ui:** simplify statistics card labels ([59b06c9](https://github.com/vincedelmas/MyLists/commit/59b06c98dd35141b0604d929b35a9ad4b6ba26c8))
+* **utils:** replace clsx and tailwind-merge with cn ([d72ad45](https://github.com/vincedelmas/MyLists/commit/d72ad451174ecb18b4f1792eea3e83f0dbfd729f))
+
 ## [3.5.0](https://github.com/vincedelmas/MyLists/compare/v3.4.0...v3.5.0) (2026-09-02)
 
 
