@@ -13,11 +13,11 @@ import {Textarea} from "@/lib/client/components/ui/textarea";
 import {handleServerFormErrors} from "@/lib/utils/forms-utils";
 import {FormError} from "@/lib/client/components/forms/FormError";
 import {createFileRoute, useRouter} from "@tanstack/react-router";
-import {Controller, FormProvider, useForm} from "react-hook-form";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
 import {PageHeader} from "@/lib/client/components/general/PageHeader";
 import {editMediaDetailsOptions} from "@/lib/client/react-query/query-options";
 import {FormSubmitButton} from "@/lib/client/components/forms/FormSubmitButton";
+import {Controller, type FieldPath, FormProvider, useForm} from "react-hook-form";
 import {useEditMediaMutation} from "@/lib/client/react-query/query-mutations/media.mutations";
 import {Field, FieldDescription, FieldError, FieldLabel, FieldSet} from "@/lib/client/components/ui/field";
 import {EditMediaDetailsInput, EditMediaDetailsPayload, editMediaDetailsPayloadSchemas, editMediaDetailsSchema, mediaTypeMediaIdSchema} from "@/lib/schemas";
@@ -47,11 +47,13 @@ function MediaEditPage() {
     const { editMediaDetailsQueryOptions } = Route.useRouteContext();
     const apiData = useSuspenseQuery(editMediaDetailsQueryOptions).data;
     const editMediaMutation = useEditMediaMutation({ noErrorToast: true });
-
     const payloadSchema: ZodType<EditMediaDetailsPayload, EditMediaDetailsInput> = editMediaDetailsPayloadSchemas[mediaType];
     const form = useForm<EditMediaDetailsInput, unknown, EditMediaDetailsPayload>({
         resolver: zodResolver(payloadSchema),
-        defaultValues: { ...apiData.fields, imageCover: undefined },
+        defaultValues: {
+            ...apiData.fields,
+            imageCover: undefined,
+        },
     });
 
     const MediaIcon = THEME_ICONS_MAP[mediaType];
@@ -78,7 +80,7 @@ function MediaEditPage() {
             <Controller
                 key={key}
                 control={form.control}
-                name={key as keyof EditMediaDetailsInput}
+                name={key as FieldPath<EditMediaDetailsInput>}
                 render={({ field, fieldState }) => (
                     <Field
                         data-invalid={fieldState.invalid}
