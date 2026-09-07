@@ -9,6 +9,7 @@ import {JobType, Status, TagAction, UpdateType} from "@/lib/utils/enums";
 import {saveImageFromUrl, saveUploadedImage} from "@/lib/utils/image-saver";
 import {BaseRepository} from "@/lib/server/domain/media/base/base.repository";
 import {MYLISTS_CSV_VERSION} from "@/lib/server/domain/imports/parsers/mylists.parser";
+import {createMediaTagQueries} from "@/lib/server/domain/media/base/media-tag.queries";
 import {createMediaListQueries} from "@/lib/server/domain/media/base/media-list.queries";
 import {AnyServerMediaDefinition} from "@/lib/media-definitions/base/media.definition.server";
 import {UpdateHandlerFn, UpdateUserMediaDetails, UserMediaWithTags} from "@/lib/types/user-media.types";
@@ -20,6 +21,7 @@ export abstract class BaseService<TDef extends AnyServerMediaDefinition, R exten
     protected readonly identity: TDef["identity"];
     protected readonly ingestion: TDef["ingestion"];
     protected readonly servicePolicy: TDef["service"];
+    private readonly tagQueries: ReturnType<typeof createMediaTagQueries>;
     private readonly listQueries: ReturnType<typeof createMediaListQueries<TDef["repository"]>>;
     protected updateHandlers: Partial<Record<
         UpdateType,
@@ -31,6 +33,7 @@ export abstract class BaseService<TDef extends AnyServerMediaDefinition, R exten
         this.identity = definition.identity;
         this.ingestion = definition.ingestion;
         this.servicePolicy = definition.service;
+        this.tagQueries = createMediaTagQueries(definition.repository);
         this.listQueries = createMediaListQueries(definition.repository);
 
         // User progress handlers based on update type
@@ -90,7 +93,7 @@ export abstract class BaseService<TDef extends AnyServerMediaDefinition, R exten
     }
 
     async getTagNames(userId: number) {
-        return await this.repository.getTagNames(userId);
+        return await this.tagQueries.getTagNames(userId);
     }
 
     async getMediaDetailsByIds(mediaIds: number[], userId?: number) {
@@ -150,7 +153,7 @@ export abstract class BaseService<TDef extends AnyServerMediaDefinition, R exten
 
     editUserTag(userId: number, tag: Tag, action: TagAction, mediaId?: number) {
         return withTransaction(() => {
-            return this.repository.editUserTag(userId, tag, action, mediaId);
+            return this.tagQueries.editUserTag(userId, tag, action, mediaId);
         });
     }
 
@@ -159,7 +162,7 @@ export abstract class BaseService<TDef extends AnyServerMediaDefinition, R exten
     }
 
     async getTagsView(userId: number, search: SimpleSearch) {
-        return this.repository.getTagsView(userId, search);
+        return this.tagQueries.getTagsView(userId, search);
     }
 
     addMediaToUserList(userId: number, mediaId: number, status?: Status) {
