@@ -70,6 +70,15 @@ class MemoryCacheStore implements CacheStore {
     private cache = new Map<string, { value: any; expires: number }>();
 
     constructor(private defaultTtl: number) {
+        setInterval(() => {
+            const now = Date.now();
+
+            for (const [key, cached] of this.cache) {
+                if (cached.expires <= now) {
+                    this.cache.delete(key);
+                }
+            }
+        }, 5 * 60 * 1000).unref();
     }
 
     async get<T>(key: string): Promise<T | undefined> {
