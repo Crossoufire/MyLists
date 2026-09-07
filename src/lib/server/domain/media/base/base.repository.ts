@@ -1,16 +1,15 @@
 import {notFound} from "@tanstack/react-router";
 import {MediaInfo} from "@/lib/types/activity.types";
+import {SearchType, SimpleSearch} from "@/lib/schemas";
 import {FormattedError} from "@/lib/utils/error-classes";
 import {UpComingMedia} from "@/lib/types/notifications.types";
 import {ProviderSearchResult} from "@/lib/types/provider.types";
-import {MediaListArgs, SearchType, SimpleSearch} from "@/lib/schemas";
+import {resolvePagination} from "@/lib/server/database/pagination";
 import {AddedMediaDetails, Tag} from "@/lib/types/media-common.types";
+import {ExportMediaList, MediaListData} from "@/lib/types/media-list.types";
 import {getDbClient, withTransaction} from "@/lib/server/database/async-storage";
-import {resolvePagination, resolveSorting} from "@/lib/server/database/pagination";
 import {JobType, MediaType, SocialState, Status, TagAction} from "@/lib/utils/enums";
 import {Actor, communityProfileVisibilityCondition} from "@/lib/server/authorization";
-import {ExpandedListFilters, ExportMediaList, MediaListData} from "@/lib/types/media-list.types";
-import {createArrayFilter, type FilterDefinitions} from "@/lib/server/domain/media/base/media-list.query";
 import {MediaCommunityActivityStats, UserFollowsMediaData, UserMediaWithTags} from "@/lib/types/user-media.types";
 import {AnyMediaRepositoryDefinition, AnyServerMediaDefinition} from "@/lib/media-definitions/base/media.definition.server";
 import {animeList, booksList, collectionItems, followers, gamesList, mangaList, moviesList, seriesList, user, userMediaSettings} from "@/lib/server/database/schema";
@@ -29,73 +28,12 @@ export abstract class BaseRepository<
     readonly identity: TMediaDef["identity"];
     protected readonly ingestion: TMediaDef["ingestion"];
     protected readonly attribution: TMediaDef["attribution"];
-    protected readonly baseFilterDefs: FilterDefinitions;
 
     protected constructor(definition: TMediaDef) {
         this.identity = definition.identity;
         this.ingestion = definition.ingestion;
         this.attribution = definition.attribution;
         this.repoDefinition = definition.repository as TRepoDef;
-
-        // Must be instantiated after definition
-        this.baseFilterDefs = this.baseListFiltersDefs();
-    }
-
-    private baseListFiltersDefs = (): FilterDefinitions => {
-        const { listTable, mediaTable, tagTable, genreTable } = this.repoDefinition.tables;
-
-        return {
-            search: {
-                isActive: (args: MediaListArgs) => !!args.search,
-                getCondition: (args: MediaListArgs) => this.mediaNameSearchCondition(args.search!),
-            },
-            favorite: {
-                isActive: (args: MediaListArgs) => args.favorite === true,
-                getCondition: (_args: MediaListArgs) => eq(listTable.favorite, true),
-            },
-            comment: {
-                isActive: (args: MediaListArgs) => args.comment === true,
-                getCondition: (_args: MediaListArgs) => isNotNull(listTable.comment),
-            },
-            hideCommon: {
-                isActive: (args: MediaListArgs) => args.hideCommon === true && !!args.currentUserId && args.currentUserId !== args.userId,
-                getCondition: (args: MediaListArgs) => {
-                    const subQuery = getDbClient()
-                        .select({ mediaId: listTable.mediaId })
-                        .from(listTable)
-                        .where(eq(listTable.userId, args.currentUserId!));
-                    return notInArray(listTable.mediaId, subQuery);
-                },
-            },
-            status: createArrayFilter({
-                argName: "status",
-                mediaTable: mediaTable,
-                filterColumn: listTable.status,
-            }),
-            tags: createArrayFilter({
-                argName: "tags",
-                mediaTable: mediaTable,
-                entityTable: tagTable,
-                filterColumn: tagTable.name,
-                entityScope: (args) => eq(tagTable.userId, args.userId!),
-            }),
-            genres: createArrayFilter({
-                argName: "genres",
-                mediaTable: mediaTable,
-                entityTable: genreTable,
-                filterColumn: genreTable.name,
-            }),
-        };
-    }
-
-    private mediaNameSearchCondition(query: string) {
-        const { mediaTable } = this.repoDefinition.tables;
-        const pattern = `%${query}%`;
-        const nameCondition = like(mediaTable.name, pattern);
-
-        return mediaTable.originalName
-            ? or(nameCondition, like(mediaTable.originalName, pattern))
-            : nameCondition;
     }
 
     async bulkInsertUserMedia(rows: TRepoDef["tables"]["listTable"]["$inferInsert"][]) {
@@ -326,66 +264,6 @@ export abstract class BaseRepository<
             })
             .from(mediaTable)
             .where(inArray(mediaTable.id, uniqueMediaIds));
-    }
-
-    async getListFilters(userId: number): Promise<ExpandedListFilters> {
-        const { tables: { genreTable, tagTable, listTable }, listQuery: { filterOptions } } = this.repoDefinition;
-
-        const genresPromise = getDbClient()
-            .selectDistinct({ name: sql<string>`${genreTable.name}` })
-            .from(genreTable)
-            .innerJoin(listTable, eq(listTable.mediaId, genreTable.mediaId))
-            .where(eq(listTable.userId, userId))
-            .orderBy(asc(genreTable.name));
-
-        const tagsPromise = getDbClient()
-            .selectDistinct({ name: sql<string>`${tagTable.name}` })
-            .from(tagTable)
-            .where(and(eq(tagTable.userId, userId)))
-            .orderBy(asc(tagTable.name));
-
-        const [genres, tags] = await Promise.all([genresPromise, tagsPromise]);
-
-        const specificEntries = await Promise.all(Object
-            .entries(filterOptions)
-            .map(async ([name, loadOptions]) => [name, await loadOptions(userId)] as const));
-
-        return { tags, genres, ...Object.fromEntries(specificEntries) };
-    }
-
-    async getUserFavorites(userId: number, limit = 7) {
-        const { listTable, mediaTable } = this.repoDefinition.tables;
-
-        return getDbClient()
-            .select({
-                mediaId: mediaTable.id,
-                mediaName: mediaTable.name,
-                mediaCover: mediaTable.imageCover,
-                customCover: listTable.customCover,
-                releaseDate: mediaTable.releaseDate,
-            })
-            .from(listTable)
-            .where(and(eq(listTable.userId, userId), eq(listTable.favorite, true)))
-            .leftJoin(mediaTable, eq(listTable.mediaId, mediaTable.id))
-            .limit(limit);
-    }
-
-    async searchUserListByName(userId: number, query: string, limit = 10) {
-        const { listTable, mediaTable } = this.repoDefinition.tables;
-
-        return getDbClient()
-            .selectDistinct({
-                mediaId: mediaTable.id,
-                mediaName: mediaTable.name,
-                mediaCover: mediaTable.imageCover,
-                customCover: listTable.customCover,
-                releaseDate: mediaTable.releaseDate,
-            })
-            .from(listTable)
-            .innerJoin(mediaTable, eq(listTable.mediaId, mediaTable.id))
-            .where(and(eq(listTable.userId, userId), this.mediaNameSearchCondition(query)))
-            .orderBy(asc(mediaTable.name))
-            .limit(limit);
     }
 
     editUserTag(userId: number, tag: Tag, action: TagAction, mediaId?: number) {
@@ -687,109 +565,6 @@ export abstract class BaseRepository<
                 completedCount: stats?.completedCount ?? 0,
                 averageRating: stats?.averageRating ?? null,
             } satisfies MediaCommunityActivityStats,
-        };
-    }
-
-    async getMediaList(currentUserId: number | undefined, userId: number, args: MediaListArgs): Promise<MediaListData<TRepoDef["tables"]["listTable"]["$inferSelect"]>> {
-        const { tables: { listTable, mediaTable, tagTable }, listQuery } = this.repoDefinition;
-
-        const { page, perPage, offset, limit } = resolvePagination({
-            page: args.page,
-            perPage: args.perPage,
-        });
-
-        const sortKeyName = resolveSorting(args.sorting, Object.keys(listQuery.sorts), listQuery.defaultSort);
-        const selectedSort = listQuery.sorts[sortKeyName];
-        const filterArgs = { ...args, currentUserId, userId };
-
-        const allFilters = {
-            ...this.baseFilterDefs,
-            ...listQuery.filters,
-        };
-
-        // Main query builder
-        let queryBuilder = getDbClient()
-            .select({
-                ...listQuery.selection,
-                ratingSystem: user.ratingSystem,
-                tags: sql` COALESCE((
-                    SELECT json_group_array(DISTINCT json_object(
-                        'id', l.id, 
-                        'name', l.name
-                    ))
-                    FROM ${tagTable} l
-                    WHERE l.media_id = ${listTable.mediaId} AND l.user_id = ${listTable.userId}
-                    ), json_array()
-                )`.mapWith(JSON.parse),
-            })
-            .from(listTable)
-            .innerJoin(user, eq(listTable.userId, user.id))
-            .innerJoin(mediaTable, eq(listTable.mediaId, mediaTable.id))
-            .$dynamic();
-
-        // Count query builder
-        let countQueryBuilder = getDbClient()
-            .select({ count: count() })
-            .from(listTable)
-            .innerJoin(mediaTable, eq(listTable.mediaId, mediaTable.id))
-            .$dynamic();
-
-        // Iterate through all filters
-        const conditions = [eq(listTable.userId, userId)];
-        for (const filterName of Object.keys(allFilters)) {
-            const currentFilter = allFilters[filterName as keyof MediaListArgs];
-            if (currentFilter?.isActive(filterArgs)) {
-                const condition = currentFilter.getCondition(filterArgs);
-                if (condition) {
-                    conditions.push(condition);
-                }
-            }
-        }
-
-        // Finish building query
-        queryBuilder = queryBuilder.where(and(...conditions));
-        countQueryBuilder = countQueryBuilder.where(and(...conditions));
-        const finalQuery = queryBuilder
-            .orderBy(...(Array.isArray(selectedSort) ? selectedSort : [selectedSort]))
-            .limit(limit)
-            .offset(offset);
-
-        // Execute query
-        const [results, totalResult] = await Promise.all([finalQuery.execute(), countQueryBuilder.get()]);
-
-        // Calculate total pages
-        const totalItems = totalResult?.count ?? 0;
-        const totalPages = Math.ceil(totalItems / perPage);
-
-        // Fetch common IDs (if in filter)
-        let commonIdsSet = new Set<number>();
-        if (currentUserId && currentUserId !== userId && !filterArgs.hideCommon && results.length > 0) {
-            const mediaIds = results.map((m: any) => m.mediaId);
-            const commonMediaIdsResult = await getDbClient()
-                .select({ mediaId: listTable.mediaId })
-                .from(listTable)
-                .where(and(eq(listTable.userId, currentUserId), inArray(listTable.mediaId, mediaIds)));
-
-            commonIdsSet = new Set(commonMediaIdsResult.map(m => m.mediaId));
-        }
-
-        // Process results - add `common` field and replace `imageCover` with user's `customCover`
-        const processedResults = results.map((item: any) => ({
-            ...item,
-            common: commonIdsSet.has(item.mediaId),
-            imageCover: item.customCover ?? item.imageCover,
-        }));
-
-        return {
-            items: processedResults,
-            pagination: {
-                page,
-                perPage,
-                totalPages,
-                totalItems,
-                sorting: sortKeyName,
-                availableSorting: Object.keys(listQuery.sorts),
-            },
         };
     }
 

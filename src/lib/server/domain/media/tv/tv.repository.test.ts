@@ -27,6 +27,7 @@ vi.mock("@/lib/server/database/db", () => ({
 
 
 const { TvRepository } = await import("@/lib/server/domain/media/tv/tv.repository");
+const { TvService } = await import("@/lib/server/domain/media/tv/tv.service");
 const { createMediaIngestionService } = await import("@/lib/server/api-providers/media-ingestion.service");
 
 
@@ -308,7 +309,8 @@ describe("TvRepository season refresh", () => {
             },
         ]);
 
-        const result = await repository.getMediaList(undefined, 42, { sorting: "Re-watched" });
+        const service = new TvService(repository, seriesServerDefinition);
+        const result = await service.getMediaList(undefined, 42, { sorting: "Re-watched" });
 
         expect(result.items.map((item) => item.mediaId)).toEqual([101, 100]);
     });

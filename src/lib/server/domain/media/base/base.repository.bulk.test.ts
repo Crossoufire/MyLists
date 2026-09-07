@@ -17,18 +17,21 @@ vi.mock("@/lib/server/database/db", () => ({
 
 
 const { MoviesRepository } = await import("@/lib/server/domain/media/movies/movies.repository");
+const { MoviesService } = await import("@/lib/server/domain/media/movies/movies.service");
 
 
-describe("BaseRepository", () => {
+describe("Base media persistence and list queries", () => {
     let sqlite: Database;
     let db: BunSQLiteDatabase<typeof schema>;
     let repository: InstanceType<typeof MoviesRepository>;
+    let service: InstanceType<typeof MoviesService>;
 
     beforeEach(async () => {
         sqlite = new Database(":memory:");
         db = drizzle(sqlite, { schema, casing: "snake_case" });
         dbContext.db = db;
         repository = new MoviesRepository();
+        service = new MoviesService(repository);
 
         migrate(db, { migrationsFolder: "./drizzle" });
         sqlite.run("PRAGMA foreign_keys = ON");
@@ -104,8 +107,8 @@ describe("BaseRepository", () => {
             { userId: 42, mediaId: 101, status: Status.COMPLETED },
         ]);
 
-        const localizedNameResult = await repository.getMediaList(undefined, 42, { search: "Movie 1" });
-        const originalNameResult = await repository.getMediaList(undefined, 42, { search: "Original Two" });
+        const localizedNameResult = await service.getMediaList(undefined, 42, { search: "Movie 1" });
+        const originalNameResult = await service.getMediaList(undefined, 42, { search: "Original Two" });
 
         expect(localizedNameResult.items.map(item => item.mediaId)).toEqual([100]);
         expect(originalNameResult.items.map(item => item.mediaId)).toEqual([101]);
@@ -117,7 +120,7 @@ describe("BaseRepository", () => {
             { userId: 42, mediaId: 101, status: Status.COMPLETED },
         ]);
 
-        const result = await repository.searchUserListByName(42, "Original One");
+        const result = await service.searchUserListByName(42, "Original One");
 
         expect(result.map(item => item.mediaId)).toEqual([100]);
     });
@@ -170,7 +173,7 @@ describe("BaseRepository", () => {
             { userId: 42, mediaId: 101, name: "private-tag" },
         ]);
 
-        const result = await repository.getMediaList(undefined, 42, { tags: ["private-tag"] });
+        const result = await service.getMediaList(undefined, 42, { tags: ["private-tag"] });
 
         expect(result.items.map((item) => item.mediaId)).toEqual([101]);
     });

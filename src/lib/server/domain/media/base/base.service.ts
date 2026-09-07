@@ -9,6 +9,7 @@ import {JobType, Status, TagAction, UpdateType} from "@/lib/utils/enums";
 import {saveImageFromUrl, saveUploadedImage} from "@/lib/utils/image-saver";
 import {BaseRepository} from "@/lib/server/domain/media/base/base.repository";
 import {MYLISTS_CSV_VERSION} from "@/lib/server/domain/imports/parsers/mylists.parser";
+import {createMediaListQueries} from "@/lib/server/domain/media/base/media-list.queries";
 import {AnyServerMediaDefinition} from "@/lib/media-definitions/base/media.definition.server";
 import {UpdateHandlerFn, UpdateUserMediaDetails, UserMediaWithTags} from "@/lib/types/user-media.types";
 import {MediaListArgs, Pagination, SearchType, SimpleSearch, UpdateUserCustomCover, UpdateUserMedia} from "@/lib/schemas";
@@ -19,6 +20,7 @@ export abstract class BaseService<TDef extends AnyServerMediaDefinition, R exten
     protected readonly identity: TDef["identity"];
     protected readonly ingestion: TDef["ingestion"];
     protected readonly servicePolicy: TDef["service"];
+    private readonly listQueries: ReturnType<typeof createMediaListQueries<TDef["repository"]>>;
     protected updateHandlers: Partial<Record<
         UpdateType,
         UpdateHandlerFn<TDef["repository"]["tables"]["listTable"]["$inferSelect"], any, TDef["repository"]["tables"]["mediaTable"]["$inferSelect"]>
@@ -29,6 +31,7 @@ export abstract class BaseService<TDef extends AnyServerMediaDefinition, R exten
         this.identity = definition.identity;
         this.ingestion = definition.ingestion;
         this.servicePolicy = definition.service;
+        this.listQueries = createMediaListQueries(definition.repository);
 
         // User progress handlers based on update type
         this.updateHandlers = {
@@ -55,11 +58,11 @@ export abstract class BaseService<TDef extends AnyServerMediaDefinition, R exten
     }
 
     async getUserFavorites(userId: number, limit = 7) {
-        return this.repository.getUserFavorites(userId, limit);
+        return this.listQueries.getUserFavorites(userId, limit);
     }
 
     async searchUserListByName(userId: number, query: string, limit?: number) {
-        return this.repository.searchUserListByName(userId, query, limit);
+        return this.listQueries.searchUserListByName(userId, query, limit);
     }
 
     getOrphanedMediaIds() {
@@ -83,7 +86,7 @@ export abstract class BaseService<TDef extends AnyServerMediaDefinition, R exten
     }
 
     async getListFilters(userId: number) {
-        return this.repository.getListFilters(userId);
+        return this.listQueries.getListFilters(userId);
     }
 
     async getTagNames(userId: number) {
@@ -152,7 +155,7 @@ export abstract class BaseService<TDef extends AnyServerMediaDefinition, R exten
     }
 
     async getMediaList(currentUserId: number | undefined, userId: number, args: MediaListArgs) {
-        return this.repository.getMediaList(currentUserId, userId, args);
+        return this.listQueries.getMediaList(currentUserId, userId, args);
     }
 
     async getTagsView(userId: number, search: SimpleSearch) {
