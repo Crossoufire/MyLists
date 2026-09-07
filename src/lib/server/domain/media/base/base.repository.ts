@@ -7,9 +7,9 @@ import {ProviderSearchResult} from "@/lib/types/provider.types";
 import {AddedMediaDetails} from "@/lib/types/media-common.types";
 import {ExportMediaList, MediaListData} from "@/lib/types/media-list.types";
 import {getDbClient, withTransaction} from "@/lib/server/database/async-storage";
+import {animeList, booksList, gamesList, mangaList, moviesList, seriesList, user} from "@/lib/server/database/schema";
 import {AnyMediaRepositoryDefinition, AnyServerMediaDefinition} from "@/lib/media-definitions/base/media.definition.server";
-import {animeList, booksList, collectionItems, gamesList, mangaList, moviesList, seriesList, user} from "@/lib/server/database/schema";
-import {and, asc, count, countDistinct, desc, eq, getTableColumns, gte, inArray, isNotNull, isNull, like, lt, lte, ne, notExists, notInArray, or, SQL, sql} from "drizzle-orm";
+import {and, asc, count, countDistinct, desc, eq, getTableColumns, gte, inArray, isNotNull, isNull, like, lte, ne, notInArray, or, SQL, sql} from "drizzle-orm";
 
 
 const SIMILAR_MAX_GENRES = 10;
@@ -55,14 +55,6 @@ export abstract class BaseRepository<
         });
     }
 
-    async getCoverFilenames() {
-        const { mediaTable } = this.repoDefinition.tables;
-
-        return getDbClient()
-            .select({ imageCover: mediaTable.imageCover })
-            .from(mediaTable);
-    }
-
     getPopularMediaRefs() {
         const { popularity, tables: { mediaTable } } = this.repoDefinition;
 
@@ -84,53 +76,6 @@ export abstract class BaseRepository<
                 id: row.id as number,
                 releaseDate: row.releaseDate! as string,
             }));
-    }
-
-    async getCustomCoverFilenames() {
-        const { listTable } = this.repoDefinition.tables;
-
-        return getDbClient()
-            .select({ customCover: listTable.customCover })
-            .from(listTable)
-            .where(isNotNull(listTable.customCover));
-    }
-
-    getOrphanedMediaIds() {
-        const { mediaType } = this.identity;
-        const { mediaTable, listTable } = this.repoDefinition.tables;
-
-        const tx = getDbClient();
-        const mediaToDelete = tx
-            .select({ id: mediaTable.id })
-            .from(mediaTable)
-            .where(and(
-                notExists(tx.select()
-                    .from(listTable)
-                    .where(eq(listTable.mediaId, mediaTable.id))
-                ),
-                notExists(tx.select()
-                    .from(collectionItems)
-                    .where(and(eq(collectionItems.mediaId, mediaTable.id), eq(collectionItems.mediaType, mediaType)))
-                )
-            )).all();
-
-        return mediaToDelete.map((media) => media.id);
-    }
-
-    removeMediaByIds(mediaIds: number[]) {
-        const { mediaTable, deleteDependents } = this.repoDefinition.tables;
-
-        // Delete on other tables
-        for (const table of deleteDependents) {
-            getDbClient()
-                .delete(table)
-                .where(inArray(table.mediaId, mediaIds)).run();
-        }
-
-        // Delete on main table
-        getDbClient()
-            .delete(mediaTable)
-            .where(inArray(mediaTable.id, mediaIds)).run();
     }
 
     async searchMediadleSuggestion(query: string, limit = 20) {
@@ -514,41 +459,6 @@ export abstract class BaseRepository<
         }
 
         return results;
-    }
-
-    // --- Admin Functions -------------------------------------------------
-
-    async getUserMediaAddedAndUpdatedForAdmin() {
-        const { listTable } = this.repoDefinition.tables;
-
-        const [addedThisMonth] = await getDbClient()
-            .select({ count: countDistinct(listTable.id) })
-            .from(listTable)
-            .where(gte(listTable.addedAt, sql`date('now', 'start of month')`));
-
-        const [addedLastMonth] = await getDbClient()
-            .select({ count: countDistinct(listTable.id) })
-            .from(listTable)
-            .where(and(
-                gte(listTable.addedAt, sql`date('now', '-1 month', 'start of month')`),
-                lt(listTable.addedAt, sql`date('now', 'start of month')`)
-            ));
-
-        const [updatedThisMonth] = await getDbClient()
-            .select({ count: countDistinct(listTable.mediaId) })
-            .from(listTable)
-            .where(gte(listTable.lastUpdated, sql`date('now', 'start of month')`));
-
-        return {
-            added: {
-                thisMonth: addedThisMonth?.count || 0,
-                lastMonth: addedLastMonth?.count || 0,
-                comparedToLastMonth: (addedThisMonth?.count || 0) - (addedLastMonth?.count || 0),
-            },
-            updated: {
-                thisMonth: updatedThisMonth?.count || 0,
-            }
-        };
     }
 
     // --- Abstract Methods -----------------------------------------------------------------

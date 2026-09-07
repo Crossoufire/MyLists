@@ -6,11 +6,45 @@ import {formatMonthYear} from "@/lib/utils/date-formatting";
 import {getDbClient} from "@/lib/server/database/async-storage";
 import {YearRecapReleaseMode} from "@/lib/types/year-recap.types";
 import {paginate, resolveSorting} from "@/lib/server/database/pagination";
-import {and, asc, count, countDistinct, desc, eq, gte, like, lte, or, sql} from "drizzle-orm";
+import {getServerMediaDefinition} from "@/lib/media-definitions/definition.registry.server";
+import {and, asc, count, countDistinct, desc, eq, gte, like, lt, lte, or, sql} from "drizzle-orm";
 import {apiCallRollup, collections, mediaRefreshLog, taskHistory, user, yearRecapRelease} from "@/lib/server/database/schema";
 
 
 export class AdminRepository {
+    static async getUserMediaAddedAndUpdatedForAdmin(mediaType: MediaType) {
+        const { listTable } = getServerMediaDefinition(mediaType).repository.tables;
+
+        const [addedThisMonth] = await getDbClient()
+            .select({ count: countDistinct(listTable.id) })
+            .from(listTable)
+            .where(gte(listTable.addedAt, sql`date('now', 'start of month')`));
+
+        const [addedLastMonth] = await getDbClient()
+            .select({ count: countDistinct(listTable.id) })
+            .from(listTable)
+            .where(and(
+                gte(listTable.addedAt, sql`date('now', '-1 month', 'start of month')`),
+                lt(listTable.addedAt, sql`date('now', 'start of month')`)
+            ));
+
+        const [updatedThisMonth] = await getDbClient()
+            .select({ count: countDistinct(listTable.mediaId) })
+            .from(listTable)
+            .where(gte(listTable.lastUpdated, sql`date('now', 'start of month')`));
+
+        return {
+            added: {
+                thisMonth: addedThisMonth?.count || 0,
+                lastMonth: addedLastMonth?.count || 0,
+                comparedToLastMonth: (addedThisMonth?.count || 0) - (addedLastMonth?.count || 0),
+            },
+            updated: {
+                thisMonth: updatedThisMonth?.count || 0,
+            }
+        };
+    }
+
     static async getYearRecapReleaseMode(year: number): Promise<YearRecapReleaseMode> {
         return getDbClient()
             .select({ mode: yearRecapRelease.mode })

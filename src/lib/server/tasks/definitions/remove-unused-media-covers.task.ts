@@ -3,8 +3,8 @@ import path from "path";
 import * as fs from "fs";
 import {serverEnv} from "@/env/server";
 import {MediaType} from "@/lib/utils/enums";
-import {getContainer} from "@/lib/server/core/container";
 import {defineTask} from "@/lib/server/tasks/define-task";
+import {MediaMaintenanceRepository} from "@/lib/server/domain/maintenance/media-maintenance.repository";
 
 
 export const removeUnusedMediaCoversTask = defineTask({
@@ -16,8 +16,6 @@ export const removeUnusedMediaCoversTask = defineTask({
         mediaTypes: z.array(z.enum(MediaType)).optional().describe("Media types to clean (all if omitted)"),
     }),
     handler: async (ctx, input) => {
-        const container = await getContainer();
-        const mediaRegistry = container.registries.mediaService;
         const baseUploadsLocation = serverEnv.BASE_UPLOADS_LOCATION;
 
         const mediaTypes = input.mediaTypes;
@@ -35,9 +33,8 @@ export const removeUnusedMediaCoversTask = defineTask({
                     return;
                 }
 
-                const mediaService = mediaRegistry.get(mediaType);
-                const dbCoverFilenames = await mediaService.getCoverFilenames();
-                const dbCustomCoverFilenames = await mediaService.getCustomCoverFilenames();
+                const dbCoverFilenames = await MediaMaintenanceRepository.getCoverFilenames(mediaType);
+                const dbCustomCoverFilenames = await MediaMaintenanceRepository.getCustomCoverFilenames(mediaType);
                 const dbCoverSet = new Set([...dbCoverFilenames, ...dbCustomCoverFilenames]);
 
                 const filesOnDisk = await fs.promises.readdir(coversDirectoryPath);

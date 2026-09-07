@@ -47,20 +47,8 @@ export abstract class BaseService<TDef extends AnyServerMediaDefinition, R exten
         }
     }
 
-    async getCoverFilenames() {
-        const coverFilenames = await this.repository.getCoverFilenames();
-        return coverFilenames.map(({ imageCover }) => imageCover.split("/").pop() as string);
-    }
-
     getPopularMediaRefs() {
         return this.repository.getPopularMediaRefs();
-    }
-
-    async getCustomCoverFilenames() {
-        const coverFilenames = await this.repository.getCustomCoverFilenames();
-        return coverFilenames
-            .map(({ customCover }) => customCover?.split("/").pop() as string | undefined)
-            .filter((cover): cover is string => !!cover);
     }
 
     async getUserFavorites(userId: number, limit = 7) {
@@ -69,10 +57,6 @@ export abstract class BaseService<TDef extends AnyServerMediaDefinition, R exten
 
     async searchUserListByName(userId: number, query: string, limit?: number) {
         return this.listQueries.searchUserListByName(userId, query, limit);
-    }
-
-    getOrphanedMediaIds() {
-        return this.repository.getOrphanedMediaIds();
     }
 
     async getUpcomingMedia(userId?: number, maxAWeek?: boolean) {
@@ -85,10 +69,6 @@ export abstract class BaseService<TDef extends AnyServerMediaDefinition, R exten
 
     async searchByName(query: string, limit?: number) {
         return this.repository.searchByName(query, limit);
-    }
-
-    removeMediaByIds(mediaIds: number[]) {
-        return this.repository.removeMediaByIds(mediaIds);
     }
 
     async getListFilters(userId: number) {
@@ -331,12 +311,6 @@ export abstract class BaseService<TDef extends AnyServerMediaDefinition, R exten
         if (wasFavorited !== isFavorited) delta.entriesFavorites = isFavorited ? 1 : -1;
 
         return delta;
-    }
-
-    // --- Admin Methods ---------------------------------------------------
-
-    async getUserMediaAddedAndUpdatedForAdmin() {
-        return this.repository.getUserMediaAddedAndUpdatedForAdmin();
     }
 
     // --- Abstract Methods ------------------------------------------------

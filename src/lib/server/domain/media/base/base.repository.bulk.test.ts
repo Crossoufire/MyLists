@@ -1,8 +1,8 @@
 import {eq} from "drizzle-orm";
 import Database from "bun:sqlite";
-import {MediaType, Status} from "@/lib/utils/enums";
+import {Status} from "@/lib/utils/enums";
 import * as schema from "@/lib/server/database/schema";
-import {collectionItems, collections, movies, moviesActors, moviesGenre, moviesList, moviesTags, user} from "@/lib/server/database/schema";
+import {movies, moviesActors, moviesGenre, moviesList, moviesTags, user} from "@/lib/server/database/schema";
 import {migrate} from "drizzle-orm/bun-sqlite/migrator";
 import {BunSQLiteDatabase, drizzle} from "drizzle-orm/bun-sqlite";
 import {afterEach, beforeEach, describe, expect, it, vi} from "vitest";
@@ -123,36 +123,6 @@ describe("Base media persistence and list queries", () => {
         const result = await service.searchUserListByName(42, "Original One");
 
         expect(result.map(item => item.mediaId)).toEqual([100]);
-    });
-
-    it("finds media absent from both user lists and collections", async () => {
-        await db.insert(movies).values({
-            id: 102,
-            apiId: 1002,
-            duration: 105,
-            imageCover: "3.jpg",
-            name: "Orphaned movie",
-        });
-        await db.insert(moviesList).values({
-            id: 1,
-            userId: 42,
-            mediaId: 100,
-            status: Status.COMPLETED,
-        });
-        await db.insert(collections).values({
-            id: 1,
-            ownerId: 42,
-            title: "Movie collection",
-            mediaType: MediaType.MOVIES,
-        });
-        await db.insert(collectionItems).values({
-            mediaId: 101,
-            orderIndex: 0,
-            collectionId: 1,
-            mediaType: MediaType.MOVIES,
-        });
-
-        await expect(repository.getOrphanedMediaIds()).toEqual([102]);
     });
 
     it("scopes tag filters to the owner of the requested list", async () => {

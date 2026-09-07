@@ -8,7 +8,6 @@ import {getRedisConnection} from "@/lib/server/core/redis-client";
 import {getYearRecapReleaseStatus} from "@/lib/utils/year-recap-release";
 import {AdminRepository} from "@/lib/server/domain/admin/admin.repository";
 import {getRollupKey, PENDING_ROLLUPS_KEY} from "@/lib/server/core/cache-keys";
-import {MediaServiceRegistry} from "@/lib/server/domain/media/media.registries";
 import {YEAR_RECAP_FIRST_YEAR, YearRecapReleaseMode} from "@/lib/types/year-recap.types";
 import {AdminApiMonitoringParams, AdminMediaRefreshStatsParams} from "@/lib/types/admin.types";
 
@@ -57,10 +56,9 @@ export class AdminService {
         return this.repository.deleteArchivedTaskForAdmin(taskId);
     }
 
-    async getMediaOverviewForAdmin(mediaServiceRegistry: MediaServiceRegistry) {
+    async getMediaOverviewForAdmin() {
         const mediaStats = await Promise.all(Object.values(MediaType).map(async (mediaType) => {
-            const mediaService = mediaServiceRegistry.get(mediaType);
-            const { added, updated } = await mediaService.getUserMediaAddedAndUpdatedForAdmin();
+            const { added, updated } = await this.repository.getUserMediaAddedAndUpdatedForAdmin(mediaType);
             return { mediaType, added, updated };
         }));
 
