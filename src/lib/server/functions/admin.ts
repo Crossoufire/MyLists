@@ -7,10 +7,11 @@ import {getContainer} from "@/lib/server/core/container";
 import {FormattedError} from "@/lib/utils/error-classes";
 import {deleteCookie} from "@tanstack/react-start/server";
 import {setSignedCookie} from "@/lib/utils/signed-cookies";
+import {createRateLimiter} from "@/lib/server/core/rate-limiter";
 import {getAllTasksMetadata, getTask} from "@/lib/server/tasks/registry";
 import {listAdminLogFiles, readAdminLogFile} from "@/lib/server/core/admin-logs-reader";
+import {clearAdminCookie, isAdminAuthenticated, setAdminCookie, verifyAdminPassword} from "@/lib/utils/admin-utils";
 import {requiredAuthAndAdminRoleMiddleware, requiredAuthAndAdminTokenMiddleware} from "@/lib/server/middlewares/authentication";
-import {adminAuthRateLimiter, clearAdminCookie, isAdminAuthenticated, setAdminCookie, verifyAdminPassword} from "@/lib/utils/admin-utils";
 import {
     adminApiMonitoringSchema,
     adminDeleteArchivedTaskSchema,
@@ -24,6 +25,9 @@ import {
 } from "@/lib/schemas";
 
 
+let adminAuthRateLimiter: ReturnType<typeof createRateLimiter> | undefined;
+
+
 export const checkAdminAuth = createServerFn({ method: "GET" })
     .middleware([requiredAuthAndAdminRoleMiddleware])
     .handler(async ({ context: { currentUser } }) => {
@@ -35,7 +39,7 @@ export const adminAuth = createServerFn({ method: "POST" })
     .middleware([requiredAuthAndAdminRoleMiddleware])
     .validator(z.object({ password: z.string() }))
     .handler(async ({ data: { password }, context: { currentUser } }) => {
-        const limiter = await adminAuthRateLimiter;
+        const limiter = await (adminAuthRateLimiter ??= createRateLimiter({ points: 5, duration: 15 * 60, keyPrefix: "admin-auth" }));
 
         try {
             await limiter.consume(String(currentUser.id));

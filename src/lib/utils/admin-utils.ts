@@ -1,7 +1,6 @@
 import crypto from "node:crypto";
 import {serverEnv} from "@/env/server";
 import {signCookieValue} from "@/lib/utils/signed-cookies";
-import {createRateLimiter} from "@/lib/server/core/rate-limiter";
 import {deleteCookie, getCookie, setCookie} from "@tanstack/react-start/server";
 
 
@@ -27,9 +26,6 @@ const verifyAdminToken = async (token: string, currentUserId: number) => {
     // Check not expired
     return Date.now() < parseInt(exp, 10);
 };
-
-
-export const adminAuthRateLimiter = createRateLimiter({ points: 5, duration: 15 * 60, keyPrefix: "admin-auth" });
 
 
 export const verifyAdminPassword = async (password: string) => {
