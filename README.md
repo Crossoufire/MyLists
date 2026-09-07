@@ -33,7 +33,7 @@ Ensure you have [Bun](https://bun.sh) installed on your machine.
 
 2. **Install deps**
    ```bash
-   bun install
+   bun install --frozen-lockfile
    ```
 
 3. **Configure the env file**
@@ -71,6 +71,8 @@ Ensure you have [Bun](https://bun.sh) installed on your machine.
    ```bash
    bun run dev
    ```
+
+Commit `bun.lock` alongside `package.json` when updating dependencies. Deployment uses the committed lockfile without resolving new versions.
 
 ### Docker Deployment
 
