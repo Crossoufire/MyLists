@@ -108,15 +108,24 @@ describe("createApiHttpClient", () => {
         expect(fetchMock).toHaveBeenCalledOnce();
     });
 
-    it("propagates a network exception without retrying it", async () => {
+    it("propagates a network exception without retrying it and logs only the URL origin and pathname", async () => {
+        const url = "https://example.com/items?api_key=test-secret&query=private-search#private-fragment";
         const networkError = new TypeError("Connection reset");
         const fetchMock = vi.fn().mockRejectedValue(networkError);
         vi.stubGlobal("fetch", fetchMock);
         const client = await createApiHttpClient(config);
 
-        await expect(client.call("https://example.com/items")).rejects.toBe(networkError);
+        await expect(client.call(url)).rejects.toBe(networkError);
         expect(fetchMock).toHaveBeenCalledOnce();
+        expect(fetchMock).toHaveBeenCalledWith(url, expect.any(Object));
         expect(transportMocks.logger.error).toHaveBeenCalledOnce();
+        expect(transportMocks.logger.error).toHaveBeenCalledWith(
+            expect.objectContaining({
+                err: networkError,
+                data: expect.objectContaining({ url: "https://example.com/items" }),
+            }),
+            "Failed to fetch API",
+        );
     });
 
     it("maps fetch timeouts to a formatted gateway-timeout error", async () => {
