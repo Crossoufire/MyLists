@@ -1,6 +1,31 @@
 import {describe, expect, it} from "vitest";
 import {MediaType, Status, UpdateType} from "@/lib/utils/enums";
-import {addMediaToListSchema, updateUserMediaSchema} from "@/lib/schemas/user-media.schema";
+import {addMediaToListSchema, updateUserCustomCoverSchema, updateUserMediaSchema} from "@/lib/schemas/user-media.schema";
+import {updateBookCoverSchema} from "@/lib/schemas/media-details.schema";
+import {MAX_IMAGE_BYTES} from "@/lib/utils/constants";
+
+
+describe.each([
+    { name: "custom cover", schema: updateUserCustomCoverSchema, fields: { mediaType: MediaType.MOVIES, mediaId: 1 } },
+    { name: "book cover", schema: updateBookCoverSchema, fields: { mediaId: 1 } },
+])("$name input", ({ schema, fields }) => {
+    it.each(["http://example.com/cover.jpg", "https://example.com/cover.jpg"])("keeps accepting URL covers: %s", (imageUrl) => {
+        expect(schema.safeParse({ ...fields, imageUrl }).success).toBe(true);
+    });
+
+    it.each(["file:///tmp/cover.png", "s3://bucket/cover.png", "data:image/png;base64,AA=="])("rejects non-HTTP URLs: %s", (imageUrl) => {
+        expect(schema.safeParse({ ...fields, imageUrl }).success).toBe(false);
+    });
+
+    it("limits uploads to non-empty files up to 10MB", () => {
+        for (const size of [0, MAX_IMAGE_BYTES + 1]) {
+            const imageFile = new File([new Uint8Array(size)], "cover.png");
+            expect(schema.safeParse({ ...fields, imageFile }).success).toBe(false);
+        }
+        const imageFile = new File([new Uint8Array(MAX_IMAGE_BYTES)], "cover.png");
+        expect(schema.safeParse({ ...fields, imageFile }).success).toBe(true);
+    });
+});
 
 
 describe("user media schemas", () => {

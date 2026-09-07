@@ -1,6 +1,6 @@
 import * as z from "zod";
 import {JobType} from "@/lib/utils/enums";
-import {coercedPositiveIntFieldSchema, mediaTypeFieldSchema, mediaTypeMediaIdSchema, paginationSchema} from "@/lib/schemas/common.schema";
+import {coercedPositiveIntFieldSchema, imageFileSchema, imageUrlSchema, mediaTypeFieldSchema, mediaTypeMediaIdSchema, paginationSchema} from "@/lib/schemas/common.schema";
 
 
 export type UpdateBookCoverInput = z.input<typeof updateBookCoverSchema>;
@@ -29,9 +29,9 @@ export const editMediaDetailsSchema = mediaTypeMediaIdSchema.extend({
 });
 
 export const updateBookCoverSchema = z.object({
-    imageUrl: z.url().trim().optional(),
+    imageUrl: imageUrlSchema.optional(),
+    imageFile: imageFileSchema.optional(),
     mediaId: coercedPositiveIntFieldSchema,
-    imageFile: z.instanceof(File).optional(),
 }).superRefine((data, ctx) => {
     const addFieldIssues = (message: string) => {
         ctx.addIssue({ code: "custom", message, path: ["imageUrl"] });

@@ -13,3 +13,5 @@ export const COMMENT_MAX_LENGTH = 5000;
 export const PLAYTIME_MAX_MINUTES = 15000 * 60;
 
 export const MIN_ACTIVITY_DATE = "1900-01-01";
+
+export const MAX_IMAGE_BYTES = 10 * 1024 * 1024;

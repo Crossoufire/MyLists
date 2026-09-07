@@ -2,8 +2,8 @@ import * as z from "zod";
 import {isValidActivityDate} from "@/lib/utils/activity-utils";
 import {GamesPlatformsEnum, MediaType, Status, TagAction, UpdateType} from "@/lib/utils/enums";
 import {emptyStringToNull, importStatusSchema} from "@/lib/server/domain/imports/import-list-validation";
-import {coercedPositiveIntFieldSchema, mediaTypeFieldSchema, positiveIntFieldSchema} from "@/lib/schemas/common.schema";
 import {COMMENT_MAX_LENGTH, MIN_ACTIVITY_DATE, PLAYTIME_MAX_MINUTES, PROGRESS_MAX, REDO_MAX} from "@/lib/utils/constants";
+import {coercedPositiveIntFieldSchema, imageFileSchema, imageUrlSchema, mediaTypeFieldSchema, positiveIntFieldSchema} from "@/lib/schemas/common.schema";
 
 
 export type UpdateUserMedia = z.infer<typeof updateUserMediaSchema>;
@@ -52,9 +52,9 @@ const validateStatusForMediaType = (mediaType: MediaType, status: Status, ctx: z
 
 export const updateUserCustomCoverSchema = z.object({
     mediaType: mediaTypeFieldSchema,
-    imageUrl: z.url().trim().optional(),
+    imageUrl: imageUrlSchema.optional(),
+    imageFile: imageFileSchema.optional(),
     mediaId: coercedPositiveIntFieldSchema,
-    imageFile: z.instanceof(File).optional(),
     remove: z.coerce.boolean().optional().default(false),
 }).superRefine((data, ctx) => {
     const addFieldIssues = (message: string) => {

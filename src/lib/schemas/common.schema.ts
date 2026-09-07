@@ -1,5 +1,6 @@
 import * as z from "zod";
 import {MediaType} from "@/lib/utils/enums";
+import {MAX_IMAGE_BYTES} from "@/lib/utils/constants";
 
 
 export type SearchType = z.infer<typeof searchTypeSchema>;
@@ -11,6 +12,12 @@ export type HallOfFameSearch = z.infer<typeof hallOfFameSearchSchema>;
 export const USERNAME_MIN_LENGTH = 3;
 
 export const USERNAME_MAX_LENGTH = 15;
+
+export const imageUrlSchema = z.url({ protocol: /^https?$/ }).trim();
+
+export const imageFileSchema = z.file()
+    .min(1, "Choose a non-empty image.")
+    .max(MAX_IMAGE_BYTES, "Image must be 10MB or smaller.");
 
 
 export const usernameSchema = z.string()
