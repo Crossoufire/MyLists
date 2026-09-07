@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.5.2](https://github.com/vincedelmas/MyLists/compare/v3.5.1...v3.5.2) (2026-09-07)
+
+
+### Bug Fixes
+
+* init admin rate limiter lazily to prevent build hangs ([bab6fcc](https://github.com/vincedelmas/MyLists/commit/bab6fccfec4ab76363809f93a4b4cf104ee18534))
+
 ## [3.5.1](https://github.com/vincedelmas/MyLists/compare/v3.5.0...v3.5.1) (2026-09-07)
 
 
