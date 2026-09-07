@@ -1,17 +1,14 @@
-import {SearchType} from "@/lib/schemas";
 import {notFound} from "@tanstack/react-router";
 import {MediaInfo} from "@/lib/types/activity.types";
+import {JobType, MediaType, Status} from "@/lib/utils/enums";
 import {UpComingMedia} from "@/lib/types/notifications.types";
+import {UserMediaWithTags} from "@/lib/types/user-media.types";
 import {ProviderSearchResult} from "@/lib/types/provider.types";
 import {AddedMediaDetails} from "@/lib/types/media-common.types";
-import {resolvePagination} from "@/lib/server/database/pagination";
-import {JobType, MediaType, SocialState, Status} from "@/lib/utils/enums";
 import {ExportMediaList, MediaListData} from "@/lib/types/media-list.types";
 import {getDbClient, withTransaction} from "@/lib/server/database/async-storage";
-import {Actor, communityProfileVisibilityCondition} from "@/lib/server/authorization";
-import {MediaCommunityActivityStats, UserFollowsMediaData, UserMediaWithTags} from "@/lib/types/user-media.types";
 import {AnyMediaRepositoryDefinition, AnyServerMediaDefinition} from "@/lib/media-definitions/base/media.definition.server";
-import {animeList, booksList, collectionItems, followers, gamesList, mangaList, moviesList, seriesList, user, userMediaSettings} from "@/lib/server/database/schema";
+import {animeList, booksList, collectionItems, gamesList, mangaList, moviesList, seriesList, user} from "@/lib/server/database/schema";
 import {and, asc, count, countDistinct, desc, eq, getTableColumns, gte, inArray, isNotNull, isNull, like, lt, lte, ne, notExists, notInArray, or, SQL, sql} from "drizzle-orm";
 
 
@@ -399,113 +396,6 @@ export abstract class BaseRepository<
             .from(listTable)
             .innerJoin(mediaTable, eq(listTable.mediaId, mediaTable.id))
             .where(eq(listTable.userId, userId));
-    }
-
-    async getUserFollowsMediaData(userId: number | undefined, mediaId: number): Promise<UserFollowsMediaData<TRepoDef["tables"]["listTable"]["$inferSelect"]>[]> {
-        const { listTable } = this.repoDefinition.tables;
-
-        if (!userId) return [];
-
-        const inFollowsLists = await getDbClient()
-            .select({
-                id: user.id,
-                name: user.name,
-                image: user.image,
-                userMedia: listTable,
-                ratingSystem: user.ratingSystem,
-            })
-            .from(followers)
-            .innerJoin(user, eq(user.id, followers.followedId))
-            .innerJoin(listTable, eq(listTable.userId, followers.followedId))
-            .innerJoin(userMediaSettings, and(
-                eq(userMediaSettings.userId, listTable.userId),
-                eq(userMediaSettings.mediaType, this.identity.mediaType),
-                eq(userMediaSettings.active, true),
-            ))
-            .where(and(eq(followers.followerId, userId), eq(followers.status, SocialState.ACCEPTED), eq(listTable.mediaId, mediaId)))
-            .orderBy(asc(user.name));
-
-        return inFollowsLists;
-    }
-
-    async getMediaCommunityActivity(actor: Actor, mediaId: number, search: SearchType) {
-        const { tables: { listTable }, communityActivity: { aggregates } } = this.repoDefinition;
-
-        const totalRedo = aggregates.totalRedo ?? sql<number>`0`;
-        const totalSpecific = aggregates.totalSpecific ?? sql<number>`0`;
-        const totalPlaytime = aggregates.totalPlaytime ?? sql<number>`0`;
-
-        const { page, perPage, offset, limit } = resolvePagination({
-            maxPerPage: 50,
-            page: search.page,
-            defaultPerPage: 8,
-            perPage: search.perPage,
-        });
-
-        const conditions = and(eq(listTable.mediaId, mediaId), communityProfileVisibilityCondition(actor));
-
-        const statsQuery = getDbClient()
-            .select({
-                totalRedo,
-                totalSpecific,
-                totalPlaytime,
-                total: count(listTable.id),
-                averageRating: sql<number | null>`AVG(${listTable.rating})`,
-                likedCount: sql<number>`COALESCE(SUM(CASE WHEN ${listTable.favorite} = 1 THEN 1 ELSE 0 END), 0)`,
-                completedCount: sql<number>`COALESCE(SUM(CASE WHEN ${listTable.status} = ${Status.COMPLETED} THEN 1 ELSE 0 END), 0)`,
-            })
-            .from(listTable)
-            .innerJoin(user, eq(user.id, listTable.userId))
-            .innerJoin(userMediaSettings, and(
-                eq(userMediaSettings.userId, listTable.userId),
-                eq(userMediaSettings.mediaType, this.identity.mediaType),
-                eq(userMediaSettings.active, true),
-            ))
-            .where(conditions)
-            .get();
-
-        const itemsQuery = getDbClient()
-            .select({
-                id: user.id,
-                name: user.name,
-                image: user.image,
-                userMedia: {
-                    ...getTableColumns(listTable),
-                    comment: sql<string | null>`NULL`,
-                },
-                ratingSystem: user.ratingSystem,
-            })
-            .from(listTable)
-            .innerJoin(user, eq(user.id, listTable.userId))
-            .innerJoin(userMediaSettings, and(
-                eq(userMediaSettings.active, true),
-                eq(userMediaSettings.userId, listTable.userId),
-                eq(userMediaSettings.mediaType, this.identity.mediaType),
-            ))
-            .where(conditions)
-            .orderBy(desc(sql`COALESCE(${listTable.lastUpdated}, ${listTable.addedAt})`))
-            .limit(limit)
-            .offset(offset);
-
-        const [stats, items] = await Promise.all([statsQuery, itemsQuery]);
-        const total = stats?.total ?? 0;
-
-        return {
-            page,
-            items,
-            total,
-            perPage,
-            pages: Math.ceil(total / perPage),
-            stats: {
-                total,
-                totalRedo: stats?.totalRedo ?? 0,
-                likedCount: stats?.likedCount ?? 0,
-                totalSpecific: stats?.totalSpecific ?? 0,
-                totalPlaytime: stats?.totalPlaytime ?? 0,
-                completedCount: stats?.completedCount ?? 0,
-                averageRating: stats?.averageRating ?? null,
-            } satisfies MediaCommunityActivityStats,
-        };
     }
 
     async getUpcomingMedia(userId?: number, maxAWeek?: boolean): Promise<UpComingMedia[]> {

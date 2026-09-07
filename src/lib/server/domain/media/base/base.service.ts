@@ -12,6 +12,7 @@ import {MYLISTS_CSV_VERSION} from "@/lib/server/domain/imports/parsers/mylists.p
 import {createMediaTagQueries} from "@/lib/server/domain/media/base/media-tag.queries";
 import {createMediaListQueries} from "@/lib/server/domain/media/base/media-list.queries";
 import {AnyServerMediaDefinition} from "@/lib/media-definitions/base/media.definition.server";
+import {createMediaCommunityQueries} from "@/lib/server/domain/media/base/media-community.queries";
 import {UpdateHandlerFn, UpdateUserMediaDetails, UserMediaWithTags} from "@/lib/types/user-media.types";
 import {MediaListArgs, Pagination, SearchType, SimpleSearch, UpdateUserCustomCover, UpdateUserMedia} from "@/lib/schemas";
 
@@ -22,6 +23,7 @@ export abstract class BaseService<TDef extends AnyServerMediaDefinition, R exten
     protected readonly ingestion: TDef["ingestion"];
     protected readonly servicePolicy: TDef["service"];
     private readonly tagQueries: ReturnType<typeof createMediaTagQueries>;
+    private readonly communityQueries: ReturnType<typeof createMediaCommunityQueries<TDef>>;
     private readonly listQueries: ReturnType<typeof createMediaListQueries<TDef["repository"]>>;
     protected updateHandlers: Partial<Record<
         UpdateType,
@@ -34,6 +36,7 @@ export abstract class BaseService<TDef extends AnyServerMediaDefinition, R exten
         this.ingestion = definition.ingestion;
         this.servicePolicy = definition.service;
         this.tagQueries = createMediaTagQueries(definition.repository);
+        this.communityQueries = createMediaCommunityQueries(definition);
         this.listQueries = createMediaListQueries(definition.repository);
 
         // User progress handlers based on update type
@@ -148,7 +151,7 @@ export abstract class BaseService<TDef extends AnyServerMediaDefinition, R exten
         const media = this.repository.findById(mediaId);
         if (!media) throw notFound();
 
-        return this.repository.getMediaCommunityActivity(actor, mediaId, search);
+        return this.communityQueries.getMediaCommunityActivity(actor, mediaId, search);
     }
 
     editUserTag(userId: number, tag: Tag, action: TagAction, mediaId?: number) {
@@ -252,7 +255,7 @@ export abstract class BaseService<TDef extends AnyServerMediaDefinition, R exten
 
         const userMedia = this.repository.findUserMedia(userId, mediaWithDetails.id);
         const similarMedia = await this.repository.findSimilarMedia(mediaWithDetails.id);
-        const followsData = await this.repository.getUserFollowsMediaData(userId, mediaWithDetails.id);
+        const followsData = await this.communityQueries.getUserFollowsMediaData(userId, mediaWithDetails.id);
 
         return {
             userMedia,
