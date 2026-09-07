@@ -1,4 +1,4 @@
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import {useAuth} from "@/lib/client/hooks/use-auth";
 import {statusUtils} from "@/lib/utils/media-mapping";
 import {createFileRoute} from "@tanstack/react-router";
@@ -37,13 +37,17 @@ function MediaList() {
     const { userData, ...apiData } = useSuspenseQuery(mediaListQueryOptions).data;
 
     const isCurrent = (currentUser?.id === userData.id);
+    const lastPage = Math.max(1, apiData.results.pagination.totalPages);
     const isGrid = filters.view ? filters.view === "grid" : (currentUser?.gridListView ?? true);
 
+    useEffect(() => {
+        if ((filters.page ?? 1) > lastPage) {
+            void navigate({ search: prev => ({ ...prev, page: lastPage }), replace: true, resetScroll: false });
+        }
+    }, [filters.page, lastPage, navigate]);
+
     const handleGridToggle = () => {
-        void navigate({
-            search: (prev) => ({ ...prev, view: isGrid ? "list" : "grid" }),
-            replace: true,
-        });
+        void navigate({ search: prev => ({ ...prev, view: isGrid ? "list" : "grid" }), replace: true });
     };
 
     const handleFilterChange = (newFilters: Partial<MediaListArgs>) => {

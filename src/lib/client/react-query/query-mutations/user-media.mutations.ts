@@ -1,8 +1,8 @@
 import {Tag} from "@/lib/types/media-common.types";
 import {useAuth} from "@/lib/client/hooks/use-auth";
+import {MediaType, TagAction} from "@/lib/utils/enums";
 import {FormattedError} from "@/lib/utils/error-classes";
 import {UpdatePayload} from "@/lib/types/user-media.types";
-import {MediaType, TagAction, UpdateType} from "@/lib/utils/enums";
 import {MutationMeta, useMutation, useQueryClient} from "@tanstack/react-query";
 import {loggedActivityUpdateTypes, SimpleSearch, updateUserMediaSchema} from "@/lib/schemas";
 import {allUpdatesOptions, historyOptions, mediaDetailsOptions, mediaListOptions, profileOptions, tagNamesOptions} from "@/lib/client/react-query/query-options";
@@ -106,16 +106,12 @@ export const useRemoveMediaFromListMutation = (queryOption: UserMediaQueryOption
     const queryClient = useQueryClient();
 
     return useMutation({
+        mutationKey: ["userMediaEdit", queryOption.queryKey[1]],
         mutationFn: postRemoveMediaFromList,
         meta: {
             successToastMessage: "Media removed from your list!",
         },
         onSuccess: async (_data, variables) => {
-            await Promise.all([
-                queryClient.invalidateQueries({ queryKey: ["monthly-activity"] }),
-                queryClient.invalidateQueries({ queryKey: ["year-recap"] }),
-            ]);
-
             if (queryOption.queryKey[0] === "details") {
                 queryClient.setQueryData(queryOption.queryKey, (oldData) => {
                     if (!oldData) return;
@@ -133,6 +129,12 @@ export const useRemoveMediaFromListMutation = (queryOption: UserMediaQueryOption
                     };
                 })
             }
+
+            await Promise.all([
+                queryClient.invalidateQueries({ queryKey: ["year-recap"] }),
+                queryClient.invalidateQueries({ queryKey: ["monthly-activity"] }),
+                queryClient.invalidateQueries({ queryKey: ["userList", variables.data.mediaType] }),
+            ]);
         }
     });
 };
@@ -142,6 +144,7 @@ export const useUpdateUserMediaMutation = (mediaType: MediaType, mediaId: number
     const queryClient = useQueryClient();
 
     return useMutation({
+        mutationKey: ["userMediaEdit", mediaType],
         mutationFn: ({ payload }: UpdatePayload) => {
             const activityUpdate = loggedActivityUpdateTypes.has(payload.type);
 
@@ -174,7 +177,7 @@ export const useUpdateUserMediaMutation = (mediaType: MediaType, mediaId: number
                 invalidations.push(queryClient.invalidateQueries({ queryKey: ["monthly-activity"] }));
             }
 
-            if (variables.payload.type === UpdateType.COMMENT) {
+            if (queryOption.queryKey[0] === "details") {
                 invalidations.push(queryClient.invalidateQueries({ queryKey: ["userList", mediaType] }));
             }
 
@@ -209,15 +212,32 @@ export const useUpdateCustomCoverMutation = (queryOption: UserMediaQueryOption, 
     const queryClient = useQueryClient();
 
     return useMutation({
+        mutationKey: ["userMediaEdit", queryOption.queryKey[1]],
         mutationFn: postUpdateUserCustomCover,
         meta: {
             successToastMessage: "Custom cover updated!",
             ...meta,
         },
-        onSuccess: async () => {
+        onSuccess: async (data) => {
+            if (queryOption.queryKey[0] === "userList") {
+                queryClient.setQueryData(queryOption.queryKey, (oldData) => {
+                    if (!oldData) return;
+                    return {
+                        ...oldData,
+                        results: Object.assign({}, oldData.results, {
+                            items: oldData.results.items.map((item) =>
+                                item.mediaId === data.mediaId ? { ...item, customCover: data.customCover } : item
+                            ),
+                        }),
+                    };
+                });
+            }
+
             await Promise.all([
                 queryClient.invalidateQueries({ queryKey: ["year-recap"] }),
-                queryClient.invalidateQueries({ queryKey: queryOption.queryKey }),
+                ...(queryOption.queryKey[0] === "details"
+                    ? [queryClient.invalidateQueries({ queryKey: queryOption.queryKey })]
+                    : []),
             ]);
         },
     });
@@ -229,6 +249,7 @@ export const useEditTagMutation = (mediaType: MediaType, mediaId?: number, meta?
     const queryClient = useQueryClient();
 
     return useMutation({
+        mutationKey: ["userMediaEdit", mediaType],
         mutationFn: ({ tag, action }: { tag: Tag, action: TagAction }) => {
             return postEditUserTag({ data: { mediaType, mediaId, tag, action } });
         },

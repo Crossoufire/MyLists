@@ -1,4 +1,5 @@
 import {MediaType} from "@/lib/utils/enums";
+import {useQueryClient} from "@tanstack/react-query";
 import {UserMediaItem} from "@/lib/types/query.options.types";
 import {mediaListOptions} from "@/lib/client/react-query/query-options";
 import {UserMediaDetails} from "@/lib/client/components/media/base/UserMediaDetails";
@@ -15,10 +16,32 @@ interface UserMediaEditDialogProps {
 
 
 export const UserMediaEditDialog = ({ dialogOpen, userMedia, mediaType, queryOption, onOpenChange }: UserMediaEditDialogProps) => {
+    const queryClient = useQueryClient();
     if (!userMedia) return null;
 
+    const onDialogOpenChange = async (open: boolean) => {
+        onOpenChange(open);
+        if (open) return;
+
+        // A save outlive the dialog. Refresh only once those edits have settled
+        const mutationCache = queryClient.getMutationCache();
+        const pendingEdits = mutationCache.findAll({ mutationKey: ["userMediaEdit", mediaType], status: "pending" });
+        if (pendingEdits.length > 0) {
+            await new Promise<void>((resolve) => {
+                const unsubscribe = mutationCache.subscribe(() => {
+                    if (pendingEdits.every((mutation) => mutation.state.status !== "pending")) {
+                        unsubscribe();
+                        resolve();
+                    }
+                });
+            });
+        }
+
+        await queryClient.invalidateQueries({ queryKey: ["userList", mediaType, queryOption.queryKey[2]] });
+    }
+
     return (
-        <Dialog open={dialogOpen} onOpenChange={onOpenChange}>
+        <Dialog open={dialogOpen} onOpenChange={onDialogOpenChange}>
             <DialogContent className="w-108 max-sm:w-full">
                 <DialogHeader>
                     <DialogTitle>
