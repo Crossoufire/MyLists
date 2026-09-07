@@ -3,7 +3,7 @@ services:
     image: mylists-app
     container_name: mylists
     build:
-      context: ./src
+      context: .
     env_file:
       - .env.docker
     depends_on:

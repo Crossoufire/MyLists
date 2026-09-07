@@ -1,6 +1,7 @@
 # Docker Deployment
 
-MyLists ships a Docker Compose setup with the app and Redis. The app image runs the Bun web server by default and also contains the built CLI for one-off commands and scheduled
+MyLists ships a Docker Compose setup with the app and Redis. The app image runs the Bun web server by default and also contains the built
+CLI for one-off commands and scheduled
 maintenance.
 
 The Compose setup does not include a scheduler or reverse proxy. In production, provide those from your platform when you need them.
@@ -13,7 +14,8 @@ Create the Docker env file:
 cp .env.docker.example .env.docker
 ```
 
-Set real values for `ADMIN_PASSWORD`, `ADMIN_TOKEN_SECRET`, and `BETTER_AUTH_SECRET`. API keys, OAuth providers, mail delivery, PostHog, and LLM enrichment are optional.
+Set real values for `ADMIN_PASSWORD`, `ADMIN_TOKEN_SECRET`, and `BETTER_AUTH_SECRET`. API keys, OAuth providers, mail delivery, PostHog, and
+LLM enrichment are optional.
 
 Build the app image:
 
@@ -21,7 +23,8 @@ Build the app image:
 docker compose --env-file .env.docker build
 ```
 
-Public `VITE_*` values are embedded in the client build. Rebuild the image after changing them. For public production, set `VITE_BASE_URL` to the public HTTPS origin, for example:
+Public `VITE_*` values are embedded in the client build. Rebuild the image after changing them. For public production, set `VITE_BASE_URL`
+to the public HTTPS origin, for example:
 
 ```env
 VITE_BASE_URL=https://example.com
@@ -29,19 +32,36 @@ VITE_BASE_URL=https://example.com
 
 ## Run
 
+Compose attaches the app to the external `web_net` network. If your platform has not already created it, create it before starting the
+services:
+
+```bash
+docker network create web_net
+```
+
 Run the app and Redis with persistent volumes:
 
 ```bash
 docker compose --env-file .env.docker up -d --build
 ```
 
-Open:
+The app listens on `PORT`, which defaults to `3000`, inside the container. Compose does not publish a host port. Configure your reverse
+proxy on `web_net` to reach `mylists:3000` (or the configured `PORT`), then open your public URL.
+
+For local access, create `compose.override.yml` at the repository root with:
+
+```yaml
+services:
+  mylists:
+    ports:
+      - "127.0.0.1:3000:${PORT:-3000}"
+```
+
+Compose automatically loads this override. Run the `up` command above again, then open:
 
 ```text
 http://localhost:3000
 ```
-
-The app listens on `PORT`, which defaults to `3000`.
 
 ## Persistent Data
 
@@ -78,12 +98,14 @@ REDIS_URL=redis://redis:6379
 
 When Redis is disabled, the app uses in-memory cache and in-memory rate limiting inside each app process.
 
-API monitoring in the admin dashboard is Redis-backed. Without Redis, outbound API calls are not recorded into the monitoring rollups and the live Redis counters show zero/null
+API monitoring in the admin dashboard is Redis-backed. Without Redis, outbound API calls are not recorded into the monitoring rollups and
+the live Redis counters show zero/null
 data.
 
 ## Import Drain
 
-Imports are processed by the built CLI. The web app only creates queued import jobs; it does not start a worker process. Run the import drain on a schedule with the same image,
+Imports are processed by the built CLI. The web app only creates queued import jobs; it does not start a worker process. Run the import
+drain on a schedule with the same image,
 env, and persistent mounts as the app:
 
 ```bash
@@ -93,19 +115,21 @@ flock -n /tmp/mylists-import-drain.lock bun dist/cli/index.js import-drain
 For Docker Compose:
 
 ```bash
-flock -n /tmp/mylists-import-drain.lock docker compose --env-file .env.docker run --rm app bun dist/cli/index.js import-drain
+flock -n /tmp/mylists-import-drain.lock docker compose --env-file .env.docker run --rm mylists bun dist/cli/index.js import-drain
 ```
 
-A typical schedule is every 2 minutes for example. The `flock` lock skips a new run when the previous drain is still active. The database also only allows one import job to be in
+A typical schedule is every 2 minutes for example. The `flock` lock skips a new run when the previous drain is still active. The database
+also only allows one import job to be in
 `PROCESSING` at a time.
 
 ## Maintenance
 
-The image does not run cron. Use Dokploy cron, host cron, Kubernetes CronJob, or another scheduler. Run the maintenance task with the same image, env, and persistent mounts as the
+The image does not run cron. Use Dokploy cron, host cron, Kubernetes CronJob, or another scheduler. Run the maintenance task with the same
+image, env, and persistent mounts as the
 app:
 
 ```bash
-docker compose --env-file .env.docker run --rm app \
+docker compose --env-file .env.docker run --rm mylists \
   bun dist/cli/index.js maintenance --json
 ```
 
@@ -116,27 +140,28 @@ A typical schedule is once per day, for example, 03:00 AM UTC.
 Use the built CLI in the image:
 
 ```bash
-docker compose --env-file .env.docker run --rm app bun dist/cli/index.js --help
+docker compose --env-file .env.docker run --rm mylists bun dist/cli/index.js --help
 ```
 
 Examples run with the same database/uploads volumes as the app:
 
 ```bash
-docker compose --env-file .env.docker run --rm app \
+docker compose --env-file .env.docker run --rm mylists \
   bun dist/cli/index.js seed-achievements
 ```
 
 ```bash
-docker compose --env-file .env.docker run --rm app \
+docker compose --env-file .env.docker run --rm mylists \
   bun dist/cli/index.js calculate-achievements
 ```
 
 ## Creating A Local Admin User
 
-For localhost deployments, email verification and OAuth sign-up may be unavailable or unnecessary. Use the CLI to create a verified user directly:
+For localhost deployments, email verification and OAuth sign-up may be unavailable or unnecessary. Use the CLI to create a verified user
+directly:
 
 ```bash
-docker compose --env-file .env.docker run --rm app \
+docker compose --env-file .env.docker run --rm mylists \
   bun dist/cli/index.js create-user \
     --email admin@example.com \
     --password "change-me-strong-password" \
@@ -151,7 +176,7 @@ The available roles are `user`, `manager`, and `admin`.
 For a new SQLite volume, initialize the database from the app service after it has the correct env and volumes attached:
 
 ```bash
-docker compose --env-file .env.docker run --rm app bun run new:db:docker
+docker compose --env-file .env.docker run --rm mylists bun run new:db:docker
 ```
 
 This runs Drizzle schema push, seeds achievements, and calculates achievements against the mounted `/app/instance` SQLite volume.
@@ -167,7 +192,8 @@ proxy_set_header X-Forwarded-Proto https;
 proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
 ```
 
-If your proxy serves static files directly, map `/${UPLOADS_DIR_NAME}/` to the same data stored in `/app/storage/images`. Otherwise, let the app serve images itself.
+If your proxy serves static files directly, map `/${UPLOADS_DIR_NAME}/` to the same data stored in `/app/storage/images`. Otherwise, let the
+app serve images itself.
 
 ## Optional PostHog
 
@@ -184,9 +210,12 @@ If `VITE_PUBLIC_POSTHOG_KEY` is empty, the app does not initialize PostHog or id
 
 Missing optional integration credentials do not stop the container:
 
-- Without mail credentials, create verified users with the CLI. Email registration, password reset, email changes, and inactive-account email maintenance are disabled.
-- TMDB and IGDB credentials enable their respective external media providers. Missing credentials produce a clear error when that provider is used.
-- `MAL_CLIENT_ID` enables manga search/details and MyAnimeList anime genre enrichment. Without it, manga provider calls are unavailable and anime keeps TMDB genres.
+- Without mail credentials, create verified users with the CLI. Email registration, password reset, email changes, and inactive-account
+  email maintenance are disabled.
+- TMDB and IGDB credentials enable their respective external media providers. Missing credentials produce a clear error when that provider
+  is used.
+- `MAL_CLIENT_ID` enables manga search/details and MyAnimeList anime genre enrichment. Without it, manga provider calls are unavailable and
+  anime keeps TMDB genres.
 - GitHub and Google OAuth providers are enabled independently when both values in their credential pair are set.
 - LLM book genre enrichment is skipped when `LLM_API_KEY` is empty.
 
@@ -194,16 +223,17 @@ For paired credentials, leave both values empty or set both. Partial pairs fail 
 
 ## Existing Production Data
 
-Copy existing SQLite files into the database volume and existing image folders into the uploads volume. Example restore from local backup folders:
+Copy existing SQLite files into the database volume and existing image folders into the uploads volume. Example restore from local backup
+folders:
 
 ```bash
 docker compose --env-file .env.docker run --rm --no-deps \
   -v "$PWD/backups/mylists-db:/backup:ro" \
-  app sh -c "cp -a /backup/. /app/instance/"
+  mylists sh -c "cp -a /backup/. /app/instance/"
 
 docker compose --env-file .env.docker run --rm --no-deps \
   -v "$PWD/backups/mylists-uploads:/backup:ro" \
-  app sh -c "cp -a /backup/. /app/storage/images/"
+  mylists sh -c "cp -a /backup/. /app/storage/images/"
 ```
 
 ## Operations
@@ -211,25 +241,28 @@ docker compose --env-file .env.docker run --rm --no-deps \
 View logs:
 
 ```bash
-docker compose logs -f app
+docker compose logs -f mylists
 ```
 
-The app writes structured JSON logs to stdout in prod. Dev logs are pretty-printed in the terminal. In Docker, read them with `docker compose logs`.
+The app writes structured JSON logs to stdout in prod. Dev logs are pretty-printed in the terminal. In Docker, read them with
+`docker compose logs`.
 
-The admin Runtime Logs page does not make the app write log files. It only reads existing files from `ADMIN_LOG_DIR`, which defaults to `~/.pm2/logs`. For PM2 deployments, point
+The admin Runtime Logs page does not make the app write log files. It only reads existing files from `ADMIN_LOG_DIR`, which defaults to
+`~/.pm2/logs`. For PM2 deployments, point
 `ADMIN_LOG_DIR` at the directory where PM2 writes the app output logs, for example:
 
 ```env
 ADMIN_LOG_DIR=/home/deploy/.pm2/logs
 ```
 
-In local dev, no file log is written by the app; use the terminal output instead. In Docker, leave `ADMIN_LOG_DIR` unset unless you mount a directory containing log files that the
+In local dev, no file log is written by the app; use the terminal output instead. In Docker, leave `ADMIN_LOG_DIR` unset unless you mount a
+directory containing log files that the
 admin dashboard should read.
 
 Restart the app:
 
 ```bash
-docker compose restart app
+docker compose restart mylists
 ```
 
 Stop without deleting database or images:
@@ -238,4 +271,5 @@ Stop without deleting database or images:
 docker compose down
 ```
 
-Do not run `docker compose down -v` or delete the Docker volumes unless you intentionally want to delete the SQLite database, uploaded images, and Redis data.
+Do not run `docker compose down -v` or delete the Docker volumes unless you intentionally want to delete the SQLite database, uploaded
+images, and Redis data.
