@@ -6,6 +6,7 @@
 import path from "path";
 import {serverEnv} from "@/env/server";
 import {logger} from "@/lib/server/core/logger";
+import {getStaticCacheControl} from "@/lib/utils/static-cache-control";
 import {installProcessErrorHandlers} from "@/lib/server/core/process-errors";
 
 
@@ -23,7 +24,7 @@ const UPLOADS_ROUTE = `/${UPLOADS_DIR_NAME}/*`;
 
 
 let isShuttingDown = false;
-let server: ReturnType<typeof Bun.serve>;
+let server: ReturnType<typeof Bun.serve> | undefined;
 
 
 const startServer = async () => {
@@ -46,7 +47,7 @@ const startServer = async () => {
             const file = Bun.file(filepath);
             return new Response(file, {
                 headers: {
-                    "Cache-Control": "public, max-age=31536000, immutable",
+                    "Cache-Control": getStaticCacheControl(route),
                     "Content-Type": file.type || "application/octet-stream",
                 },
             })
@@ -78,7 +79,7 @@ const startServer = async () => {
 
                 return new Response(file, {
                     headers: {
-                        "Cache-Control": "public, max-age=31536000, immutable",
+                        "Cache-Control": getStaticCacheControl(relativePath),
                         "Content-Type": file.type || "application/octet-stream",
                     },
                 });
@@ -103,17 +104,27 @@ const startServer = async () => {
 
 // Graceful shutdown handler
 const shutdown = async (signal: string) => {
+    if (isShuttingDown) return;
+
     logger.info({ signal }, "Starting graceful shutdown");
     isShuttingDown = true;
 
-    // Give in-flight requests time to complete
-    const GRACE_PERIOD_MS = 2_000;
+    // Keep this deadline below deployment platform stop timeout
+    const shutdownTimeout = setTimeout(() => {
+        logger.error("Graceful shutdown timed out after 30 seconds, forcing exit");
+        process.exit(1);
+    }, 30_000);
 
-    await new Promise((resolve) => setTimeout(resolve, GRACE_PERIOD_MS));
+    try {
+        // Stop accepting connections immediately and wait for active requests to finish.
+        await server?.stop();
+    }
+    catch (err) {
+        logger.error({ err }, "Failed to stop server gracefully");
+        process.exit(1);
+    }
 
-    logger.info("Grace period complete, stopping server");
-    void server.stop();
-
+    clearTimeout(shutdownTimeout);
     logger.info("Server stopped gracefully");
     process.exit(0);
 };

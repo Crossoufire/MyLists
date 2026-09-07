@@ -17,6 +17,7 @@ services:
       ofelia.job-exec.mylists-maintenance.schedule: "0 0 3 * * *"
       ofelia.job-exec.mylists-maintenance.command: "bun /app/dist/cli/index.js maintenance"
     restart: unless-stopped
+    stop_grace_period: 35s
     networks:
       - default
       - web_net

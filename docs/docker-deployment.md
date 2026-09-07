@@ -265,6 +265,9 @@ Restart the app:
 docker compose restart mylists
 ```
 
+On shutdown, the server stops accepting new connections and allows active requests up to 30 seconds to finish. Compose waits 35 seconds
+before forcefully stopping the container. Configure other process managers with a stop timeout longer than 30 seconds as well.
+
 Stop without deleting database or images:
 
 ```bash
