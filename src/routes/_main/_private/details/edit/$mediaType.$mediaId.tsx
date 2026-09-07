@@ -1,4 +1,5 @@
 import {useId} from "react";
+import type {ZodType} from "zod";
 import {cn} from "@/lib/utils/classnames";
 import {zodResolver} from "@hookform/resolvers/zod";
 import {toast} from "@/lib/client/components/ui/toast";
@@ -19,7 +20,7 @@ import {editMediaDetailsOptions} from "@/lib/client/react-query/query-options";
 import {FormSubmitButton} from "@/lib/client/components/forms/FormSubmitButton";
 import {useEditMediaMutation} from "@/lib/client/react-query/query-mutations/media.mutations";
 import {Field, FieldDescription, FieldError, FieldLabel, FieldSet} from "@/lib/client/components/ui/field";
-import {EditMediaDetailsPayload, editMediaDetailsPayloadSchema, mediaTypeMediaIdSchema} from "@/lib/schemas";
+import {EditMediaDetailsInput, EditMediaDetailsPayload, editMediaDetailsPayloadSchemas, editMediaDetailsSchema, mediaTypeMediaIdSchema} from "@/lib/schemas";
 
 
 export const Route = createFileRoute("/_main/_private/details/edit/$mediaType/$mediaId")({
@@ -47,52 +48,19 @@ function MediaEditPage() {
     const apiData = useSuspenseQuery(editMediaDetailsQueryOptions).data;
     const editMediaMutation = useEditMediaMutation({ noErrorToast: true });
 
-    const form = useForm<EditMediaDetailsPayload>({
-        resolver: zodResolver(editMediaDetailsPayloadSchema),
-        defaultValues: {
-            imageCover: undefined,
-            name: apiData.fields?.name,
-            pages: apiData.fields?.pages,
-            budget: apiData.fields?.budget,
-            revenue: apiData.fields?.revenue,
-            tagline: apiData.fields?.tagline,
-            authors: apiData.fields?.authors,
-            synopsis: apiData.fields?.synopsis,
-            duration: apiData.fields?.duration,
-            homepage: apiData.fields?.homepage,
-            chapters: apiData.fields?.chapters,
-            language: apiData.fields?.language,
-            createdBy: apiData.fields?.createdBy,
-            gameModes: apiData.fields?.gameModes,
-            publishers: apiData.fields?.publishers,
-            lockStatus: apiData.fields?.lockStatus,
-            gameEngine: apiData.fields?.gameEngine,
-            releaseDate: apiData.fields?.releaseDate,
-            lastAirDate: apiData.fields?.lastAirDate,
-            hltbMainTime: apiData.fields?.hltbMainTime,
-            originalName: apiData.fields?.originalName,
-            directorName: apiData.fields?.directorName,
-            originCountry: apiData.fields?.originCountry,
-            originalLanguage: apiData.fields?.originalLanguage,
-            playerPerspective: apiData.fields?.playerPerspective,
-            hltbMainAndExtraTime: apiData.fields?.hltbMainAndExtraTime,
-            hltbTotalCompleteTime: apiData.fields?.hltbTotalCompleteTime,
-        }
+    const payloadSchema: ZodType<EditMediaDetailsPayload, EditMediaDetailsInput> = editMediaDetailsPayloadSchemas[mediaType];
+    const form = useForm<EditMediaDetailsInput, unknown, EditMediaDetailsPayload>({
+        resolver: zodResolver(payloadSchema),
+        defaultValues: { ...apiData.fields, imageCover: undefined },
     });
+
     const MediaIcon = THEME_ICONS_MAP[mediaType];
     const mediaName = apiData.fields?.name ?? capitalize(mediaType);
 
     const onSubmit = (submittedData: EditMediaDetailsPayload) => {
-        const payload = { ...submittedData };
+        const data = editMediaDetailsSchema.parse({ mediaType, mediaId, payload: submittedData });
 
-        if (payload?.lockStatus === "false") {
-            payload.lockStatus = false;
-        }
-        else if (payload?.lockStatus === "true") {
-            payload.lockStatus = true;
-        }
-
-        editMediaMutation.mutate({ data: { mediaType, mediaId, payload } }, {
+        editMediaMutation.mutate({ data }, {
             onError: (error) => {
                 handleServerFormErrors(form, error);
             },
@@ -109,19 +77,35 @@ function MediaEditPage() {
         return (
             <Controller
                 key={key}
-                name={key}
                 control={form.control}
+                name={key as keyof EditMediaDetailsInput}
                 render={({ field, fieldState }) => (
                     <Field
                         data-invalid={fieldState.invalid}
                         data-disabled={editMediaMutation.isPending}
                         className={cn(key === "synopsis" && "md:col-span-2")}
                     >
-                        <FieldLabel htmlFor={`${fieldId}-${key}`}>{capitalize(key.replaceAll("_", " "))}</FieldLabel>
-                        {key === "synopsis"
-                            ? <Textarea {...field} id={`${fieldId}-${key}`} className="min-h-48" aria-invalid={fieldState.invalid}/>
-                            : <Input {...field} id={`${fieldId}-${key}`} aria-invalid={fieldState.invalid}/>
+                        <FieldLabel htmlFor={`${fieldId}-${key}`}>
+                            {capitalize(key.replaceAll("_", " "))}
+                        </FieldLabel>
+
+                        {key === "synopsis" ?
+                            <Textarea
+                                {...field}
+                                className="min-h-48"
+                                id={`${fieldId}-${key}`}
+                                aria-invalid={fieldState.invalid}
+                                value={field.value == null ? "" : String(field.value)}
+                            />
+                            :
+                            <Input
+                                {...field}
+                                id={`${fieldId}-${key}`}
+                                aria-invalid={fieldState.invalid}
+                                value={field.value == null ? "" : String(field.value)}
+                            />
                         }
+
                         <FieldError errors={[fieldState.error]}/>
                     </Field>
                 )}
@@ -134,10 +118,10 @@ function MediaEditPage() {
             <div className="mb-8 flex flex-col pt-8">
                 <PageHeader
                     asideIcon={MediaIcon}
+                    eyebrow="Media details"
                     eyebrowIcon={PencilLine}
                     asideLabel="You’re editing"
                     title={`Edit ${mediaName}`}
-                    eyebrow="Media details"
                     description="Change the information shown for this title on MyLists."
                     asideValue={
                         <div className="flex items-baseline gap-2">
@@ -154,9 +138,12 @@ function MediaEditPage() {
                 <FormProvider {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="w-full space-y-5 pt-8">
                         <FieldSet disabled={editMediaMutation.isPending}>
-                            <section className="grid grid-cols-[minmax(12rem,0.35fr)_minmax(0,1fr)] gap-10 rounded-xl border p-5 shadow-xs max-lg:grid-cols-1 max-lg:gap-5 sm:p-6">
+                            <section className="grid grid-cols-[minmax(12rem,0.35fr)_minmax(0,1fr)] gap-10 rounded-xl border p-5
+                            shadow-xs max-lg:grid-cols-1 max-lg:gap-5 sm:p-6">
                                 <div>
-                                    <div className="font-mono text-xs font-semibold text-brand">01</div>
+                                    <div className="text-xs font-semibold text-brand">
+                                        01
+                                    </div>
                                     <h2 className="mt-2 text-lg font-semibold tracking-tight text-foreground">
                                         Cover source
                                     </h2>
@@ -168,26 +155,36 @@ function MediaEditPage() {
                                 <Controller
                                     name="imageCover"
                                     control={form.control}
-                                    render={({ field, fieldState }) => (
+                                    render={({ field, fieldState }) =>
                                         <Field
+                                            className="max-w-2xl"
                                             data-invalid={fieldState.invalid}
                                             data-disabled={editMediaMutation.isPending}
-                                            className="max-w-2xl"
                                         >
-                                            <FieldLabel htmlFor={`${fieldId}-image-cover`}>Image Cover URL</FieldLabel>
-                                            <Input {...field} id={`${fieldId}-image-cover`} aria-invalid={fieldState.invalid}/>
+                                            <FieldLabel htmlFor={`${fieldId}-image-cover`}>
+                                                Image Cover URL
+                                            </FieldLabel>
+                                            <Input
+                                                {...field}
+                                                id={`${fieldId}-image-cover`}
+                                                aria-invalid={fieldState.invalid}
+                                                value={field.value == null ? "" : String(field.value)}
+                                            />
                                             <FieldDescription>
                                                 Leave this empty to keep the current cover.
                                             </FieldDescription>
                                             <FieldError errors={[fieldState.error]}/>
                                         </Field>
-                                    )}
+                                    }
                                 />
                             </section>
 
-                            <section className="mt-5 grid grid-cols-[minmax(12rem,0.35fr)_minmax(0,1fr)] gap-10 rounded-xl border p-5 shadow-xs max-lg:grid-cols-1 max-lg:gap-5 sm:p-6">
+                            <section className="mt-5 grid grid-cols-[minmax(12rem,0.35fr)_minmax(0,1fr)] gap-10 rounded-xl border p-5
+                                shadow-xs max-lg:grid-cols-1 max-lg:gap-5 sm:p-6">
                                 <div>
-                                    <div className="font-mono text-xs font-semibold text-brand">02</div>
+                                    <div className="text-xs font-semibold text-brand">
+                                        02
+                                    </div>
                                     <h2 className="mt-2 text-lg font-semibold tracking-tight text-foreground">
                                         Media information
                                     </h2>

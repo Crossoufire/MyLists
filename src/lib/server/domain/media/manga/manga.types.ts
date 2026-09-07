@@ -25,6 +25,10 @@ export type UpsertMangaWithDetails = {
     authorsData?: { name: string }[],
 };
 
+export type UpdateMangaWithDetails = Omit<UpsertMangaWithDetails, "mediaData"> & {
+    mediaData: Partial<UpsertMangaWithDetails["mediaData"]> & Pick<UpsertMangaWithDetails["mediaData"], "apiId">;
+};
+
 
 export const mangaFinalListInsertSchema = createInsertSchema(mangaList, {
     status: importStatusSchema(MediaType.MANGA),

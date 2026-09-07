@@ -5,7 +5,7 @@ import {AddedMediaDetails} from "@/lib/types/media-common.types";
 import {BaseRepository} from "@/lib/server/domain/media/base/base.repository";
 import {and, eq, getTableColumns, gte, isNull, lte, or, sql} from "drizzle-orm";
 import {movies, moviesActors, moviesGenre, moviesList} from "@/lib/server/database/schema";
-import {Movie, UpsertMovieWithDetails} from "@/lib/server/domain/media/movies/movies.types";
+import {UpdateMovieWithDetails, Movie, UpsertMovieWithDetails} from "@/lib/server/domain/media/movies/movies.types";
 import {MovieServerDefinition, moviesServerDefinition} from "@/lib/media-definitions/movies/movies.definition.server";
 
 
@@ -162,7 +162,7 @@ export class MoviesRepository extends BaseRepository<MovieServerDefinition> {
         return mediaId;
     }
 
-    updateMediaWithDetails({ mediaData, actorsData, genresData }: UpsertMovieWithDetails) {
+    updateMediaWithDetails({ mediaData, actorsData, genresData }: UpdateMovieWithDetails) {
         const tx = getDbClient();
 
         const [media] = tx

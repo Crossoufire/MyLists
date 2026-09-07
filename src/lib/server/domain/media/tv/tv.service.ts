@@ -1,12 +1,13 @@
 import {notFound} from "@tanstack/react-router";
-import {Status, UpdateType} from "@/lib/utils/enums";
 import {saveImageFromUrl} from "@/lib/utils/image-saver";
 import {FormattedError} from "@/lib/utils/error-classes";
 import {LogPayload} from "@/lib/types/user-updates.types";
+import {MediaType, Status, UpdateType} from "@/lib/utils/enums";
 import {withTransaction} from "@/lib/server/database/async-storage";
 import {TvList, TvType} from "@/lib/server/domain/media/tv/tv.types";
 import {BaseService} from "@/lib/server/domain/media/base/base.service";
 import {TvRepository} from "@/lib/server/domain/media/tv/tv.repository";
+import type {EditMediaDetailsPayloadByType} from "@/lib/schemas/media-details.schema";
 import {EpsSeasonPayload, RedoTvPayload, StatusPayload} from "@/lib/types/user-media.types";
 import {AnimeServerDefinition} from "@/lib/media-definitions/tv/anime/anime.definition.server";
 import {SeriesServerDefinition} from "@/lib/media-definitions/tv/series/series.definition.server";
@@ -47,32 +48,20 @@ export class TvService extends BaseService<TvDefinition, TvRepository> {
         return this.repository.getMediaEpsPerSeason(mediaId);
     }
 
-    async updateMediaEditableFields(mediaId: number, payload: Record<string, any>) {
-        const { editableFields } = this.servicePolicy;
+    async updateMediaEditableFields(mediaId: number, payload: EditMediaDetailsPayloadByType[typeof MediaType.SERIES | typeof MediaType.ANIME]) {
         const { coverDirectory } = this.identity;
 
         const media = this.repository.findById(mediaId);
         if (!media) throw notFound();
 
-        type FieldsType = typeof editableFields[number];
-        const fields: Partial<Record<FieldsType, any>> & { apiId: typeof media.apiId; } = { apiId: media.apiId };
+        const { imageCover, ...fields } = payload;
+        const mediaData: Partial<TvType> & Pick<TvType, "apiId"> = { ...fields, apiId: media.apiId };
 
-        if (payload?.imageCover) {
-            const imageName = await saveImageFromUrl({
-                dirSaveName: coverDirectory,
-                imageUrl: payload.imageCover,
-            });
-            fields.imageCover = imageName;
-            delete payload.imageCover;
+        if (imageCover) {
+            mediaData.imageCover = await saveImageFromUrl({ dirSaveName: coverDirectory, imageUrl: imageCover });
         }
 
-        for (const key in payload) {
-            if (Object.prototype.hasOwnProperty.call(payload, key) && editableFields.includes(key as FieldsType)) {
-                fields[key as FieldsType] = payload[key];
-            }
-        }
-
-        withTransaction(() => this.repository.updateMediaWithDetails({ mediaData: fields as any }));
+        withTransaction(() => this.repository.updateMediaWithDetails({ mediaData }));
     }
 
     updateRedoHandler(currentState: TvList, payload: RedoTvPayload, media: TvType): [TvList, LogPayload] {

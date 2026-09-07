@@ -32,6 +32,10 @@ export type UpsertTvWithDetails = {
     seasonsData?: { season: number, episodes: number }[],
 };
 
+export type UpdateTvWithDetails = Omit<UpsertTvWithDetails, "mediaData"> & {
+    mediaData: Partial<UpsertTvWithDetails["mediaData"]> & Pick<UpsertTvWithDetails["mediaData"], "apiId">;
+};
+
 
 const parseTvRedo = (value: unknown) => {
     if (value === "") return undefined;

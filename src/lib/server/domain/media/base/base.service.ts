@@ -8,6 +8,7 @@ import {withTransaction} from "@/lib/server/database/async-storage";
 import {JobType, Status, TagAction, UpdateType} from "@/lib/utils/enums";
 import {saveImageFromUrl, saveUploadedImage} from "@/lib/utils/image-saver";
 import {BaseRepository} from "@/lib/server/domain/media/base/base.repository";
+import type {EditMediaDetailsPayloadByType} from "@/lib/schemas/media-details.schema";
 import {MYLISTS_CSV_VERSION} from "@/lib/server/domain/imports/parsers/mylists.parser";
 import {createMediaTagQueries} from "@/lib/server/domain/media/base/media-tag.queries";
 import {createMediaListQueries} from "@/lib/server/domain/media/base/media-list.queries";
@@ -317,5 +318,5 @@ export abstract class BaseService<TDef extends AnyServerMediaDefinition, R exten
 
     abstract getMediaEditableFields(mediaId: number): Promise<{ fields: Record<string, any> }>
 
-    abstract updateMediaEditableFields(mediaId: number, payload: Record<string, any>): Promise<void>;
+    abstract updateMediaEditableFields(mediaId: number, payload: EditMediaDetailsPayloadByType[TDef["identity"]["mediaType"]]): Promise<void>;
 }

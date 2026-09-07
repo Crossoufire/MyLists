@@ -4,7 +4,7 @@ import {AddedMediaDetails} from "@/lib/types/media-common.types";
 import {BaseRepository} from "@/lib/server/domain/media/base/base.repository";
 import {manga, mangaAuthors, mangaGenre, mangaList} from "@/lib/server/database/schema";
 import {and, eq, getTableColumns, gte, inArray, isNull, lte, or, sql} from "drizzle-orm";
-import {Manga, UpsertMangaWithDetails} from "@/lib/server/domain/media/manga/manga.types";
+import {UpdateMangaWithDetails, Manga, UpsertMangaWithDetails} from "@/lib/server/domain/media/manga/manga.types";
 import {mangaServerDefinition, MangaServerDefinition} from "@/lib/media-definitions/manga/manga.definition.server";
 
 
@@ -111,7 +111,7 @@ export class MangaRepository extends BaseRepository<MangaServerDefinition> {
         return mediaId;
     }
 
-    updateMediaWithDetails({ mediaData, authorsData, genresData }: UpsertMangaWithDetails) {
+    updateMediaWithDetails({ mediaData, authorsData, genresData }: UpdateMangaWithDetails) {
         const tx = getDbClient();
 
         const [media] = tx

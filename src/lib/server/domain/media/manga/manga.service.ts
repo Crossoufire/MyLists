@@ -1,13 +1,14 @@
 import {uniqueBy} from "@/lib/utils/arrays";
 import {notFound} from "@tanstack/react-router";
-import {Status, UpdateType} from "@/lib/utils/enums";
 import {saveImageFromUrl} from "@/lib/utils/image-saver";
 import {FormattedError} from "@/lib/utils/error-classes";
 import {LogPayload} from "@/lib/types/user-updates.types";
+import {MediaType, Status, UpdateType} from "@/lib/utils/enums";
 import {withTransaction} from "@/lib/server/database/async-storage";
 import {BaseService} from "@/lib/server/domain/media/base/base.service";
 import {Manga, MangaList} from "@/lib/server/domain/media/manga/manga.types";
 import {MangaRepository} from "@/lib/server/domain/media/manga/manga.repository";
+import type {EditMediaDetailsPayloadByType} from "@/lib/schemas/media-details.schema";
 import {ChapterPayload, RedoPayload, StatusPayload} from "@/lib/types/user-media.types";
 import {mangaServerDefinition, MangaServerDefinition} from "@/lib/media-definitions/manga/manga.definition.server";
 
@@ -40,45 +41,24 @@ export class MangaService extends BaseService<MangaServerDefinition, MangaReposi
         return { fields };
     }
 
-    async updateMediaEditableFields(mediaId: number, payload: Record<string, any>) {
-        const { editableFields } = this.servicePolicy;
+    async updateMediaEditableFields(mediaId: number, payload: EditMediaDetailsPayloadByType[typeof MediaType.MANGA]) {
         const { coverDirectory } = this.identity;
 
         const media = this.repository.findById(mediaId);
         if (!media) throw notFound();
 
-        const { genres, ...mediaData } = payload;
+        const { imageCover, genres, ...fields } = payload;
+        const mediaData: Partial<Manga> & Pick<Manga, "apiId"> = { ...fields, apiId: media.apiId };
 
-        if (genres && !Array.isArray(genres)) {
-            throw new Error("Genres must be an array");
+        if (imageCover) {
+            mediaData.imageCover = await saveImageFromUrl({ dirSaveName: coverDirectory, imageUrl: imageCover });
         }
 
-        const fieldsToUpdate = {} as Record<Partial<keyof Manga>, any>;
-        fieldsToUpdate.apiId = media.apiId;
+        const genresData = genres === undefined
+            ? undefined
+            : uniqueBy(genres.map((genre) => typeof genre === "string" ? { name: genre } : genre), (genre) => genre.name);
 
-        if (mediaData?.imageCover) {
-            const imageName = await saveImageFromUrl({
-                dirSaveName: coverDirectory,
-                imageUrl: mediaData.imageCover,
-            });
-            fieldsToUpdate.imageCover = imageName;
-            delete mediaData.imageCover;
-        }
-
-        for (const key in mediaData) {
-            if (Object.prototype.hasOwnProperty.call(mediaData, key) && editableFields.includes(key as keyof Manga)) {
-                fieldsToUpdate[key as keyof typeof media] = mediaData[key as keyof typeof media];
-            }
-        }
-
-        const genresData = Array.isArray(genres)
-            ? uniqueBy(
-                genres.map((genre) => typeof genre === "string" ? { name: genre } : genre),
-                (genre) => genre.name,
-            )
-            : genres;
-
-        withTransaction(() => this.repository.updateMediaWithDetails({ mediaData: fieldsToUpdate, genresData }));
+        withTransaction(() => this.repository.updateMediaWithDetails({ mediaData, genresData }));
     }
 
     updateRedoHandler(currentState: MangaList, payload: RedoPayload, media: Manga): [MangaList, LogPayload] {
