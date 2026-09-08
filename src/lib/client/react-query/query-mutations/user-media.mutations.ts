@@ -134,6 +134,7 @@ export const useRemoveMediaFromListMutation = (queryOption: UserMediaQueryOption
                 queryClient.invalidateQueries({ queryKey: ["year-recap"] }),
                 queryClient.invalidateQueries({ queryKey: ["monthly-activity"] }),
                 queryClient.invalidateQueries({ queryKey: ["userList", variables.data.mediaType] }),
+                queryClient.invalidateQueries({ queryKey: ["tvSeasons", variables.data.mediaType, variables.data.mediaId] }),
             ]);
         }
     });
@@ -169,6 +170,7 @@ export const useUpdateUserMediaMutation = (mediaType: MediaType, mediaId: number
             const activityUpdate = loggedActivityUpdateTypes.has(variables.payload.type);
 
             const invalidations = [
+                queryClient.invalidateQueries({ queryKey: ["tvSeasons", mediaType, mediaId] }),
                 queryClient.invalidateQueries({ queryKey: ["year-recap"] }),
                 queryClient.invalidateQueries({ queryKey: historyOptions(mediaType, mediaId).queryKey }),
             ];
@@ -190,6 +192,7 @@ export const useUpdateUserMediaMutation = (mediaType: MediaType, mediaId: number
                 })
             }
             else if (queryOption.queryKey[0] === "userList") {
+                await queryClient.invalidateQueries({ queryKey: mediaDetailsOptions(mediaType, mediaId).queryKey });
                 queryClient.setQueryData(queryOption.queryKey, (oldData) => {
                     if (!oldData) return;
                     return {

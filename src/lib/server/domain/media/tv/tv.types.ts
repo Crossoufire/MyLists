@@ -1,8 +1,9 @@
 import * as z from "zod";
-import {MediaType, TvMediaType} from "@/lib/utils/enums";
-import {createInsertSchema} from "drizzle-zod";
 import {REDO_MAX} from "@/lib/utils/constants";
+import {createInsertSchema} from "drizzle-zod";
+import {MediaType, TvMediaType} from "@/lib/utils/enums";
 import {minimalMyListsCSVSchema} from "@/lib/types/imports.types";
+import {tvSeasonStatesSchema} from "@/lib/schemas/tv-seasons.schema";
 import {anime, animeList, series, seriesList} from "@/lib/server/database/schema";
 import {
     importCommentSchema,
@@ -61,7 +62,7 @@ const parseTvRedo = (value: unknown) => {
 };
 
 const tvListSchemaOverrides = (mediaType: TvMediaType) => ({
-    redo: z.preprocess(parseTvRedo, z.array(z.coerce.number().int().min(0).max(REDO_MAX)).optional()),
+
     total: importTotalSchema,
     rating: importRatingSchema,
     comment: importCommentSchema,
@@ -72,21 +73,41 @@ const tvListSchemaOverrides = (mediaType: TvMediaType) => ({
 });
 
 
-const seriesCSVListSchema = createInsertSchema(seriesList, tvListSchemaOverrides(MediaType.SERIES));
+const seasonalImportFields = {
+    // Version 1 files contain a positional rewatch array; version 2 exports explicit seasons.
+    redo: z.preprocess(parseTvRedo, z.array(z.coerce.number().int().min(0).max(REDO_MAX)).optional()),
+    seasons: z.preprocess((value) => {
+        if (value === "" || value === undefined) return undefined;
+        if (typeof value !== "string") return value;
+        try {
+            return JSON.parse(value);
+        }
+        catch {
+            return value;
+        }
+    }, tvSeasonStatesSchema.optional()),
+};
 
-const animeCSVListSchema = createInsertSchema(animeList, tvListSchemaOverrides(MediaType.ANIME));
+
+const seriesCSVListSchema = createInsertSchema(seriesList, tvListSchemaOverrides(MediaType.SERIES)).extend(seasonalImportFields);
+
+
+const animeCSVListSchema = createInsertSchema(animeList, tvListSchemaOverrides(MediaType.ANIME)).extend(seasonalImportFields);
+
 
 const seriesFinalListInsertSchema = createInsertSchema(seriesList, {
     status: importStatusSchema(MediaType.SERIES),
     customCover: z.string().nullable().optional(),
-    redo: z.array(z.number().int().min(0).max(REDO_MAX)),
-});
+    redo: z.number().int().min(0),
+}).extend({ seasons: tvSeasonStatesSchema });
+
 
 const animeFinalListInsertSchema = createInsertSchema(animeList, {
     status: importStatusSchema(MediaType.ANIME),
     customCover: z.string().nullable().optional(),
-    redo: z.array(z.number().int().min(0).max(REDO_MAX)),
-});
+    redo: z.number().int().min(0),
+}).extend({ seasons: tvSeasonStatesSchema });
+
 
 const seriesImportPayloadSchema = seriesCSVListSchema.omit({
     id: true,
@@ -96,6 +117,7 @@ const seriesImportPayloadSchema = seriesCSVListSchema.omit({
     customCover: true,
     lastUpdated: true,
 });
+
 
 const animeImportPayloadSchema = animeCSVListSchema.omit({
     id: true,
@@ -107,10 +129,19 @@ const animeImportPayloadSchema = animeCSVListSchema.omit({
 });
 
 
-export const tvImportPayloadSchema = z.union([seriesImportPayloadSchema, animeImportPayloadSchema]);
+const withoutLegacyRedo = (value: unknown) => {
+    if (typeof value !== "object" || value === null || !("seasons" in value) || !value.seasons) return value;
+    return { ...value, redo: undefined };
+};
+
+
+export const tvImportPayloadSchema = z.preprocess(withoutLegacyRedo, z.union([seriesImportPayloadSchema, animeImportPayloadSchema]));
+
 
 export const tvFinalListInsertSchema = z.union([seriesFinalListInsertSchema, animeFinalListInsertSchema]);
 
-export const seriesMyListsCSVRowSchema = minimalMyListsCSVSchema.extend(seriesImportPayloadSchema.shape);
 
-export const animeMyListsCSVRowSchema = minimalMyListsCSVSchema.extend(animeImportPayloadSchema.shape);
+export const seriesMyListsCSVRowSchema = z.preprocess(withoutLegacyRedo, minimalMyListsCSVSchema.extend(seriesImportPayloadSchema.shape));
+
+
+export const animeMyListsCSVRowSchema = z.preprocess(withoutLegacyRedo, minimalMyListsCSVSchema.extend(animeImportPayloadSchema.shape));

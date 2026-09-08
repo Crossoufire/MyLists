@@ -32,6 +32,7 @@ vi.mock("@/lib/server/functions/user-media", () => ({
     postUpdateUserCustomCover: server.cover,
 }));
 vi.mock("@/lib/client/react-query/query-options", () => ({
+    mediaDetailsOptions: (mediaType: MediaType, mediaId: number) => ({ queryKey: ["details", mediaType, mediaId] }),
     historyOptions: (mediaType: MediaType, mediaId: number) => ({ queryKey: ["onOpenHistory", mediaType, mediaId] }),
 }));
 vi.mock("@/lib/client/components/media/base/UserMediaDetails", () => ({ UserMediaDetails: () => null }));

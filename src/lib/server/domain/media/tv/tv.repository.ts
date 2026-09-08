@@ -1,9 +1,12 @@
 import {Status} from "@/lib/utils/enums";
 import {user} from "@/lib/server/database/schema";
 import {EpsPerSeasonType} from "@/lib/types/media-list.types";
-import {getDbClient} from "@/lib/server/database/async-storage";
 import {AddedMediaDetails} from "@/lib/types/media-common.types";
+import type {TvSeasonState} from "@/lib/schemas/tv-seasons.schema";
+import {StatsRepository} from "@/lib/server/domain/stats/stats.repository";
 import {BaseRepository} from "@/lib/server/domain/media/base/base.repository";
+import {getDbClient, withTransaction} from "@/lib/server/database/async-storage";
+import {attachTvSeasonEpisodes, getTvSeasonTotals} from "@/lib/utils/media/tv-seasons";
 import {AnimeServerDefinition} from "@/lib/media-definitions/tv/anime/anime.definition.server";
 import {SeriesServerDefinition} from "@/lib/media-definitions/tv/series/series.definition.server";
 import {TvType, UpdateTvWithDetails, UpsertTvWithDetails} from "@/lib/server/domain/media/tv/tv.types";
@@ -16,6 +19,112 @@ type TvDefinition = AnimeServerDefinition | SeriesServerDefinition;
 export class TvRepository extends BaseRepository<TvDefinition> {
     constructor(definition: TvDefinition) {
         super(definition);
+    }
+
+    override async bulkInsertUserMedia(rows: (TvDefinition["repository"]["tables"]["listTable"]["$inferInsert"] & { seasons?: TvSeasonState[] })[]) {
+        const { listTable } = this.repoDefinition.tables;
+
+        return withTransaction(() => {
+            const inserted = [];
+            for (const { seasons, ...row } of rows) {
+                const metadata = this.getMediaEpsPerSeason(row.mediaId);
+                const states = seasons ?? metadata.map(s => ({ season: s.season, redo: 0, rating: row.rating ?? null }));
+
+                const totals = getTvSeasonTotals(attachTvSeasonEpisodes(states, metadata));
+
+                const saved = getDbClient()
+                    .insert(listTable)
+                    .values({ ...row, rating: totals.rating, redo: totals.redo })
+                    .onConflictDoNothing({ target: [listTable.userId, listTable.mediaId] })
+                    .returning()
+                    .get();
+
+                if (!saved) continue;
+
+                this.insertSeasonStates(saved.id, states);
+                inserted.push(saved);
+            }
+
+            return inserted;
+        });
+    }
+
+    override async downloadMediaListAsCSV(userId: number) {
+        const { listTable, seasonStateTable } = this.repoDefinition.tables;
+
+        const rows = await super.downloadMediaListAsCSV(userId);
+
+        const seasons = getDbClient()
+            .select({
+                redo: seasonStateTable.redo, rating: seasonStateTable.rating,
+                listId: seasonStateTable.listId, season: seasonStateTable.season,
+            }).from(seasonStateTable)
+            .innerJoin(listTable, eq(listTable.id, seasonStateTable.listId))
+            .where(eq(listTable.userId, userId))
+            .orderBy(asc(seasonStateTable.season))
+            .all();
+
+        const byList = new Map<number, TvSeasonState[]>();
+
+        for (const { listId, ...season } of seasons) {
+            const list = byList.get(listId) ?? [];
+            list.push(season);
+            byList.set(listId, list);
+        }
+
+        return rows?.map(row => ({ ...row, seasons: JSON.stringify(byList.get(row.id) ?? []) }));
+    }
+
+    getUserSeasons(userId: number, mediaId: number) {
+        const { listTable, seasonStateTable, epsPerSeasonTable } = this.repoDefinition.tables;
+
+        return getDbClient()
+            .select({
+                redo: seasonStateTable.redo,
+                rating: seasonStateTable.rating,
+                season: seasonStateTable.season,
+                episodes: epsPerSeasonTable.episodes,
+            }).from(seasonStateTable)
+            .innerJoin(listTable, eq(listTable.id, seasonStateTable.listId))
+            .leftJoin(epsPerSeasonTable, and(
+                eq(epsPerSeasonTable.mediaId, listTable.mediaId),
+                eq(epsPerSeasonTable.season, seasonStateTable.season),
+            ))
+            .where(and(eq(listTable.userId, userId), eq(listTable.mediaId, mediaId)))
+            .orderBy(asc(seasonStateTable.season))
+            .all();
+    }
+
+    insertSeasonStates(listId: number, seasons: TvSeasonState[]) {
+        const { seasonStateTable } = this.repoDefinition.tables;
+
+        if (!seasons.length) return;
+
+        return getDbClient()
+            .insert(seasonStateTable)
+            .values(seasons.map(s => ({ ...s, listId })))
+            .onConflictDoNothing()
+            .run();
+    }
+
+    updateSeasonState(listId: number, season: number, changes: Partial<Pick<TvSeasonState, "redo" | "rating">>) {
+        const { seasonStateTable } = this.repoDefinition.tables;
+
+        return getDbClient()
+            .update(seasonStateTable)
+            .set(changes)
+            .where(and(eq(seasonStateTable.listId, listId), eq(seasonStateTable.season, season)))
+            .run();
+    }
+
+    resetSeasonRedos(listId: number) {
+        const { seasonStateTable } = this.repoDefinition.tables;
+
+        return getDbClient()
+            .update(seasonStateTable)
+            .set({ redo: 0 })
+            .where(eq(seasonStateTable.listId, listId))
+            .run();
     }
 
     getMediaEpsPerSeason(mediaId: number) {
@@ -118,10 +227,10 @@ export class TvRepository extends BaseRepository<TvDefinition> {
                 status: newStatus,
                 currentSeason: newSeason,
                 currentEpisode: newEpisode,
-                redo: Array(epsPerSeason.length).fill(0),
             })
             .returning().all();
 
+        this.insertSeasonStates(newMedia.id, epsPerSeason.map(s => ({ season: s.season, redo: 0, rating: null })));
         return newMedia;
     }
 
@@ -205,6 +314,8 @@ export class TvRepository extends BaseRepository<TvDefinition> {
     updateMediaWithDetails({ mediaData, actorsData, seasonsData, networkData, genresData }: UpdateTvWithDetails) {
         const { mediaTable, actorTable, genreTable, epsPerSeasonTable, networkTable } = this.repoDefinition.tables;
 
+        const previousMedia = getDbClient().select().from(mediaTable).where(eq(mediaTable.apiId, mediaData.apiId)).get()!;
+
         const [media] = getDbClient()
             .update(mediaTable)
             .set({
@@ -233,11 +344,15 @@ export class TvRepository extends BaseRepository<TvDefinition> {
         }
 
         if (seasonsData && seasonsData.length > 0) {
-            this._updateUsersWithMedia(mediaId, seasonsData);
+            this._updateUsersWithMedia(mediaId, seasonsData, previousMedia.duration, media.duration);
 
             getDbClient().delete(epsPerSeasonTable).where(eq(epsPerSeasonTable.mediaId, mediaId)).run();
             const epsPerSeasonToAdd = seasonsData.map((data) => ({ mediaId, ...data }));
             getDbClient().insert(epsPerSeasonTable).values(epsPerSeasonToAdd).onConflictDoNothing().run();
+        }
+
+        if (!seasonsData?.length && previousMedia.duration !== media.duration) {
+            this._updateUsersWithMedia(mediaId, this.getMediaEpsPerSeason(mediaId), previousMedia.duration, media.duration);
         }
 
         if (networkData !== undefined) {
@@ -253,16 +368,17 @@ export class TvRepository extends BaseRepository<TvDefinition> {
 
     // --- Logic When Updating Seasons data -----------------------------------
 
-    private _updateUsersWithMedia(mediaId: number, seasonsData: EpsPerSeasonType[]) {
+    private _updateUsersWithMedia(mediaId: number, seasonsData: EpsPerSeasonType[], oldDuration: number, duration: number) {
         const { listTable } = this.repoDefinition.tables;
         const oldSeasonsData = this.getMediaEpsPerSeason(mediaId);
 
+        seasonsData = [...seasonsData].sort((a, b) => a.season - b.season);
+
         // If nothing changed, do nothing
-        if (JSON.stringify(oldSeasonsData) === JSON.stringify(seasonsData)) {
+        if (JSON.stringify(oldSeasonsData) === JSON.stringify(seasonsData) && oldDuration === duration) {
             return;
         }
 
-        const newEpsList = seasonsData.map((s) => s.episodes);
         const oldTotalEpisodes = oldSeasonsData.reduce((total, season) => total + season.episodes, 0);
         const oldMaxSeason = Math.max(...oldSeasonsData.map((season) => season.season), 0);
         const newMaxSeason = Math.max(...seasonsData.map((season) => season.season), 0);
@@ -270,11 +386,8 @@ export class TvRepository extends BaseRepository<TvDefinition> {
         const usersWithMediaInTheirList = this._getAllUsersWithMediaInTheirList(mediaId);
 
         for (const userMedia of usersWithMediaInTheirList) {
-            // Calculate how many eps watched in re-watches (oldSeasonsData)
-            const oldRedoTotal = userMedia.redo.reduce((acc, count, idx) => {
-                const epsInSeason = oldSeasonsData[idx]?.episodes || 0;
-                return acc + (count * epsInSeason);
-            }, 0);
+            const states = this.getUserSeasons(userMedia.userId, mediaId);
+            const oldRedoTotal = getTvSeasonTotals(states).redoEpisodes;
 
             // Calculate Absolute Progress
             const absoluteProgress = Math.max(0, userMedia.total - oldRedoTotal);
@@ -283,32 +396,33 @@ export class TvRepository extends BaseRepository<TvDefinition> {
                 && userMedia.status === Status.COMPLETED
                 && absoluteProgress >= oldTotalEpisodes;
 
-            // Keep per-season re-watches aligned when seasons are added or removed.
-            const newRedo = Array.from({ length: seasonsData.length }, (_, index) => userMedia.redo[index] ?? 0);
+            this.insertSeasonStates(userMedia.id, seasonsData.map(s => ({ season: s.season, redo: 0, rating: null })));
+            const newStates = attachTvSeasonEpisodes(this.getUserSeasons(userMedia.userId, mediaId), seasonsData);
+            const totals = getTvSeasonTotals(newStates);
+            const newTotal = absoluteProgress + totals.redoEpisodes;
+            const newPosition = this._reorderSeasEps(absoluteProgress, seasonsData);
 
-            // Calculate new Redo Total (seasonsData)
-            const newRedoTotal = newRedo.reduce((acc, count, index) => {
-                const epsInSeason = seasonsData[index]?.episodes || 0;
-                return acc + (count * epsInSeason);
-            }, 0);
-
-            // Calculate New Total
-            const newTotal = absoluteProgress + newRedoTotal;
-
-            // Map Absolute Progress to new Season/Episode structure
-            const newPosition = this._reorderSeasEps(absoluteProgress, newEpsList);
-
-            // The maintenance task rebuilds precomputed user stats after bulk refresh.
+            const status = shouldMoveToOnHold ? Status.ON_HOLD : userMedia.status;
             getDbClient()
                 .update(listTable)
                 .set({
                     total: newTotal,
-                    redo: newRedo,
+                    redo: totals.redo,
+                    rating: totals.rating,
                     currentSeason: newPosition.season,
                     currentEpisode: newPosition.episode,
-                    status: shouldMoveToOnHold ? Status.ON_HOLD : userMedia.status,
+                    status,
                 })
                 .where(and(eq(listTable.userId, userMedia.userId), eq(listTable.mediaId, mediaId))).run();
+
+            StatsRepository.updateUserPreComputedStatsWithDelta(userMedia.userId, this.identity.mediaType, mediaId, {
+                entriesRated: Number(totals.rating !== null) - Number(userMedia.rating !== null),
+                sumEntriesRated: (totals.rating ?? 0) - (userMedia.rating ?? 0),
+                totalRedo: totals.redo - userMedia.redo,
+                totalSpecific: newTotal - userMedia.total,
+                timeSpent: newTotal * duration - userMedia.total * oldDuration,
+                ...(status !== userMedia.status ? { statusCounts: { [userMedia.status]: -1, [status]: 1 } } : {}),
+            });
         }
     }
 
@@ -325,27 +439,27 @@ export class TvRepository extends BaseRepository<TvDefinition> {
             .where(eq(listTable.mediaId, mediaId)).all();
     }
 
-    private _reorderSeasEps(absoluteProgress: number, epsList: number[]) {
-        const totalEpsAvailable = epsList.reduce((a, b) => a + b, 0);
+    private _reorderSeasEps(absoluteProgress: number, seasons: EpsPerSeasonType[]) {
+        const totalEpsAvailable = seasons.reduce((a, b) => a + b.episodes, 0);
 
         // If series empty / progress exceeds series length, cap at last possible episode
-        if (totalEpsAvailable === 0 || epsList.length === 0) {
+        if (totalEpsAvailable === 0 || seasons.length === 0) {
             return { season: 1, episode: 0 };
         }
 
         if (absoluteProgress >= totalEpsAvailable) {
             return {
-                season: epsList.length,
-                episode: epsList[epsList.length - 1],
+                season: seasons.at(-1)!.season,
+                episode: seasons.at(-1)!.episodes,
             };
         }
 
         let accumulated = 0;
-        for (let i = 0; i < epsList.length; i += 1) {
-            const seasonEps = epsList[i];
+        for (let i = 0; i < seasons.length; i += 1) {
+            const seasonEps = seasons[i].episodes;
             if (accumulated + seasonEps >= absoluteProgress) {
                 return {
-                    season: i + 1,
+                    season: seasons[i].season,
                     episode: Math.max(0, absoluteProgress - accumulated),
                 };
             }

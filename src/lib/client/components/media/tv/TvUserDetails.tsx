@@ -1,8 +1,12 @@
-import {MediaType, Status, TvMediaType} from "@/lib/utils/enums";
+import {useState} from "react";
+import {Pencil} from "lucide-react";
 import {useQueryClient} from "@tanstack/react-query";
+import {Button} from "@/lib/client/components/ui/button";
 import {UpdateTvRedo} from "@/lib/client/components/media/tv/UpdateTvRedo";
-import {UpdateRating} from "@/lib/client/components/media/base/UpdateRating";
 import {UpdateStatus} from "@/lib/client/components/media/base/UpdateStatus";
+import {MediaType, Status, TvMediaType, UpdateType} from "@/lib/utils/enums";
+import {RatingSelect} from "@/lib/client/components/media/base/RatingSelect";
+import {TvSeasonEditor} from "@/lib/client/components/media/tv/TvSeasonEditor";
 import {UpdateSeasonsEps} from "@/lib/client/components/media/tv/UpdateSeasonsEps";
 import {MediaUserDetailsProps} from "@/lib/client/components/media/media-config.types";
 import {useUpdateUserMediaMutation} from "@/lib/client/react-query/query-mutations/user-media.mutations";
@@ -13,6 +17,8 @@ type TvUserDetailsProps<T extends MediaType> = MediaUserDetailsProps<T>;
 
 export const TvUserDetails = ({ userMedia, mediaType, queryOption, mutationOptions }: TvUserDetailsProps<TvMediaType>) => {
     const queryClient = useQueryClient();
+    const [ratingsOpen, setRatingsOpen] = useState(false);
+
     const updateUserMediaMutation = useUpdateUserMediaMutation(mediaType, userMedia.mediaId, queryOption, mutationOptions);
     const mediaData = getMediaData()!;
 
@@ -45,10 +51,32 @@ export const TvUserDetails = ({ userMedia, mediaType, queryOption, mutationOptio
             {userMedia.status !== Status.PLAN_TO_WATCH &&
                 <div className="flex justify-between items-center">
                     <div>Rating</div>
-                    <UpdateRating
-                        rating={userMedia.rating}
-                        disabled={mutationOptions?.backlogMode}
-                        onUpdateMutation={updateUserMediaMutation}
+                    <div className="flex items-center gap-1">
+                        <RatingSelect
+                            bulk
+                            rating={userMedia.rating}
+                            label="Set all season ratings"
+                            disabled={mutationOptions?.backlogMode || updateUserMediaMutation.isPending}
+                            onChange={rating => updateUserMediaMutation.mutate({ payload: { type: UpdateType.RATING, rating } })}
+                        />
+                        <Button
+                            size="icon-sm"
+                            variant="ghost"
+                            disabled={mutationOptions?.backlogMode}
+                            aria-label="Edit individual season ratings"
+                            onClick={() => setRatingsOpen(true)}
+                        >
+                            <Pencil/>
+                        </Button>
+                    </div>
+                    <TvSeasonEditor
+                        mode="rating"
+                        open={ratingsOpen}
+                        mediaType={mediaType}
+                        userId={userMedia.userId}
+                        mediaId={userMedia.mediaId}
+                        onOpenChange={setRatingsOpen}
+                        mutation={updateUserMediaMutation}
                     />
                 </div>
             }
@@ -56,9 +84,11 @@ export const TvUserDetails = ({ userMedia, mediaType, queryOption, mutationOptio
                 <div className="flex justify-between items-center">
                     <div>Re-watched</div>
                     <UpdateTvRedo
-                        redoValues={userMedia.redo}
+                        redo={userMedia.redo}
+                        mediaType={mediaType}
+                        userId={userMedia.userId}
+                        mediaId={userMedia.mediaId}
                         onUpdateMutation={updateUserMediaMutation}
-                        seasonCount={mediaData.epsPerSeason?.length ?? 0}
                     />
                 </div>
             }
