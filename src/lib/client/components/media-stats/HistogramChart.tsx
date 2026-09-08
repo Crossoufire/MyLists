@@ -1,10 +1,10 @@
 import {MediaType} from "@/lib/utils/enums";
-import {getThemeColor} from "@/lib/utils/theme-utils";
-import {formatNumber} from "@/lib/utils/number-formatting";
+import {getThemeColor} from "@/lib/client/theme";
+import {formatNumber} from "@/lib/utils/formatting/number";
 import {HistogramBin, HistogramTailDir} from "@/lib/types/stats.types";
 import {ChartCard} from "@/lib/client/components/media-stats/ChartCard";
 import {DataBarChart} from "@/lib/client/components/charts/DataBarChart";
-import {compactHistogramBins, formatHistogramBin, formatHistogramOverflowBin} from "@/lib/utils/stats-utils";
+import {compactHistogramBins, formatHistogramBin, formatHistogramOverflowBin} from "@/lib/utils/stats/histogram";
 
 
 interface HistogramChartProps {

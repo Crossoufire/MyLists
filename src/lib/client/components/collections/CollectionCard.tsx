@@ -1,7 +1,7 @@
 import {Link} from "@tanstack/react-router";
 import {Badge} from "@/lib/client/components/ui/badge";
 import {Button, buttonVariants} from "@/lib/client/components/ui/button";
-import {formatNumber} from "@/lib/utils/number-formatting";
+import {formatNumber} from "@/lib/utils/formatting/number";
 import {useConfirm} from "@/lib/client/hooks/use-confirm";
 import {ProfileIcon} from "@/lib/client/components/general/ProfileIcon";
 import {MainThemeIcon} from "@/lib/client/components/general/MainIcons";

@@ -1,8 +1,8 @@
 import {Award} from "lucide-react";
 import {mediaTabSearchSchema} from "@/lib/schemas";
-import {capitalize} from "@/lib/utils/text-formatting";
+import {capitalize} from "@/lib/utils/formatting/text";
 import {useSuspenseQuery} from "@tanstack/react-query";
-import {formatNumber} from "@/lib/utils/number-formatting";
+import {formatNumber} from "@/lib/utils/formatting/number";
 import {createFileRoute, Link} from "@tanstack/react-router";
 import {TabHeader} from "@/lib/client/components/general/TabHeader";
 import {PageHeader} from "@/lib/client/components/general/PageHeader";

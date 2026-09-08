@@ -1,10 +1,10 @@
 import {useAuth} from "@/lib/client/hooks/use-auth";
-import {capitalize} from "@/lib/utils/text-formatting";
+import {capitalize} from "@/lib/utils/formatting/text";
 import {createFileRoute} from "@tanstack/react-router";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {Trophy, UsersRound, UserX} from "lucide-react";
-import {ALL_MEDIA_TYPES} from "@/lib/utils/media-mapping";
-import {formatNumber} from "@/lib/utils/number-formatting";
+import {ALL_MEDIA_TYPES} from "@/lib/media-definitions/definition.registry";
+import {formatNumber} from "@/lib/utils/formatting/number";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
 import {HofCard} from "@/lib/client/components/hall-of-fame/HofCard";
 import {PageHeader} from "@/lib/client/components/general/PageHeader";

@@ -1,6 +1,6 @@
 import {ReactNode} from "react";
 import {MediaType} from "@/lib/utils/enums";
-import {capitalize} from "@/lib/utils/text-formatting";
+import {capitalize} from "@/lib/utils/formatting/text";
 import {TabItem} from "@/lib/client/components/general/TabHeader";
 import {MainThemeIcon} from "@/lib/client/components/general/MainIcons";
 

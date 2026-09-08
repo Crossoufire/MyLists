@@ -1,5 +1,5 @@
 import {RotateCw} from "lucide-react";
-import {zeroPad} from "@/lib/utils/number-formatting";
+import {zeroPad} from "@/lib/utils/formatting/number";
 import {Popover, PopoverContent, PopoverTrigger} from "@/lib/client/components/ui/popover";
 
 

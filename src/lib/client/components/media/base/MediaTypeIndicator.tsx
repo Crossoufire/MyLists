@@ -1,6 +1,6 @@
 import {cn} from "@/lib/utils/classnames";
 import {MediaType} from "@/lib/utils/enums";
-import {capitalize} from "@/lib/utils/text-formatting";
+import {capitalize} from "@/lib/utils/formatting/text";
 import {MainThemeIcon} from "@/lib/client/components/general/MainIcons";
 
 

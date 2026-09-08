@@ -2,7 +2,7 @@ import {SearchType} from "@/lib/schemas";
 import {SaveTaskToDb} from "@/lib/types/tasks.types";
 import {MediaType, PrivacyType} from "@/lib/utils/enums";
 import {ProviderApiRollup} from "@/lib/types/admin.types";
-import {formatMonthYear} from "@/lib/utils/date-formatting";
+import {formatMonthYear} from "@/lib/utils/formatting/date";
 import {getDbClient} from "@/lib/server/database/async-storage";
 import {YearRecapReleaseMode} from "@/lib/types/year-recap.types";
 import {paginate, resolveSorting} from "@/lib/server/database/pagination";

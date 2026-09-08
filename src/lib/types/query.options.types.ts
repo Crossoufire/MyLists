@@ -1,5 +1,4 @@
-import {MediaType} from "@/lib/utils/enums";
-import {TvMediaType} from "@/lib/utils/enums";
+import {MediaType, TvMediaType} from "@/lib/utils/enums";
 import {adminOverviewOptions} from "@/lib/client/react-query/query-options/admin.options";
 import {
     achievementOptions,

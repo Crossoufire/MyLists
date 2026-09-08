@@ -1,5 +1,5 @@
 import {useEffect, useState} from "react";
-import {toDateInputValue} from "@/lib/utils/date-formatting";
+import {toDateInputValue} from "@/lib/utils/formatting/date";
 
 
 export const useCurrentDate = () => {

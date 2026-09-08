@@ -2,7 +2,7 @@ import {Link} from "@tanstack/react-router";
 import {MediaType} from "@/lib/utils/enums";
 import {ColumnDef} from "@tanstack/react-table";
 import {CircleCheck, Settings2} from "lucide-react";
-import {statusUtils} from "@/lib/utils/media-mapping";
+import {getMediaDefinition} from "@/lib/media-definitions/definition.registry";
 import {Button} from "@/lib/client/components/ui/button";
 import {UserMediaItem} from "@/lib/types/query.options.types";
 import {mediaListOptions} from "@/lib/client/react-query/query-options";
@@ -67,7 +67,7 @@ export const getBaseColumns = <T extends UserMediaItem>(props: ColumnConfigProps
                                 queryOption={queryOption}
                                 mediaId={original.mediaId}
                                 isMediaTypeActive={isMediaTypeActive}
-                                allStatuses={statusUtils.byMediaType(mediaType)}
+                                allStatuses={getMediaDefinition(mediaType).statuses}
                             />
                         </div>
                     );

@@ -2,7 +2,7 @@ import {ColumnDef} from "@tanstack/react-table";
 import {SquareStack, XLineTop} from "lucide-react";
 import {MediaStatsFor} from "@/lib/types/stats.types";
 import {MediaType, TvMediaType} from "@/lib/utils/enums";
-import {formatNumber} from "@/lib/utils/number-formatting";
+import {formatNumber} from "@/lib/utils/formatting/number";
 import {DEFAULT_DASH_FALLBACK} from "@/lib/utils/constants";
 import {ExtractListByType} from "@/lib/types/query.options.types";
 import {TvListItem} from "@/lib/client/components/media/tv/TvListItem";

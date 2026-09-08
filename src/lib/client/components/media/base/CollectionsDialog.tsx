@@ -10,7 +10,7 @@ import {DialogRootChangeEventDetails} from "@base-ui/react";
 import {Checkbox} from "@/lib/client/components/ui/checkbox";
 import {ChevronRight, Folder, PlusCircle} from "lucide-react";
 import {useQuery, useQueryClient} from "@tanstack/react-query";
-import {displayContainerError} from "@/lib/utils/error-display";
+import {displayContainerError} from "@/lib/client/error-display";
 import {Field, FieldLabel} from "@/lib/client/components/ui/field";
 import {PrivacyIcon} from "@/lib/client/components/general/MainIcons";
 import {userCollectionMembershipsOptions} from "@/lib/client/react-query/query-options";

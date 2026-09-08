@@ -2,7 +2,7 @@ import {serverEnv} from "@/env/server";
 import {tokenSchema} from "@/lib/schemas";
 import {createServerFn} from "@tanstack/react-start";
 import {getContainer} from "@/lib/server/core/container";
-import {signCookieValue} from "@/lib/utils/signed-cookies";
+import {signCookieValue} from "@/lib/server/core/signed-cookies";
 
 
 export const getReactivateInactiveAccount = createServerFn({ method: "GET" })

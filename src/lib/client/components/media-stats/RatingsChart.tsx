@@ -1,8 +1,8 @@
 import {NamedValue} from "@/lib/types/stats.types";
-import {getThemeColor} from "@/lib/utils/theme-utils";
-import {formatNumber} from "@/lib/utils/number-formatting";
+import {getThemeColor} from "@/lib/client/theme";
+import {formatNumber} from "@/lib/utils/formatting/number";
 import {MediaType, RatingSystemType} from "@/lib/utils/enums";
-import {transformRatingToFeeling} from "@/lib/utils/stats-utils";
+import {transformRatingToFeeling} from "@/lib/utils/stats/rating-distribution";
 import {ChartCard} from "@/lib/client/components/media-stats/ChartCard";
 import {DataBarChart} from "@/lib/client/components/charts/DataBarChart";
 

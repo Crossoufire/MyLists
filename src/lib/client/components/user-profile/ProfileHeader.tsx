@@ -1,9 +1,9 @@
 import {Link} from "@tanstack/react-router";
 import {useAuth} from "@/lib/client/hooks/use-auth";
-import {formatDate} from "@/lib/utils/date-formatting";
-import {capitalize} from "@/lib/utils/text-formatting";
+import {formatDate} from "@/lib/utils/formatting/date";
+import {capitalize} from "@/lib/utils/formatting/text";
 import {Button} from "@/lib/client/components/ui/button";
-import {formatLevel} from "@/lib/utils/number-formatting";
+import {calculateMediaLevel} from "@/lib/utils/media/level";
 import {useBreakpoint} from "@/lib/client/hooks/use-breakpoint";
 import {PrivacyIcon} from "@/lib/client/components/general/MainIcons";
 import {ArrowRight, CalendarDays, InfoIcon, Users, X} from "lucide-react";
@@ -26,7 +26,7 @@ export const ProfileHeader = ({ profileUser, social, showUsernameNotice, onDismi
     const isConnected = (!!currentUser);
     const isBelowSm = useBreakpoint("sm");
     const isCurrent = (currentUser?.id === profileUser.id);
-    const profileLevel = Math.floor(formatLevel(profileUser.userMediaSettings
+    const profileLevel = Math.floor(calculateMediaLevel(profileUser.userMediaSettings
         .reduce((acc, cur) => cur.active ? acc + cur.timeSpent : acc, 0)
     ));
 

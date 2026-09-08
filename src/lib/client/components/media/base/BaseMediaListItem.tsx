@@ -1,6 +1,6 @@
 import React, {useState} from "react";
 import {MediaType, Status} from "@/lib/utils/enums";
-import {statusUtils} from "@/lib/utils/media-mapping";
+import {canShowProgress} from "@/lib/utils/media/status";
 import {Badge} from "@/lib/client/components/ui/badge";
 import type {UserMediaItem} from "@/lib/types/query.options.types";
 import type {mediaListOptions} from "@/lib/client/react-query/query-options";
@@ -27,7 +27,7 @@ interface BaseMediaListItemProps {
     isCurrent: boolean;
     isConnected: boolean;
     mediaType: MediaType;
-    allStatuses: Status[];
+    allStatuses: readonly Status[];
     rating: React.ReactNode;
     userMedia: UserMediaItem;
     isMediaTypeActive: boolean;
@@ -42,7 +42,7 @@ export const BaseMediaListItem = (props: BaseMediaListItemProps) => {
     const { isCurrent, queryOption, isConnected, isMediaTypeActive, mediaType, allStatuses, rating, userMedia, redoDisplay, mediaDetailsDisplay } = props;
 
     const isCommon = isMediaTypeActive && userMedia.common;
-    const showMediaDetails = mediaDetailsDisplay && statusUtils.canShowProgress(userMedia.status);
+    const showMediaDetails = mediaDetailsDisplay && canShowProgress(userMedia.status);
 
     return (
         <>

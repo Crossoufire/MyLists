@@ -1,7 +1,7 @@
 import {useSuspenseQuery} from "@tanstack/react-query";
-import {capitalize} from "@/lib/utils/text-formatting";
-import {formatHours} from "@/lib/utils/number-formatting";
-import {ALL_MEDIA_TYPES} from "@/lib/utils/media-mapping";
+import {capitalize} from "@/lib/utils/formatting/text";
+import {formatHours} from "@/lib/utils/formatting/number";
+import {ALL_MEDIA_TYPES} from "@/lib/media-definitions/definition.registry";
 import {createFileRoute, Link} from "@tanstack/react-router";
 import {ChartNoAxesColumnIncreasing, Clock3} from "lucide-react";
 import {StatsActiveTab, statsActiveTabSchema} from "@/lib/schemas";

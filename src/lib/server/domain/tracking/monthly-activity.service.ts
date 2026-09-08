@@ -1,10 +1,10 @@
 import {MediaType} from "@/lib/utils/enums";
 import {FormattedError} from "@/lib/utils/error-classes";
-import {getActivityMonthRange} from "@/lib/utils/activity-utils";
+import {getActivityMonthRange} from "@/lib/utils/media/activity";
 import {withTransaction} from "@/lib/server/database/async-storage";
-import {fillMonthlyActivityTimeline} from "@/lib/utils/stats-utils";
+import {fillMonthlyActivityTimeline} from "@/lib/server/domain/tracking/activity-timeline";
 import {MediaMonthlyActivityRegistry} from "@/lib/server/domain/media/media.registries";
-import {calendarDateRangeToISOString, compareDateInputs} from "@/lib/utils/date-formatting";
+import {calendarDateRangeToISOString, compareDateInputs} from "@/lib/utils/formatting/date";
 import {resolveMonthlyActivityMedia} from "@/lib/server/domain/media/base/base.monthly-activity";
 import {MonthlyActivityRepository} from "@/lib/server/domain/tracking/monthly-activity.repository";
 import {AddMonthlyActivity, MonthlyActivityFilters, MonthlyActivityStatsFilters, UpdateMonthlyActivity} from "@/lib/schemas";

@@ -1,5 +1,5 @@
 import * as z from "zod";
-import {isValidActivityDate} from "@/lib/utils/activity-utils";
+import {isValidActivityDate} from "@/lib/utils/media/activity";
 import {GamesPlatformsEnum, MediaType, Status, TagAction, UpdateType} from "@/lib/utils/enums";
 import {emptyStringToNull, importStatusSchema} from "@/lib/server/domain/imports/import-list-validation";
 import {COMMENT_MAX_LENGTH, MIN_ACTIVITY_DATE, PLAYTIME_MAX_MINUTES, PROGRESS_MAX, REDO_MAX} from "@/lib/utils/constants";

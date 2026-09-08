@@ -1,15 +1,15 @@
 import {fold} from "@tanstack/charts";
-import {getThemeColor} from "@/lib/utils/theme-utils";
+import {getThemeColor} from "@/lib/client/theme";
 import {Badge} from "@/lib/client/components/ui/badge";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {WCF_MAX_ROUNDS} from "@/lib/schemas/wcf.schema";
 import {createFileRoute, Link} from "@tanstack/react-router";
 import {StatCard} from "@/lib/client/components/media-stats/StatCard";
-import {formatDate, formatDateTime} from "@/lib/utils/date-formatting";
+import {formatDate, formatDateTime} from "@/lib/utils/formatting/date";
 import {ProfileIcon} from "@/lib/client/components/general/ProfileIcon";
 import {MainThemeIcon} from "@/lib/client/components/general/MainIcons";
 import {DataBarChart} from "@/lib/client/components/charts/DataBarChart";
-import {formatNumber, formatPercent} from "@/lib/utils/number-formatting";
+import {formatNumber, formatPercent} from "@/lib/utils/formatting/number";
 import {DashboardShell} from "@/lib/client/components/admin/DashboardShell";
 import {DashboardHeader} from "@/lib/client/components/admin/DashboardHeader";
 import {Activity, CircleGauge, GitCompareArrows, Target, Users} from "lucide-react";

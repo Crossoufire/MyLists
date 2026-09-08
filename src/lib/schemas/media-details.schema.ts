@@ -158,3 +158,12 @@ export const mediaDetailsJobSchema = z.object({
 export const jobDetailsSchema = mediaDetailsJobSchema.extend({
     pagination: paginationSchema,
 });
+
+
+export const createMediaEditPayloadSchema = <T extends MediaType>(mediaType: T, editableFields: readonly MediaEditFieldByType[T][]) => {
+    const schema: z.ZodObject<z.ZodRawShape> = editMediaDetailsPayloadSchemas[mediaType];
+    const mask = Object.fromEntries(editableFields.map(field => [field, true])) as Record<string, true>;
+
+    // Selected fields are dynamic; all catalog fields are optional in payload type
+    return schema.pick(mask) as (typeof editMediaDetailsPayloadSchemas)[T];
+};

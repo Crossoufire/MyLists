@@ -1,8 +1,8 @@
 import React from "react";
 import {MediaType} from "@/lib/utils/enums";
 import {Calendar, Clock} from "lucide-react";
-import {extractYear} from "@/lib/utils/date-formatting";
-import {formatMinutes} from "@/lib/utils/number-formatting";
+import {extractYear} from "@/lib/utils/formatting/date";
+import {formatMinutes} from "@/lib/utils/formatting/number";
 import {gamesDefinition} from "@/lib/media-definitions/games/games.definition";
 import {MediaDetailsProps} from "@/lib/client/components/media/media-config.types";
 import {MediaUnderItem, MediaUnderRating} from "@/lib/client/components/media/base/MediaDetailsComps";

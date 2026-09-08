@@ -1,9 +1,9 @@
-import {getThemeColor} from "@/lib/utils/theme-utils";
+import {getThemeColor} from "@/lib/client/theme";
 import {ExtractStatsByType} from "@/lib/types/stats.types";
 import {MediaType, RatingSystemType} from "@/lib/utils/enums";
-import {formatAvgRating} from "@/lib/utils/ratings-formatting";
+import {formatAvgRating} from "@/lib/client/ratings";
 import {MainThemeIcon} from "@/lib/client/components/general/MainIcons";
-import {formatHours, formatNumber, formatPercent} from "@/lib/utils/number-formatting";
+import {formatHours, formatNumber, formatPercent} from "@/lib/utils/formatting/number";
 
 
 interface MediaConstellationProps {

@@ -11,7 +11,7 @@ const imageMocks = vi.hoisted(() => ({
 }));
 
 
-vi.mock("@/lib/utils/image-saver", () => imageMocks);
+vi.mock("@/lib/server/core/images/image-saver", () => imageMocks);
 
 
 describe("provider relation deduplication", () => {

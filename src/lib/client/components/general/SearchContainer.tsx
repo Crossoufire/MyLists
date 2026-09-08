@@ -1,7 +1,7 @@
 import {ReactNode} from "react";
 import {cn} from "@/lib/utils/classnames";
 import {SearchX} from "lucide-react";
-import {displayContainerError} from "@/lib/utils/error-display";
+import {displayContainerError} from "@/lib/client/error-display";
 import {EmptyState} from "@/lib/client/components/general/EmptyState";
 import {Spinner} from "@/lib/client/components/ui/spinner";
 

@@ -6,7 +6,7 @@ import {MediaType, Status, UpdateType} from "@/lib/utils/enums";
 import {withTransaction} from "@/lib/server/database/async-storage";
 import {BaseService} from "@/lib/server/domain/media/base/base.service";
 import {Book, BooksList} from "@/lib/server/domain/media/books/books.types";
-import {saveImageFromUrl, saveUploadedImage} from "@/lib/utils/image-saver";
+import {saveImageFromUrl, saveUploadedImage} from "@/lib/server/core/images/image-saver";
 import {BooksRepository} from "@/lib/server/domain/media/books/books.repository";
 import {PagePayload, RedoPayload, StatusPayload} from "@/lib/types/user-media.types";
 import type {EditMediaDetailsPayloadByType} from "@/lib/schemas/media-details.schema";

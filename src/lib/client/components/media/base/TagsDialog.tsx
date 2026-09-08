@@ -10,7 +10,7 @@ import {Button} from "@/lib/client/components/ui/button";
 import {Spinner} from "@/lib/client/components/ui/spinner";
 import {DialogRootChangeEventDetails} from "@base-ui/react";
 import {Checkbox} from "@/lib/client/components/ui/checkbox";
-import {displayContainerError} from "@/lib/utils/error-display";
+import {displayContainerError} from "@/lib/client/error-display";
 import {Field, FieldLabel} from "@/lib/client/components/ui/field";
 import {ChevronRight, PlusCircle, Tags} from "lucide-react";
 import {tagNamesOptions} from "@/lib/client/react-query/query-options";

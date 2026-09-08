@@ -1,7 +1,7 @@
 import React from "react";
 import {Status} from "@/lib/utils/enums";
 import {Badge} from "@/lib/client/components/ui/badge";
-import {getThemeColor} from "@/lib/utils/theme-utils";
+import {getThemeColor} from "@/lib/client/theme";
 
 
 export const StatusBadge = ({ status, className = "" }: { status: Status, className?: string }) => {

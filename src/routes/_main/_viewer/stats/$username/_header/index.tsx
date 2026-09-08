@@ -1,8 +1,8 @@
 import {MediaType} from "@/lib/utils/enums";
 import {useAuth} from "@/lib/client/hooks/use-auth";
 import {useSuspenseQuery} from "@tanstack/react-query";
-import {capitalize} from "@/lib/utils/text-formatting";
-import {formatHours} from "@/lib/utils/number-formatting";
+import {capitalize} from "@/lib/utils/formatting/text";
+import {formatHours} from "@/lib/utils/formatting/number";
 import {InactiveMediaTypeError} from "@/lib/utils/error-classes";
 import {StatsActiveTab, statsActiveTabSchema} from "@/lib/schemas";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";

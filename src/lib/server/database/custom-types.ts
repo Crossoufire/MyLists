@@ -1,6 +1,6 @@
 import {customType} from "drizzle-orm/sqlite-core";
 import {CoverType} from "@/lib/types/media-common.types";
-import {getImageFilename, getImageUrl} from "@/lib/utils/image-url";
+import {getImageFilename, getImageUrl} from "@/lib/server/core/images/image-url";
 
 
 export const customJson = <TData>(name: string) => customType<{ data: TData; driverData: string }>({

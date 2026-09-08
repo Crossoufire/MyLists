@@ -5,7 +5,7 @@ import {logger} from "@/lib/server/core/logger";
 import {SaveTaskToDb} from "@/lib/types/tasks.types";
 import {FormattedError} from "@/lib/utils/error-classes";
 import {getRedisConnection} from "@/lib/server/core/redis-client";
-import {getYearRecapReleaseStatus} from "@/lib/utils/year-recap-release";
+import {getYearRecapReleaseStatus} from "@/lib/server/domain/year-recap/release-status";
 import {AdminRepository} from "@/lib/server/domain/admin/admin.repository";
 import {getRollupKey, PENDING_ROLLUPS_KEY} from "@/lib/server/core/cache-keys";
 import {YEAR_RECAP_FIRST_YEAR, YearRecapReleaseMode} from "@/lib/types/year-recap.types";

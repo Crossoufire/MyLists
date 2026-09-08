@@ -3,7 +3,7 @@ import {UpdateMonthlyActivity} from "@/lib/schemas";
 import {ActivityKind, MediaType} from "@/lib/utils/enums";
 import {getDbClient} from "@/lib/server/database/async-storage";
 import {resolvePagination} from "@/lib/server/database/pagination";
-import {dateFromUTCInput, monthBucketFromDateInput} from "@/lib/utils/date-formatting";
+import {dateFromUTCInput, monthBucketFromDateInput} from "@/lib/utils/formatting/date";
 import {LogMonthlyActivity, PaginatedMonthlyActivityFilter} from "@/lib/types/activity.types";
 import {user, userMediaMonthlyActivity, userMediaSettings} from "@/lib/server/database/schema";
 import {and, asc, count, desc, eq, getTableColumns, gt, gte, inArray, isNull, lte, max, ne, or, SQL, sql, sum} from "drizzle-orm";

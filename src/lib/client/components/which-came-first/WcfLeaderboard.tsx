@@ -4,7 +4,7 @@ import {Link} from "@tanstack/react-router";
 import {Badge} from "@/lib/client/components/ui/badge";
 import {EmptyState} from "@/lib/client/components/general/EmptyState";
 import {ProfileIcon} from "@/lib/client/components/general/ProfileIcon";
-import {formatNumber, formatPercent} from "@/lib/utils/number-formatting";
+import {formatNumber, formatPercent} from "@/lib/utils/formatting/number";
 import {whichCameFirstOptions} from "@/lib/client/react-query/query-options/wcf.options";
 import {Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow} from "@/lib/client/components/ui/table";
 import {Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle} from "@/lib/client/components/ui/card";

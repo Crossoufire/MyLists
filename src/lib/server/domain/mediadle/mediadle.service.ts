@@ -1,6 +1,6 @@
 import {SearchType} from "@/lib/schemas";
 import {FormattedError} from "@/lib/utils/error-classes";
-import {pixelateImage} from "@/lib/utils/image-pixelation";
+import {pixelateImage} from "@/lib/server/domain/mediadle/image-pixelation";
 import {withTransaction} from "@/lib/server/database/async-storage";
 import {MoviesService} from "@/lib/server/domain/media/movies/movies.service";
 import {MediadleRepository} from "@/lib/server/domain/mediadle/mediadle.repository";

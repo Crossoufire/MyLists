@@ -2,7 +2,7 @@ import {useEffect} from "react";
 import {LogIn, ShieldCheck} from "lucide-react";
 import {toast} from "@/lib/client/components/ui/toast";
 import {useSuspenseQuery} from "@tanstack/react-query";
-import {getOAuthErrorMessage} from "@/lib/utils/auth-utils";
+import {getOAuthErrorMessage} from "@/lib/utils/auth";
 import {LoginForm} from "@/lib/client/components/auth/LoginForm";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
 import {PageHeader} from "@/lib/client/components/general/PageHeader";

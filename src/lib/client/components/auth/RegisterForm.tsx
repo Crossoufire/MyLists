@@ -4,7 +4,7 @@ import {Input} from "@/lib/client/components/ui/input";
 import {Register, registerSchema} from "@/lib/schemas";
 import {Button} from "@/lib/client/components/ui/button";
 import {Spinner} from "@/lib/client/components/ui/spinner";
-import {handleServerFormErrors} from "@/lib/utils/forms-utils";
+import {handleServerFormErrors} from "@/lib/client/forms";
 import {FormError} from "@/lib/client/components/forms/FormError";
 import {Controller, FormProvider, useForm} from "react-hook-form";
 import {useEmailRegistrationMutation} from "@/lib/client/react-query/query-mutations/auth.mutations";

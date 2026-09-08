@@ -1,7 +1,7 @@
 import {SearchType} from "@/lib/schemas";
 import {useSuspenseQuery} from "@tanstack/react-query";
-import {formatDateTime} from "@/lib/utils/date-formatting";
-import {formatNumber} from "@/lib/utils/number-formatting";
+import {formatDateTime} from "@/lib/utils/formatting/date";
+import {formatNumber} from "@/lib/utils/formatting/number";
 import {createFileRoute, Link} from "@tanstack/react-router";
 import {DataTable} from "@/lib/client/components/general/DataTable";
 import {SearchInput} from "@/lib/client/components/general/SearchInput";

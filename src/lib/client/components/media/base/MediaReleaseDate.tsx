@@ -1,4 +1,4 @@
-import {extractYear, formatDate} from "@/lib/utils/date-formatting";
+import {extractYear, formatDate} from "@/lib/utils/formatting/date";
 
 
 interface MediaReleaseDateProps {

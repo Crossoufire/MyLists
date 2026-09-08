@@ -1,12 +1,11 @@
 import Database from "bun:sqlite";
 import {eq} from "drizzle-orm";
 import {MediaType} from "@/lib/utils/enums";
-import {createMediaEditPayloadSchema} from "@/lib/utils/media-edit";
+import {createMediaEditPayloadSchema, editMediaDetailsPayloadSchemas} from "@/lib/schemas/media-details.schema";
 import * as schema from "@/lib/server/database/schema";
 import {migrate} from "drizzle-orm/bun-sqlite/migrator";
 import {type BunSQLiteDatabase, drizzle} from "drizzle-orm/bun-sqlite";
 import {afterEach, beforeEach, describe, expect, it, vi} from "vitest";
-import {editMediaDetailsPayloadSchemas} from "@/lib/schemas/media-details.schema";
 import {animeServerDefinition} from "@/lib/media-definitions/tv/anime/anime.definition.server";
 import {seriesServerDefinition} from "@/lib/media-definitions/tv/series/series.definition.server";
 
@@ -18,14 +17,14 @@ vi.mock("@/lib/server/database/db", () => ({
         return dbContext.db;
     },
 }));
-vi.mock("@/lib/utils/image-saver", () => ({ saveImageFromUrl: vi.fn().mockResolvedValue("updated.jpg") }));
+vi.mock("@/lib/server/core/images/image-saver", () => ({ saveImageFromUrl: vi.fn().mockResolvedValue("updated.jpg") }));
 
 const { MoviesRepository, MoviesService } = await import("@/lib/server/domain/media/movies");
 const { GamesRepository, GamesService } = await import("@/lib/server/domain/media/games");
 const { BooksRepository, BooksService } = await import("@/lib/server/domain/media/books");
 const { MangaRepository, MangaService } = await import("@/lib/server/domain/media/manga");
 const { TvRepository, TvService } = await import("@/lib/server/domain/media/tv");
-const { saveImageFromUrl } = await import("@/lib/utils/image-saver");
+const { saveImageFromUrl } = await import("@/lib/server/core/images/image-saver");
 const { mangaServerDefinition } = await import("@/lib/media-definitions/manga/manga.definition.server");
 const { booksServerDefinition } = await import("@/lib/media-definitions/books/book.definition.server");
 

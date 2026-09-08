@@ -1,5 +1,5 @@
-import {formatHours} from "@/lib/utils/number-formatting";
-import {formatMonthYear} from "@/lib/utils/date-formatting";
+import {formatHours} from "@/lib/utils/formatting/number";
+import {formatMonthYear} from "@/lib/utils/formatting/date";
 import type {YearRecapMonth} from "@/lib/types/year-recap.types";
 
 

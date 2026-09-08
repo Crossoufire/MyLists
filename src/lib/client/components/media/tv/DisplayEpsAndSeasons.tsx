@@ -1,8 +1,8 @@
 import {Status} from "@/lib/utils/enums";
 
 
-import {zeroPad} from "@/lib/utils/number-formatting";
-import {statusUtils} from "@/lib/utils/media-mapping";
+import {zeroPad} from "@/lib/utils/formatting/number";
+import {canShowProgress} from "@/lib/utils/media/status";
 
 
 interface DisplayEpsAndSeasonsProps {
@@ -13,7 +13,7 @@ interface DisplayEpsAndSeasonsProps {
 
 
 export const DisplayEpsAndSeasons = ({ status, currentSeason, currentEpisode }: DisplayEpsAndSeasonsProps) => {
-    if (!statusUtils.canShowProgress(status)) {
+    if (!canShowProgress(status)) {
         return null;
     }
 

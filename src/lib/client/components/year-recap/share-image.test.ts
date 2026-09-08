@@ -1,5 +1,5 @@
 import {afterEach, describe, expect, it, vi} from "vitest";
-import {canShareYearRecapImage, shareYearRecapImage} from "@/lib/utils/year-recap-image";
+import {canShareYearRecapImage, shareYearRecapImage} from "@/lib/client/components/year-recap/share-image";
 
 
 const originalWindow = Object.getOwnPropertyDescriptor(globalThis, "window");

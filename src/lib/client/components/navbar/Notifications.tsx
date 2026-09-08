@@ -2,7 +2,7 @@ import {useState} from "react";
 import {Link} from "@tanstack/react-router";
 import {useQuery} from "@tanstack/react-query";
 import {SocialNotifType} from "@/lib/utils/enums";
-import {zeroPad} from "@/lib/utils/number-formatting";
+import {zeroPad} from "@/lib/utils/formatting/number";
 import {Badge} from "@/lib/client/components/ui/badge";
 import {Button} from "@/lib/client/components/ui/button";
 import {NotifTab} from "@/lib/types/notifications.types";
@@ -14,7 +14,7 @@ import {MainThemeIcon} from "@/lib/client/components/general/MainIcons";
 import {TabHeader, TabItem} from "@/lib/client/components/general/TabHeader";
 import {Bell, MessageCircleOff, MoveRight, Play, Users, X} from "lucide-react";
 import {Popover, PopoverContent, PopoverTrigger} from "@/lib/client/components/ui/popover";
-import {formatCalendarRelativeDate, formatDate, formatRelativeTime} from "@/lib/utils/date-formatting";
+import {formatCalendarRelativeDate, formatDate, formatRelativeTime} from "@/lib/utils/formatting/date";
 import {notificationsCountOptions, notificationsOptions} from "@/lib/client/react-query/query-options";
 import {useDeleteSocialNotif, useMarkAllNotifAsRead, useRespondFollowRequest} from "@/lib/client/react-query/query-mutations/user.mutations";
 

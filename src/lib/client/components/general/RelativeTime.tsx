@@ -1,7 +1,7 @@
 import {cn} from "@/lib/utils/classnames";
 import {DEFAULT_DASH_FALLBACK} from "@/lib/utils/constants";
 import {Popover, PopoverContent, PopoverTrigger} from "@/lib/client/components/ui/popover";
-import {formatDateTime, formatRelativeTime, toDateTimeAttribute} from "@/lib/utils/date-formatting";
+import {formatDateTime, formatRelativeTime, toDateTimeAttribute} from "@/lib/utils/formatting/date";
 
 
 interface RelativeTimeProps {

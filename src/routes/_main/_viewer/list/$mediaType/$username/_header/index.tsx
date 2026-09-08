@@ -1,6 +1,6 @@
 import {useEffect, useState} from "react";
 import {useAuth} from "@/lib/client/hooks/use-auth";
-import {statusUtils} from "@/lib/utils/media-mapping";
+import {getMediaDefinition} from "@/lib/media-definitions/definition.registry";
 import {createFileRoute} from "@tanstack/react-router";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {Header} from "@/lib/client/components/media/base/Header";
@@ -31,7 +31,7 @@ function MediaList() {
     const { currentUser } = useAuth();
     const navigate = Route.useNavigate();
     const { username, mediaType } = Route.useParams();
-    const allStatuses = statusUtils.byMediaType(mediaType);
+    const allStatuses = getMediaDefinition(mediaType).statuses;
     const { mediaListQueryOptions } = Route.useRouteContext();
     const [filtersPanelOpen, setFiltersPanelOpen] = useState(false);
     const { userData, ...apiData } = useSuspenseQuery(mediaListQueryOptions).data;

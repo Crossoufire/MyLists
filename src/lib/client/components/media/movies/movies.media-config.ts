@@ -1,7 +1,7 @@
 import {MediaType} from "@/lib/utils/enums";
 import {DollarSign, XLineTop} from "lucide-react";
 import {DEFAULT_DASH_FALLBACK} from "@/lib/utils/constants";
-import {formatCurrency, formatNumber} from "@/lib/utils/number-formatting";
+import {formatCurrency, formatNumber} from "@/lib/utils/formatting/number";
 import {MovieListItem} from "@/lib/client/components/media/movies/MovieListItem";
 import {MoviesInfoGrid} from "@/lib/client/components/media/movies/MoviesInfoGrid";
 import {defineMediaConfig} from "@/lib/client/components/media/media-config.types";

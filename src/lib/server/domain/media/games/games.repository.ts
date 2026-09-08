@@ -1,8 +1,8 @@
 import {Status} from "@/lib/utils/enums";
-import {getImageUrl} from "@/lib/utils/image-url";
+import {getImageUrl} from "@/lib/server/core/images/image-url";
 import {getDbClient} from "@/lib/server/database/async-storage";
 import {AddedMediaDetails} from "@/lib/types/media-common.types";
-import {normalizeGamePlatforms} from "@/lib/utils/game-platforms";
+import {normalizeGamePlatforms} from "@/lib/server/domain/media/games/platforms";
 import {BaseRepository} from "@/lib/server/domain/media/base/base.repository";
 import {and, eq, getTableColumns, gte, isNull, lte, or, sql} from "drizzle-orm";
 import {games, gamesCompanies, gamesGenre, gamesList, gamesPlatforms} from "@/lib/server/database/schema";

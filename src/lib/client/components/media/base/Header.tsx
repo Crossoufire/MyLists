@@ -12,7 +12,7 @@ import {Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectVal
 
 interface HeaderProps {
     isGrid: boolean;
-    allStatuses: Status[];
+    allStatuses: readonly Status[];
     filters: MediaListArgs;
     onGridClick: () => void;
     onFilterClick: () => void;
@@ -105,7 +105,7 @@ const ViewModeToggle = ({ isGrid, onGridClick }: ViewModeToggleProps) => {
 
 interface StatusComponentProps {
     className?: string;
-    allStatuses: Status[];
+    allStatuses: readonly Status[];
     filters: MediaListArgs;
     onStatusChange: ({ status }: { status: Status[] }) => void;
 }

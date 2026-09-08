@@ -39,7 +39,7 @@ export interface MediaListCardProps<T extends MediaType> {
     rating: ReactNode;
     isCurrent: boolean;
     isConnected: boolean;
-    allStatuses: Status[];
+    allStatuses: readonly Status[];
     isMediaTypeActive: boolean;
     userMedia: ExtractListByType<T>;
     queryOption: ReturnType<typeof mediaListOptions>;

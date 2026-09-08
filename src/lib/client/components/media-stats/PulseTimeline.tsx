@@ -1,7 +1,7 @@
 import {MediaType} from "@/lib/utils/enums";
-import {getThemeColor} from "@/lib/utils/theme-utils";
-import {formatHours} from "@/lib/utils/number-formatting";
-import {formatMonthYear} from "@/lib/utils/date-formatting";
+import {getThemeColor} from "@/lib/client/theme";
+import {formatHours} from "@/lib/utils/formatting/number";
+import {formatMonthYear} from "@/lib/utils/formatting/date";
 import {MonthlyActivityChartDatum} from "@/lib/types/activity.types";
 
 

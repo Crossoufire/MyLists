@@ -1,8 +1,8 @@
 import {SearchType} from "@/lib/schemas";
-import {capitalize} from "@/lib/utils/text-formatting";
+import {capitalize} from "@/lib/utils/formatting/text";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {Button} from "@/lib/client/components/ui/button";
-import {formatNumber} from "@/lib/utils/number-formatting";
+import {formatNumber} from "@/lib/utils/formatting/number";
 import {createFileRoute, Link} from "@tanstack/react-router";
 import {DataTable} from "@/lib/client/components/general/DataTable";
 import {StatCard} from "@/lib/client/components/media-stats/StatCard";

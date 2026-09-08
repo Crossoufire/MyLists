@@ -1,5 +1,5 @@
 import {notFound} from "@tanstack/react-router";
-import {saveImageFromUrl} from "@/lib/utils/image-saver";
+import {saveImageFromUrl} from "@/lib/server/core/images/image-saver";
 import {LogPayload} from "@/lib/types/user-updates.types";
 import {MediaType, Status, UpdateType} from "@/lib/utils/enums";
 import {withTransaction} from "@/lib/server/database/async-storage";

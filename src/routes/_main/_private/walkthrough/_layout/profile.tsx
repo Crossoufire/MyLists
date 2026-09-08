@@ -2,7 +2,7 @@ import {useState} from "react";
 import {MediaType} from "@/lib/utils/enums";
 import {createFileRoute} from "@tanstack/react-router";
 import {TabHeader} from "@/lib/client/components/general/TabHeader";
-import {getActiveMediaTypes} from "@/lib/utils/media-list-activation";
+import {getActiveMediaTypes} from "@/lib/utils/media/list-activation";
 import {OverviewTab} from "@/lib/client/components/user-profile/OverviewTab";
 import {MediaLevels} from "@/lib/client/components/user-profile/MediaLevels";
 import {MediaStatsTab} from "@/lib/client/components/user-profile/MediaStatsTab";

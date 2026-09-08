@@ -1,10 +1,10 @@
 import React from "react";
 import {Link} from "@tanstack/react-router";
 import {MediaType} from "@/lib/utils/enums";
-import {extractYear} from "@/lib/utils/date-formatting";
+import {extractYear} from "@/lib/utils/formatting/date";
 import {DEFAULT_DASH_FALLBACK} from "@/lib/utils/constants";
-import {formatMinutes} from "@/lib/utils/number-formatting";
-import {capitalize, formatLocaleName} from "@/lib/utils/text-formatting";
+import {formatMinutes} from "@/lib/utils/formatting/number";
+import {capitalize, formatLocaleName} from "@/lib/utils/formatting/text";
 import {booksDefinition} from "@/lib/media-definitions/books/books.definition";
 import {MediaInfoGridItem} from "@/lib/client/components/media/base/MediaDetailsComps";
 import type {MediaDetailsProps} from "@/lib/client/components/media/media-config.types";

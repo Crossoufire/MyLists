@@ -1,4 +1,4 @@
-import {capitalize} from "@/lib/utils/text-formatting";
+import {capitalize} from "@/lib/utils/formatting/text";
 import {createFileRoute} from "@tanstack/react-router";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {Smile, Star, UserCheck, UserPlus, Users} from "lucide-react";

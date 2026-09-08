@@ -1,6 +1,6 @@
 import {createFileRoute, redirect} from "@tanstack/react-router";
 import {authOptions} from "@/lib/client/react-query/query-options";
-import {getAuthState, isAuthenticatedAuthState} from "@/lib/utils/auth-utils";
+import {getAuthState, isAuthenticatedAuthState} from "@/lib/utils/auth";
 
 
 export const Route = createFileRoute("/_main/_private")({

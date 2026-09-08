@@ -1,11 +1,11 @@
 import React from "react";
 import {MediaType, TvMediaType} from "@/lib/utils/enums";
 import {Link} from "@tanstack/react-router";
-import {formatDate} from "@/lib/utils/date-formatting";
-import {formatMinutes} from "@/lib/utils/number-formatting";
+import {formatDate} from "@/lib/utils/formatting/date";
+import {formatMinutes} from "@/lib/utils/formatting/number";
 import {DEFAULT_DASH_FALLBACK} from "@/lib/utils/constants";
 import {InfoPopover} from "@/lib/client/components/general/InfoPopover";
-import {capitalize, formatLocaleName} from "@/lib/utils/text-formatting";
+import {capitalize, formatLocaleName} from "@/lib/utils/formatting/text";
 import {getMediaDefinition} from "@/lib/media-definitions/definition.registry";
 import {MediaDetailsProps} from "@/lib/client/components/media/media-config.types";
 import {MediaInfoGridItem} from "@/lib/client/components/media/base/MediaDetailsComps";

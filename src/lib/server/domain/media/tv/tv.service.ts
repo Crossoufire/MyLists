@@ -1,5 +1,5 @@
 import {notFound} from "@tanstack/react-router";
-import {saveImageFromUrl} from "@/lib/utils/image-saver";
+import {saveImageFromUrl} from "@/lib/server/core/images/image-saver";
 import {FormattedError} from "@/lib/utils/error-classes";
 import {LogPayload} from "@/lib/types/user-updates.types";
 import {MediaType, Status, UpdateType} from "@/lib/utils/enums";

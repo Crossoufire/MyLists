@@ -1,6 +1,6 @@
 import {describe, expect, it} from "vitest";
 
-import {getYearRecapReleaseStatus} from "@/lib/utils/year-recap-release";
+import {getYearRecapReleaseStatus} from "@/lib/server/domain/year-recap/release-status";
 
 
 describe("getYearRecapReleaseStatus", () => {

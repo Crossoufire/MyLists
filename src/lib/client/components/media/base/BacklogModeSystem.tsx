@@ -3,7 +3,7 @@ import {Button} from "@/lib/client/components/ui/button";
 import {Calendar} from "@/lib/client/components/ui/calendar";
 import {Calendar as CalendarIcon, TriangleAlert} from "lucide-react";
 import {Popover, PopoverContent, PopoverTrigger} from "@/lib/client/components/ui/popover";
-import {dateInputValueToDate, formatDate, shiftDateInputValue, toDateInputValue} from "@/lib/utils/date-formatting";
+import {dateInputValueToDate, formatDate, shiftDateInputValue, toDateInputValue} from "@/lib/utils/formatting/date";
 
 
 interface BacklogModeBannerProps {

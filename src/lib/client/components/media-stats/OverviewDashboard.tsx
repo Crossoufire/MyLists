@@ -1,8 +1,8 @@
 import {MediaType} from "@/lib/utils/enums";
-import {capitalize} from "@/lib/utils/text-formatting";
+import {capitalize} from "@/lib/utils/formatting/text";
 import {ExtractStatsByType} from "@/lib/types/stats.types";
-import {formatMonthYear} from "@/lib/utils/date-formatting";
-import {formatAvgRating} from "@/lib/utils/ratings-formatting";
+import {formatMonthYear} from "@/lib/utils/formatting/date";
+import {formatAvgRating} from "@/lib/client/ratings";
 import {StatsHero} from "@/lib/client/components/media-stats/StatsHero";
 import {UpdatesDial} from "@/lib/client/components/media-stats/UpdatesDial";
 import {StatsRecordList} from "@/lib/client/components/media-stats/StatsRecordList";
@@ -10,7 +10,7 @@ import {ActivityTapestry} from "@/lib/client/components/media-stats/ActivityTape
 import {CompactStatsGrid} from "@/lib/client/components/media-stats/CompactStatsGrid";
 import {StatsSectionHeader} from "@/lib/client/components/media-stats/StatsSectionHeader";
 import {MediaConstellation} from "@/lib/client/components/media-stats/MediaConstellation";
-import {formatContinuousTime, formatHours, formatNumber, formatPercent} from "@/lib/utils/number-formatting";
+import {formatContinuousTime, formatHours, formatNumber, formatPercent} from "@/lib/utils/formatting/number";
 import {ArrowDownRight, ArrowRight, Award, CalendarDays, Clock3, Heart, List, MessageCircle, Shapes, Star, Tags, Users} from "lucide-react";
 
 

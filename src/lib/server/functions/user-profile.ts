@@ -2,7 +2,7 @@ import {toActor} from "@/lib/server/authorization";
 import {createServerFn} from "@tanstack/react-start";
 import {getContainer} from "@/lib/server/core/container";
 import {simpleSearchUsernameSchema} from "@/lib/schemas";
-import {getPublishedMediaSettings} from "@/lib/utils/media-list-activation";
+import {getPublishedMediaSettings} from "@/lib/utils/media/list-activation";
 import {requiredAuthMiddleware} from "@/lib/server/middlewares/authentication";
 import {contentAuthorizationMiddleware, publicPreviewMiddleware} from "@/lib/server/middlewares/authorization";
 

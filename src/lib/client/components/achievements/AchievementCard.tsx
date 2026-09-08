@@ -1,9 +1,9 @@
 import {cn} from "@/lib/utils/classnames";
 import {Award, Check} from "lucide-react";
 import {Badge} from "@/lib/client/components/ui/badge";
-import {capitalize} from "@/lib/utils/text-formatting";
+import {capitalize} from "@/lib/utils/formatting/text";
 import {AchCard} from "@/lib/types/query.options.types";
-import {getDifficultyColors} from "@/lib/utils/theme-utils";
+import {getDifficultyColors} from "@/lib/client/theme";
 import {MainThemeIcon} from "@/lib/client/components/general/MainIcons";
 import {RelativeTime} from "@/lib/client/components/general/RelativeTime";
 import {TiersDetails} from "@/lib/client/components/achievements/TierDetails";

@@ -1,4 +1,4 @@
-import {formatRating} from "@/lib/utils/ratings-formatting";
+import {formatRating} from "@/lib/client/ratings";
 import {MediaType, Status} from "@/lib/utils/enums";
 import {ExtractListByType} from "@/lib/types/query.options.types";
 import {mediaConfig} from "@/lib/client/components/media/media-config";
@@ -10,7 +10,7 @@ interface MediaListItemProps<T extends MediaType> {
     isCurrent: boolean;
     isConnected: boolean;
     isMediaTypeActive: boolean;
-    allStatuses: Status[];
+    allStatuses: readonly Status[];
     userMedia: ExtractListByType<T>;
     queryOption: ReturnType<typeof mediaListOptions>;
 }

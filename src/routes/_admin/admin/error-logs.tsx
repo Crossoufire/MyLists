@@ -4,7 +4,7 @@ import {createFileRoute} from "@tanstack/react-router";
 import {Button} from "@/lib/client/components/ui/button";
 import {Spinner} from "@/lib/client/components/ui/spinner";
 import {useEffect, useMemo, useRef, useState} from "react";
-import {formatDateTime} from "@/lib/utils/date-formatting";
+import {formatDateTime} from "@/lib/utils/formatting/date";
 import {useQuery, useSuspenseQuery} from "@tanstack/react-query";
 import {EmptyState} from "@/lib/client/components/general/EmptyState";
 import {DashboardShell} from "@/lib/client/components/admin/DashboardShell";

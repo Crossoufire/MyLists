@@ -1,7 +1,7 @@
 import {clientEnv} from "@/env/client";
 import {FaGithub} from "react-icons/fa";
 import {createFileRoute} from "@tanstack/react-router";
-import {addSeo, addSeoLinks} from "@/lib/utils/add-seo";
+import {addSeo, addSeoLinks} from "@/lib/client/seo";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
 import {PageHeader} from "@/lib/client/components/general/PageHeader";
 import {buttonVariants} from "@/lib/client/components/ui/button";

@@ -1,5 +1,5 @@
 import {MediaType, SocialNotifType} from "@/lib/utils/enums";
-import {compareCalendarDates} from "@/lib/utils/date-formatting";
+import {compareCalendarDates} from "@/lib/utils/formatting/date";
 import {withTransaction} from "@/lib/server/database/async-storage";
 import {NotifTab, UpComingMedia} from "@/lib/types/notifications.types";
 import {NotificationsRepository} from "@/lib/server/domain/notifications/notifications.repository";

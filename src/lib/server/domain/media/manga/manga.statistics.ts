@@ -1,5 +1,5 @@
 import {Status} from "@/lib/utils/enums";
-import {toHistogramBins} from "@/lib/utils/stats-utils";
+import {toHistogramBins} from "@/lib/utils/stats/histogram";
 import {getDbClient} from "@/lib/server/database/async-storage";
 import {and, asc, count, eq, isNotNull, ne, sql} from "drizzle-orm";
 import {defineMediaStatistics, getMediaStatsUserScope} from "@/lib/server/domain/media/base/base.statistics";

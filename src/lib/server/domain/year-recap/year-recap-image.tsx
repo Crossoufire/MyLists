@@ -3,11 +3,11 @@ import {serverEnv} from "@/env/server";
 import {Renderer} from "takumi-js/node";
 import {createRequire} from "node:module";
 import {FontDetails, render} from "takumi-js";
-import {capitalize} from "@/lib/utils/text-formatting";
-import {getImageFilename} from "@/lib/utils/image-url";
+import {capitalize} from "@/lib/utils/formatting/text";
+import {getImageFilename} from "@/lib/server/core/images/image-url";
 import {MediaType, RatingSystemType} from "@/lib/utils/enums";
 import {YearRecap, YearRecapTitle} from "@/lib/types/year-recap.types";
-import {formatContinuousTime, formatHours, formatNumber, formatPercent} from "@/lib/utils/number-formatting";
+import {formatContinuousTime, formatHours, formatNumber, formatPercent} from "@/lib/utils/formatting/number";
 import {MediaCardDetails, MediaCardFooter, MediaCardMeta, MediaCardStatic, MediaCardTitle} from "@/lib/client/components/media/base/MediaCard";
 
 

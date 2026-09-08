@@ -1,6 +1,6 @@
 import crypto from "node:crypto";
 import {serverEnv} from "@/env/server";
-import {signCookieValue} from "@/lib/utils/signed-cookies";
+import {signCookieValue} from "@/lib/server/core/signed-cookies";
 import {deleteCookie, getCookie, setCookie} from "@tanstack/react-start/server";
 
 

@@ -1,4 +1,4 @@
-import {statusUtils} from "@/lib/utils/media-mapping";
+import {getMediaDefinition} from "@/lib/media-definitions/definition.registry";
 import {MediaType, Status, UpdateType} from "@/lib/utils/enums";
 import {useUpdateUserMediaMutation} from "@/lib/client/react-query/query-mutations/user-media.mutations";
 import {Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue} from "@/lib/client/components/ui/select";
@@ -12,7 +12,7 @@ interface StatusDropProps {
 
 
 export const UpdateStatus = ({ status, mediaType, updateStatus }: StatusDropProps) => {
-    const allStatuses = statusUtils.byMediaType(mediaType);
+    const allStatuses = getMediaDefinition(mediaType).statuses;
     const statusItems = allStatuses?.map((status) => ({ label: status, value: status })) ?? [];
 
     const handleStatus = (status: Status | null) => {

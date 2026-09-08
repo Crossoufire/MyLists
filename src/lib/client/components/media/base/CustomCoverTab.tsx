@@ -11,7 +11,7 @@ import {FormSubmitButton} from "@/lib/client/components/forms/FormSubmitButton";
 import {UpdateUserCustomCoverInput, updateUserCustomCoverSchema} from "@/lib/schemas";
 import {useUpdateCustomCoverMutation} from "@/lib/client/react-query/query-mutations/user-media.mutations";
 import {Field, FieldError, FieldGroup, FieldLabel, FieldSet} from "@/lib/client/components/ui/field";
-import {handleServerFormErrors} from "@/lib/utils/forms-utils";
+import {handleServerFormErrors} from "@/lib/client/forms";
 
 
 interface CustomCoverTabProps {

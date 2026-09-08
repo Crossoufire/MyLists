@@ -4,7 +4,7 @@ import {MediaType} from "@/lib/utils/enums";
 import {Pencil, RefreshCw} from "lucide-react";
 import {useAuth} from "@/lib/client/hooks/use-auth";
 import {useNow} from "@/lib/client/hooks/use-dates";
-import {dateFromUTCInput} from "@/lib/utils/date-formatting";
+import {dateFromUTCInput} from "@/lib/utils/formatting/date";
 import {Button, buttonVariants} from "@/lib/client/components/ui/button";
 import {RelativeTime} from "@/lib/client/components/general/RelativeTime";
 import {useRefreshMediaMutation} from "@/lib/client/react-query/query-mutations/media.mutations";

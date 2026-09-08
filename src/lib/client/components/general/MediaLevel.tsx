@@ -1,8 +1,8 @@
 import {Ban} from "lucide-react";
 import {cn} from "@/lib/utils/classnames";
 import {MediaType} from "@/lib/utils/enums";
-import {getThemeColor} from "@/lib/utils/theme-utils";
-import {formatLevel} from "@/lib/utils/number-formatting";
+import {getThemeColor} from "@/lib/client/theme";
+import {calculateMediaLevel} from "@/lib/utils/media/level";
 
 
 interface MediaLevelProps {
@@ -15,7 +15,7 @@ interface MediaLevelProps {
 
 
 export const MediaLevel = ({ timeSpentMin, mediaType, containerClassName, className, isActive = true }: MediaLevelProps) => {
-    const intLevel = Math.floor(formatLevel(timeSpentMin));
+    const intLevel = Math.floor(calculateMediaLevel(timeSpentMin));
     const color = isActive ? getThemeColor(mediaType) : "var(--muted-foreground)";
 
     return (

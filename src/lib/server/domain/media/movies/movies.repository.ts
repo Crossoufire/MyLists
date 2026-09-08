@@ -1,5 +1,5 @@
 import {Status} from "@/lib/utils/enums";
-import {getImageUrl} from "@/lib/utils/image-url";
+import {getImageUrl} from "@/lib/server/core/images/image-url";
 import {getDbClient} from "@/lib/server/database/async-storage";
 import {AddedMediaDetails} from "@/lib/types/media-common.types";
 import {BaseRepository} from "@/lib/server/domain/media/base/base.repository";

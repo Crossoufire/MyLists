@@ -1,4 +1,4 @@
-import {formatMonthYear} from "@/lib/utils/date-formatting";
+import {formatMonthYear} from "@/lib/utils/formatting/date";
 import {AdminUpdatePayload, SearchType} from "@/lib/schemas";
 import {getDbClient} from "@/lib/server/database/async-storage";
 import {PrivacyType, RatingSystemType} from "@/lib/utils/enums";

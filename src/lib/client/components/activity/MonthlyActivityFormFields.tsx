@@ -4,7 +4,7 @@ import {Input} from "@/lib/client/components/ui/input";
 import {MIN_ACTIVITY_DATE} from "@/lib/utils/constants";
 import {Controller, useFormContext} from "react-hook-form";
 import {useCurrentDate} from "@/lib/client/hooks/use-dates";
-import {toDateInputValue} from "@/lib/utils/date-formatting";
+import {toDateInputValue} from "@/lib/utils/formatting/date";
 import {Checkbox} from "@/lib/client/components/ui/checkbox";
 import type {MonthlyActivityFieldsInput} from "@/lib/schemas";
 import {getMediaDefinition} from "@/lib/media-definitions/definition.registry";

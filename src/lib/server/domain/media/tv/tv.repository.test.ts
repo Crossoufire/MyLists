@@ -1,7 +1,7 @@
 import {eq, getTableName} from "drizzle-orm";
 import Database from "bun:sqlite";
 import {MediaType, Status} from "@/lib/utils/enums";
-import {statusUtils} from "@/lib/utils/media-mapping";
+import {getMediaDefinition} from "@/lib/media-definitions/definition.registry";
 import * as schema from "@/lib/server/database/schema";
 import {migrate} from "drizzle-orm/bun-sqlite/migrator";
 import {BunSQLiteDatabase, drizzle} from "drizzle-orm/bun-sqlite";
@@ -32,7 +32,7 @@ const { createMediaIngestionService } = await import("@/lib/server/api-providers
 
 
 const completedSeriesStatusCounts = () => Object.fromEntries(
-    statusUtils.byMediaType(MediaType.SERIES).map((status) => [status, status === Status.COMPLETED ? 1 : 0]),
+    getMediaDefinition(MediaType.SERIES).statuses.map((status) => [status, status === Status.COMPLETED ? 1 : 0]),
 ) as Record<Status, number>;
 
 

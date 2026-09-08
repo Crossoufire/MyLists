@@ -1,6 +1,6 @@
 import {TrendingUp} from "lucide-react";
 import {TrendsMedia} from "@/lib/types/provider.types";
-import {formatNumber} from "@/lib/utils/number-formatting";
+import {formatNumber} from "@/lib/utils/formatting/number";
 import {TrendCard} from "@/lib/client/components/trends/TrendCard";
 import {EmptyState} from "@/lib/client/components/general/EmptyState";
 

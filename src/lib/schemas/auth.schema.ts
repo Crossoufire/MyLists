@@ -1,6 +1,6 @@
 import * as z from "zod";
 import {usernameSchema} from "@/lib/schemas/common.schema";
-import {getSafeRedirectPath} from "@/lib/utils/auth-utils";
+import {getSafeRedirectPath} from "@/lib/utils/redirects";
 
 
 export type Login = z.infer<typeof loginSchema>;

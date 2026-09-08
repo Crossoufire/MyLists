@@ -1,8 +1,7 @@
 import React from "react";
 import {Link} from "@tanstack/react-router";
-import {MediaType} from "@/lib/utils/enums";
-import {zeroPad} from "@/lib/utils/number-formatting";
-import {TvMediaType} from "@/lib/utils/enums";
+import {MediaType, TvMediaType} from "@/lib/utils/enums";
+import {zeroPad} from "@/lib/utils/formatting/number";
 import {getMediaDefinition} from "@/lib/media-definitions/definition.registry";
 import {MediaDetailsProps} from "@/lib/client/components/media/media-config.types";
 import {MediaExtraGrid, MediaSectionTitle} from "@/lib/client/components/media/base/MediaDetailsComps";

@@ -1,7 +1,7 @@
 import React, {useState} from "react";
 import {MediaType} from "@/lib/utils/enums";
 import {ChevronDown, ChevronUp} from "lucide-react";
-import {capitalize} from "@/lib/utils/text-formatting";
+import {capitalize} from "@/lib/utils/formatting/text";
 import {Button} from "@/lib/client/components/ui/button";
 import {SimpleMedia} from "@/lib/types/media-common.types";
 import {useBreakpoint} from "@/lib/client/hooks/use-breakpoint";

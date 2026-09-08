@@ -1,6 +1,6 @@
 import React from "react";
 import {MediaType} from "@/lib/utils/enums";
-import {extractYear} from "@/lib/utils/date-formatting";
+import {extractYear} from "@/lib/utils/formatting/date";
 import {DEFAULT_DASH_FALLBACK} from "@/lib/utils/constants";
 import {Bookmark, Calendar, SquareLibrary} from "lucide-react";
 import {mangaDefinition} from "@/lib/media-definitions/manga/manga.definition";

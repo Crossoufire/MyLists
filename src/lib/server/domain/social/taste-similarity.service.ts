@@ -3,7 +3,7 @@ import {MediaType, SocialState} from "@/lib/utils/enums";
 import {AuthenticatedActor} from "@/lib/server/authorization/utils";
 import {profilePolicy} from "@/lib/server/authorization/policies/profile.policy";
 import {TasteSimilarityRepository} from "@/lib/server/domain/social/taste-similarity.repository";
-import {calculateTasteSimilarity, emptyRatingAggregate, mergeRatingAggregates, RatingAggregate} from "@/lib/utils/taste-similarity";
+import {calculateTasteSimilarity, emptyRatingAggregate, mergeRatingAggregates, RatingAggregate} from "@/lib/server/domain/social/taste-similarity";
 
 
 const MATCHES_PER_PAGE = 9;

@@ -1,10 +1,10 @@
 import {MediaType} from "@/lib/utils/enums";
 import {uniqueBy} from "@/lib/utils/arrays-objects";
-import {getImageUrl} from "@/lib/utils/image-url";
-import {isLatin1} from "@/lib/utils/text-formatting";
+import {getImageUrl} from "@/lib/server/core/images/image-url";
+import {isLatin1} from "@/lib/utils/formatting/text";
 import {CoverType} from "@/lib/types/media-common.types";
-import {saveImageFromUrl} from "@/lib/utils/image-saver";
-import {formatDateForDb} from "@/lib/utils/date-formatting";
+import {saveImageFromUrl} from "@/lib/server/core/images/image-saver";
+import {formatDateForDb} from "@/lib/utils/formatting/date";
 import {
     MalAnimeSearchResponse,
     ProviderSearchResult,

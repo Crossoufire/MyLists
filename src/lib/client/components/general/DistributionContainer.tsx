@@ -1,7 +1,7 @@
 import React from "react";
 import {LucideIcon} from "lucide-react";
 import {MediaType} from "@/lib/utils/enums";
-import {getThemeColor} from "@/lib/utils/theme-utils";
+import {getThemeColor} from "@/lib/client/theme";
 
 
 interface DistributionContainerProps {

@@ -1,4 +1,4 @@
-import {ApiProviderType, JobType, MediaType} from "@/lib/utils/enums";
+import {ApiProviderType, JobType, MediaType, Status} from "@/lib/utils/enums";
 import {defineMediaDefinition} from "@/lib/media-definitions/base/media.definition";
 
 
@@ -6,6 +6,7 @@ export const ANIME_FALLBACK_DURATION = 24;
 
 
 export const animeDefinition = defineMediaDefinition({
+    statuses: [Status.WATCHING, Status.COMPLETED, Status.ON_HOLD, Status.RANDOM, Status.DROPPED, Status.PLAN_TO_WATCH],
     identity: {
         mediaType: MediaType.ANIME,
     },

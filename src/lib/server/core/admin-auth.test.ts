@@ -16,7 +16,7 @@ vi.mock("@tanstack/react-start/server", () => ({
 
 
 it("does not initialize a Redis rate limiter when prerendering imports admin utilities", async () => {
-    await import("@/lib/utils/admin-utils");
+    await import("@/lib/server/core/admin-auth");
 
     expect(createRateLimiter).not.toHaveBeenCalled();
 });

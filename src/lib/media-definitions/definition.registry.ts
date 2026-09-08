@@ -8,6 +8,16 @@ import {moviesDefinition} from "@/lib/media-definitions/movies/movies.definition
 import {seriesDefinition} from "@/lib/media-definitions/tv/series/series.definition";
 
 
+export const ALL_MEDIA_TYPES = [
+    MediaType.SERIES,
+    MediaType.ANIME,
+    MediaType.MOVIES,
+    MediaType.BOOKS,
+    MediaType.GAMES,
+    MediaType.MANGA,
+] as const satisfies readonly MediaType[];
+
+
 const mediaDefinitions = {
     [MediaType.SERIES]: seriesDefinition,
     [MediaType.ANIME]: animeDefinition,

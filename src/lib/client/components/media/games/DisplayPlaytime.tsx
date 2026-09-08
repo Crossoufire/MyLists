@@ -1,7 +1,7 @@
 import {Status} from "@/lib/utils/enums";
-import {statusUtils} from "@/lib/utils/media-mapping";
+import {canShowProgress} from "@/lib/utils/media/status";
 import {DEFAULT_DASH_FALLBACK} from "@/lib/utils/constants";
-import {toActivityDisplayValue} from "@/lib/utils/activity-utils";
+import {toActivityDisplayValue} from "@/lib/utils/media/activity";
 import {gamesDefinition} from "@/lib/media-definitions/games/games.definition";
 
 
@@ -12,7 +12,7 @@ interface DisplayPlaytimeProps {
 
 
 export const DisplayPlaytime = ({ playtime, status }: DisplayPlaytimeProps) => {
-    if (!statusUtils.canShowProgress(status)) {
+    if (!canShowProgress(status)) {
         return null;
     }
 
