@@ -1,5 +1,18 @@
 # Changelog
 
+## [3.5.3](https://github.com/vincedelmas/MyLists/compare/v3.5.2...v3.5.3) (2026-09-08)
+
+
+### Bug Fixes
+
+* **server:** correct static caching and drain requests on shutdown ([37fc7b9](https://github.com/vincedelmas/MyLists/commit/37fc7b9a8248b97c32760234d66e71f65364d167))
+* strip sensitive query params from API error logs ([651525f](https://github.com/vincedelmas/MyLists/commit/651525fa1cc3e94da276b0bde1abd4ff1643c0e4))
+
+
+### Code Refactoring
+
+* **media:** extract media queries from base repository ([99906fa](https://github.com/vincedelmas/MyLists/commit/99906fa465b76aa81d99f79b38ab9f785f66c809))
+
 ## [3.5.2](https://github.com/vincedelmas/MyLists/compare/v3.5.1...v3.5.2) (2026-09-07)
 
 
