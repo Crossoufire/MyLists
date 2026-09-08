@@ -58,8 +58,8 @@ export const TvSeasonEditor = ({ open, onOpenChange, mode, mediaType, mediaId, u
                                 size="icon"
                                 variant="outline"
                                 aria-label="Decrease all season rewatches"
-                                disabled={pending || active.every(s => s.redo === 0)}
                                 onClick={() => changeAll(-1)}
+                                disabled={pending || active.every(s => s.redo === 0)}
                             >
                                 <Minus/>
                             </Button>
@@ -95,7 +95,6 @@ export const TvSeasonEditor = ({ open, onOpenChange, mode, mediaType, mediaId, u
                                     <RatingSelect
                                         rating={s.rating}
                                         disabled={pending}
-                                        label={`Season ${s.season} rating`}
                                         onChange={rating => changeRating(s.season, rating)}
                                     />
                                     :

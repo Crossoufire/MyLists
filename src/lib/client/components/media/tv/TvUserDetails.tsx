@@ -59,7 +59,6 @@ export const TvUserDetails = ({ userMedia, mediaType, queryOption, mutationOptio
                         <RatingSelect
                             bulk={true}
                             rating={userMedia.rating}
-                            label="Set all season ratings"
                             disabled={mutationOptions?.backlogMode || updateUserMediaMutation.isPending}
                             onChange={rating => updateUserMediaMutation.mutate({ payload: { type: UpdateType.RATING, rating } })}
                         />

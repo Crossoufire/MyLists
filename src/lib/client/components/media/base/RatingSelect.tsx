@@ -1,3 +1,4 @@
+import {cn} from "@/lib/utils/classnames";
 import {RatingSystemType} from "@/lib/utils/enums";
 import {useAuth} from "@/lib/client/hooks/use-auth";
 import {DEFAULT_DASH_FALLBACK} from "@/lib/utils/constants";
@@ -7,14 +8,14 @@ import {Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectVal
 
 interface RatingSelectProps {
     bulk?: boolean;
-    label?: string;
     disabled?: boolean;
+    className?: string;
     rating: number | null;
     onChange: (rating: number | null) => void;
 }
 
 
-export const RatingSelect = ({ rating, onChange, disabled = false, bulk = false, label = "Rating" }: RatingSelectProps) => {
+export const RatingSelect = ({ rating, onChange, className, disabled = false, bulk = false }: RatingSelectProps) => {
     const { currentUser } = useAuth();
     const system = currentUser!.ratingSystem;
 
@@ -40,7 +41,7 @@ export const RatingSelect = ({ rating, onChange, disabled = false, bulk = false,
                 if (value !== null) onChange(value === DEFAULT_DASH_FALLBACK ? null : Number(value));
             }}
         >
-            <SelectTrigger className="w-26 h-7! rounded-l-md" title={bulk ? "Set all current seasons" : undefined}>
+            <SelectTrigger className={cn("w-26 h-7! rounded-l-md", className)} title={bulk ? "Set all current seasons" : undefined}>
                 <SelectValue className="text-primary-foreground">
                     {formatRating(system, rating)}
                 </SelectValue>
