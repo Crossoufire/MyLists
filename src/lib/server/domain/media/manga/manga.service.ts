@@ -1,7 +1,7 @@
-import {uniqueBy} from "@/lib/utils/arrays";
+import {pick, uniqueBy} from "@/lib/utils/arrays-objects";
 import {notFound} from "@tanstack/react-router";
-import {saveImageFromUrl} from "@/lib/utils/image-saver";
 import {FormattedError} from "@/lib/utils/error-classes";
+import {saveImageFromUrl} from "@/lib/utils/image-saver";
 import {LogPayload} from "@/lib/types/user-updates.types";
 import {MediaType, Status, UpdateType} from "@/lib/utils/enums";
 import {withTransaction} from "@/lib/server/database/async-storage";
@@ -28,21 +28,18 @@ export class MangaService extends BaseService<MangaServerDefinition, MangaReposi
     async getMediaEditableFields(mediaId: number) {
         const { editableFields } = this.servicePolicy;
 
-        const fields: Record<string, any> = {};
-        const media = await this.repository.findAllAssociatedDetails(mediaId);
+        const media = this.repository.findById(mediaId);
         if (!media) throw notFound();
 
-        editableFields.forEach((field) => {
-            if (field in media) {
-                fields[field] = media[field as keyof typeof media];
-            }
-        });
-
-        return { fields };
+        return {
+            editableFields,
+            fields: pick(media, editableFields.filter(field => field !== "imageCover" && field !== "genres")),
+        };
     }
 
     async updateMediaEditableFields(mediaId: number, payload: EditMediaDetailsPayloadByType[typeof MediaType.MANGA]) {
         const { coverDirectory } = this.identity;
+        payload = this.editPayloadSchema.parse(payload);
 
         const media = this.repository.findById(mediaId);
         if (!media) throw notFound();
@@ -56,7 +53,7 @@ export class MangaService extends BaseService<MangaServerDefinition, MangaReposi
 
         const genresData = genres === undefined
             ? undefined
-            : uniqueBy(genres.map((genre) => typeof genre === "string" ? { name: genre } : genre), (genre) => genre.name);
+            : uniqueBy(genres.map(genre => typeof genre === "string" ? { name: genre } : genre), (genre) => genre.name);
 
         withTransaction(() => this.repository.updateMediaWithDetails({ mediaData, genresData }));
     }

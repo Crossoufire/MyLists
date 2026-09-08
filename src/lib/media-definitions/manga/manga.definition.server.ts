@@ -101,7 +101,10 @@ export const mangaServerDefinition = defineServerMediaDefinition({
     },
     service: {
         defaultStatus: Status.PLAN_TO_READ,
-        editableFields: ["name", "releaseDate", "chapters", "publishers", "synopsis", "lockStatus"],
+        editableFields: [
+            "name", "releaseDate", "chapters", "publishers", "synopsis", "lockStatus",
+            "imageCover", "genres",
+        ],
         progressTotals: (state) => ({
             totalRedo: state?.redo ?? 0,
             totalSpecific: state?.total ?? 0,

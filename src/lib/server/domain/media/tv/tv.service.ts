@@ -11,6 +11,7 @@ import type {EditMediaDetailsPayloadByType} from "@/lib/schemas/media-details.sc
 import {EpsSeasonPayload, RedoTvPayload, StatusPayload} from "@/lib/types/user-media.types";
 import {AnimeServerDefinition} from "@/lib/media-definitions/tv/anime/anime.definition.server";
 import {SeriesServerDefinition} from "@/lib/media-definitions/tv/series/series.definition.server";
+import {pick} from "@/lib/utils/arrays-objects";
 
 
 type TvDefinition = AnimeServerDefinition | SeriesServerDefinition;
@@ -31,17 +32,13 @@ export class TvService extends BaseService<TvDefinition, TvRepository> {
     async getMediaEditableFields(mediaId: number) {
         const { editableFields } = this.servicePolicy;
 
-        const fields: Record<string, any> = {};
         const media = this.repository.findById(mediaId);
         if (!media) throw notFound();
 
-        editableFields.forEach((field) => {
-            if (field in media) {
-                fields[field] = media[field as keyof typeof media];
-            }
-        });
-
-        return { fields };
+        return {
+            editableFields,
+            fields: pick(media, editableFields.filter(field => field !== "imageCover")),
+        };
     }
 
     getMediaEpsPerSeason(mediaId: number) {
@@ -50,6 +47,7 @@ export class TvService extends BaseService<TvDefinition, TvRepository> {
 
     async updateMediaEditableFields(mediaId: number, payload: EditMediaDetailsPayloadByType[typeof MediaType.SERIES | typeof MediaType.ANIME]) {
         const { coverDirectory } = this.identity;
+        payload = this.editPayloadSchema.parse(payload);
 
         const media = this.repository.findById(mediaId);
         if (!media) throw notFound();

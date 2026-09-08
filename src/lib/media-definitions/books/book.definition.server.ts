@@ -106,7 +106,10 @@ export const booksServerDefinition = defineServerMediaDefinition({
     },
     service: {
         defaultStatus: Status.PLAN_TO_READ,
-        editableFields: ["name", "releaseDate", "pages", "language", "publishers", "synopsis", "lockStatus"],
+        editableFields: [
+            "name", "releaseDate", "pages", "language", "publishers", "synopsis",
+            "lockStatus", "authors", "imageCover",
+        ],
         progressTotals: (state) => ({
             totalRedo: state?.redo ?? 0,
             totalSpecific: state?.total ?? 0,

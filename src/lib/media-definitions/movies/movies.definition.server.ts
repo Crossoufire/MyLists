@@ -136,6 +136,7 @@ export const moviesServerDefinition = defineServerMediaDefinition({
         editableFields: [
             "originalName", "name", "directorName", "releaseDate", "duration", "synopsis",
             "budget", "revenue", "tagline", "originalLanguage", "lockStatus", "homepage",
+            "imageCover",
         ],
         progressTotals: (state, media) => ({
             totalRedo: state?.redo ?? 0,

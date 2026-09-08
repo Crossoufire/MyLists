@@ -136,7 +136,7 @@ export const gamesServerDefinition = defineServerMediaDefinition({
         defaultStatus: Status.PLAN_TO_PLAY,
         editableFields: [
             "name", "gameEngine", "gameModes", "playerPerspective", "releaseDate", "synopsis",
-            "hltbMainTime", "hltbMainAndExtraTime", "hltbTotalCompleteTime", "lockStatus",
+            "hltbMainTime", "hltbMainAndExtraTime", "hltbTotalCompleteTime", "lockStatus", "imageCover",
         ],
         progressTotals: (state) => ({
             totalRedo: 0,

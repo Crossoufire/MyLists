@@ -1,9 +1,10 @@
 import Database from "bun:sqlite";
 import {eq} from "drizzle-orm";
 import {MediaType} from "@/lib/utils/enums";
+import {createMediaEditPayloadSchema} from "@/lib/utils/media-edit";
 import * as schema from "@/lib/server/database/schema";
 import {migrate} from "drizzle-orm/bun-sqlite/migrator";
-import {drizzle, type BunSQLiteDatabase} from "drizzle-orm/bun-sqlite";
+import {type BunSQLiteDatabase, drizzle} from "drizzle-orm/bun-sqlite";
 import {afterEach, beforeEach, describe, expect, it, vi} from "vitest";
 import {editMediaDetailsPayloadSchemas} from "@/lib/schemas/media-details.schema";
 import {animeServerDefinition} from "@/lib/media-definitions/tv/anime/anime.definition.server";
@@ -13,7 +14,9 @@ import {seriesServerDefinition} from "@/lib/media-definitions/tv/series/series.d
 const dbContext = vi.hoisted(() => ({ db: undefined as any }));
 
 vi.mock("@/lib/server/database/db", () => ({
-    get db() { return dbContext.db; },
+    get db() {
+        return dbContext.db;
+    },
 }));
 vi.mock("@/lib/utils/image-saver", () => ({ saveImageFromUrl: vi.fn().mockResolvedValue("updated.jpg") }));
 
@@ -23,7 +26,8 @@ const { BooksRepository, BooksService } = await import("@/lib/server/domain/medi
 const { MangaRepository, MangaService } = await import("@/lib/server/domain/media/manga");
 const { TvRepository, TvService } = await import("@/lib/server/domain/media/tv");
 const { saveImageFromUrl } = await import("@/lib/utils/image-saver");
-const { getServerMediaDefinition } = await import("@/lib/media-definitions/definition.registry.server");
+const { mangaServerDefinition } = await import("@/lib/media-definitions/manga/manga.definition.server");
+const { booksServerDefinition } = await import("@/lib/media-definitions/books/book.definition.server");
 
 const services = {
     [MediaType.MOVIES]: new MoviesService(new MoviesRepository()),
@@ -62,10 +66,6 @@ describe("validated metadata edits", () => {
     });
 
     it.each(Object.values(MediaType))("updates only submitted fields for %s", async (mediaType) => {
-        const specialFields = mediaType === MediaType.BOOKS ? ["authors"] : mediaType === MediaType.MANGA ? ["genres"] : [];
-        const expectedFields = [...getServerMediaDefinition(mediaType).service.editableFields, "imageCover", ...specialFields];
-        expect(Object.keys(editMediaDetailsPayloadSchemas[mediaType].shape).sort()).toEqual(expectedFields.sort());
-
         const service = services[mediaType];
         const before = service.findById(1)!;
         const payload = Object.freeze(editMediaDetailsPayloadSchemas[mediaType].parse({ name: "Updated", lockStatus: "false" }));
@@ -74,6 +74,102 @@ describe("validated metadata edits", () => {
 
         expect(service.findById(1)).toEqual({ ...before, name: "Updated", lockStatus: false, lastApiUpdate: expect.any(String) });
         expect(saveImageFromUrl).not.toHaveBeenCalled();
+    });
+
+    it.each([
+        [MediaType.MOVIES, ["originalName", "name", "directorName", "releaseDate", "duration", "synopsis", "budget", "revenue", "tagline", "originalLanguage", "lockStatus", "homepage"]],
+        [MediaType.GAMES, ["name", "gameEngine", "gameModes", "playerPerspective", "releaseDate", "synopsis", "hltbMainTime", "hltbMainAndExtraTime", "hltbTotalCompleteTime", "lockStatus"]],
+        [MediaType.BOOKS, ["name", "releaseDate", "pages", "language", "publishers", "synopsis", "lockStatus", "authors"]],
+        [MediaType.MANGA, ["name", "releaseDate", "chapters", "publishers", "synopsis", "lockStatus"]],
+        [MediaType.SERIES, ["name", "originalName", "releaseDate", "lastAirDate", "homepage", "createdBy", "duration", "originCountry", "prodStatus", "synopsis", "lockStatus"]],
+        [MediaType.ANIME, ["name", "originalName", "releaseDate", "lastAirDate", "homepage", "createdBy", "duration", "originCountry", "prodStatus", "synopsis", "lockStatus"]],
+    ] as const)("returns ordered form fields that round-trip without changing metadata for %s", async (mediaType, expectedFields) => {
+        await db.insert(schema.booksAuthors).values([{ mediaId: 1, name: "Author A" }, { mediaId: 1, name: "Author B" }]);
+        await db.insert(schema.mangaGenre).values({ mediaId: 1, name: "Drama" });
+
+        const service = services[mediaType];
+        const before = service.findById(1)!;
+        const { fields, editableFields } = await service.getMediaEditableFields(1);
+        expect(Object.keys(fields)).toEqual(expectedFields);
+        const separateFields = mediaType === MediaType.MANGA ? ["imageCover", "genres"] : ["imageCover"];
+        expect([...Object.keys(fields), ...separateFields].sort())
+            .toEqual([...editableFields].sort());
+
+        // Text inputs send changed values as strings; untouched nullable fields stay null.
+        const input = Object.fromEntries(Object.entries(fields).map(([key, value]) => [key, value == null ? value : String(value)]));
+        const payload = createMediaEditPayloadSchema(mediaType, editableFields).parse({ ...input, imageCover: "" });
+        expect(payload).toEqual({ ...fields, imageCover: undefined });
+        await service.updateMediaEditableFields(1, payload);
+
+        expect(service.findById(1)).toEqual({ ...before, lastApiUpdate: expect.any(String) });
+        expect(db.select({ name: schema.booksAuthors.name }).from(schema.booksAuthors).orderBy(schema.booksAuthors.name).all())
+            .toEqual([{ name: "Author A" }, { name: "Author B" }]);
+        expect(db.select({ name: schema.mangaGenre.name }).from(schema.mangaGenre).all()).toEqual([{ name: "Drama" }]);
+        expect(saveImageFromUrl).not.toHaveBeenCalled();
+    });
+
+    it("returns empty book relations and an empty authors input when none are stored", async () => {
+        const details = await new BooksRepository().findAllAssociatedDetails(1);
+        expect(details).toMatchObject({ authors: [], genres: [] });
+        expect((await services[MediaType.BOOKS].getMediaEditableFields(1)).fields.authors).toBe("");
+    });
+
+    it("uses the definition for form order and rejects disabled scalar, cover and relation edits before side effects", async () => {
+        const definition = {
+            ...mangaServerDefinition,
+            service: { ...mangaServerDefinition.service, editableFields: ["publishers", "name"] as const },
+        };
+        const service = new MangaService(new MangaRepository(definition), definition);
+        await db.insert(schema.mangaGenre).values({ mediaId: 1, name: "Drama" });
+        const before = service.findById(1);
+        const { fields, editableFields } = await service.getMediaEditableFields(1);
+        expect(Object.keys(fields)).toEqual(["publishers", "name"]);
+        expect(editableFields).toEqual(["publishers", "name"]);
+
+        const formSchema = createMediaEditPayloadSchema(MediaType.MANGA, editableFields);
+        expect(formSchema.safeParse(fields).success).toBe(true);
+        for (const payload of [{ chapters: 60 }, { genres: [] }, { imageCover: "https://example.com/cover.jpg" }]) {
+            // The value is valid, but the definition no longer permits editing it.
+            expect(editMediaDetailsPayloadSchemas[MediaType.MANGA].safeParse(payload).success).toBe(true);
+            expect(formSchema.safeParse(payload).success).toBe(false);
+            await expect(service.updateMediaEditableFields(1, { name: "Must not be saved", ...payload })).rejects.toThrow();
+        }
+        expect(service.findById(1)).toEqual(before);
+        expect(db.select({ name: schema.mangaGenre.name }).from(schema.mangaGenre).all()).toEqual([{ name: "Drama" }]);
+        expect(saveImageFromUrl).not.toHaveBeenCalled();
+    });
+
+    it("does not expose or accept book authors when disabled in the definition", async () => {
+        const definition = {
+            ...booksServerDefinition,
+            service: {
+                ...booksServerDefinition.service,
+                editableFields: booksServerDefinition.service.editableFields.filter(field => field !== "authors"),
+            },
+        };
+        const service = new BooksService(new BooksRepository(definition), definition);
+        await db.insert(schema.booksAuthors).values({ mediaId: 1, name: "Original author" });
+        const { fields, editableFields } = await service.getMediaEditableFields(1);
+        expect(fields).not.toHaveProperty("authors");
+        expect(editableFields).not.toContain("authors");
+        await expect(service.updateMediaEditableFields(1, { authors: "" })).rejects.toThrow();
+        expect(db.select({ name: schema.booksAuthors.name }).from(schema.booksAuthors).all()).toEqual([{ name: "Original author" }]);
+    });
+
+    it("applies independent series and anime definitions despite shared validators", async () => {
+        const definition = {
+            ...animeServerDefinition,
+            service: {
+                ...animeServerDefinition.service,
+                editableFields: animeServerDefinition.service.editableFields.filter(field => field !== "duration"),
+            },
+        };
+        const service = new TvService(new TvRepository(definition), definition);
+        expect((await service.getMediaEditableFields(1)).fields).not.toHaveProperty("duration");
+        await expect(service.updateMediaEditableFields(1, { duration: 30 })).rejects.toThrow();
+        await services[MediaType.SERIES].updateMediaEditableFields(1, { duration: 60 });
+        expect(service.findById(1)?.duration).toBe(24);
+        expect(services[MediaType.SERIES].findById(1)?.duration).toBe(60);
     });
 
     it("stores normalized numbers and downloaded cover filenames without changing the payload", async () => {

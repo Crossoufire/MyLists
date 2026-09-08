@@ -9,6 +9,7 @@ import {Movie, MoviesList} from "@/lib/server/domain/media/movies/movies.types";
 import {MoviesRepository} from "@/lib/server/domain/media/movies/movies.repository";
 import type {EditMediaDetailsPayloadByType} from "@/lib/schemas/media-details.schema";
 import {MovieServerDefinition, moviesServerDefinition} from "@/lib/media-definitions/movies/movies.definition.server";
+import {pick} from "@/lib/utils/arrays-objects";
 
 
 export class MoviesService extends BaseService<MovieServerDefinition, MoviesRepository> {
@@ -33,21 +34,18 @@ export class MoviesService extends BaseService<MovieServerDefinition, MoviesRepo
     async getMediaEditableFields(mediaId: number) {
         const { editableFields } = this.servicePolicy;
 
-        const fields: Record<string, any> = {};
         const media = this.repository.findById(mediaId);
         if (!media) throw notFound();
 
-        editableFields.forEach((field) => {
-            if (field in media) {
-                fields[field] = media[field as keyof typeof media];
-            }
-        });
-
-        return { fields };
+        return {
+            editableFields,
+            fields: pick(media, editableFields.filter(field => field !== "imageCover")),
+        };
     }
 
     async updateMediaEditableFields(mediaId: number, payload: EditMediaDetailsPayloadByType[typeof MediaType.MOVIES]) {
         const { coverDirectory } = this.identity;
+        payload = this.editPayloadSchema.parse(payload);
 
         const media = this.repository.findById(mediaId);
         if (!media) throw notFound();

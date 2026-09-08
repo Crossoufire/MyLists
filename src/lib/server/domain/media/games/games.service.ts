@@ -9,6 +9,7 @@ import {PlaytimePayload, StatusPayload} from "@/lib/types/user-media.types";
 import {GamesRepository} from "@/lib/server/domain/media/games/games.repository";
 import type {EditMediaDetailsPayloadByType} from "@/lib/schemas/media-details.schema";
 import {gamesServerDefinition, GamesServerDefinition} from "@/lib/media-definitions/games/games.definition.server";
+import {pick} from "@/lib/utils/arrays-objects";
 
 
 export class GamesService extends BaseService<GamesServerDefinition, GamesRepository> {
@@ -26,17 +27,13 @@ export class GamesService extends BaseService<GamesServerDefinition, GamesReposi
     async getMediaEditableFields(mediaId: number) {
         const { editableFields } = this.servicePolicy;
 
-        const fields: Record<string, any> = {};
         const media = this.repository.findById(mediaId);
         if (!media) throw notFound();
 
-        editableFields.forEach((field) => {
-            if (field in media) {
-                fields[field] = media[field as keyof typeof media];
-            }
-        });
-
-        return { fields };
+        return {
+            editableFields,
+            fields: pick(media, editableFields.filter(field => field !== "imageCover")),
+        };
     }
 
     async getCompatiblePlatforms(mediaId: number) {
@@ -48,6 +45,7 @@ export class GamesService extends BaseService<GamesServerDefinition, GamesReposi
 
     async updateMediaEditableFields(mediaId: number, payload: EditMediaDetailsPayloadByType[typeof MediaType.GAMES]) {
         const { coverDirectory } = this.identity;
+        payload = this.editPayloadSchema.parse(payload);
 
         const media = this.repository.findById(mediaId);
         if (!media) throw notFound();

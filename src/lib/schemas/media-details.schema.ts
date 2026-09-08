@@ -6,7 +6,9 @@ import {coercedPositiveIntFieldSchema, imageFileSchema, imageUrlSchema, mediaTyp
 export type UpdateBookCoverInput = z.input<typeof updateBookCoverSchema>;
 export type EditMediaDetailsPayload = EditMediaDetailsPayloadByType[MediaType];
 export type EditMediaDetailsInput = z.input<(typeof editMediaDetailsPayloadSchemas)[MediaType]>;
+export type MediaEditFieldByType = { [T in MediaType]: keyof EditMediaDetailsPayloadByType[T] & string };
 export type EditMediaDetailsPayloadByType = { [T in MediaType]: z.output<(typeof editMediaDetailsPayloadSchemas)[T]> };
+export type MediaEditFormFieldsByType = { [T in MediaType]: Omit<EditMediaDetailsPayloadByType[T], "imageCover" | "genres"> };
 
 
 export const mediaDetailsSchema = mediaTypeMediaIdSchema;
@@ -25,31 +27,32 @@ export const refreshMediaDetailsSchema = mediaTypeMediaIdSchema;
 export const mediaDetailsToEditSchema = mediaTypeMediaIdSchema;
 
 
-const metadataTextSchema = z.string().nullable().optional();
 const metadataNumberSchema = z.union([z.number(), z.string().trim().min(1)])
     .pipe(z.coerce.number<string | number>().nonnegative());
 
+const metadataTextSchema = z.string().nullable().optional();
 const metadataIntegerSchema = metadataNumberSchema.pipe(z.number().int());
 const blankMetadataFieldSchema = z.string().trim().length(0).transform(() => null);
 const metadataDateSchema = z.union([z.iso.date(), blankMetadataFieldSchema]).nullable().optional();
-const nullableMetadataNumberSchema = z.union([metadataNumberSchema, blankMetadataFieldSchema]).nullable().optional();
 const metadataUrlSchema = z.union([imageUrlSchema, blankMetadataFieldSchema]).nullable().optional();
+const nullableMetadataNumberSchema = z.union([metadataNumberSchema, blankMetadataFieldSchema]).nullable().optional();
 
 
 const commonEditableFields = {
     synopsis: metadataTextSchema,
     releaseDate: metadataDateSchema,
+    name: z.string().trim().min(1, "Name is required.").optional(),
+    imageCover: z.union([imageUrlSchema, z.string().trim().length(0).transform(() => undefined)]).optional(),
     lockStatus: z.union([
         z.boolean(),
         z.literal("true").transform(() => true),
         z.literal("false").transform(() => false),
         blankMetadataFieldSchema,
     ]).nullable().optional(),
-    name: z.string().trim().min(1, "Name is required.").optional(),
-    imageCover: z.union([imageUrlSchema, z.string().trim().length(0).transform(() => undefined)]).optional(),
 };
 
 
+// Available validators; server definitions decide which fields are editable and their form order.
 const tvEditPayloadSchema = z.strictObject({
     ...commonEditableFields,
     homepage: metadataUrlSchema,
@@ -98,11 +101,11 @@ const bookEditPayloadSchema = z.strictObject({
 const mangaEditPayloadSchema = z.strictObject({
     ...commonEditableFields,
     publishers: metadataTextSchema,
+    chapters: z.union([metadataIntegerSchema, blankMetadataFieldSchema]).nullable().optional(),
     genres: z.array(z.union([
         z.string().trim().min(1),
         z.strictObject({ name: z.string().trim().min(1) }),
     ])).optional(),
-    chapters: z.union([metadataIntegerSchema, blankMetadataFieldSchema]).nullable().optional(),
 });
 
 

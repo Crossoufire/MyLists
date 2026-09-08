@@ -157,8 +157,8 @@ export const animeServerDefinition = defineServerMediaDefinition({
     service: {
         defaultStatus: Status.PLAN_TO_WATCH,
         editableFields: [
-            "name", "originalName", "releaseDate", "lastAirDate", "homepage",
-            "createdBy", "duration", "originCountry", "prodStatus", "synopsis", "lockStatus",
+            "name", "originalName", "releaseDate", "lastAirDate", "homepage", "createdBy",
+            "duration", "originCountry", "prodStatus", "synopsis", "lockStatus", "imageCover",
         ],
         progressTotals: (state, media) => ({
             totalSpecific: state?.total ?? 0,

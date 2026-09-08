@@ -13,6 +13,7 @@ import {Textarea} from "@/lib/client/components/ui/textarea";
 import {handleServerFormErrors} from "@/lib/utils/forms-utils";
 import {FormError} from "@/lib/client/components/forms/FormError";
 import {createFileRoute, useRouter} from "@tanstack/react-router";
+import {createMediaEditPayloadSchema} from "@/lib/utils/media-edit";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
 import {PageHeader} from "@/lib/client/components/general/PageHeader";
 import {editMediaDetailsOptions} from "@/lib/client/react-query/query-options";
@@ -20,7 +21,7 @@ import {FormSubmitButton} from "@/lib/client/components/forms/FormSubmitButton";
 import {Controller, type FieldPath, FormProvider, useForm} from "react-hook-form";
 import {useEditMediaMutation} from "@/lib/client/react-query/query-mutations/media.mutations";
 import {Field, FieldDescription, FieldError, FieldLabel, FieldSet} from "@/lib/client/components/ui/field";
-import {EditMediaDetailsInput, EditMediaDetailsPayload, editMediaDetailsPayloadSchemas, editMediaDetailsSchema, mediaTypeMediaIdSchema} from "@/lib/schemas";
+import {EditMediaDetailsInput, EditMediaDetailsPayload, editMediaDetailsSchema, mediaTypeMediaIdSchema} from "@/lib/schemas";
 
 
 export const Route = createFileRoute("/_main/_private/details/edit/$mediaType/$mediaId")({
@@ -47,12 +48,12 @@ function MediaEditPage() {
     const { editMediaDetailsQueryOptions } = Route.useRouteContext();
     const apiData = useSuspenseQuery(editMediaDetailsQueryOptions).data;
     const editMediaMutation = useEditMediaMutation({ noErrorToast: true });
-    const payloadSchema: ZodType<EditMediaDetailsPayload, EditMediaDetailsInput> = editMediaDetailsPayloadSchemas[mediaType];
+
+    const payloadSchema: ZodType<EditMediaDetailsPayload, EditMediaDetailsInput> = createMediaEditPayloadSchema(mediaType, apiData.editableFields);
     const form = useForm<EditMediaDetailsInput, unknown, EditMediaDetailsPayload>({
         resolver: zodResolver(payloadSchema),
         defaultValues: {
             ...apiData.fields,
-            imageCover: undefined,
         },
     });
 
@@ -73,9 +74,7 @@ function MediaEditPage() {
         });
     };
 
-    const renderField = (fieldEntry: [string, any]) => {
-        const [key, _] = fieldEntry;
-
+    const renderField = (key: string) => {
         return (
             <Controller
                 key={key}
@@ -196,7 +195,7 @@ function MediaEditPage() {
                                 </div>
 
                                 <div className="grid min-w-0 grid-cols-2 gap-x-5 gap-y-5 max-md:grid-cols-1">
-                                    {Object.entries(apiData.fields).map(renderField)}
+                                    {Object.keys(apiData.fields).map(renderField)}
                                 </div>
                             </section>
                         </FieldSet>

@@ -1,5 +1,5 @@
 import {MediaType} from "@/lib/utils/enums";
-import {uniqueBy} from "@/lib/utils/arrays";
+import {uniqueBy} from "@/lib/utils/arrays-objects";
 import {getImageUrl} from "@/lib/utils/image-url";
 import {CoverType} from "@/lib/types/media-common.types";
 import {saveImageFromUrl} from "@/lib/utils/image-saver";

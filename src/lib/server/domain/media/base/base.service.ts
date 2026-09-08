@@ -5,10 +5,10 @@ import {Tag} from "@/lib/types/media-common.types";
 import {FormattedError} from "@/lib/utils/error-classes";
 import {MyListsCSVImport} from "@/lib/types/imports.types";
 import {withTransaction} from "@/lib/server/database/async-storage";
+import {createMediaEditPayloadSchema} from "@/lib/utils/media-edit";
 import {JobType, Status, TagAction, UpdateType} from "@/lib/utils/enums";
 import {saveImageFromUrl, saveUploadedImage} from "@/lib/utils/image-saver";
 import {BaseRepository} from "@/lib/server/domain/media/base/base.repository";
-import type {EditMediaDetailsPayloadByType} from "@/lib/schemas/media-details.schema";
 import {MYLISTS_CSV_VERSION} from "@/lib/server/domain/imports/parsers/mylists.parser";
 import {createMediaTagQueries} from "@/lib/server/domain/media/base/media-tag.queries";
 import {createMediaListQueries} from "@/lib/server/domain/media/base/media-list.queries";
@@ -16,6 +16,7 @@ import {AnyServerMediaDefinition} from "@/lib/media-definitions/base/media.defin
 import {createMediaCommunityQueries} from "@/lib/server/domain/media/base/media-community.queries";
 import {UpdateHandlerFn, UpdateUserMediaDetails, UserMediaWithTags} from "@/lib/types/user-media.types";
 import {MediaListArgs, Pagination, SearchType, SimpleSearch, UpdateUserCustomCover, UpdateUserMedia} from "@/lib/schemas";
+import type {EditMediaDetailsPayloadByType, MediaEditFieldByType, MediaEditFormFieldsByType} from "@/lib/schemas/media-details.schema";
 
 
 export abstract class BaseService<TDef extends AnyServerMediaDefinition, R extends BaseRepository<TDef>> {
@@ -26,6 +27,7 @@ export abstract class BaseService<TDef extends AnyServerMediaDefinition, R exten
     private readonly tagQueries: ReturnType<typeof createMediaTagQueries>;
     private readonly communityQueries: ReturnType<typeof createMediaCommunityQueries<TDef>>;
     private readonly listQueries: ReturnType<typeof createMediaListQueries<TDef["repository"]>>;
+    protected readonly editPayloadSchema: ReturnType<typeof createMediaEditPayloadSchema<TDef["identity"]["mediaType"]>>;
     protected updateHandlers: Partial<Record<
         UpdateType,
         UpdateHandlerFn<TDef["repository"]["tables"]["listTable"]["$inferSelect"], any, TDef["repository"]["tables"]["mediaTable"]["$inferSelect"]>
@@ -39,6 +41,10 @@ export abstract class BaseService<TDef extends AnyServerMediaDefinition, R exten
         this.tagQueries = createMediaTagQueries(definition.repository);
         this.communityQueries = createMediaCommunityQueries(definition);
         this.listQueries = createMediaListQueries(definition.repository);
+        this.editPayloadSchema = createMediaEditPayloadSchema<TDef["identity"]["mediaType"]>(
+            this.identity.mediaType,
+            this.servicePolicy.editableFields as readonly MediaEditFieldByType[TDef["identity"]["mediaType"]][],
+        );
 
         // User progress handlers based on update type
         this.updateHandlers = {
@@ -316,7 +322,10 @@ export abstract class BaseService<TDef extends AnyServerMediaDefinition, R exten
 
     // --- Abstract Methods ------------------------------------------------
 
-    abstract getMediaEditableFields(mediaId: number): Promise<{ fields: Record<string, any> }>
+    abstract getMediaEditableFields(mediaId: number): Promise<{
+        fields: MediaEditFormFieldsByType[TDef["identity"]["mediaType"]];
+        editableFields: readonly MediaEditFieldByType[TDef["identity"]["mediaType"]][];
+    }>
 
     abstract updateMediaEditableFields(mediaId: number, payload: EditMediaDetailsPayloadByType[TDef["identity"]["mediaType"]]): Promise<void>;
 }
