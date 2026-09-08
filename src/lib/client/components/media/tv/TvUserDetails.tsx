@@ -1,5 +1,8 @@
 import {useState} from "react";
+import {Pencil} from "lucide-react";
 import {useQueryClient} from "@tanstack/react-query";
+import {Button} from "@/lib/client/components/ui/button";
+import {ButtonGroup} from "@/lib/client/components/ui/button-group";
 import {UpdateTvRedo} from "@/lib/client/components/media/tv/UpdateTvRedo";
 import {UpdateStatus} from "@/lib/client/components/media/base/UpdateStatus";
 import {MediaType, Status, TvMediaType, UpdateType} from "@/lib/utils/enums";
@@ -8,9 +11,6 @@ import {TvSeasonEditor} from "@/lib/client/components/media/tv/TvSeasonEditor";
 import {UpdateSeasonsEps} from "@/lib/client/components/media/tv/UpdateSeasonsEps";
 import {MediaUserDetailsProps} from "@/lib/client/components/media/media-config.types";
 import {useUpdateUserMediaMutation} from "@/lib/client/react-query/query-mutations/user-media.mutations";
-import {ButtonGroup} from "@/lib/client/components/ui/button-group";
-import {Button} from "@/lib/client/components/ui/button";
-import {Pencil} from "lucide-react";
 
 
 type TvUserDetailsProps<T extends MediaType> = MediaUserDetailsProps<T>;

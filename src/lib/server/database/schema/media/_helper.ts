@@ -115,6 +115,7 @@ export const commonTvSeasonCols = (listId: SQLiteColumn) => ({
     rating: real(),
 });
 
+
 export const commonTvSeasonIndexes = (table: { listId: SQLiteColumn; season: SQLiteColumn; redo: SQLiteColumn; rating: SQLiteColumn }, tableName: string) => [
     primaryKey({ columns: [table.listId, table.season] }),
     check(`${tableName}_season_check`, sql`${table.season} >= 1`),

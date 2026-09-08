@@ -170,8 +170,8 @@ export const useUpdateUserMediaMutation = (mediaType: MediaType, mediaId: number
             const activityUpdate = loggedActivityUpdateTypes.has(variables.payload.type);
 
             const invalidations = [
-                queryClient.invalidateQueries({ queryKey: ["tvSeasons", mediaType, mediaId] }),
                 queryClient.invalidateQueries({ queryKey: ["year-recap"] }),
+                queryClient.invalidateQueries({ queryKey: ["tvSeasons", mediaType, mediaId] }),
                 queryClient.invalidateQueries({ queryKey: historyOptions(mediaType, mediaId).queryKey }),
             ];
 
