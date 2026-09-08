@@ -1,5 +1,5 @@
 import {MediaType} from "@/lib/utils/enums";
-import {statusUtils} from "@/lib/utils/media-mapping";
+import {getMediaDefinition} from "@/lib/media-definitions/definition.registry";
 import {createFileRoute} from "@tanstack/react-router";
 import {Header} from "@/lib/client/components/media/base/Header";
 import {mediaListOptions} from "@/lib/client/react-query/query-options";
@@ -52,7 +52,7 @@ function ListsOnboarding() {
                         onFilterClick={() => undefined}
                         onStatusChange={() => undefined}
                         pagination={onboardingListPagination}
-                        allStatuses={statusUtils.byMediaType(MediaType.MOVIES)}
+                        allStatuses={getMediaDefinition(MediaType.MOVIES).statuses}
                     />
                 </OnboardingDemoBox>
 

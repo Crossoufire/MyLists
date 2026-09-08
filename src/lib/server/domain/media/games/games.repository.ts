@@ -1,12 +1,12 @@
 import {Status} from "@/lib/utils/enums";
-import {getImageUrl} from "@/lib/utils/image-url";
+import {getImageUrl} from "@/lib/server/core/images/image-url";
 import {getDbClient} from "@/lib/server/database/async-storage";
 import {AddedMediaDetails} from "@/lib/types/media-common.types";
-import {normalizeGamePlatforms} from "@/lib/utils/game-platforms";
+import {normalizeGamePlatforms} from "@/lib/server/domain/media/games/platforms";
 import {BaseRepository} from "@/lib/server/domain/media/base/base.repository";
 import {and, eq, getTableColumns, gte, isNull, lte, or, sql} from "drizzle-orm";
-import {Game, UpsertGameWithDetails} from "@/lib/server/domain/media/games/games.types";
 import {games, gamesCompanies, gamesGenre, gamesList, gamesPlatforms} from "@/lib/server/database/schema";
+import {Game, UpdateGameWithDetails, UpsertGameWithDetails} from "@/lib/server/domain/media/games/games.types";
 import {gamesServerDefinition, GamesServerDefinition} from "@/lib/media-definitions/games/games.definition.server";
 
 
@@ -150,7 +150,7 @@ export class GamesRepository extends BaseRepository<GamesServerDefinition> {
         return mediaId;
     }
 
-    updateMediaWithDetails({ mediaData, companiesData, platformsData, genresData }: UpsertGameWithDetails) {
+    updateMediaWithDetails({ mediaData, companiesData, platformsData, genresData }: UpdateGameWithDetails) {
         const tx = getDbClient();
 
         const [media] = tx

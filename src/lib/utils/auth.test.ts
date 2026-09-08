@@ -1,5 +1,5 @@
 import {describe, expect, it} from "vitest";
-import {addUsernameSuffix, AuthState, checkOAuthUsername, getAuthState, getOAuthErrorMessage, isAuthenticatedAuthState, isVerificationError} from "@/lib/utils/auth-utils";
+import {addUsernameSuffix, AuthState, checkOAuthUsername, getAuthState, getOAuthErrorMessage, isAuthenticatedAuthState, isVerificationError} from "@/lib/utils/auth";
 
 
 describe("auth state", () => {

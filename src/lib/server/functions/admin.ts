@@ -6,11 +6,11 @@ import {runTask} from "@/lib/server/tasks/task-runner";
 import {getContainer} from "@/lib/server/core/container";
 import {FormattedError} from "@/lib/utils/error-classes";
 import {deleteCookie} from "@tanstack/react-start/server";
-import {setSignedCookie} from "@/lib/utils/signed-cookies";
+import {setSignedCookie} from "@/lib/server/core/signed-cookies";
 import {createRateLimiter} from "@/lib/server/core/rate-limiter";
 import {getAllTasksMetadata, getTask} from "@/lib/server/tasks/registry";
 import {listAdminLogFiles, readAdminLogFile} from "@/lib/server/core/admin-logs-reader";
-import {clearAdminCookie, isAdminAuthenticated, setAdminCookie, verifyAdminPassword} from "@/lib/utils/admin-utils";
+import {clearAdminCookie, isAdminAuthenticated, setAdminCookie, verifyAdminPassword} from "@/lib/server/core/admin-auth";
 import {requiredAuthAndAdminRoleMiddleware, requiredAuthAndAdminTokenMiddleware} from "@/lib/server/middlewares/authentication";
 import {
     adminApiMonitoringSchema,
@@ -96,9 +96,7 @@ export const getAdminMediaOverview = createServerFn({ method: "GET" })
     .middleware([requiredAuthAndAdminTokenMiddleware])
     .handler(async () => {
         const adminService = await getContainer().then((c) => c.services.admin);
-        const mediaServiceRegistry = await getContainer().then((c) => c.registries.mediaService);
-
-        return adminService.getMediaOverviewForAdmin(mediaServiceRegistry);
+        return adminService.getMediaOverviewForAdmin();
     });
 
 

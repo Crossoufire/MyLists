@@ -5,7 +5,7 @@ import {createMiddleware} from "@tanstack/react-start";
 import {getContainer} from "@/lib/server/core/container";
 import {DenialReason, MediaType} from "@/lib/utils/enums";
 import {UnauthorizedError} from "@/lib/utils/error-classes";
-import {resolveMediaTypeActive} from "@/lib/utils/media-list-activation";
+import {resolveMediaTypeActive} from "@/lib/utils/media/list-activation";
 import {publicAuthMiddleware} from "@/lib/server/middlewares/authentication";
 
 

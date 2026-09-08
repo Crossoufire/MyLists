@@ -9,6 +9,7 @@ type FormatNumberOptions = Intl.NumberFormatOptions & {
     fractionDigits?: number;
 };
 
+
 const numberFormatters = new Map<string, Intl.NumberFormat>();
 
 
@@ -127,10 +128,4 @@ export const formatMs = (ms: number) => {
     const seconds = Math.floor((ms % 60000) / 1000);
 
     return `${minutes}m ${seconds}s`;
-};
-
-
-export const formatLevel = (totalTime: number) => {
-    if (!Number.isFinite(totalTime) || totalTime <= 0) return 0;
-    return (Math.sqrt(400 + 80 * totalTime) - 20) / 40;
 };

@@ -6,17 +6,17 @@ import {serverEnv} from "@/env/server";
 import {db} from "@/lib/server/database/db";
 import {betterAuth} from "better-auth/minimal";
 import {logger} from "@/lib/server/core/logger";
-import {sendEmail} from "@/lib/utils/mail-sender";
-import {statusUtils} from "@/lib/utils/media-mapping";
-import {clearAdminCookie} from "@/lib/utils/admin-utils";
+import {sendEmail} from "@/lib/server/core/mail-sender";
 import {createServerOnlyFn} from "@tanstack/react-start";
 import {usernameSchema} from "@/lib/schemas/common.schema";
 import {drizzleAdapter} from "better-auth/adapters/drizzle";
+import {clearAdminCookie} from "@/lib/server/core/admin-auth";
 import {APIError, createAuthMiddleware} from "better-auth/api";
 import {getDbClient} from "@/lib/server/database/async-storage";
 import {tanstackStartCookies} from "better-auth/tanstack-start";
 import {hashPassword, verifyPassword} from "better-auth/crypto";
-import {addUsernameSuffix, checkOAuthUsername} from "@/lib/utils/auth-utils";
+import {addUsernameSuffix, checkOAuthUsername} from "@/lib/utils/auth";
+import {getMediaDefinition} from "@/lib/media-definitions/definition.registry";
 import {user as userTable, userMediaSettings} from "@/lib/server/database/schema";
 import {ApiProviderType, MediaType, PrivacyType, RatingSystemType, RoleType, Status} from "@/lib/utils/enums";
 
@@ -139,7 +139,7 @@ const getAuthConfig = createServerOnlyFn(() => betterAuth({
                         userId: Number(user.id),
                         active: (mt === MediaType.MOVIES || mt === MediaType.SERIES),
                         statusCounts: Object.fromEntries(
-                            statusUtils.byMediaType(mt).map((status) => [status, 0])
+                            getMediaDefinition(mt).statuses.map((status) => [status, 0])
                         ) as Record<Status, number>,
                     }));
 

@@ -1,6 +1,6 @@
 import {sql} from "drizzle-orm";
-import {user} from "@/lib/server/database/schema";
 import {MediaType, Status} from "@/lib/utils/enums";
+import {user} from "@/lib/server/database/schema/auth.schema";
 import {imageUrl, nullableImageUrl} from "@/lib/server/database/custom-types";
 import {check, index, integer, real, SQLiteColumn, text, uniqueIndex} from "drizzle-orm/sqlite-core";
 

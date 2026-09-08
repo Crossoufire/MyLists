@@ -1,9 +1,9 @@
 import {MediaType} from "@/lib/utils/enums";
 import {Flame, TrendingUp} from "lucide-react";
 import {useSuspenseQuery} from "@tanstack/react-query";
-import {formatNumber} from "@/lib/utils/number-formatting";
+import {formatNumber} from "@/lib/utils/formatting/number";
 import {createFileRoute, Link} from "@tanstack/react-router";
-import {compareDateInputs} from "@/lib/utils/date-formatting";
+import {compareDateInputs} from "@/lib/utils/formatting/date";
 import {TrendGrid} from "@/lib/client/components/trends/TrendGrid";
 import {TrendHero} from "@/lib/client/components/trends/TrendHero";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";

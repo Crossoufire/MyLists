@@ -3,8 +3,8 @@ import {cn} from "@/lib/utils/classnames";
 import {Link} from "@tanstack/react-router";
 import {useAuth} from "@/lib/client/hooks/use-auth";
 import {Badge} from "@/lib/client/components/ui/badge";
-import {formatLevel} from "@/lib/utils/number-formatting";
-import {ALL_MEDIA_TYPES} from "@/lib/utils/media-mapping";
+import {calculateMediaLevel} from "@/lib/utils/media/level";
+import {ALL_MEDIA_TYPES} from "@/lib/media-definitions/definition.registry";
 import {HofUserData} from "@/lib/types/query.options.types";
 import {DEFAULT_DASH_FALLBACK} from "@/lib/utils/constants";
 import {PrivacyIcon} from "@/lib/client/components/general/MainIcons";
@@ -76,7 +76,7 @@ export const HofCard = ({ userData }: HofCardProps) => {
             </div>
 
             <div className="text-right font-semibold tabular-nums">
-                {Math.floor(formatLevel(userData.totalTime))}
+                {Math.floor(calculateMediaLevel(userData.totalTime))}
             </div>
 
             <div
@@ -99,7 +99,7 @@ export const HofCard = ({ userData }: HofCardProps) => {
                                     {mediaType}
                                 </span>
                                 <span className="block text-sm font-semibold tabular-nums">
-                                    {setting?.active ? Math.floor(formatLevel(setting.timeSpent)) : "—"}
+                                    {setting?.active ? Math.floor(calculateMediaLevel(setting.timeSpent)) : "—"}
                                 </span>
                             </span>
                         </Link>

@@ -1,7 +1,7 @@
 import {useQuery} from "@tanstack/react-query";
 import {ApiProviderType} from "@/lib/utils/enums";
 import {Input} from "@/lib/client/components/ui/input";
-import {toOptionalNumber} from "@/lib/utils/advanced-search.utils";
+import {toOptionalNumber} from "@/lib/utils/media/advanced-search";
 import {AppliedSearchFilterChip} from "@/lib/client/components/search/AppliedSearchFilterChip";
 import {gameAdvancedSearchOptions} from "@/lib/client/react-query/query-options/search.options";
 import {Field, FieldDescription, FieldGroup, FieldLabel} from "@/lib/client/components/ui/field";

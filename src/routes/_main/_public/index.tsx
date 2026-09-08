@@ -2,7 +2,7 @@ import {cn} from "@/lib/utils/classnames";
 import {MediaType} from "@/lib/utils/enums";
 import {Badge} from "@/lib/client/components/ui/badge";
 import {useSuspenseQuery} from "@tanstack/react-query";
-import {addSeo, addSeoLinks} from "@/lib/utils/add-seo";
+import {addSeo, addSeoLinks} from "@/lib/client/seo";
 import {createFileRoute, Link} from "@tanstack/react-router";
 import {Separator} from "@/lib/client/components/ui/separator";
 import {buttonVariants} from "@/lib/client/components/ui/button";

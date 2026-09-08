@@ -1,11 +1,11 @@
 import {useState} from "react";
-import authClient from "@/lib/utils/auth-client";
+import authClient from "@/lib/client/auth-client";
 import {zodResolver} from "@hookform/resolvers/zod";
 import {toast} from "@/lib/client/components/ui/toast";
 import {Input} from "@/lib/client/components/ui/input";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {createFileRoute, Link} from "@tanstack/react-router";
-import {handleServerFormErrors} from "@/lib/utils/forms-utils";
+import {handleServerFormErrors} from "@/lib/client/forms";
 import {buttonVariants} from "@/lib/client/components/ui/button";
 import {FormError} from "@/lib/client/components/forms/FormError";
 import {Controller, FormProvider, useForm} from "react-hook-form";

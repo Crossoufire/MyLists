@@ -1,4 +1,4 @@
-import authClient from "@/lib/utils/auth-client";
+import authClient from "@/lib/client/auth-client";
 import {ForgotPassword, Login, Register} from "@/lib/schemas";
 import {MutationMeta, useMutation} from "@tanstack/react-query";
 

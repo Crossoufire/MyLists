@@ -3,7 +3,7 @@ import {createServerFn} from "@tanstack/react-start";
 import {MediaType, RoleType} from "@/lib/utils/enums";
 import {getContainer} from "@/lib/server/core/container";
 import {FormattedError} from "@/lib/utils/error-classes";
-import {dateFromUTCInput} from "@/lib/utils/date-formatting";
+import {dateFromUTCInput} from "@/lib/utils/formatting/date";
 import {hasRequiredRole, toActor} from "@/lib/server/authorization";
 import {publicAuthMiddleware, requiredAuthAndManagerRoleMiddleware, requiredAuthMiddleware} from "@/lib/server/middlewares/authentication";
 import {

@@ -1,7 +1,7 @@
 import {HallOfFameSearch} from "@/lib/schemas";
 import {DeltaStats} from "@/lib/types/stats.types";
 import {MediaType, Status} from "@/lib/utils/enums";
-import {statusUtils} from "@/lib/utils/media-mapping";
+import {getPlanningStatuses} from "@/lib/utils/media/status";
 import {UserMediaStats} from "@/lib/types/user-media.types";
 import {StatsRepository} from "@/lib/server/domain/stats/stats.repository";
 import {MediaStatsRegistry} from "@/lib/server/domain/media/media.registries";
@@ -95,7 +95,7 @@ export class StatsService {
     }
 
     async userPerMediaSummaryStats(userId: number) {
-        const excludedStatuses = statusUtils.getNoPlanTo();
+        const excludedStatuses = getPlanningStatuses();
         const activeSettings = await this.repository.userActiveMediaSettings(userId);
 
         const data = [];
@@ -242,7 +242,7 @@ export class StatsService {
             distinctMediaTypes,
         } = preComputedStats;
 
-        const excludedStatuses = statusUtils.getNoPlanTo();
+        const excludedStatuses = getPlanningStatuses();
         const totalEntriesNoPlan = statusCountsList.reduce((sum, setting) => {
             let settingSum = 0;
             for (const [status, count] of Object.entries(setting.statusCounts)) {

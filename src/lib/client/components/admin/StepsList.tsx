@@ -1,6 +1,6 @@
 import {useState} from "react";
 import {cn} from "@/lib/utils/classnames";
-import {formatMs} from "@/lib/utils/number-formatting";
+import {formatMs} from "@/lib/utils/formatting/number";
 import {TaskStep} from "@/lib/types/tasks.types";
 import {AlertTriangle, CheckCircle, ChevronDown, SkipForward, XCircle} from "lucide-react";
 

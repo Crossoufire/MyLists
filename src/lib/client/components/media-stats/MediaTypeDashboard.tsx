@@ -1,9 +1,9 @@
 import {MediaType, Status} from "@/lib/utils/enums";
-import {getThemeColor} from "@/lib/utils/theme-utils";
-import {statusUtils} from "@/lib/utils/media-mapping";
-import {capitalize} from "@/lib/utils/text-formatting";
+import {getThemeColor} from "@/lib/client/theme";
+import {getPlanningStatuses} from "@/lib/utils/media/status";
+import {capitalize} from "@/lib/utils/formatting/text";
 import {ExtractStatsByType} from "@/lib/types/stats.types";
-import {formatAvgRating} from "@/lib/utils/ratings-formatting";
+import {formatAvgRating} from "@/lib/client/ratings";
 import {StatsHero} from "@/lib/client/components/media-stats/StatsHero";
 import {MainThemeIcon} from "@/lib/client/components/general/MainIcons";
 import {TasteShelf} from "@/lib/client/components/media-stats/TasteShelf";
@@ -17,7 +17,7 @@ import {StatsRecordList} from "@/lib/client/components/media-stats/StatsRecordLi
 import {StatsMetricGrid} from "@/lib/client/components/media-stats/StatsMetricGrid";
 import {CompactStatsGrid} from "@/lib/client/components/media-stats/CompactStatsGrid";
 import {StatsSectionHeader} from "@/lib/client/components/media-stats/StatsSectionHeader";
-import {formatContinuousTime, formatHours, formatNumber, formatPercent} from "@/lib/utils/number-formatting";
+import {formatContinuousTime, formatHours, formatNumber, formatPercent} from "@/lib/utils/formatting/number";
 import {BarChart3, CalendarDays, Check, Clock3, Heart, List, MessageCircle, Play, RefreshCcw, Star, Tags} from "lucide-react";
 
 
@@ -36,7 +36,7 @@ export function MediaTypeDashboard({ stats, showHero = true }: MediaTypeDashboar
     const mediaStatsDefinition = mediaDefinition.statistics;
 
     const comparison = mediaStatsDefinition.timeComparison;
-    const noPlanStatuses: Status[] = statusUtils.getNoPlanTo();
+    const noPlanStatuses: Status[] = getPlanningStatuses();
 
     const experiencedEntries = stats.statusesCounts.reduce((sum, status) => {
         return noPlanStatuses.includes(status.name as Status) ? sum : sum + status.value;

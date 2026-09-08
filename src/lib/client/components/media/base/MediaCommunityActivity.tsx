@@ -9,7 +9,7 @@ import {ExtractFollowByType} from "@/lib/types/query.options.types";
 import {mediaConfig} from "@/lib/client/components/media/media-config";
 import {InfoPopover} from "@/lib/client/components/general/InfoPopover";
 import {MediaCommunityActivityStats} from "@/lib/types/user-media.types";
-import {formatMinutes, formatNumber} from "@/lib/utils/number-formatting";
+import {formatMinutes, formatNumber} from "@/lib/utils/formatting/number";
 import {MediaFollowCard} from "@/lib/client/components/media/base/MediaFollowCard";
 import {mediaCommunityActivityOptions} from "@/lib/client/react-query/query-options";
 import {MediaSectionTitle} from "@/lib/client/components/media/base/MediaDetailsComps";

@@ -1,6 +1,6 @@
 import React, {useState} from "react";
 import {useQuery} from "@tanstack/react-query";
-import {capitalize} from "@/lib/utils/text-formatting";
+import {capitalize} from "@/lib/utils/formatting/text";
 import {ChevronLeft, ChevronRight} from "lucide-react";
 import {Button} from "@/lib/client/components/ui/button";
 import {ApiProviderType, MediaType} from "@/lib/utils/enums";

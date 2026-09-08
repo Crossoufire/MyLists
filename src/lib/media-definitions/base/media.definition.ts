@@ -1,4 +1,4 @@
-import type {ApiProviderType, JobType, MediaType} from "@/lib/utils/enums";
+import type {ApiProviderType, JobType, MediaType, Status} from "@/lib/utils/enums";
 
 
 type MediaProgressTiming =
@@ -57,6 +57,7 @@ type MediaProgressDefinition = Readonly<{
 
 
 export type MediaDefinition<TMediaType extends MediaType = MediaType> = Readonly<{
+    statuses: readonly Status[];
     statistics: MediaStatsDefinition;
     progress: MediaProgressDefinition;
     identity: Readonly<{

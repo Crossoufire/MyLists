@@ -9,7 +9,7 @@ import {
     downloadYearRecapImage,
     GeneratedYearRecapImage,
     shareYearRecapImage,
-} from "@/lib/utils/year-recap-image";
+} from "@/lib/client/components/year-recap/share-image";
 
 
 interface YearRecapShareCardProps {

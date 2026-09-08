@@ -4,8 +4,8 @@ import {MediaType} from "@/lib/utils/enums";
 import {MediaListArgs} from "@/lib/schemas";
 import {Badge} from "@/lib/client/components/ui/badge";
 import {Button} from "@/lib/client/components/ui/button";
-import {formatNumber} from "@/lib/utils/number-formatting";
-import {capitalize, formatLocaleName} from "@/lib/utils/text-formatting";
+import {formatNumber} from "@/lib/utils/formatting/number";
+import {capitalize, formatLocaleName} from "@/lib/utils/formatting/text";
 
 
 interface AppliedFiltersProps {

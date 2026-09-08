@@ -1,6 +1,6 @@
 import {describe, expect, it} from "vitest";
 
-import {getSafeRedirectPath} from "@/lib/utils/auth-utils";
+import {getSafeRedirectPath} from "@/lib/utils/redirects";
 
 
 describe("getSafeRedirectPath", () => {

@@ -6,7 +6,7 @@ import {mkdtemp, readFile, rm} from "node:fs/promises";
 import type {IncomingMessage} from "node:http";
 import {afterAll, beforeAll, beforeEach, describe, expect, it, vi} from "vitest";
 import {MAX_IMAGE_BYTES} from "@/lib/utils/constants";
-import {saveImageFromUrl, saveUploadedImage} from "@/lib/utils/image-saver";
+import {saveImageFromUrl, saveUploadedImage} from "@/lib/server/core/images/image-saver";
 
 
 const mocks = vi.hoisted(() => ({

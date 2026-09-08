@@ -3,8 +3,8 @@ import {cn} from "@/lib/utils/classnames";
 import {AchCard} from "@/lib/types/query.options.types";
 import {Button} from "@/lib/client/components/ui/button";
 import {Progress} from "@/lib/client/components/ui/progress";
-import {getDifficultyColors} from "@/lib/utils/theme-utils";
-import {formatPercent} from "@/lib/utils/number-formatting";
+import {getDifficultyColors} from "@/lib/client/theme";
+import {formatPercent} from "@/lib/utils/formatting/number";
 import {Popover, PopoverContent, PopoverDescription, PopoverHeader, PopoverTitle, PopoverTrigger,} from "@/lib/client/components/ui/popover";
 
 

@@ -1,9 +1,9 @@
 import {asc, desc, getTableColumns, ne, sql} from "drizzle-orm";
 import {ApiProviderType, JobType, MediaType, Status} from "@/lib/utils/enums";
-import {createArrayFilter} from "@/lib/server/domain/media/base/media-list.query";
-import {mangaDefinition, MANGA_FIXED_DURATION_MIN} from "@/lib/media-definitions/manga/manga.definition";
+import {MANGA_FIXED_DURATION_MIN, mangaDefinition} from "@/lib/media-definitions/manga/manga.definition";
 import {defineAffinityDefinitions, defineServerMediaDefinition} from "@/lib/media-definitions/base/media.definition.server";
 import {manga, mangaAuthors, mangaGenre, mangaList, mangaTags} from "@/lib/server/database/schema/media/manga.schema";
+import {createArrayFilter} from "@/lib/server/domain/media/base/media-list.queries";
 
 
 export const mangaServerDefinition = defineServerMediaDefinition({
@@ -101,7 +101,10 @@ export const mangaServerDefinition = defineServerMediaDefinition({
     },
     service: {
         defaultStatus: Status.PLAN_TO_READ,
-        editableFields: ["name", "releaseDate", "chapters", "publishers", "synopsis", "lockStatus"],
+        editableFields: [
+            "name", "releaseDate", "chapters", "publishers", "synopsis", "lockStatus",
+            "imageCover", "genres",
+        ],
         progressTotals: (state) => ({
             totalRedo: state?.redo ?? 0,
             totalSpecific: state?.total ?? 0,

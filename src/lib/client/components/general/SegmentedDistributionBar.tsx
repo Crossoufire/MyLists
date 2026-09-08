@@ -1,6 +1,6 @@
 import type {ReactNode} from "react";
 import {cn} from "@/lib/utils/classnames";
-import {formatPercent} from "@/lib/utils/number-formatting";
+import {formatPercent} from "@/lib/utils/formatting/number";
 
 
 type DistributionSegment = {

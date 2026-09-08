@@ -1,7 +1,7 @@
 import {useAuth} from "@/lib/client/hooks/use-auth";
 import {DEFAULT_DASH_FALLBACK} from "@/lib/utils/constants";
 import {RatingSystemType, UpdateType} from "@/lib/utils/enums";
-import {getFeelingIcon, getFeelingList, getScoreList} from "@/lib/utils/ratings-formatting";
+import {getFeelingIcon, getFeelingList, getScoreList} from "@/lib/client/ratings";
 import {useUpdateUserMediaMutation} from "@/lib/client/react-query/query-mutations/user-media.mutations";
 import {Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue} from "@/lib/client/components/ui/select";
 

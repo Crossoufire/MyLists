@@ -2,7 +2,7 @@ import {useId, useState} from "react";
 import {AchievementTier} from "@/lib/schemas";
 import {Badge} from "@/lib/client/components/ui/badge";
 import {Input} from "@/lib/client/components/ui/input";
-import {capitalize} from "@/lib/utils/text-formatting";
+import {capitalize} from "@/lib/utils/formatting/text";
 import {createFileRoute} from "@tanstack/react-router";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {Button} from "@/lib/client/components/ui/button";

@@ -1,6 +1,6 @@
 import {describe, expect, it} from "vitest";
 import {ApiProviderType} from "@/lib/utils/enums";
-import {hasSearchCriteria} from "@/lib/utils/advanced-search.utils";
+import {hasSearchCriteria} from "@/lib/utils/media/advanced-search";
 
 
 describe("hasSearchCriteria", () => {

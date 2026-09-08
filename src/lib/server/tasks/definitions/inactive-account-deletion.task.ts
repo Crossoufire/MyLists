@@ -2,11 +2,11 @@ import {z} from "zod";
 import {clientEnv} from "@/env/client";
 import {serverEnv} from "@/env/server";
 import {randomBytes} from "node:crypto";
-import {sendEmail} from "@/lib/utils/mail-sender";
-import {formatDate} from "@/lib/utils/date-formatting";
+import {sendEmail} from "@/lib/server/core/mail-sender";
+import {formatDate} from "@/lib/utils/formatting/date";
 import {getContainer} from "@/lib/server/core/container";
 import {defineTask} from "@/lib/server/tasks/define-task";
-import {signCookieValue} from "@/lib/utils/signed-cookies";
+import {signCookieValue} from "@/lib/server/core/signed-cookies";
 
 
 export const inactiveAccountDeletionTask = defineTask({

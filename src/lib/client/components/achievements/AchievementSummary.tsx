@@ -1,8 +1,8 @@
 import {Award} from "lucide-react";
 import {cn} from "@/lib/utils/classnames";
-import {capitalize} from "@/lib/utils/text-formatting";
+import {capitalize} from "@/lib/utils/formatting/text";
 import {AchSummary} from "@/lib/types/query.options.types";
-import {getDifficultyColors} from "@/lib/utils/theme-utils";
+import {getDifficultyColors} from "@/lib/client/theme";
 
 
 interface AchievementSummaryProps {

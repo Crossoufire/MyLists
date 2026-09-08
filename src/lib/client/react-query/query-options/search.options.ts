@@ -1,7 +1,7 @@
 import {ApiProviderType} from "@/lib/utils/enums";
 import {queryOptions} from "@tanstack/react-query";
 import {AdvancedSearchFilters} from "@/lib/schemas";
-import {hasSearchCriteria} from "@/lib/utils/advanced-search.utils";
+import {hasSearchCriteria} from "@/lib/utils/media/advanced-search";
 import {getGameAdvancedSearchOptions, getSearchResults} from "@/lib/server/functions/search";
 
 

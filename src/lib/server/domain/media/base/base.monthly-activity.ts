@@ -6,6 +6,7 @@ import {MediaType, Status, UpdateType} from "@/lib/utils/enums";
 import type {MonthlyActivityMediaRef} from "@/lib/types/activity.types";
 import {BaseRepository} from "@/lib/server/domain/media/base/base.repository";
 import {getMediaDefinition} from "@/lib/media-definitions/definition.registry";
+import {createMediaListQueries} from "@/lib/server/domain/media/base/media-list.queries";
 import {AnyServerMediaDefinition} from "@/lib/media-definitions/base/media.definition.server";
 
 
@@ -62,7 +63,9 @@ export const resolveMonthlyActivityMedia = async (activities: MonthlyActivityMed
 export const createMediaMonthlyActivity = ({ definition, repository, durationColumn, progressFromDelta = progressDefault }: CreateMonthlyActivityOptions) => {
     const mediaType = definition.identity.mediaType;
     const progressDefinition = getMediaDefinition(mediaType).progress;
+
     const timing = progressDefinition.timing;
+    const listQueries = createMediaListQueries(definition.repository);
 
     function progressToMinutes(progressGained: number, duration?: number | null) {
         switch (timing.kind) {
@@ -128,7 +131,7 @@ export const createMediaMonthlyActivity = ({ definition, repository, durationCol
         },
 
         searchUserMedia(userId: number, search: string, limit = 20) {
-            return repository.searchUserListByName(userId, search, limit);
+            return listQueries.searchUserListByName(userId, search, limit);
         },
 
         createContribution(delta: DeltaStats, updateType: UpdateType) {

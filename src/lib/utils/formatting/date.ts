@@ -1,8 +1,5 @@
 import {DEFAULT_DASH_FALLBACK} from "@/lib/utils/constants";
 
-const MS_PER_DAY = 24 * 60 * 60 * 1000;
-const CALENDAR_DATE = /^(\d{4})-(\d{2})-(\d{2})$/; // YYYY-MM-DD
-
 
 interface DateInputValueOptions {
     timeZone?: "local" | "utc";
@@ -16,6 +13,9 @@ interface ShiftDateInputValueOptions {
     months?: number;
 }
 
+
+const MS_PER_DAY = 24 * 60 * 60 * 1000;
+const CALENDAR_DATE = /^(\d{4})-(\d{2})-(\d{2})$/; // YYYY-MM-DD
 
 const dateTimeFormatters = new Map<string, Intl.DateTimeFormat>();
 const relativeTimeFormatters = new Map<string, Intl.RelativeTimeFormat>();

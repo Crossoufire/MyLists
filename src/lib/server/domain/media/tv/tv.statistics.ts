@@ -1,5 +1,5 @@
 import {Status} from "@/lib/utils/enums";
-import {toHistogramBins} from "@/lib/utils/stats-utils";
+import {toHistogramBins} from "@/lib/utils/stats/histogram";
 import {getDbClient} from "@/lib/server/database/async-storage";
 import {and, asc, count, eq, ne, notInArray, sql} from "drizzle-orm";
 import {AnimeServerDefinition} from "@/lib/media-definitions/tv/anime/anime.definition.server";

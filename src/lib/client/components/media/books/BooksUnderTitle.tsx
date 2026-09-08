@@ -1,7 +1,7 @@
 import React from "react";
 import {MediaType} from "@/lib/utils/enums";
 import {BookOpen, Calendar} from "lucide-react";
-import {extractYear} from "@/lib/utils/date-formatting";
+import {extractYear} from "@/lib/utils/formatting/date";
 import {DEFAULT_DASH_FALLBACK} from "@/lib/utils/constants";
 import type {MediaDetailsProps} from "@/lib/client/components/media/media-config.types";
 import {booksDefinition} from "@/lib/media-definitions/books/books.definition";

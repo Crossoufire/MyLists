@@ -1,13 +1,15 @@
 import {notFound} from "@tanstack/react-router";
-import {Status, UpdateType} from "@/lib/utils/enums";
-import {saveImageFromUrl} from "@/lib/utils/image-saver";
+import {saveImageFromUrl} from "@/lib/server/core/images/image-saver";
 import {LogPayload} from "@/lib/types/user-updates.types";
+import {MediaType, Status, UpdateType} from "@/lib/utils/enums";
 import {withTransaction} from "@/lib/server/database/async-storage";
 import {BaseService} from "@/lib/server/domain/media/base/base.service";
 import {RedoPayload, StatusPayload} from "@/lib/types/user-media.types";
 import {Movie, MoviesList} from "@/lib/server/domain/media/movies/movies.types";
 import {MoviesRepository} from "@/lib/server/domain/media/movies/movies.repository";
+import type {EditMediaDetailsPayloadByType} from "@/lib/schemas/media-details.schema";
 import {MovieServerDefinition, moviesServerDefinition} from "@/lib/media-definitions/movies/movies.definition.server";
+import {pick} from "@/lib/utils/arrays-objects";
 
 
 export class MoviesService extends BaseService<MovieServerDefinition, MoviesRepository> {
@@ -32,45 +34,30 @@ export class MoviesService extends BaseService<MovieServerDefinition, MoviesRepo
     async getMediaEditableFields(mediaId: number) {
         const { editableFields } = this.servicePolicy;
 
-        const fields: Record<string, any> = {};
         const media = this.repository.findById(mediaId);
         if (!media) throw notFound();
 
-        editableFields.forEach((field) => {
-            if (field in media) {
-                fields[field] = media[field as keyof typeof media];
-            }
-        });
-
-        return { fields };
+        return {
+            editableFields,
+            fields: pick(media, editableFields.filter(field => field !== "imageCover")),
+        };
     }
 
-    async updateMediaEditableFields(mediaId: number, payload: Record<string, any>) {
-        const { editableFields } = this.servicePolicy;
+    async updateMediaEditableFields(mediaId: number, payload: EditMediaDetailsPayloadByType[typeof MediaType.MOVIES]) {
         const { coverDirectory } = this.identity;
+        payload = this.editPayloadSchema.parse(payload);
 
         const media = this.repository.findById(mediaId);
         if (!media) throw notFound();
 
-        const fields = {} as Record<Partial<keyof Movie>, any>;
-        fields.apiId = media.apiId;
+        const { imageCover, ...fields } = payload;
+        const mediaData: Partial<Movie> & Pick<Movie, "apiId"> = { ...fields, apiId: media.apiId };
 
-        if (payload?.imageCover) {
-            const imageName = await saveImageFromUrl({
-                dirSaveName: coverDirectory,
-                imageUrl: payload.imageCover,
-            });
-            fields.imageCover = imageName;
-            delete payload.imageCover;
+        if (imageCover) {
+            mediaData.imageCover = await saveImageFromUrl({ dirSaveName: coverDirectory, imageUrl: imageCover });
         }
 
-        for (const key in payload) {
-            if (Object.prototype.hasOwnProperty.call(payload, key) && editableFields.includes(key as keyof Movie)) {
-                fields[key as keyof typeof media] = payload[key as keyof typeof media];
-            }
-        }
-
-        withTransaction(() => this.repository.updateMediaWithDetails({ mediaData: fields }));
+        withTransaction(() => this.repository.updateMediaWithDetails({ mediaData }));
     }
 
     updateStatusHandler(currentState: MoviesList, payload: StatusPayload, _media: Movie): [MoviesList, LogPayload] {

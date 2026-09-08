@@ -25,6 +25,10 @@ export type UpsertGameWithDetails = {
     companiesData?: { name: string, developer: boolean, publisher: boolean }[],
 };
 
+export type UpdateGameWithDetails = Omit<UpsertGameWithDetails, "mediaData"> & {
+    mediaData: Partial<UpsertGameWithDetails["mediaData"]> & Pick<UpsertGameWithDetails["mediaData"], "apiId">;
+};
+
 
 export const gamesFinalListInsertSchema = createInsertSchema(gamesList, {
     status: importStatusSchema(MediaType.GAMES),

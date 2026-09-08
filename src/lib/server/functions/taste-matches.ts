@@ -2,7 +2,7 @@ import {toActor} from "@/lib/server/authorization";
 import {createServerFn} from "@tanstack/react-start";
 import {tasteMatchesSearchSchema} from "@/lib/schemas";
 import {getContainer} from "@/lib/server/core/container";
-import {getActiveMediaTypes} from "@/lib/utils/media-list-activation";
+import {getActiveMediaTypes} from "@/lib/utils/media/list-activation";
 import {requiredAuthMiddleware} from "@/lib/server/middlewares/authentication";
 
 

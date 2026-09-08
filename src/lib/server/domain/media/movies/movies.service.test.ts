@@ -1,6 +1,6 @@
 import {describe, expect, it, vi} from "vitest";
 import type {Movie, MoviesList} from "./movies.types";
-import {convertToCsv} from "@/lib/utils/file-download";
+import {convertToCsv} from "@/lib/utils/csv";
 import type {UserMediaWithTags} from "@/lib/types/user-media.types";
 import {MoviesService} from "@/lib/server/domain/media/movies/movies.service";
 import {parseMyListsCsv} from "@/lib/server/domain/imports/parsers/mylists.parser";

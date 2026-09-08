@@ -8,7 +8,7 @@ import {useSuspenseQuery} from "@tanstack/react-query";
 import {Card, CardContent} from "@/lib/client/components/ui/card";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
 import {MediaHero} from "@/lib/client/components/media/base/MediaHero";
-import {resolveMediaTypeActive} from "@/lib/utils/media-list-activation";
+import {resolveMediaTypeActive} from "@/lib/utils/media/list-activation";
 import {Button, buttonVariants} from "@/lib/client/components/ui/button";
 import {LockedContent} from "@/lib/client/components/general/LockedContent";
 import {SimilarMedia} from "@/lib/client/components/media/base/SimilarMedia";

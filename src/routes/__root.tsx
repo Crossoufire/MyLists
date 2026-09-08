@@ -2,7 +2,7 @@
 import React from "react";
 import appCSS from "@/styles.css?url";
 import {QueryClient} from "@tanstack/react-query";
-import {addSeo, addSeoLinks} from "@/lib/utils/add-seo";
+import {addSeo, addSeoLinks} from "@/lib/client/seo";
 import {Toaster} from "@/lib/client/components/ui/toast";
 import {Navbar} from "@/lib/client/components/navbar/Navbar";
 import {Footer} from "@/lib/client/components/general/Footer";

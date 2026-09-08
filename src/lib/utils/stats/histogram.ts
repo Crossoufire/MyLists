@@ -1,6 +1,4 @@
-import {MediaType} from "@/lib/utils/enums";
-import {MonthlyActivityChartDatum} from "@/lib/types/activity.types";
-import {CompactedHistogramBin, HistogramBin, HistogramTailDir, NamedValue} from "@/lib/types/stats.types";
+import type {CompactedHistogramBin, HistogramBin, HistogramTailDir, NamedValue} from "@/lib/types/stats.types";
 
 
 const formatBucketBoundary = (value: number) => {
@@ -15,27 +13,6 @@ const mergeHistogramBins = (bins: HistogramBin[]) => {
         value: bins.reduce((sum, bin) => sum + bin.value, 0),
     };
 }
-
-
-export const transformRatingToFeeling = (ratings: NamedValue[]) => {
-    const feelingValues = [0, 2, 4, 6, 8, 10];
-    const feelings = feelingValues.map((name) => ({ name, value: 0 }));
-
-    ratings.forEach((item) => {
-        const rating = Number(item.name);
-        if (item.value === 0 || !Number.isFinite(rating)) return;
-
-        const closestFeeling = feelingValues.reduce((prev, curr) => {
-            const currentDistance = Math.abs(rating - curr);
-            const previousDistance = Math.abs(rating - prev);
-            return currentDistance < previousDistance ? curr : prev;
-        });
-
-        feelings[feelingValues.indexOf(closestFeeling)].value += item.value;
-    });
-
-    return feelings;
-};
 
 
 export const toHistogramBins = (points: NamedValue[], getEndExclusive: (start: number) => number): HistogramBin[] => {
@@ -140,38 +117,4 @@ export const compactHistogramBins = (bins: HistogramBin[], { maxBins = 12, perce
     return overflowBin.overflow === "lower"
         ? [overflowBin, ...compactedRegularBins]
         : [...compactedRegularBins, overflowBin];
-};
-
-
-interface MonthlyActivityTimelineParams {
-    endMonth: string;
-    startMonth: string;
-    mediaTypes: MediaType[];
-    data: MonthlyActivityChartDatum[];
-}
-
-
-export const fillMonthlyActivityTimeline = ({ data, endMonth, mediaTypes, startMonth }: MonthlyActivityTimelineParams) => {
-    const endDate = new Date(`${endMonth}-01T00:00:00.000Z`);
-    const currentDate = new Date(`${startMonth}-01T00:00:00.000Z`);
-
-    if (Number.isNaN(currentDate.getTime()) || Number.isNaN(endDate.getTime()) || currentDate > endDate) {
-        return [];
-    }
-
-    const result: MonthlyActivityChartDatum[] = [];
-    const byMonth = new Map(data.map(entry => [entry.month, entry]));
-
-    while (currentDate <= endDate) {
-        const month = `${currentDate.getUTCFullYear()}-${String(currentDate.getUTCMonth() + 1).padStart(2, "0")}`;
-        result.push(byMonth.get(month) ?? {
-            month,
-            total: 0,
-            ...Object.fromEntries(mediaTypes.map((mediaType) => [mediaType, 0])),
-        } as MonthlyActivityChartDatum);
-
-        currentDate.setUTCMonth(currentDate.getUTCMonth() + 1);
-    }
-
-    return result;
 };

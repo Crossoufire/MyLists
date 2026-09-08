@@ -1,8 +1,8 @@
 import {logger} from "@/lib/server/core/logger";
 import {MediaType, Status} from "@/lib/utils/enums";
 import {SQLiteColumn} from "drizzle-orm/sqlite-core";
-import {statusUtils} from "@/lib/utils/media-mapping";
-import {toHistogramBins} from "@/lib/utils/stats-utils";
+import {getMediaDefinition} from "@/lib/media-definitions/definition.registry";
+import {toHistogramBins} from "@/lib/utils/stats/histogram";
 import {userMediaSettings} from "@/lib/server/database/schema";
 import {getDbClient} from "@/lib/server/database/async-storage";
 import {TopAffinity, TopAffinityDefinition} from "@/lib/types/stats.types";
@@ -66,7 +66,7 @@ const createMediaStatsQueries = <const TDefinition extends AnyServerMediaDefinit
         const { listTable, mediaTable } = definition.repository.tables;
         const { timeSpent, totalSpecific, totalRedo } = definition.statistics.allUsers;
 
-        const expectedStatuses = statusUtils.byMediaType(mediaType) ?? [];
+        const expectedStatuses = getMediaDefinition(mediaType).statuses ?? [];
         const redoStat = totalRedo ?? (listTable.redo ? sql`COALESCE(SUM(${listTable.redo}), 0)` : sql`0`);
 
         const results = getDbClient()

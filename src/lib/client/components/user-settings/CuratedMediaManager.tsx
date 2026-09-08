@@ -1,5 +1,5 @@
 import {useQuery} from "@tanstack/react-query";
-import {toItemKey} from "@/lib/utils/media-mapping";
+import {toItemKey} from "@/lib/utils/media/item-key";
 import {Dispatch, SetStateAction, useId} from "react";
 import {ArrowDown, ArrowUp, Trash2} from "lucide-react";
 import {Button} from "@/lib/client/components/ui/button";

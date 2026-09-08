@@ -1,9 +1,9 @@
 import {ApiProviderType, JobType, MediaType, Status} from "@/lib/utils/enums";
 import {gamesDefinition} from "@/lib/media-definitions/games/games.definition";
 import {and, asc, desc, eq, getTableColumns, like, ne, sql} from "drizzle-orm";
-import {createArrayFilter, createListColOptionsLoader} from "@/lib/server/domain/media/base/media-list.query";
 import {defineAffinityDefinitions, defineServerMediaDefinition} from "@/lib/media-definitions/base/media.definition.server";
 import {games, gamesCompanies, gamesGenre, gamesList, gamesPlatforms, gamesTags} from "@/lib/server/database/schema/media/games.schema";
+import {createArrayFilter, createListColOptionsLoader} from "@/lib/server/domain/media/base/media-list.queries";
 
 
 export const gamesServerDefinition = defineServerMediaDefinition({
@@ -136,7 +136,7 @@ export const gamesServerDefinition = defineServerMediaDefinition({
         defaultStatus: Status.PLAN_TO_PLAY,
         editableFields: [
             "name", "gameEngine", "gameModes", "playerPerspective", "releaseDate", "synopsis",
-            "hltbMainTime", "hltbMainAndExtraTime", "hltbTotalCompleteTime", "lockStatus",
+            "hltbMainTime", "hltbMainAndExtraTime", "hltbTotalCompleteTime", "lockStatus", "imageCover",
         ],
         progressTotals: (state) => ({
             totalRedo: 0,

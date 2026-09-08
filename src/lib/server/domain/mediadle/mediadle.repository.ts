@@ -2,7 +2,7 @@ import {SearchType} from "@/lib/schemas";
 import {MediaType} from "@/lib/utils/enums";
 import {FormattedError} from "@/lib/utils/error-classes";
 import {paginate} from "@/lib/server/database/pagination";
-import {toDateInputValue} from "@/lib/utils/date-formatting";
+import {toDateInputValue} from "@/lib/utils/formatting/date";
 import {getDbClient} from "@/lib/server/database/async-storage";
 import {dailyMediadle, mediadleStats, movies, user, userMediadleProgress} from "@/lib/server/database/schema";
 import {and, asc, count, desc, eq, getTableColumns, gt, gte, isNotNull, like, lt, notInArray, or, sql} from "drizzle-orm";

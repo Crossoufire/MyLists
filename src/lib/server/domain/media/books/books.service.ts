@@ -1,14 +1,15 @@
-import {uniqueBy} from "@/lib/utils/arrays";
+import {pick, uniqueBy} from "@/lib/utils/arrays-objects";
 import {notFound} from "@tanstack/react-router";
-import {Status, UpdateType} from "@/lib/utils/enums";
 import {FormattedError} from "@/lib/utils/error-classes";
 import {LogPayload} from "@/lib/types/user-updates.types";
+import {MediaType, Status, UpdateType} from "@/lib/utils/enums";
 import {withTransaction} from "@/lib/server/database/async-storage";
 import {BaseService} from "@/lib/server/domain/media/base/base.service";
 import {Book, BooksList} from "@/lib/server/domain/media/books/books.types";
-import {saveImageFromUrl, saveUploadedImage} from "@/lib/utils/image-saver";
+import {saveImageFromUrl, saveUploadedImage} from "@/lib/server/core/images/image-saver";
 import {BooksRepository} from "@/lib/server/domain/media/books/books.repository";
 import {PagePayload, RedoPayload, StatusPayload} from "@/lib/types/user-media.types";
+import type {EditMediaDetailsPayloadByType} from "@/lib/schemas/media-details.schema";
 import {BookServerDefinition, booksServerDefinition} from "@/lib/media-definitions/books/book.definition.server";
 
 
@@ -25,65 +26,42 @@ export class BooksService extends BaseService<BookServerDefinition, BooksReposit
     }
 
     async getMediaEditableFields(mediaId: number) {
-        const editableFields = this.servicePolicy.editableFields;
-
-        const fields: Record<string, any> = {};
+        const { editableFields } = this.servicePolicy;
+        const formFields = editableFields.filter(field => field !== "imageCover");
         const media = await this.repository.findAllAssociatedDetails(mediaId);
         if (!media) throw notFound();
 
-        editableFields.forEach((field) => {
-            if (field in media) {
-                fields[field] = media[field as keyof typeof media];
-            }
-        });
+        const values = {
+            ...media,
+            authors: media.authors.map(author => author.name).join(","),
+        };
 
-        if (media.authors) {
-            fields.authors = media.authors.map(author => author.name).join(",");
-        }
-
-        return { fields };
+        return { fields: pick(values, formFields), editableFields };
     }
 
-    async updateMediaEditableFields(mediaId: number, payload: Record<string, any>) {
-        const { editableFields } = this.servicePolicy;
+    async updateMediaEditableFields(mediaId: number, payload: EditMediaDetailsPayloadByType[typeof MediaType.BOOKS]) {
         const { coverDirectory } = this.identity;
+        payload = this.editPayloadSchema.parse(payload);
 
         const media = this.repository.findById(mediaId);
         if (!media) throw notFound();
 
-        const fields = {} as Record<Partial<keyof Book>, any>;
-        fields.apiId = media.apiId;
+        const { imageCover, authors, ...fields } = payload;
+        const mediaData: Partial<Book> & Pick<Book, "apiId"> = { ...fields, apiId: media.apiId };
 
-        if (payload?.imageCover) {
-            const imageName = await saveImageFromUrl({
-                dirSaveName: coverDirectory,
-                imageUrl: payload.imageCover,
-            });
-            fields.imageCover = imageName;
-            delete payload.imageCover;
+        if (imageCover) {
+            mediaData.imageCover = await saveImageFromUrl({ dirSaveName: coverDirectory, imageUrl: imageCover });
         }
 
-        let authorsData: { name: string }[] | undefined;
-
-        if (payload?.authors !== undefined) {
-            authorsData = uniqueBy(
-                payload.authors
-                    .split(",")
-                    .map((author: string) => author.trim())
-                    .filter(Boolean)
-                    .map((name: string) => ({ name })),
-                (author) => author.name,
+        const authorsData = authors === undefined
+            ? undefined
+            : uniqueBy(authors
+                .split(",")
+                .map((name) => name.trim())
+                .filter(Boolean).map((name) => ({ name })), (author) => author.name
             );
-            delete payload.authors;
-        }
 
-        for (const key in payload) {
-            if (Object.prototype.hasOwnProperty.call(payload, key) && editableFields.includes(key as keyof Book)) {
-                fields[key as keyof typeof media] = payload[key as keyof typeof media];
-            }
-        }
-
-        withTransaction(() => this.repository.updateMediaWithDetails({ mediaData: fields, authorsData }));
+        withTransaction(() => this.repository.updateMediaWithDetails({ mediaData, authorsData }));
     }
 
     async updateDefaultCover(mediaId: number, payload: { imageUrl?: string; imageFile?: File }) {

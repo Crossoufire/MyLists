@@ -1,5 +1,5 @@
 import {RatingSystemType} from "@/lib/utils/enums";
-import {formatNumber} from "@/lib/utils/number-formatting";
+import {formatNumber} from "@/lib/utils/formatting/number";
 import {DEFAULT_DASH_FALLBACK} from "@/lib/utils/constants";
 import {FaAngry, FaFrown, FaGrinAlt, FaGrinStars, FaPoop, FaSmile} from "react-icons/fa";
 

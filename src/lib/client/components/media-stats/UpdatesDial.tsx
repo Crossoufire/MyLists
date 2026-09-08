@@ -1,9 +1,9 @@
 import {UpdateType} from "@/lib/utils/enums";
-import {getUpdateTypeColor} from "@/lib/utils/theme-utils";
-import {formatDate} from "@/lib/utils/date-formatting";
+import {getUpdateTypeColor} from "@/lib/client/theme";
+import {formatDate} from "@/lib/utils/formatting/date";
 import {UserStatsResult} from "@/lib/types/stats.types";
 import {CalendarCheck2, History, ListRestart} from "lucide-react";
-import {formatNumber, formatPercent} from "@/lib/utils/number-formatting";
+import {formatNumber, formatPercent} from "@/lib/utils/formatting/number";
 
 
 interface UpdatesDialProps {

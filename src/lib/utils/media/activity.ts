@@ -1,8 +1,8 @@
 import {MediaType} from "@/lib/utils/enums";
-import {zeroPad} from "@/lib/utils/number-formatting";
+import {zeroPad} from "@/lib/utils/formatting/number";
 import {MIN_ACTIVITY_DATE} from "@/lib/utils/constants";
 import {getMediaDefinition} from "@/lib/media-definitions/definition.registry";
-import {shiftDateInputValue, toDateInputValue} from "@/lib/utils/date-formatting";
+import {shiftDateInputValue, toDateInputValue} from "@/lib/utils/formatting/date";
 
 
 export const isValidActivityDate = (value: string) => {

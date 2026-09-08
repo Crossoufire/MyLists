@@ -1,8 +1,9 @@
-import {ApiProviderType, JobType, MediaType} from "@/lib/utils/enums";
+import {ApiProviderType, JobType, MediaType, Status} from "@/lib/utils/enums";
 import {defineMediaDefinition} from "@/lib/media-definitions/base/media.definition";
 
 
 export const gamesDefinition = defineMediaDefinition({
+    statuses: [Status.PLAYING, Status.COMPLETED, Status.ENDLESS, Status.MULTIPLAYER, Status.ON_HOLD, Status.DROPPED, Status.PLAN_TO_PLAY],
     identity: {
         mediaType: MediaType.GAMES,
     },

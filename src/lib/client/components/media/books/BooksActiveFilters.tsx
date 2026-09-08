@@ -1,5 +1,5 @@
 import {JobType} from "@/lib/utils/enums";
-import {formatLocaleName} from "@/lib/utils/text-formatting";
+import {formatLocaleName} from "@/lib/utils/formatting/text";
 import {SheetFilterObject} from "@/lib/types/media-list.types";
 
 

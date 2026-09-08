@@ -1,7 +1,7 @@
 import {useAuth} from "@/lib/client/hooks/use-auth";
 import {toast} from "@/lib/client/components/ui/toast";
 import {Badge} from "@/lib/client/components/ui/badge";
-import {formatDate} from "@/lib/utils/date-formatting";
+import {formatDate} from "@/lib/utils/formatting/date";
 import {PrivacyType, RoleType} from "@/lib/utils/enums";
 import {Button} from "@/lib/client/components/ui/button";
 import {useConfirm} from "@/lib/client/hooks/use-confirm";

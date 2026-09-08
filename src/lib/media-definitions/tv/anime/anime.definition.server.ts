@@ -1,9 +1,9 @@
 import {asc, desc, getTableColumns, notInArray, sql} from "drizzle-orm";
 import {ApiProviderType, JobType, MediaType, Status} from "@/lib/utils/enums";
 import {ANIME_FALLBACK_DURATION, animeDefinition} from "@/lib/media-definitions/tv/anime/anime.definition";
-import {createArrayFilter, createMediaColOptionsLoader} from "@/lib/server/domain/media/base/media-list.query";
 import {defineAffinityDefinitions, defineServerMediaDefinition} from "@/lib/media-definitions/base/media.definition.server";
 import {anime, animeActors, animeEpisodesPerSeason, animeGenre, animeList, animeNetwork, animeTags} from "@/lib/server/database/schema/media/anime.schema";
+import {createArrayFilter, createMediaColOptionsLoader} from "@/lib/server/domain/media/base/media-list.queries";
 
 
 const animeRedoCount = sql<number>`COALESCE((SELECT SUM(value) FROM json_each(${animeList.redo})), 0)`;
@@ -157,8 +157,8 @@ export const animeServerDefinition = defineServerMediaDefinition({
     service: {
         defaultStatus: Status.PLAN_TO_WATCH,
         editableFields: [
-            "name", "originalName", "releaseDate", "lastAirDate", "homepage",
-            "createdBy", "duration", "originCountry", "prodStatus", "synopsis", "lockStatus",
+            "name", "originalName", "releaseDate", "lastAirDate", "homepage", "createdBy",
+            "duration", "originCountry", "prodStatus", "synopsis", "lockStatus", "imageCover",
         ],
         progressTotals: (state, media) => ({
             totalSpecific: state?.total ?? 0,

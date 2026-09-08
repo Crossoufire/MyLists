@@ -1,8 +1,8 @@
 import * as z from "zod";
 import {ActivityKind} from "@/lib/utils/enums";
 import {MIN_ACTIVITY_DATE} from "@/lib/utils/constants";
-import {isValidActivityDate} from "@/lib/utils/activity-utils";
-import {calendarDateRangeToISOString} from "@/lib/utils/date-formatting";
+import {isValidActivityDate} from "@/lib/utils/media/activity";
+import {calendarDateRangeToISOString} from "@/lib/utils/formatting/date";
 import {coercedPositiveIntFieldSchema, mediaTypeFieldSchema, optionalSearchFieldSchema, usernameFieldSchema} from "@/lib/schemas/common.schema";
 
 

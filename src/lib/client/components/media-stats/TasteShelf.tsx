@@ -1,8 +1,8 @@
 import {Link} from "@tanstack/react-router";
 import {TopAffinity} from "@/lib/types/stats.types";
 import {JobType, MediaType} from "@/lib/utils/enums";
-import {getThemeColor} from "@/lib/utils/theme-utils";
-import {capitalize} from "@/lib/utils/text-formatting";
+import {getThemeColor} from "@/lib/client/theme";
+import {capitalize} from "@/lib/utils/formatting/text";
 import {CircleOff, Heart, Play, Star} from "lucide-react";
 
 

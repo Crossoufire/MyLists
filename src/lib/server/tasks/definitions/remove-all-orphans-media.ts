@@ -3,6 +3,7 @@ import {MediaType} from "@/lib/utils/enums";
 import {getContainer} from "@/lib/server/core/container";
 import {defineTask} from "@/lib/server/tasks/define-task";
 import {withTransaction} from "@/lib/server/database/async-storage";
+import {MediaMaintenanceRepository} from "@/lib/server/domain/maintenance/media-maintenance.repository";
 
 
 export const removeAllOrphansMediaTask = defineTask({
@@ -13,7 +14,6 @@ export const removeAllOrphansMediaTask = defineTask({
     handler: async (ctx) => {
         const container = await getContainer();
         const mediaTypes = Object.values(MediaType);
-        const mediaRegistry = container.registries.mediaService;
         const updateHistoryService = container.services.updateHistory;
         const notificationsService = container.services.notifications;
 
@@ -21,8 +21,7 @@ export const removeAllOrphansMediaTask = defineTask({
             await ctx.step(`remove-${mediaType}`, async () => {
 
                 withTransaction((_tx) => {
-                    const mediaService = mediaRegistry.get(mediaType);
-                    const mediaIdsToRemove = mediaService.getOrphanedMediaIds();
+                    const mediaIdsToRemove = MediaMaintenanceRepository.getOrphanedMediaIds(mediaType);
                     ctx.metric(`${mediaType}.removed`, mediaIdsToRemove.length);
 
                     // Remove in other services
@@ -31,7 +30,7 @@ export const removeAllOrphansMediaTask = defineTask({
                     container.services.whichCameFirst.deletePoolMedia(mediaType, mediaIdsToRemove);
 
                     // Remove main media and associated tables: actors, genres, companies, authors...
-                    mediaService.removeMediaByIds(mediaIdsToRemove);
+                    MediaMaintenanceRepository.removeMediaByIds(mediaType, mediaIdsToRemove);
                 });
             });
         }

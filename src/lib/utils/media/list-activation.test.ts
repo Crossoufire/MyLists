@@ -1,6 +1,6 @@
 import {MediaType} from "@/lib/utils/enums";
 import {describe, expect, it} from "vitest";
-import {getActiveMediaSettings, getActiveMediaTypes, getPublishedMediaSettings, resolveMediaTypeActive,} from "@/lib/utils/media-list-activation";
+import {getActiveMediaSettings, getActiveMediaTypes, getPublishedMediaSettings, resolveMediaTypeActive,} from "@/lib/utils/media/list-activation";
 
 
 const settings = [

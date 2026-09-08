@@ -1,5 +1,5 @@
 import {MediaType} from "@/lib/utils/enums";
-import {getImageUrl} from "@/lib/utils/image-url";
+import {getImageUrl} from "@/lib/server/core/images/image-url";
 import {WCF_MAX_ROUNDS} from "@/lib/schemas/wcf.schema";
 import {FormattedError} from "@/lib/utils/error-classes";
 import {getDbClient} from "@/lib/server/database/async-storage";

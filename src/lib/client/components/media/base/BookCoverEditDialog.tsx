@@ -14,7 +14,7 @@ import {Spinner} from "@/lib/client/components/ui/spinner";
 import {useUpdateBookCoverMutation} from "@/lib/client/react-query/query-mutations/media.mutations";
 import {Field, FieldError, FieldGroup, FieldLabel, FieldSet} from "@/lib/client/components/ui/field";
 import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger} from "@/lib/client/components/ui/dialog";
-import {handleServerFormErrors} from "@/lib/utils/forms-utils";
+import {handleServerFormErrors} from "@/lib/client/forms";
 
 
 interface BookCoverEditDialogProps {

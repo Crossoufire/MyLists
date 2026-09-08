@@ -1,5 +1,5 @@
 import {MediaType} from "@/lib/utils/enums";
-import {zeroPad} from "@/lib/utils/number-formatting";
+import {zeroPad} from "@/lib/utils/formatting/number";
 import {FormattedError} from "@/lib/utils/error-classes";
 import {getMediaDefinition} from "@/lib/media-definitions/definition.registry";
 import {MediaMonthlyActivityRegistry} from "@/lib/server/domain/media/media.registries";

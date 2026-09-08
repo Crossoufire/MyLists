@@ -6,7 +6,7 @@ import {useAuth} from "@/lib/client/hooks/use-auth";
 import {DataTable} from "@/lib/client/components/general/DataTable";
 import {mediaConfig} from "@/lib/client/components/media/media-config";
 import {mediaListOptions} from "@/lib/client/react-query/query-options";
-import {resolveMediaTypeActive} from "@/lib/utils/media-list-activation";
+import {resolveMediaTypeActive} from "@/lib/utils/media/list-activation";
 import {useTablePagination} from "@/lib/client/hooks/use-table-pagination";
 import {ListPagination, UserMediaItem} from "@/lib/types/query.options.types";
 import {TablePagination} from "@/lib/client/components/general/TablePagination";

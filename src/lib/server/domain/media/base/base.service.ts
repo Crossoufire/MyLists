@@ -5,13 +5,18 @@ import {Tag} from "@/lib/types/media-common.types";
 import {FormattedError} from "@/lib/utils/error-classes";
 import {MyListsCSVImport} from "@/lib/types/imports.types";
 import {withTransaction} from "@/lib/server/database/async-storage";
+import {createMediaEditPayloadSchema} from "@/lib/schemas/media-details.schema";
 import {JobType, Status, TagAction, UpdateType} from "@/lib/utils/enums";
-import {saveImageFromUrl, saveUploadedImage} from "@/lib/utils/image-saver";
+import {saveImageFromUrl, saveUploadedImage} from "@/lib/server/core/images/image-saver";
 import {BaseRepository} from "@/lib/server/domain/media/base/base.repository";
 import {MYLISTS_CSV_VERSION} from "@/lib/server/domain/imports/parsers/mylists.parser";
+import {createMediaTagQueries} from "@/lib/server/domain/media/base/media-tag.queries";
+import {createMediaListQueries} from "@/lib/server/domain/media/base/media-list.queries";
 import {AnyServerMediaDefinition} from "@/lib/media-definitions/base/media.definition.server";
+import {createMediaCommunityQueries} from "@/lib/server/domain/media/base/media-community.queries";
 import {UpdateHandlerFn, UpdateUserMediaDetails, UserMediaWithTags} from "@/lib/types/user-media.types";
 import {MediaListArgs, Pagination, SearchType, SimpleSearch, UpdateUserCustomCover, UpdateUserMedia} from "@/lib/schemas";
+import type {EditMediaDetailsPayloadByType, MediaEditFieldByType, MediaEditFormFieldsByType} from "@/lib/schemas/media-details.schema";
 
 
 export abstract class BaseService<TDef extends AnyServerMediaDefinition, R extends BaseRepository<TDef>> {
@@ -19,6 +24,10 @@ export abstract class BaseService<TDef extends AnyServerMediaDefinition, R exten
     protected readonly identity: TDef["identity"];
     protected readonly ingestion: TDef["ingestion"];
     protected readonly servicePolicy: TDef["service"];
+    private readonly tagQueries: ReturnType<typeof createMediaTagQueries>;
+    private readonly communityQueries: ReturnType<typeof createMediaCommunityQueries<TDef>>;
+    private readonly listQueries: ReturnType<typeof createMediaListQueries<TDef["repository"]>>;
+    protected readonly editPayloadSchema: ReturnType<typeof createMediaEditPayloadSchema<TDef["identity"]["mediaType"]>>;
     protected updateHandlers: Partial<Record<
         UpdateType,
         UpdateHandlerFn<TDef["repository"]["tables"]["listTable"]["$inferSelect"], any, TDef["repository"]["tables"]["mediaTable"]["$inferSelect"]>
@@ -29,6 +38,13 @@ export abstract class BaseService<TDef extends AnyServerMediaDefinition, R exten
         this.identity = definition.identity;
         this.ingestion = definition.ingestion;
         this.servicePolicy = definition.service;
+        this.tagQueries = createMediaTagQueries(definition.repository);
+        this.communityQueries = createMediaCommunityQueries(definition);
+        this.listQueries = createMediaListQueries(definition.repository);
+        this.editPayloadSchema = createMediaEditPayloadSchema<TDef["identity"]["mediaType"]>(
+            this.identity.mediaType,
+            this.servicePolicy.editableFields as readonly MediaEditFieldByType[TDef["identity"]["mediaType"]][],
+        );
 
         // User progress handlers based on update type
         this.updateHandlers = {
@@ -38,32 +54,16 @@ export abstract class BaseService<TDef extends AnyServerMediaDefinition, R exten
         }
     }
 
-    async getCoverFilenames() {
-        const coverFilenames = await this.repository.getCoverFilenames();
-        return coverFilenames.map(({ imageCover }) => imageCover.split("/").pop() as string);
-    }
-
     getPopularMediaRefs() {
         return this.repository.getPopularMediaRefs();
     }
 
-    async getCustomCoverFilenames() {
-        const coverFilenames = await this.repository.getCustomCoverFilenames();
-        return coverFilenames
-            .map(({ customCover }) => customCover?.split("/").pop() as string | undefined)
-            .filter((cover): cover is string => !!cover);
-    }
-
     async getUserFavorites(userId: number, limit = 7) {
-        return this.repository.getUserFavorites(userId, limit);
+        return this.listQueries.getUserFavorites(userId, limit);
     }
 
     async searchUserListByName(userId: number, query: string, limit?: number) {
-        return this.repository.searchUserListByName(userId, query, limit);
-    }
-
-    getOrphanedMediaIds() {
-        return this.repository.getOrphanedMediaIds();
+        return this.listQueries.searchUserListByName(userId, query, limit);
     }
 
     async getUpcomingMedia(userId?: number, maxAWeek?: boolean) {
@@ -78,16 +78,12 @@ export abstract class BaseService<TDef extends AnyServerMediaDefinition, R exten
         return this.repository.searchByName(query, limit);
     }
 
-    removeMediaByIds(mediaIds: number[]) {
-        return this.repository.removeMediaByIds(mediaIds);
-    }
-
     async getListFilters(userId: number) {
-        return this.repository.getListFilters(userId);
+        return this.listQueries.getListFilters(userId);
     }
 
     async getTagNames(userId: number) {
-        return await this.repository.getTagNames(userId);
+        return await this.tagQueries.getTagNames(userId);
     }
 
     async getMediaDetailsByIds(mediaIds: number[], userId?: number) {
@@ -142,21 +138,21 @@ export abstract class BaseService<TDef extends AnyServerMediaDefinition, R exten
         const media = this.repository.findById(mediaId);
         if (!media) throw notFound();
 
-        return this.repository.getMediaCommunityActivity(actor, mediaId, search);
+        return this.communityQueries.getMediaCommunityActivity(actor, mediaId, search);
     }
 
     editUserTag(userId: number, tag: Tag, action: TagAction, mediaId?: number) {
         return withTransaction(() => {
-            return this.repository.editUserTag(userId, tag, action, mediaId);
+            return this.tagQueries.editUserTag(userId, tag, action, mediaId);
         });
     }
 
     async getMediaList(currentUserId: number | undefined, userId: number, args: MediaListArgs) {
-        return this.repository.getMediaList(currentUserId, userId, args);
+        return this.listQueries.getMediaList(currentUserId, userId, args);
     }
 
     async getTagsView(userId: number, search: SimpleSearch) {
-        return this.repository.getTagsView(userId, search);
+        return this.tagQueries.getTagsView(userId, search);
     }
 
     addMediaToUserList(userId: number, mediaId: number, status?: Status) {
@@ -246,7 +242,7 @@ export abstract class BaseService<TDef extends AnyServerMediaDefinition, R exten
 
         const userMedia = this.repository.findUserMedia(userId, mediaWithDetails.id);
         const similarMedia = await this.repository.findSimilarMedia(mediaWithDetails.id);
-        const followsData = await this.repository.getUserFollowsMediaData(userId, mediaWithDetails.id);
+        const followsData = await this.communityQueries.getUserFollowsMediaData(userId, mediaWithDetails.id);
 
         return {
             userMedia,
@@ -324,15 +320,12 @@ export abstract class BaseService<TDef extends AnyServerMediaDefinition, R exten
         return delta;
     }
 
-    // --- Admin Methods ---------------------------------------------------
-
-    async getUserMediaAddedAndUpdatedForAdmin() {
-        return this.repository.getUserMediaAddedAndUpdatedForAdmin();
-    }
-
     // --- Abstract Methods ------------------------------------------------
 
-    abstract getMediaEditableFields(mediaId: number): Promise<{ fields: Record<string, any> }>
+    abstract getMediaEditableFields(mediaId: number): Promise<{
+        fields: MediaEditFormFieldsByType[TDef["identity"]["mediaType"]];
+        editableFields: readonly MediaEditFieldByType[TDef["identity"]["mediaType"]][];
+    }>
 
-    abstract updateMediaEditableFields(mediaId: number, payload: Record<string, any>): Promise<void>;
+    abstract updateMediaEditableFields(mediaId: number, payload: EditMediaDetailsPayloadByType[TDef["identity"]["mediaType"]]): Promise<void>;
 }

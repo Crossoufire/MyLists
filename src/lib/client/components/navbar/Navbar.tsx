@@ -3,7 +3,7 @@ import {cva} from "class-variance-authority";
 import {useAuth} from "@/lib/client/hooks/use-auth";
 import {toast} from "@/lib/client/components/ui/toast";
 import {Badge} from "@/lib/client/components/ui/badge";
-import {capitalize} from "@/lib/utils/text-formatting";
+import {capitalize} from "@/lib/utils/formatting/text";
 import {Link, useLocation} from "@tanstack/react-router";
 import {SearchBar} from "@/lib/client/components/navbar/SearchBar";
 import {PrivacyIcon} from "@/lib/client/components/general/MainIcons";

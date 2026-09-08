@@ -2,10 +2,10 @@ import {cn} from "@/lib/utils/classnames";
 import {MediaType} from "@/lib/utils/enums";
 import {Link} from "@tanstack/react-router";
 import type {ReactElement, ReactNode} from "react";
-import {capitalize} from "@/lib/utils/text-formatting";
+import {capitalize} from "@/lib/utils/formatting/text";
 import {useCurrentDate} from "@/lib/client/hooks/use-dates";
 import {MainThemeIcon} from "@/lib/client/components/general/MainIcons";
-import {getActiveMediaSettings} from "@/lib/utils/media-list-activation";
+import {getActiveMediaSettings} from "@/lib/utils/media/list-activation";
 import {Award, Calendar, ChartNoAxesColumn, ChevronDown, ListOrdered, Zap} from "lucide-react";
 import {DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger} from "@/lib/client/components/ui/dropdown-menu";
 

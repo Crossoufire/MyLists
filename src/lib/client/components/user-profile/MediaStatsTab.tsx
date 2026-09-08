@@ -1,8 +1,8 @@
 import {Link} from "@tanstack/react-router";
-import {getThemeColor} from "@/lib/utils/theme-utils";
+import {getThemeColor} from "@/lib/client/theme";
 import {RatingSystemType, Status} from "@/lib/utils/enums";
-import {formatNumber} from "@/lib/utils/number-formatting";
-import {getFeelingIcon} from "@/lib/utils/ratings-formatting";
+import {formatNumber} from "@/lib/utils/formatting/number";
+import {getFeelingIcon} from "@/lib/client/ratings";
 import {PerMediaSummaryType} from "@/lib/types/query.options.types";
 import {EmptyState} from "@/lib/client/components/general/EmptyState";
 import {BarChart3, ChartNoAxesColumn, Check, Clock, LibraryBig, Star} from "lucide-react";

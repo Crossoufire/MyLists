@@ -1,9 +1,9 @@
 import {cn} from "@/lib/utils/classnames";
-import {getThemeColor} from "@/lib/utils/theme-utils";
-import {capitalize} from "@/lib/utils/text-formatting";
+import {getThemeColor} from "@/lib/client/theme";
+import {capitalize} from "@/lib/utils/formatting/text";
 import {Badge} from "@/lib/client/components/ui/badge";
 import {HofUserRank} from "@/lib/types/query.options.types";
-import {formatPercent} from "@/lib/utils/number-formatting";
+import {formatPercent} from "@/lib/utils/formatting/number";
 import {Progress} from "@/lib/client/components/ui/progress";
 import {MainThemeIcon} from "@/lib/client/components/general/MainIcons";
 import {Ban, ChartNoAxesColumnIncreasing, TrendingUp} from "lucide-react";

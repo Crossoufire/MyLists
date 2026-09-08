@@ -1,6 +1,6 @@
 import {useId, useState} from "react";
 import {Controller, FormProvider, useForm} from "react-hook-form";
-import authClient from "@/lib/utils/auth-client";
+import authClient from "@/lib/client/auth-client";
 import {zodResolver} from "@hookform/resolvers/zod";
 import {Input} from "@/lib/client/components/ui/input";
 import {createFileRoute} from "@tanstack/react-router";
@@ -9,7 +9,7 @@ import {PasswordSettingsForm, passwordSettingsFormSchema} from "@/lib/schemas";
 import {FormSubmitButton} from "@/lib/client/components/forms/FormSubmitButton";
 import {usePasswordSettingsMutation} from "@/lib/client/react-query/query-mutations/user.mutations";
 import {Field, FieldError, FieldGroup, FieldLabel, FieldSet} from "@/lib/client/components/ui/field";
-import {handleServerFormErrors} from "@/lib/utils/forms-utils";
+import {handleServerFormErrors} from "@/lib/client/forms";
 
 
 export const Route = createFileRoute("/_main/_private/settings/_layout/email-password")({

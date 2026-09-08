@@ -1,6 +1,6 @@
 import {ReactNode} from "react";
 import {Badge} from "@/lib/client/components/ui/badge";
-import {capitalize} from "@/lib/utils/text-formatting";
+import {capitalize} from "@/lib/utils/formatting/text";
 import {Link, LinkProps} from "@tanstack/react-router";
 import {Button} from "@/lib/client/components/ui/button";
 import {ChevronLeft, ChevronRight, Search} from "lucide-react";

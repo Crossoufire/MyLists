@@ -1,9 +1,9 @@
 import {MediaType} from "@/lib/utils/enums";
-import {getThemeColor} from "@/lib/utils/theme-utils";
-import {formatMonthYear} from "@/lib/utils/date-formatting";
+import {getThemeColor} from "@/lib/client/theme";
+import {formatMonthYear} from "@/lib/utils/formatting/date";
 import {MonthlyActivityChartDatum} from "@/lib/types/activity.types";
 import {MainThemeIcon} from "@/lib/client/components/general/MainIcons";
-import {formatHours, formatNumber} from "@/lib/utils/number-formatting";
+import {formatHours, formatNumber} from "@/lib/utils/formatting/number";
 
 
 interface ActivityTapestryProps {

@@ -1,8 +1,8 @@
 import {MediaType} from "@/lib/utils/enums";
 import {mediaTabSearchSchema} from "@/lib/schemas";
-import {capitalize} from "@/lib/utils/text-formatting";
+import {capitalize} from "@/lib/utils/formatting/text";
 import {useSuspenseQuery} from "@tanstack/react-query";
-import {formatNumber} from "@/lib/utils/number-formatting";
+import {formatNumber} from "@/lib/utils/formatting/number";
 import {createFileRoute, Link} from "@tanstack/react-router";
 import {ComingNextItem} from "@/lib/types/query.options.types";
 import {CalendarClock, CalendarDays, List} from "lucide-react";
@@ -13,7 +13,7 @@ import {EmptyState} from "@/lib/client/components/general/EmptyState";
 import {upcomingOptions} from "@/lib/client/react-query/query-options";
 import {createMediaTabItems} from "@/lib/client/components/general/media-type-options";
 import {ComingNextSection} from "@/lib/client/components/coming-next/ComingNextSection";
-import {compareCalendarDates, formatCalendarRelativeDate} from "@/lib/utils/date-formatting";
+import {compareCalendarDates, formatCalendarRelativeDate} from "@/lib/utils/formatting/date";
 
 
 export const Route = createFileRoute("/_main/_private/coming-next")({

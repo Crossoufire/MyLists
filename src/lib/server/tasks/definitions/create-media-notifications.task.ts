@@ -1,5 +1,5 @@
 import {z} from "zod";
-import {mediaTypeUtils} from "@/lib/utils/media-mapping";
+import {MediaType} from "@/lib/utils/enums";
 import {getContainer} from "@/lib/server/core/container";
 import {defineTask} from "@/lib/server/tasks/define-task";
 
@@ -12,7 +12,7 @@ export const createMediaNotificationsTask = defineTask({
     handler: async (ctx) => {
         const container = await getContainer();
         const mediaRegistry = container.registries.mediaService;
-        const mediaTypes = mediaTypeUtils.getTypesForNotifications();
+        const mediaTypes = [MediaType.SERIES, MediaType.ANIME, MediaType.MOVIES];
         const notificationsService = container.services.notifications;
 
         for (const mediaType of mediaTypes) {

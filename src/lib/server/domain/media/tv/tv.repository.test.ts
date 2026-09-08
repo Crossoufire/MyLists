@@ -1,7 +1,7 @@
 import {eq, getTableName} from "drizzle-orm";
 import Database from "bun:sqlite";
 import {MediaType, Status} from "@/lib/utils/enums";
-import {statusUtils} from "@/lib/utils/media-mapping";
+import {getMediaDefinition} from "@/lib/media-definitions/definition.registry";
 import * as schema from "@/lib/server/database/schema";
 import {migrate} from "drizzle-orm/bun-sqlite/migrator";
 import {BunSQLiteDatabase, drizzle} from "drizzle-orm/bun-sqlite";
@@ -27,11 +27,12 @@ vi.mock("@/lib/server/database/db", () => ({
 
 
 const { TvRepository } = await import("@/lib/server/domain/media/tv/tv.repository");
+const { TvService } = await import("@/lib/server/domain/media/tv/tv.service");
 const { createMediaIngestionService } = await import("@/lib/server/api-providers/media-ingestion.service");
 
 
 const completedSeriesStatusCounts = () => Object.fromEntries(
-    statusUtils.byMediaType(MediaType.SERIES).map((status) => [status, status === Status.COMPLETED ? 1 : 0]),
+    getMediaDefinition(MediaType.SERIES).statuses.map((status) => [status, status === Status.COMPLETED ? 1 : 0]),
 ) as Record<Status, number>;
 
 
@@ -308,7 +309,8 @@ describe("TvRepository season refresh", () => {
             },
         ]);
 
-        const result = await repository.getMediaList(undefined, 42, { sorting: "Re-watched" });
+        const service = new TvService(repository, seriesServerDefinition);
+        const result = await service.getMediaList(undefined, 42, { sorting: "Re-watched" });
 
         expect(result.items.map((item) => item.mediaId)).toEqual([101, 100]);
     });

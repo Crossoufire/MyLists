@@ -1,9 +1,9 @@
 import {RatingSystemType} from "@/lib/utils/enums";
-import {getThemeColor} from "@/lib/utils/theme-utils";
-import {getFeelingIcon} from "@/lib/utils/ratings-formatting";
+import {getThemeColor} from "@/lib/client/theme";
+import {getFeelingIcon} from "@/lib/client/ratings";
 import {ChartNoAxesColumn, Clock, ClockAlert, LibraryBig, Star} from "lucide-react";
 import {EmptyState} from "@/lib/client/components/general/EmptyState";
-import {formatNumber, formatPercent} from "@/lib/utils/number-formatting";
+import {formatNumber, formatPercent} from "@/lib/utils/formatting/number";
 import {ResolvedHighlightedMediaTabConfig} from "@/lib/types/profile-custom.types";
 import {HighlightedMedia} from "@/lib/client/components/user-profile/HighlightedMedia";
 import {DistributionContainer} from "@/lib/client/components/general/DistributionContainer";

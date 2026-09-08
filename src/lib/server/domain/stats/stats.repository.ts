@@ -4,7 +4,7 @@ import {alias} from "drizzle-orm/sqlite-core";
 import {DeltaStats} from "@/lib/types/stats.types";
 import {UserMediaStats} from "@/lib/types/user-media.types";
 import {getDbClient} from "@/lib/server/database/async-storage";
-import {getPublishedMediaSettings} from "@/lib/utils/media-list-activation";
+import {getPublishedMediaSettings} from "@/lib/utils/media/list-activation";
 import {resolvePagination, resolveSorting} from "@/lib/server/database/pagination";
 import {and, count, countDistinct, eq, gt, inArray, SQL, sql, sum} from "drizzle-orm";
 import {user, userMediaSettings, userMediaStatsHistory} from "@/lib/server/database/schema";

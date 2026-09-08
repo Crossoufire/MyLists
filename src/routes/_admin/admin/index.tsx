@@ -8,7 +8,7 @@ import {adminAuth, checkAdminAuth} from "@/lib/server/functions/admin";
 import {FormSubmitButton} from "@/lib/client/components/forms/FormSubmitButton";
 import {Field, FieldError, FieldGroup, FieldLabel, FieldSet} from "@/lib/client/components/ui/field";
 import {Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle} from "@/lib/client/components/ui/card";
-import {handleServerFormErrors} from "@/lib/utils/forms-utils";
+import {handleServerFormErrors} from "@/lib/client/forms";
 
 
 export const Route = createFileRoute("/_admin/admin/")({

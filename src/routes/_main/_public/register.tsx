@@ -8,7 +8,7 @@ import {RegisterForm} from "@/lib/client/components/auth/RegisterForm";
 import {SocialAuthButtons} from "@/lib/client/components/auth/SocialAuthButtons";
 import {createFileRoute, Link, useRouteContext, useSearch} from "@tanstack/react-router";
 import {InlineErrorContainer} from "@/lib/client/components/general/InlineErrorContainer";
-import {AuthState, getAuthState, getOAuthErrorMessage, isVerificationError} from "@/lib/utils/auth-utils";
+import {AuthState, getAuthState, getOAuthErrorMessage, isVerificationError} from "@/lib/utils/auth";
 import {EmailVerificationPanel, VerificationStatus} from "@/lib/client/components/auth/EmailVerificationPanel";
 
 

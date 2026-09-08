@@ -2,7 +2,7 @@ import {UpdateType} from "@/lib/utils/enums";
 import {KeyboardEvent, useState} from "react";
 import {Input} from "@/lib/client/components/ui/input";
 import {gamesDefinition} from "@/lib/media-definitions/games/games.definition";
-import {toActivityDisplayValue, toActivityStoredValue} from "@/lib/utils/activity-utils";
+import {toActivityDisplayValue, toActivityStoredValue} from "@/lib/utils/media/activity";
 import {useUpdateUserMediaMutation} from "@/lib/client/react-query/query-mutations/user-media.mutations";
 
 

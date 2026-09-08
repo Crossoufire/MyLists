@@ -18,6 +18,7 @@ vi.mock("@/lib/server/database/async-storage", () => ({
 
 
 const { TvRepository } = await import("@/lib/server/domain/media/tv/tv.repository");
+const { TvService } = await import("@/lib/server/domain/media/tv/tv.service");
 const { StatsRepository } = await import("@/lib/server/domain/stats/stats.repository");
 const { UpdateHistoryRepository } = await import("@/lib/server/domain/tracking/update-history.repository");
 const { TasteSimilarityRepository } = await import("@/lib/server/domain/social/taste-similarity.repository");
@@ -47,7 +48,7 @@ describe("disabled media visibility", () => {
     });
 
     it("hides disabled media everywhere without deleting it", async () => {
-        const animeRepository = new TvRepository(animeServerDefinition);
+        const animeService = new TvService(new TvRepository(animeServerDefinition), animeServerDefinition);
 
         const disabledStats = await StatsRepository.getPreComputedStatsSummary({ userId: 42 });
         const disabledUpdates = await UpdateHistoryRepository.getUserUpdates(42, 10);
@@ -60,7 +61,7 @@ describe("disabled media visibility", () => {
         });
         const disabledAchievements = await AchievementsRepository.getAchievementsDetails(42, 10);
         const disabledAchievementPage = await AchievementsRepository.getUserAchievements(42);
-        const disabledCommunity = await animeRepository.getMediaCommunityActivity(toActor(), 100, {});
+        const disabledCommunity = await animeService.getMediaCommunityActivity(toActor(), 100, {});
         const disabledTasteAggregates = await TasteSimilarityRepository.findCandidateAggregates(43, [MediaType.ANIME]);
         const disabledSharedFavorites = await TasteSimilarityRepository.getSharedFavMedia(43, [42], [MediaType.ANIME]);
         const [disabledCandidate] = await TasteSimilarityRepository.getCandidateProfiles([42], 43);
@@ -94,7 +95,7 @@ describe("disabled media visibility", () => {
             endMonth: "2026-04",
         });
         const enabledAchievements = await AchievementsRepository.getAchievementsDetails(42, 10);
-        const enabledCommunity = await animeRepository.getMediaCommunityActivity(toActor(), 100, {});
+        const enabledCommunity = await animeService.getMediaCommunityActivity(toActor(), 100, {});
         const enabledTasteAggregates = await TasteSimilarityRepository.findCandidateAggregates(43, [MediaType.ANIME]);
         const enabledSharedFavorites = await TasteSimilarityRepository.getSharedFavMedia(43, [42], [MediaType.ANIME]);
         const [enabledCandidate] = await TasteSimilarityRepository.getCandidateProfiles([42], 43);

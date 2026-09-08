@@ -1,9 +1,9 @@
 import {MediaType} from "@/lib/utils/enums";
 import {useAuth} from "@/lib/client/hooks/use-auth";
-import {statusUtils} from "@/lib/utils/media-mapping";
+import {getMediaDefinition} from "@/lib/media-definitions/definition.registry";
 import {UserMediaItem} from "@/lib/types/query.options.types";
 import {mediaListOptions} from "@/lib/client/react-query/query-options";
-import {resolveMediaTypeActive} from "@/lib/utils/media-list-activation";
+import {resolveMediaTypeActive} from "@/lib/utils/media/list-activation";
 import {MediaListItem} from "@/lib/client/components/media/base/MediaListItem";
 
 
@@ -17,7 +17,7 @@ interface MediaGridProps {
 
 export const MediaGrid = ({ isCurrent, mediaItems, queryOption, mediaType }: MediaGridProps) => {
     const { currentUser } = useAuth();
-    const allStatuses = statusUtils.byMediaType(mediaType);
+    const allStatuses = getMediaDefinition(mediaType).statuses;
     const isMediaTypeActive = resolveMediaTypeActive(currentUser?.settings, mediaType);
 
     return (

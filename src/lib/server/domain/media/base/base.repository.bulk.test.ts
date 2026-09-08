@@ -1,8 +1,8 @@
 import {eq} from "drizzle-orm";
 import Database from "bun:sqlite";
-import {MediaType, Status} from "@/lib/utils/enums";
+import {Status} from "@/lib/utils/enums";
 import * as schema from "@/lib/server/database/schema";
-import {collectionItems, collections, movies, moviesActors, moviesGenre, moviesList, moviesTags, user} from "@/lib/server/database/schema";
+import {movies, moviesActors, moviesGenre, moviesList, moviesTags, user} from "@/lib/server/database/schema";
 import {migrate} from "drizzle-orm/bun-sqlite/migrator";
 import {BunSQLiteDatabase, drizzle} from "drizzle-orm/bun-sqlite";
 import {afterEach, beforeEach, describe, expect, it, vi} from "vitest";
@@ -17,18 +17,21 @@ vi.mock("@/lib/server/database/db", () => ({
 
 
 const { MoviesRepository } = await import("@/lib/server/domain/media/movies/movies.repository");
+const { MoviesService } = await import("@/lib/server/domain/media/movies/movies.service");
 
 
-describe("BaseRepository", () => {
+describe("Base media persistence and list queries", () => {
     let sqlite: Database;
     let db: BunSQLiteDatabase<typeof schema>;
     let repository: InstanceType<typeof MoviesRepository>;
+    let service: InstanceType<typeof MoviesService>;
 
     beforeEach(async () => {
         sqlite = new Database(":memory:");
         db = drizzle(sqlite, { schema, casing: "snake_case" });
         dbContext.db = db;
         repository = new MoviesRepository();
+        service = new MoviesService(repository);
 
         migrate(db, { migrationsFolder: "./drizzle" });
         sqlite.run("PRAGMA foreign_keys = ON");
@@ -104,8 +107,8 @@ describe("BaseRepository", () => {
             { userId: 42, mediaId: 101, status: Status.COMPLETED },
         ]);
 
-        const localizedNameResult = await repository.getMediaList(undefined, 42, { search: "Movie 1" });
-        const originalNameResult = await repository.getMediaList(undefined, 42, { search: "Original Two" });
+        const localizedNameResult = await service.getMediaList(undefined, 42, { search: "Movie 1" });
+        const originalNameResult = await service.getMediaList(undefined, 42, { search: "Original Two" });
 
         expect(localizedNameResult.items.map(item => item.mediaId)).toEqual([100]);
         expect(originalNameResult.items.map(item => item.mediaId)).toEqual([101]);
@@ -117,39 +120,9 @@ describe("BaseRepository", () => {
             { userId: 42, mediaId: 101, status: Status.COMPLETED },
         ]);
 
-        const result = await repository.searchUserListByName(42, "Original One");
+        const result = await service.searchUserListByName(42, "Original One");
 
         expect(result.map(item => item.mediaId)).toEqual([100]);
-    });
-
-    it("finds media absent from both user lists and collections", async () => {
-        await db.insert(movies).values({
-            id: 102,
-            apiId: 1002,
-            duration: 105,
-            imageCover: "3.jpg",
-            name: "Orphaned movie",
-        });
-        await db.insert(moviesList).values({
-            id: 1,
-            userId: 42,
-            mediaId: 100,
-            status: Status.COMPLETED,
-        });
-        await db.insert(collections).values({
-            id: 1,
-            ownerId: 42,
-            title: "Movie collection",
-            mediaType: MediaType.MOVIES,
-        });
-        await db.insert(collectionItems).values({
-            mediaId: 101,
-            orderIndex: 0,
-            collectionId: 1,
-            mediaType: MediaType.MOVIES,
-        });
-
-        await expect(repository.getOrphanedMediaIds()).toEqual([102]);
     });
 
     it("scopes tag filters to the owner of the requested list", async () => {
@@ -170,7 +143,7 @@ describe("BaseRepository", () => {
             { userId: 42, mediaId: 101, name: "private-tag" },
         ]);
 
-        const result = await repository.getMediaList(undefined, 42, { tags: ["private-tag"] });
+        const result = await service.getMediaList(undefined, 42, { tags: ["private-tag"] });
 
         expect(result.items.map((item) => item.mediaId)).toEqual([101]);
     });

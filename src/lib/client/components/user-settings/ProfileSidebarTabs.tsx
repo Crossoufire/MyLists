@@ -1,6 +1,6 @@
 import {cn} from "@/lib/utils/classnames";
 import {useAuth} from "@/lib/client/hooks/use-auth";
-import {getActiveMediaTypes} from "@/lib/utils/media-list-activation";
+import {getActiveMediaTypes} from "@/lib/utils/media/list-activation";
 import {MainThemeIcon} from "@/lib/client/components/general/MainIcons";
 import {HighlightedMediaTab, PROFILE_MAX_HIGHLIGHTED_MEDIA} from "@/lib/types/profile-custom.types";
 

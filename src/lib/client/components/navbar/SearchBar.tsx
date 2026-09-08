@@ -6,7 +6,7 @@ import {Button} from "@/lib/client/components/ui/button";
 import {Link, useNavigate} from "@tanstack/react-router";
 import {ApiProviderType, MediaType} from "@/lib/utils/enums";
 import {navSearchOptions} from "@/lib/client/react-query/query-options";
-import {resolveMediaTypeActive} from "@/lib/utils/media-list-activation";
+import {resolveMediaTypeActive} from "@/lib/utils/media/list-activation";
 import {useSearchContainer} from "@/lib/client/hooks/use-search-container";
 import {SearchContainer} from "@/lib/client/components/general/SearchContainer";
 import {getAdvancedSearchConfig} from "@/lib/client/components/media/media-config";

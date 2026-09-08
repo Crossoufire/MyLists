@@ -1,10 +1,10 @@
-import authClient from "@/lib/utils/auth-client";
+import authClient from "@/lib/client/auth-client";
 import {KeyRound, ShieldCheck} from "lucide-react";
 import {zodResolver} from "@hookform/resolvers/zod";
 import {Input} from "@/lib/client/components/ui/input";
 import {toast} from "@/lib/client/components/ui/toast";
 import {Button} from "@/lib/client/components/ui/button";
-import {handleServerFormErrors} from "@/lib/utils/forms-utils";
+import {handleServerFormErrors} from "@/lib/client/forms";
 import {Controller, FormProvider, useForm} from "react-hook-form";
 import {FormError} from "@/lib/client/components/forms/FormError";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";

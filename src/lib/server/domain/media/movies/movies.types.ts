@@ -24,6 +24,10 @@ export type UpsertMovieWithDetails = {
     genresData?: { name: string }[],
 };
 
+export type UpdateMovieWithDetails = Omit<UpsertMovieWithDetails, "mediaData"> & {
+    mediaData: Partial<UpsertMovieWithDetails["mediaData"]> & Pick<UpsertMovieWithDetails["mediaData"], "apiId">;
+};
+
 
 export const moviesFinalListInsertSchema = createInsertSchema(moviesList, {
     status: importStatusSchema(MediaType.MOVIES),

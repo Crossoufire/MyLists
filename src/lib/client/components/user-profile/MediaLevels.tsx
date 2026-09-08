@@ -1,10 +1,11 @@
 import {Link} from "@tanstack/react-router";
 import {MediaType} from "@/lib/utils/enums";
-import {getThemeColor} from "@/lib/utils/theme-utils";
+import {getThemeColor} from "@/lib/client/theme";
 import {Progress} from "@/lib/client/components/ui/progress";
 import {MainThemeIcon} from "@/lib/client/components/general/MainIcons";
-import {getActiveMediaSettings} from "@/lib/utils/media-list-activation";
-import {formatLevel, formatPercent} from "@/lib/utils/number-formatting";
+import {getActiveMediaSettings} from "@/lib/utils/media/list-activation";
+import {calculateMediaLevel} from "@/lib/utils/media/level";
+import {formatPercent} from "@/lib/utils/formatting/number";
 import {Card, CardContent, CardHeader, CardTitle} from "@/lib/client/components/ui/card";
 
 
@@ -31,7 +32,7 @@ export const MediaLevels = ({ username, settings }: MediaLevelsProps) => {
                             username={username}
                             key={data.mediaType}
                             mediaType={data.mediaType}
-                            level={formatLevel(data.timeSpent)}
+                            level={calculateMediaLevel(data.timeSpent)}
                         />
                     )}
                 </div>

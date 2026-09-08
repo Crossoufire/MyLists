@@ -4,7 +4,7 @@ import {useSuspenseQuery} from "@tanstack/react-query";
 import {createFileRoute, Link} from "@tanstack/react-router";
 import {TabHeader} from "@/lib/client/components/general/TabHeader";
 import {profileOptions} from "@/lib/client/react-query/query-options";
-import {getActiveMediaTypes} from "@/lib/utils/media-list-activation";
+import {getActiveMediaTypes} from "@/lib/utils/media/list-activation";
 import {MediaLevels} from "@/lib/client/components/user-profile/MediaLevels";
 import {OverviewTab} from "@/lib/client/components/user-profile/OverviewTab";
 import {MediaStatsTab} from "@/lib/client/components/user-profile/MediaStatsTab";

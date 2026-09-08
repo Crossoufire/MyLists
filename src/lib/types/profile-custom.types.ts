@@ -1,5 +1,5 @@
 import {MediaType} from "@/lib/utils/enums";
-import {ALL_MEDIA_TYPES} from "@/lib/utils/media-mapping";
+import {ALL_MEDIA_TYPES} from "@/lib/media-definitions/definition.registry";
 
 
 export type ProfileCustomKey = "highlightedMedia";

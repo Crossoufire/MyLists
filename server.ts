@@ -6,7 +6,7 @@
 import path from "path";
 import {serverEnv} from "@/env/server";
 import {logger} from "@/lib/server/core/logger";
-import {getStaticCacheControl} from "@/lib/utils/static-cache-control";
+import {getStaticCacheControl} from "@/lib/server/core/static-cache-control";
 import {installProcessErrorHandlers} from "@/lib/server/core/process-errors";
 
 

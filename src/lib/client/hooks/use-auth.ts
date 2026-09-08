@@ -1,5 +1,5 @@
-import authClient from "@/lib/utils/auth-client";
-import {getAuthState} from "@/lib/utils/auth-utils";
+import authClient from "@/lib/client/auth-client";
+import {getAuthState} from "@/lib/utils/auth";
 import {useQueryClient, useSuspenseQuery} from "@tanstack/react-query";
 import {useNavigate, useRouteContext, useRouter} from "@tanstack/react-router";
 

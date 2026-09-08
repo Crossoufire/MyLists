@@ -1,10 +1,10 @@
 import {MediaType} from "@/lib/utils/enums";
-import {uniqueBy} from "@/lib/utils/arrays";
-import {getImageUrl} from "@/lib/utils/image-url";
-import {isLatin1} from "@/lib/utils/text-formatting";
+import {uniqueBy} from "@/lib/utils/arrays-objects";
+import {getImageUrl} from "@/lib/server/core/images/image-url";
+import {isLatin1} from "@/lib/utils/formatting/text";
 import {CoverType} from "@/lib/types/media-common.types";
-import {saveImageFromUrl} from "@/lib/utils/image-saver";
-import {formatDateForDb} from "@/lib/utils/date-formatting";
+import {saveImageFromUrl} from "@/lib/server/core/images/image-saver";
+import {formatDateForDb} from "@/lib/utils/formatting/date";
 import {
     MalAnimeSearchResponse,
     ProviderSearchResult,
@@ -301,7 +301,7 @@ const addAnimeSpecificGenres = (
 ) => {
     const lowTrimAnimeName = animeName.trim().toLowerCase();
     const matchingAnime = malData?.data?.find(({ node }) => node.alternative_titles?.en?.trim().toLowerCase() === lowTrimAnimeName);
-    
+
     const genres = matchingAnime?.node.genres ?? [];
 
     const genreList = toUniqueNamedData(genres, genres.length) ?? [];

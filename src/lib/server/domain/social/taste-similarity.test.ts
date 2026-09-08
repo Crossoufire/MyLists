@@ -1,5 +1,5 @@
 import {describe, expect, it} from "vitest";
-import {calculateTasteSimilarity, emptyRatingAggregate, mergeRatingAggregates} from "@/lib/utils/taste-similarity";
+import {calculateTasteSimilarity, emptyRatingAggregate, mergeRatingAggregates} from "@/lib/server/domain/social/taste-similarity";
 
 
 describe("calculateTasteSimilarity", () => {

@@ -11,7 +11,7 @@ import React from "react";
 interface QuickAddMediaProps {
     mediaId: number;
     mediaType: MediaType;
-    allStatuses: Status[];
+    allStatuses: readonly Status[];
     isMediaTypeActive: boolean;
     queryOption: ReturnType<typeof mediaListOptions>;
 }

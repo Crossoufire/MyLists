@@ -1,6 +1,6 @@
 import {CalendarDays} from "lucide-react";
 import {MediaType} from "@/lib/utils/enums";
-import {formatNumber} from "@/lib/utils/number-formatting";
+import {formatNumber} from "@/lib/utils/formatting/number";
 import {ComingNextItem} from "@/lib/types/query.options.types";
 import {ComingNextCard} from "@/lib/client/components/coming-next/ComingNextCard";
 

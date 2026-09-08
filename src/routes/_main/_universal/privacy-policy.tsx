@@ -1,6 +1,6 @@
 import {FileText, ShieldCheck} from "lucide-react";
 import {createFileRoute} from "@tanstack/react-router";
-import {addSeo, addSeoLinks} from "@/lib/utils/add-seo";
+import {addSeo, addSeoLinks} from "@/lib/client/seo";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
 import {PageHeader} from "@/lib/client/components/general/PageHeader";
 

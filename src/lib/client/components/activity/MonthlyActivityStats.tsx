@@ -1,9 +1,9 @@
 import {Clock3} from "lucide-react";
 import {cn} from "@/lib/utils/classnames";
-import {capitalize} from "@/lib/utils/text-formatting";
-import {formatMinutes} from "@/lib/utils/number-formatting";
+import {capitalize} from "@/lib/utils/formatting/text";
+import {formatMinutes} from "@/lib/utils/formatting/number";
 import {MainThemeIcon} from "@/lib/client/components/general/MainIcons";
-import {getMonthlyActivityStatSummary} from "@/lib/utils/activity-utils";
+import {getMonthlyActivityStatSummary} from "@/lib/utils/media/activity";
 import {monthlyActivityStatsOptions} from "@/lib/client/react-query/query-options";
 import {CompactStatsGrid} from "@/lib/client/components/media-stats/CompactStatsGrid";
 

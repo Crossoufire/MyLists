@@ -1,20 +1,15 @@
 import {notFound} from "@tanstack/react-router";
 import {MediaInfo} from "@/lib/types/activity.types";
-import {FormattedError} from "@/lib/utils/error-classes";
+import {JobType, MediaType, Status} from "@/lib/utils/enums";
 import {UpComingMedia} from "@/lib/types/notifications.types";
+import {UserMediaWithTags} from "@/lib/types/user-media.types";
 import {ProviderSearchResult} from "@/lib/types/provider.types";
-import {MediaListArgs, SearchType, SimpleSearch} from "@/lib/schemas";
-import {AddedMediaDetails, Tag} from "@/lib/types/media-common.types";
+import {AddedMediaDetails} from "@/lib/types/media-common.types";
+import {ExportMediaList, MediaListData} from "@/lib/types/media-list.types";
 import {getDbClient, withTransaction} from "@/lib/server/database/async-storage";
-import {resolvePagination, resolveSorting} from "@/lib/server/database/pagination";
-import {JobType, MediaType, SocialState, Status, TagAction} from "@/lib/utils/enums";
-import {Actor, communityProfileVisibilityCondition} from "@/lib/server/authorization";
-import {ExpandedListFilters, ExportMediaList, MediaListData} from "@/lib/types/media-list.types";
-import {createArrayFilter, type FilterDefinitions} from "@/lib/server/domain/media/base/media-list.query";
-import {MediaCommunityActivityStats, UserFollowsMediaData, UserMediaWithTags} from "@/lib/types/user-media.types";
+import {animeList, booksList, gamesList, mangaList, moviesList, seriesList, user} from "@/lib/server/database/schema";
 import {AnyMediaRepositoryDefinition, AnyServerMediaDefinition} from "@/lib/media-definitions/base/media.definition.server";
-import {animeList, booksList, collectionItems, followers, gamesList, mangaList, moviesList, seriesList, user, userMediaSettings} from "@/lib/server/database/schema";
-import {and, asc, count, countDistinct, desc, eq, getTableColumns, gte, inArray, isNotNull, isNull, like, lt, lte, ne, notExists, notInArray, or, SQL, sql} from "drizzle-orm";
+import {and, asc, count, countDistinct, desc, eq, getTableColumns, gte, inArray, isNotNull, isNull, like, lte, ne, notInArray, or, SQL, sql} from "drizzle-orm";
 
 
 const SIMILAR_MAX_GENRES = 10;
@@ -29,73 +24,12 @@ export abstract class BaseRepository<
     readonly identity: TMediaDef["identity"];
     protected readonly ingestion: TMediaDef["ingestion"];
     protected readonly attribution: TMediaDef["attribution"];
-    protected readonly baseFilterDefs: FilterDefinitions;
 
     protected constructor(definition: TMediaDef) {
         this.identity = definition.identity;
         this.ingestion = definition.ingestion;
         this.attribution = definition.attribution;
         this.repoDefinition = definition.repository as TRepoDef;
-
-        // Must be instantiated after definition
-        this.baseFilterDefs = this.baseListFiltersDefs();
-    }
-
-    private baseListFiltersDefs = (): FilterDefinitions => {
-        const { listTable, mediaTable, tagTable, genreTable } = this.repoDefinition.tables;
-
-        return {
-            search: {
-                isActive: (args: MediaListArgs) => !!args.search,
-                getCondition: (args: MediaListArgs) => this.mediaNameSearchCondition(args.search!),
-            },
-            favorite: {
-                isActive: (args: MediaListArgs) => args.favorite === true,
-                getCondition: (_args: MediaListArgs) => eq(listTable.favorite, true),
-            },
-            comment: {
-                isActive: (args: MediaListArgs) => args.comment === true,
-                getCondition: (_args: MediaListArgs) => isNotNull(listTable.comment),
-            },
-            hideCommon: {
-                isActive: (args: MediaListArgs) => args.hideCommon === true && !!args.currentUserId && args.currentUserId !== args.userId,
-                getCondition: (args: MediaListArgs) => {
-                    const subQuery = getDbClient()
-                        .select({ mediaId: listTable.mediaId })
-                        .from(listTable)
-                        .where(eq(listTable.userId, args.currentUserId!));
-                    return notInArray(listTable.mediaId, subQuery);
-                },
-            },
-            status: createArrayFilter({
-                argName: "status",
-                mediaTable: mediaTable,
-                filterColumn: listTable.status,
-            }),
-            tags: createArrayFilter({
-                argName: "tags",
-                mediaTable: mediaTable,
-                entityTable: tagTable,
-                filterColumn: tagTable.name,
-                entityScope: (args) => eq(tagTable.userId, args.userId!),
-            }),
-            genres: createArrayFilter({
-                argName: "genres",
-                mediaTable: mediaTable,
-                entityTable: genreTable,
-                filterColumn: genreTable.name,
-            }),
-        };
-    }
-
-    private mediaNameSearchCondition(query: string) {
-        const { mediaTable } = this.repoDefinition.tables;
-        const pattern = `%${query}%`;
-        const nameCondition = like(mediaTable.name, pattern);
-
-        return mediaTable.originalName
-            ? or(nameCondition, like(mediaTable.originalName, pattern))
-            : nameCondition;
     }
 
     async bulkInsertUserMedia(rows: TRepoDef["tables"]["listTable"]["$inferInsert"][]) {
@@ -121,14 +55,6 @@ export abstract class BaseRepository<
         });
     }
 
-    async getCoverFilenames() {
-        const { mediaTable } = this.repoDefinition.tables;
-
-        return getDbClient()
-            .select({ imageCover: mediaTable.imageCover })
-            .from(mediaTable);
-    }
-
     getPopularMediaRefs() {
         const { popularity, tables: { mediaTable } } = this.repoDefinition;
 
@@ -150,63 +76,6 @@ export abstract class BaseRepository<
                 id: row.id as number,
                 releaseDate: row.releaseDate! as string,
             }));
-    }
-
-    async getCustomCoverFilenames() {
-        const { listTable } = this.repoDefinition.tables;
-
-        return getDbClient()
-            .select({ customCover: listTable.customCover })
-            .from(listTable)
-            .where(isNotNull(listTable.customCover));
-    }
-
-    getOrphanedMediaIds() {
-        const { mediaType } = this.identity;
-        const { mediaTable, listTable } = this.repoDefinition.tables;
-
-        const tx = getDbClient();
-        const mediaToDelete = tx
-            .select({ id: mediaTable.id })
-            .from(mediaTable)
-            .where(and(
-                notExists(tx.select()
-                    .from(listTable)
-                    .where(eq(listTable.mediaId, mediaTable.id))
-                ),
-                notExists(tx.select()
-                    .from(collectionItems)
-                    .where(and(eq(collectionItems.mediaId, mediaTable.id), eq(collectionItems.mediaType, mediaType)))
-                )
-            )).all();
-
-        return mediaToDelete.map((media) => media.id);
-    }
-
-    async getTagNames(userId: number) {
-        const { tagTable } = this.repoDefinition.tables;
-
-        return getDbClient()
-            .selectDistinct({ name: sql<string>`${tagTable.name}` })
-            .from(tagTable)
-            .where(eq(tagTable.userId, userId))
-            .orderBy(asc(tagTable.name));
-    }
-
-    removeMediaByIds(mediaIds: number[]) {
-        const { mediaTable, deleteDependents } = this.repoDefinition.tables;
-
-        // Delete on other tables
-        for (const table of deleteDependents) {
-            getDbClient()
-                .delete(table)
-                .where(inArray(table.mediaId, mediaIds)).run();
-        }
-
-        // Delete on main table
-        getDbClient()
-            .delete(mediaTable)
-            .where(inArray(mediaTable.id, mediaIds)).run();
     }
 
     async searchMediadleSuggestion(query: string, limit = 20) {
@@ -326,115 +195,6 @@ export abstract class BaseRepository<
             })
             .from(mediaTable)
             .where(inArray(mediaTable.id, uniqueMediaIds));
-    }
-
-    async getListFilters(userId: number): Promise<ExpandedListFilters> {
-        const { tables: { genreTable, tagTable, listTable }, listQuery: { filterOptions } } = this.repoDefinition;
-
-        const genresPromise = getDbClient()
-            .selectDistinct({ name: sql<string>`${genreTable.name}` })
-            .from(genreTable)
-            .innerJoin(listTable, eq(listTable.mediaId, genreTable.mediaId))
-            .where(eq(listTable.userId, userId))
-            .orderBy(asc(genreTable.name));
-
-        const tagsPromise = getDbClient()
-            .selectDistinct({ name: sql<string>`${tagTable.name}` })
-            .from(tagTable)
-            .where(and(eq(tagTable.userId, userId)))
-            .orderBy(asc(tagTable.name));
-
-        const [genres, tags] = await Promise.all([genresPromise, tagsPromise]);
-
-        const specificEntries = await Promise.all(Object
-            .entries(filterOptions)
-            .map(async ([name, loadOptions]) => [name, await loadOptions(userId)] as const));
-
-        return { tags, genres, ...Object.fromEntries(specificEntries) };
-    }
-
-    async getUserFavorites(userId: number, limit = 7) {
-        const { listTable, mediaTable } = this.repoDefinition.tables;
-
-        return getDbClient()
-            .select({
-                mediaId: mediaTable.id,
-                mediaName: mediaTable.name,
-                mediaCover: mediaTable.imageCover,
-                customCover: listTable.customCover,
-                releaseDate: mediaTable.releaseDate,
-            })
-            .from(listTable)
-            .where(and(eq(listTable.userId, userId), eq(listTable.favorite, true)))
-            .leftJoin(mediaTable, eq(listTable.mediaId, mediaTable.id))
-            .limit(limit);
-    }
-
-    async searchUserListByName(userId: number, query: string, limit = 10) {
-        const { listTable, mediaTable } = this.repoDefinition.tables;
-
-        return getDbClient()
-            .selectDistinct({
-                mediaId: mediaTable.id,
-                mediaName: mediaTable.name,
-                mediaCover: mediaTable.imageCover,
-                customCover: listTable.customCover,
-                releaseDate: mediaTable.releaseDate,
-            })
-            .from(listTable)
-            .innerJoin(mediaTable, eq(listTable.mediaId, mediaTable.id))
-            .where(and(eq(listTable.userId, userId), this.mediaNameSearchCondition(query)))
-            .orderBy(asc(mediaTable.name))
-            .limit(limit);
-    }
-
-    editUserTag(userId: number, tag: Tag, action: TagAction, mediaId?: number) {
-        const { tagTable } = this.repoDefinition.tables;
-
-        const db = getDbClient();
-
-        if (action === TagAction.ADD) {
-            const [tagData] = db
-                .insert(tagTable)
-                .values({ userId, name: tag.name, mediaId })
-                .returning({ name: tagTable.name }).all();
-
-            return tagData satisfies Tag;
-        }
-        else if (action === TagAction.RENAME) {
-            if (!tag.oldName) return;
-
-            const existingTag = db
-                .select()
-                .from(tagTable)
-                .where(and(eq(tagTable.userId, userId), eq(tagTable.name, tag.name)))
-                .get();
-
-            if (existingTag) {
-                throw new FormattedError("A tag with this name already exists.");
-            }
-
-            const [tagData] = db
-                .update(tagTable)
-                .set({ name: tag.name })
-                .where(and(
-                    eq(tagTable.userId, userId),
-                    eq(tagTable.name, tag.oldName)
-                )).returning({ name: tagTable.name }).all();
-            return tagData satisfies Tag;
-        }
-        else if (action === TagAction.DELETE_ONE) {
-            if (!mediaId) return;
-
-            db
-                .delete(tagTable)
-                .where(and(eq(tagTable.userId, userId), eq(tagTable.name, tag.name), eq(tagTable.mediaId, mediaId))).run();
-        }
-        else if (action === TagAction.DELETE_ALL) {
-            db
-                .delete(tagTable)
-                .where(and(eq(tagTable.userId, userId), eq(tagTable.name, tag.name))).run();
-        }
     }
 
     findById(mediaId: number): TRepoDef["tables"]["mediaTable"]["$inferSelect"] | undefined {
@@ -583,296 +343,6 @@ export abstract class BaseRepository<
             .where(eq(listTable.userId, userId));
     }
 
-    async getUserFollowsMediaData(userId: number | undefined, mediaId: number): Promise<UserFollowsMediaData<TRepoDef["tables"]["listTable"]["$inferSelect"]>[]> {
-        const { listTable } = this.repoDefinition.tables;
-
-        if (!userId) return [];
-
-        const inFollowsLists = await getDbClient()
-            .select({
-                id: user.id,
-                name: user.name,
-                image: user.image,
-                userMedia: listTable,
-                ratingSystem: user.ratingSystem,
-            })
-            .from(followers)
-            .innerJoin(user, eq(user.id, followers.followedId))
-            .innerJoin(listTable, eq(listTable.userId, followers.followedId))
-            .innerJoin(userMediaSettings, and(
-                eq(userMediaSettings.userId, listTable.userId),
-                eq(userMediaSettings.mediaType, this.identity.mediaType),
-                eq(userMediaSettings.active, true),
-            ))
-            .where(and(eq(followers.followerId, userId), eq(followers.status, SocialState.ACCEPTED), eq(listTable.mediaId, mediaId)))
-            .orderBy(asc(user.name));
-
-        return inFollowsLists;
-    }
-
-    async getMediaCommunityActivity(actor: Actor, mediaId: number, search: SearchType) {
-        const { tables: { listTable }, communityActivity: { aggregates } } = this.repoDefinition;
-
-        const totalRedo = aggregates.totalRedo ?? sql<number>`0`;
-        const totalSpecific = aggregates.totalSpecific ?? sql<number>`0`;
-        const totalPlaytime = aggregates.totalPlaytime ?? sql<number>`0`;
-
-        const { page, perPage, offset, limit } = resolvePagination({
-            maxPerPage: 50,
-            page: search.page,
-            defaultPerPage: 8,
-            perPage: search.perPage,
-        });
-
-        const conditions = and(eq(listTable.mediaId, mediaId), communityProfileVisibilityCondition(actor));
-
-        const statsQuery = getDbClient()
-            .select({
-                totalRedo,
-                totalSpecific,
-                totalPlaytime,
-                total: count(listTable.id),
-                averageRating: sql<number | null>`AVG(${listTable.rating})`,
-                likedCount: sql<number>`COALESCE(SUM(CASE WHEN ${listTable.favorite} = 1 THEN 1 ELSE 0 END), 0)`,
-                completedCount: sql<number>`COALESCE(SUM(CASE WHEN ${listTable.status} = ${Status.COMPLETED} THEN 1 ELSE 0 END), 0)`,
-            })
-            .from(listTable)
-            .innerJoin(user, eq(user.id, listTable.userId))
-            .innerJoin(userMediaSettings, and(
-                eq(userMediaSettings.userId, listTable.userId),
-                eq(userMediaSettings.mediaType, this.identity.mediaType),
-                eq(userMediaSettings.active, true),
-            ))
-            .where(conditions)
-            .get();
-
-        const itemsQuery = getDbClient()
-            .select({
-                id: user.id,
-                name: user.name,
-                image: user.image,
-                userMedia: {
-                    ...getTableColumns(listTable),
-                    comment: sql<string | null>`NULL`,
-                },
-                ratingSystem: user.ratingSystem,
-            })
-            .from(listTable)
-            .innerJoin(user, eq(user.id, listTable.userId))
-            .innerJoin(userMediaSettings, and(
-                eq(userMediaSettings.active, true),
-                eq(userMediaSettings.userId, listTable.userId),
-                eq(userMediaSettings.mediaType, this.identity.mediaType),
-            ))
-            .where(conditions)
-            .orderBy(desc(sql`COALESCE(${listTable.lastUpdated}, ${listTable.addedAt})`))
-            .limit(limit)
-            .offset(offset);
-
-        const [stats, items] = await Promise.all([statsQuery, itemsQuery]);
-        const total = stats?.total ?? 0;
-
-        return {
-            page,
-            items,
-            total,
-            perPage,
-            pages: Math.ceil(total / perPage),
-            stats: {
-                total,
-                totalRedo: stats?.totalRedo ?? 0,
-                likedCount: stats?.likedCount ?? 0,
-                totalSpecific: stats?.totalSpecific ?? 0,
-                totalPlaytime: stats?.totalPlaytime ?? 0,
-                completedCount: stats?.completedCount ?? 0,
-                averageRating: stats?.averageRating ?? null,
-            } satisfies MediaCommunityActivityStats,
-        };
-    }
-
-    async getMediaList(currentUserId: number | undefined, userId: number, args: MediaListArgs): Promise<MediaListData<TRepoDef["tables"]["listTable"]["$inferSelect"]>> {
-        const { tables: { listTable, mediaTable, tagTable }, listQuery } = this.repoDefinition;
-
-        const { page, perPage, offset, limit } = resolvePagination({
-            page: args.page,
-            perPage: args.perPage,
-        });
-
-        const sortKeyName = resolveSorting(args.sorting, Object.keys(listQuery.sorts), listQuery.defaultSort);
-        const selectedSort = listQuery.sorts[sortKeyName];
-        const filterArgs = { ...args, currentUserId, userId };
-
-        const allFilters = {
-            ...this.baseFilterDefs,
-            ...listQuery.filters,
-        };
-
-        // Main query builder
-        let queryBuilder = getDbClient()
-            .select({
-                ...listQuery.selection,
-                ratingSystem: user.ratingSystem,
-                tags: sql` COALESCE((
-                    SELECT json_group_array(DISTINCT json_object(
-                        'id', l.id, 
-                        'name', l.name
-                    ))
-                    FROM ${tagTable} l
-                    WHERE l.media_id = ${listTable.mediaId} AND l.user_id = ${listTable.userId}
-                    ), json_array()
-                )`.mapWith(JSON.parse),
-            })
-            .from(listTable)
-            .innerJoin(user, eq(listTable.userId, user.id))
-            .innerJoin(mediaTable, eq(listTable.mediaId, mediaTable.id))
-            .$dynamic();
-
-        // Count query builder
-        let countQueryBuilder = getDbClient()
-            .select({ count: count() })
-            .from(listTable)
-            .innerJoin(mediaTable, eq(listTable.mediaId, mediaTable.id))
-            .$dynamic();
-
-        // Iterate through all filters
-        const conditions = [eq(listTable.userId, userId)];
-        for (const filterName of Object.keys(allFilters)) {
-            const currentFilter = allFilters[filterName as keyof MediaListArgs];
-            if (currentFilter?.isActive(filterArgs)) {
-                const condition = currentFilter.getCondition(filterArgs);
-                if (condition) {
-                    conditions.push(condition);
-                }
-            }
-        }
-
-        // Finish building query
-        queryBuilder = queryBuilder.where(and(...conditions));
-        countQueryBuilder = countQueryBuilder.where(and(...conditions));
-        const finalQuery = queryBuilder
-            .orderBy(...(Array.isArray(selectedSort) ? selectedSort : [selectedSort]))
-            .limit(limit)
-            .offset(offset);
-
-        // Execute query
-        const [results, totalResult] = await Promise.all([finalQuery.execute(), countQueryBuilder.get()]);
-
-        // Calculate total pages
-        const totalItems = totalResult?.count ?? 0;
-        const totalPages = Math.ceil(totalItems / perPage);
-
-        // Fetch common IDs (if in filter)
-        let commonIdsSet = new Set<number>();
-        if (currentUserId && currentUserId !== userId && !filterArgs.hideCommon && results.length > 0) {
-            const mediaIds = results.map((m: any) => m.mediaId);
-            const commonMediaIdsResult = await getDbClient()
-                .select({ mediaId: listTable.mediaId })
-                .from(listTable)
-                .where(and(eq(listTable.userId, currentUserId), inArray(listTable.mediaId, mediaIds)));
-
-            commonIdsSet = new Set(commonMediaIdsResult.map(m => m.mediaId));
-        }
-
-        // Process results - add `common` field and replace `imageCover` with user's `customCover`
-        const processedResults = results.map((item: any) => ({
-            ...item,
-            common: commonIdsSet.has(item.mediaId),
-            imageCover: item.customCover ?? item.imageCover,
-        }));
-
-        return {
-            items: processedResults,
-            pagination: {
-                page,
-                perPage,
-                totalPages,
-                totalItems,
-                sorting: sortKeyName,
-                availableSorting: Object.keys(listQuery.sorts),
-            },
-        };
-    }
-
-    async getTagsView(userId: number, search: SimpleSearch) {
-        const { listTable, mediaTable, tagTable } = this.repoDefinition.tables;
-
-        const pagination = resolvePagination({ page: search.page, perPage: 16, maxPerPage: 16 });
-        const searchCondition = search.search ? like(tagTable.name, `%${search.search}%`) : undefined;
-
-        const rankedSq = getDbClient()
-            .$with("ranked_data")
-            .as(getDbClient()
-                .select({
-                    tagId: tagTable.id,
-                    mediaId: listTable.mediaId,
-                    mediaCover: mediaTable.imageCover,
-                    tagName: sql<string>`${tagTable.name}`.as("tag_name"),
-                    mediaName: sql<string>`${mediaTable.name}`.as("media_name"),
-                    rowNumber: sql<number>`row_number() over (
-                        partition by ${tagTable.name} 
-                        order by ${listTable.lastUpdated} desc
-                    )`.as("row_number"),
-                    totalCount: sql<number>`count(${tagTable.mediaId}) over (
-                        partition by ${tagTable.name}
-                    )`.as("total_count"),
-                    tagLastActivity: sql<number>`max(${listTable.lastUpdated}) over (
-                        partition by ${tagTable.name}
-                    )`.as("tags_last_activity"),
-                })
-                .from(tagTable)
-                .leftJoin(mediaTable, eq(tagTable.mediaId, mediaTable.id))
-                .leftJoin(listTable, and(eq(tagTable.mediaId, listTable.mediaId), eq(listTable.userId, userId)))
-                .where(and(eq(tagTable.userId, userId), searchCondition))
-            );
-
-        const [{ total, exactMatch }, items] = await Promise.all([
-            getDbClient()
-                .select({
-                    total: countDistinct(tagTable.name),
-                    exactMatch: search.search
-                        ? sql<number>`max(case when lower(${tagTable.name}) = lower(${search.search}) then 1 else 0 end)`
-                        : sql<number>`0`,
-                })
-                .from(tagTable)
-                .where(and(eq(tagTable.userId, userId), searchCondition))
-                .then(([result]) => result),
-            getDbClient()
-                .with(rankedSq)
-                .select({
-                    tagId: rankedSq.tagId,
-                    tagName: rankedSq.tagName,
-                    totalCount: rankedSq.totalCount,
-                    medias: sql<{ mediaId: number; mediaName: string; mediaCover: string }[]>`
-                        json_group_array(json_object(
-                            'mediaId', ${rankedSq.mediaId},
-                            'mediaName', ${rankedSq.mediaName},
-                            'mediaCover', ${rankedSq.mediaCover}
-                        ))`.mapWith((rawString) => {
-                        const parsedArray = JSON.parse(rawString);
-                        return parsedArray.filter((item: any) => item.mediaId !== null).map((item: any) => ({
-                            ...item,
-                            mediaCover: mediaTable.imageCover.mapFromDriverValue(item.mediaCover),
-                        }))
-                    }),
-                })
-                .from(rankedSq)
-                .where(lte(rankedSq.rowNumber, 3))
-                .groupBy(sql`${rankedSq.tagName}`)
-                .orderBy(desc(rankedSq.tagLastActivity))
-                .limit(pagination.limit)
-                .offset(pagination.offset),
-        ]);
-
-        return {
-            total,
-            items: items,
-            page: pagination.page,
-            exactMatch: !!exactMatch,
-            perPage: pagination.perPage,
-            pages: Math.ceil(total / pagination.perPage),
-        };
-    }
-
     async getUpcomingMedia(userId?: number, maxAWeek?: boolean): Promise<UpComingMedia[]> {
         // If userId undefined, returns all media requiring notification to be sent to their respective users.
         // If userId is defined, returns upcoming media from that user's media list.
@@ -989,41 +459,6 @@ export abstract class BaseRepository<
         }
 
         return results;
-    }
-
-    // --- Admin Functions -------------------------------------------------
-
-    async getUserMediaAddedAndUpdatedForAdmin() {
-        const { listTable } = this.repoDefinition.tables;
-
-        const [addedThisMonth] = await getDbClient()
-            .select({ count: countDistinct(listTable.id) })
-            .from(listTable)
-            .where(gte(listTable.addedAt, sql`date('now', 'start of month')`));
-
-        const [addedLastMonth] = await getDbClient()
-            .select({ count: countDistinct(listTable.id) })
-            .from(listTable)
-            .where(and(
-                gte(listTable.addedAt, sql`date('now', '-1 month', 'start of month')`),
-                lt(listTable.addedAt, sql`date('now', 'start of month')`)
-            ));
-
-        const [updatedThisMonth] = await getDbClient()
-            .select({ count: countDistinct(listTable.mediaId) })
-            .from(listTable)
-            .where(gte(listTable.lastUpdated, sql`date('now', 'start of month')`));
-
-        return {
-            added: {
-                thisMonth: addedThisMonth?.count || 0,
-                lastMonth: addedLastMonth?.count || 0,
-                comparedToLastMonth: (addedThisMonth?.count || 0) - (addedLastMonth?.count || 0),
-            },
-            updated: {
-                thisMonth: updatedThisMonth?.count || 0,
-            }
-        };
     }
 
     // --- Abstract Methods -----------------------------------------------------------------

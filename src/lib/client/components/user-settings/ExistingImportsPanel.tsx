@@ -1,7 +1,7 @@
 import {useState} from "react";
 import {useQuery} from "@tanstack/react-query";
 import {Grid2X2XIcon} from "lucide-react";
-import {formatDate} from "@/lib/utils/date-formatting";
+import {formatDate} from "@/lib/utils/formatting/date";
 import {Spinner} from "@/lib/client/components/ui/spinner";
 import {useNavigate, useSearch} from "@tanstack/react-router";
 import {EmptyState} from "@/lib/client/components/general/EmptyState";

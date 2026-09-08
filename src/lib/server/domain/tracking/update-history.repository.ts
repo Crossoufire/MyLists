@@ -1,7 +1,7 @@
 import {SimpleSearch} from "@/lib/schemas";
 import {alias} from "drizzle-orm/sqlite-core";
 import {paginate} from "@/lib/server/database/pagination";
-import {dateFromUTCInput} from "@/lib/utils/date-formatting";
+import {dateFromUTCInput} from "@/lib/utils/formatting/date";
 import {LogUpdateParams} from "@/lib/types/user-updates.types";
 import {getDbClient} from "@/lib/server/database/async-storage";
 import {MediaType, SocialState, UpdateType} from "@/lib/utils/enums";

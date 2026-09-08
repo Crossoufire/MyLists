@@ -1,10 +1,10 @@
 import {Button} from "@/lib/client/components/ui/button";
-import {toActivityDisplayValue} from "@/lib/utils/activity-utils";
-import {formatMinutes, formatNumber} from "@/lib/utils/number-formatting";
+import {toActivityDisplayValue} from "@/lib/utils/media/activity";
+import {formatMinutes, formatNumber} from "@/lib/utils/formatting/number";
 import {getMediaDefinition} from "@/lib/media-definitions/definition.registry";
 import {ArrowRight, CheckCircle, Clock3, Hourglass, RotateCw} from "lucide-react";
 import {MonthlyActivityEditor, MonthlyActivityOccurrence} from "@/lib/types/activity.types";
-import {formatDateTime, formatMonthYear, toDateTimeAttribute} from "@/lib/utils/date-formatting";
+import {formatDateTime, formatMonthYear, toDateTimeAttribute} from "@/lib/utils/formatting/date";
 import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle} from "@/lib/client/components/ui/dialog";
 
 

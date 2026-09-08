@@ -1,6 +1,6 @@
 import {JSX} from "react";
 import {ApiProviderType} from "@/lib/utils/enums";
-import {addSeo, addSeoLinks} from "@/lib/utils/add-seo";
+import {addSeo, addSeoLinks} from "@/lib/client/seo";
 import {Button} from "@/lib/client/components/ui/button";
 import {createFileRoute, Link} from "@tanstack/react-router";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";

@@ -1,10 +1,11 @@
 import type {SQL} from "drizzle-orm";
 import type {CoverType} from "@/lib/types/media-common.types";
 import type {TopAffinityDefinition} from "@/lib/types/stats.types";
+import type {MediaEditFieldByType} from "@/lib/schemas/media-details.schema";
 import type {MediaDefinition} from "@/lib/media-definitions/base/media.definition";
 import type {ApiProviderType, JobType, MediaType, Status} from "@/lib/utils/enums";
 import type {AnySQLiteColumn, AnySQLiteTable, SelectedFieldsFlat} from "drizzle-orm/sqlite-core";
-import type {FilterDefinitions, FilterOptionLoaders} from "@/lib/server/domain/media/base/media-list.query";
+import {FilterDefinitions, FilterOptionLoaders} from "@/lib/server/domain/media/base/media-list.queries";
 
 
 type NotNullColumn<T> = AnySQLiteColumn<{ data: T; notNull: true }>;
@@ -141,9 +142,10 @@ interface MediaStatisticsDefinition<TAffinityDefinitions extends AffinityDefinit
 
 interface MediaServicePolicy<
     TTables extends BaseMediaTables = BaseMediaTables,
+    TMediaType extends MediaType = MediaType,
 > {
     readonly defaultStatus: Status;
-    readonly editableFields: readonly (keyof TTables["mediaTable"]["$inferSelect"] & string)[];
+    readonly editableFields: readonly MediaEditFieldByType[TMediaType][];
     readonly progressTotals: (state: TTables["listTable"]["$inferSelect"] | null, media: TTables["mediaTable"]["$inferSelect"]) => ProgressTotals;
 }
 
@@ -191,7 +193,7 @@ export interface ServerMediaDefinition<
     readonly ingestion: TIngestion;
     readonly attribution: ProviderAttribution;
     readonly identity: MediaIdentity<TMediaType>;
-    readonly service: MediaServicePolicy<TTables>;
+    readonly service: MediaServicePolicy<TTables, TMediaType>;
     readonly statistics: MediaStatisticsDefinition<TAffinityDefinitions>;
     readonly repository: MediaRepositoryDefinition<TTables, TSortDefinitions>;
 }
@@ -232,7 +234,7 @@ export type AnyServerMediaDefinition = {
     readonly statistics: AnyMediaStatisticsDefinition;
     readonly service: {
         readonly defaultStatus: Status;
-        readonly editableFields: readonly string[];
+        readonly editableFields: readonly MediaEditFieldByType[MediaType][];
         readonly progressTotals: (state: any | null, media: any) => ProgressTotals;
     };
 };

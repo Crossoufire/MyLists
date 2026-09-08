@@ -1,7 +1,7 @@
 import {Status} from "@/lib/utils/enums";
 import {eq, getTableColumns, isNull, sql} from "drizzle-orm";
 import {getDbClient} from "@/lib/server/database/async-storage";
-import {AddedMediaDetails} from "@/lib/types/media-common.types";
+import {AddedMediaDetails, IdNamePair} from "@/lib/types/media-common.types";
 import {BaseRepository} from "@/lib/server/domain/media/base/base.repository";
 import {books, booksAuthors, booksGenre, booksList} from "@/lib/server/database/schema";
 import {BookServerDefinition, booksServerDefinition} from "@/lib/media-definitions/books/book.definition.server";
@@ -51,8 +51,10 @@ export class BooksRepository extends BaseRepository<BookServerDefinition> {
         const details = getDbClient()
             .select({
                 ...getTableColumns(books),
-                authors: sql`json_group_array(DISTINCT json_object('id', ${booksAuthors.id}, 'name', ${booksAuthors.name}))`.mapWith(JSON.parse),
-                genres: sql`json_group_array(DISTINCT json_object('id', ${booksGenre.id}, 'name', ${booksGenre.name}))`.mapWith(JSON.parse),
+                authors: sql`json_group_array(DISTINCT json_object('id', ${booksAuthors.id}, 'name', ${booksAuthors.name}))
+                    FILTER (WHERE ${booksAuthors.id} IS NOT NULL)`.mapWith((value): IdNamePair[] => JSON.parse(value)),
+                genres: sql`json_group_array(DISTINCT json_object('id', ${booksGenre.id}, 'name', ${booksGenre.name}))
+                    FILTER (WHERE ${booksGenre.id} IS NOT NULL)`.mapWith((value): IdNamePair[] => JSON.parse(value)),
             }).from(books)
             .leftJoin(booksAuthors, eq(booksAuthors.mediaId, books.id))
             .leftJoin(booksGenre, eq(booksGenre.mediaId, books.id))
@@ -62,15 +64,13 @@ export class BooksRepository extends BaseRepository<BookServerDefinition> {
 
         if (!details) return;
 
-        const result: Book & AddedMediaDetails = {
+        const result = {
             ...details,
             providerData: {
                 name: this.attribution.name,
                 url: `${this.attribution.mediaUrl}${details.apiId}`,
             },
-            genres: details.genres || [],
-            authors: details.authors || [],
-        };
+        } satisfies Book & AddedMediaDetails;
 
         return result;
     }
