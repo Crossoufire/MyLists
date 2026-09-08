@@ -1,7 +1,5 @@
 import {useState} from "react";
-import {Pencil} from "lucide-react";
 import {useQueryClient} from "@tanstack/react-query";
-import {Button} from "@/lib/client/components/ui/button";
 import {UpdateTvRedo} from "@/lib/client/components/media/tv/UpdateTvRedo";
 import {UpdateStatus} from "@/lib/client/components/media/base/UpdateStatus";
 import {MediaType, Status, TvMediaType, UpdateType} from "@/lib/utils/enums";
@@ -10,6 +8,9 @@ import {TvSeasonEditor} from "@/lib/client/components/media/tv/TvSeasonEditor";
 import {UpdateSeasonsEps} from "@/lib/client/components/media/tv/UpdateSeasonsEps";
 import {MediaUserDetailsProps} from "@/lib/client/components/media/media-config.types";
 import {useUpdateUserMediaMutation} from "@/lib/client/react-query/query-mutations/user-media.mutations";
+import {ButtonGroup} from "@/lib/client/components/ui/button-group";
+import {Button} from "@/lib/client/components/ui/button";
+import {Pencil} from "lucide-react";
 
 
 type TvUserDetailsProps<T extends MediaType> = MediaUserDetailsProps<T>;
@@ -40,6 +41,7 @@ export const TvUserDetails = ({ userMedia, mediaType, queryOption, mutationOptio
                 status={userMedia.status}
                 updateStatus={updateUserMediaMutation}
             />
+
             {(userMedia.status !== Status.PLAN_TO_WATCH && userMedia.status !== Status.RANDOM) &&
                 <UpdateSeasonsEps
                     epsPerSeason={mediaData.epsPerSeason!}
@@ -48,27 +50,29 @@ export const TvUserDetails = ({ userMedia, mediaType, queryOption, mutationOptio
                     onUpdateMutation={updateUserMediaMutation}
                 />
             }
+
             {userMedia.status !== Status.PLAN_TO_WATCH &&
                 <div className="flex justify-between items-center">
                     <div>Rating</div>
-                    <div className="flex items-center gap-1">
+
+                    <ButtonGroup className="w-34">
                         <RatingSelect
-                            bulk
+                            bulk={true}
                             rating={userMedia.rating}
                             label="Set all season ratings"
                             disabled={mutationOptions?.backlogMode || updateUserMediaMutation.isPending}
                             onChange={rating => updateUserMediaMutation.mutate({ payload: { type: UpdateType.RATING, rating } })}
                         />
                         <Button
-                            size="icon-sm"
-                            variant="ghost"
+                            size="sm"
+                            variant="outline"
+                            className="bg-input/30"
                             disabled={mutationOptions?.backlogMode}
-                            aria-label="Edit individual season ratings"
                             onClick={() => setRatingsOpen(true)}
                         >
                             <Pencil/>
                         </Button>
-                    </div>
+                    </ButtonGroup>
                     <TvSeasonEditor
                         mode="rating"
                         open={ratingsOpen}

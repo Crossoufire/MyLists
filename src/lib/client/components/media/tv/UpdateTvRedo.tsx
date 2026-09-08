@@ -5,6 +5,7 @@ import {Button} from "@/lib/client/components/ui/button";
 import {TvSeasonEditor} from "@/lib/client/components/media/tv/TvSeasonEditor";
 import {useUpdateUserMediaMutation} from "@/lib/client/react-query/query-mutations/user-media.mutations";
 
+
 interface UpdateTvRedoProps {
     redo: number;
     userId: number;
@@ -13,18 +14,28 @@ interface UpdateTvRedoProps {
     onUpdateMutation: ReturnType<typeof useUpdateUserMediaMutation>;
 }
 
+
 export const UpdateTvRedo = ({ redo, onUpdateMutation, ...source }: UpdateTvRedoProps) => {
     const [open, setOpen] = useState(false);
-    return <>
-        <Button size="sm" variant="outline" className="w-34 justify-between" onClick={() => setOpen(true)}>
-            {redo} Seasons <Pencil data-icon="inline-end"/>
-        </Button>
-        <TvSeasonEditor
-            {...source}
-            open={open}
-            mode="redo"
-            onOpenChange={setOpen}
-            mutation={onUpdateMutation}
-        />
-    </>;
+    return (
+        <>
+            <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setOpen(true)}
+                className="w-34 bg-input/30 justify-between"
+            >
+                {redo} Seasons
+                <Pencil/>
+            </Button>
+
+            <TvSeasonEditor
+                {...source}
+                open={open}
+                mode={"redo"}
+                onOpenChange={setOpen}
+                mutation={onUpdateMutation}
+            />
+        </>
+    );
 };

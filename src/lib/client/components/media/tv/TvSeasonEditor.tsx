@@ -1,24 +1,26 @@
-import {useQuery} from "@tanstack/react-query";
 import {Minus, Plus} from "lucide-react";
-import {TvMediaType, UpdateType} from "@/lib/utils/enums";
+import {useQuery} from "@tanstack/react-query";
 import {REDO_MAX} from "@/lib/utils/constants";
 import {Button} from "@/lib/client/components/ui/button";
-import {Field, FieldGroup, FieldLabel} from "@/lib/client/components/ui/field";
+import {TvMediaType, UpdateType} from "@/lib/utils/enums";
 import {ButtonGroup} from "@/lib/client/components/ui/button-group";
 import {RatingSelect} from "@/lib/client/components/media/base/RatingSelect";
+import {Field, FieldGroup, FieldLabel} from "@/lib/client/components/ui/field";
 import {tvSeasonsOptions} from "@/lib/client/react-query/query-options/tv-seasons.options";
 import {useUpdateUserMediaMutation} from "@/lib/client/react-query/query-mutations/user-media.mutations";
 import {Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle} from "@/lib/client/components/ui/dialog";
 
+
 interface TvSeasonEditorProps {
     open: boolean;
-    onOpenChange: (open: boolean) => void;
-    mode: "rating" | "redo";
-    mediaType: TvMediaType;
-    mediaId: number;
     userId: number;
+    mediaId: number;
+    mediaType: TvMediaType;
+    mode: "rating" | "redo";
+    onOpenChange: (open: boolean) => void;
     mutation: ReturnType<typeof useUpdateUserMediaMutation>;
 }
+
 
 export const TvSeasonEditor = ({ open, onOpenChange, mode, mediaType, mediaId, userId, mutation }: TvSeasonEditorProps) => {
     const query = useQuery({ ...tvSeasonsOptions(mediaType, mediaId, userId), enabled: open });
@@ -42,7 +44,8 @@ export const TvSeasonEditor = ({ open, onOpenChange, mode, mediaType, mediaId, u
                 <DialogHeader>
                     <DialogTitle>{mode === "rating" ? "Season ratings" : "Re-watched seasons"}</DialogTitle>
                     <DialogDescription>
-                        {mode === "rating" ? "Your overall rating is the average of rated current seasons." : "Manage how many times you have re-watched each season."} Changes save automatically.
+                        {mode === "rating" ? "Your overall rating is the average of rated current seasons." : "Manage how many times you have re-watched each season."} Changes save
+                        automatically.
                     </DialogDescription>
                 </DialogHeader>
                 {query.isPending && <p role="status">Loading seasons…</p>}
