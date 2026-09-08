@@ -210,25 +210,35 @@ function FeatureVotesPage() {
 
                         <dl className="mt-5 border-t">
                             <div className="grid grid-cols-[2rem_minmax(0,1fr)] gap-3 border-b py-3.5">
-                                <span className="font-mono text-xs font-semibold text-brand" aria-hidden="true">01</span>
+                                <span className="text-xs font-semibold text-brand" aria-hidden="true">
+                                    01
+                                </span>
                                 <div>
-                                    <dt className="text-sm font-semibold text-foreground">One vote per idea</dt>
+                                    <dt className="text-sm font-semibold text-foreground">
+                                        One vote per idea
+                                    </dt>
                                     <dd className="mt-1 text-xs leading-relaxed text-muted-foreground">
                                         Every account can support each proposal once.
                                     </dd>
                                 </div>
                             </div>
                             <div className="grid grid-cols-[2rem_minmax(0,1fr)] gap-3 border-b py-3.5">
-                                <span className="font-mono text-xs font-semibold text-brand" aria-hidden="true">02</span>
+                                <span className="text-xs font-semibold text-brand" aria-hidden="true">
+                                    02
+                                </span>
                                 <div>
-                                    <dt className="text-sm font-semibold text-foreground">Change your mind</dt>
+                                    <dt className="text-sm font-semibold text-foreground">
+                                        Change your mind
+                                    </dt>
                                     <dd className="mt-1 text-xs leading-relaxed text-muted-foreground">
                                         You can rescind your vote while voting remains open.
                                     </dd>
                                 </div>
                             </div>
                             <div className="grid grid-cols-[2rem_minmax(0,1fr)] gap-3 border-b py-3.5">
-                                <span className="font-mono text-xs font-semibold text-brand" aria-hidden="true">03</span>
+                                <span className="text-xs font-semibold text-brand" aria-hidden="true">
+                                    03
+                                </span>
                                 <div>
                                     <dt className="text-sm font-semibold text-foreground">Follow the outcome</dt>
                                     <dd className="mt-1 text-xs leading-relaxed text-muted-foreground">
@@ -265,15 +275,15 @@ function FeatureVotesPage() {
                                 Community roadmap
                             </h2>
                         </div>
-                        <span className="font-mono text-xs tabular-nums text-muted-foreground">
+                        <span className="text-xs tabular-nums text-muted-foreground">
                             Sorted by community votes
                         </span>
                     </div>
 
                     <SearchInput
                         value={searchQuery}
-                        className="mb-3 w-full max-w-md max-sm:max-w-none"
                         placeholder="Search by title or description..."
+                        className="mb-3 w-full max-w-md max-sm:max-w-none"
                         onChange={(ev) => setSearchQuery(ev.target.value)}
                     />
 
@@ -320,7 +330,7 @@ function FeatureVotesPage() {
                                             >
                                                 <ChevronUp/>
                                             </Button>
-                                            <strong className="mt-2 font-mono text-lg leading-none tabular-nums text-foreground">
+                                            <strong className="mt-2 text-lg leading-none tabular-nums text-foreground">
                                                 {req.totalVotes}
                                             </strong>
                                             <span className="mt-1 text-[10px] uppercase tracking-wider text-muted-foreground">
