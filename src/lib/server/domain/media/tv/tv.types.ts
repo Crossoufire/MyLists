@@ -7,8 +7,6 @@ import {type TvSeasonState, tvSeasonStatesSchema} from "@/lib/schemas/tv-seasons
 import {
     importCommentSchema,
     importFavoriteSchema,
-    importPositiveProgressSchema,
-    importProgressSchema,
     importStatusSchema,
     importTotalSchema
 } from "@/lib/server/domain/imports/import-list-validation";
@@ -41,16 +39,14 @@ export type UpdateTvWithDetails = Omit<UpsertTvWithDetails, "mediaData"> & {
 
 
 const tvListSchemaOverrides = (mediaType: TvMediaType) => ({
-    total: importTotalSchema,
     comment: importCommentSchema,
     favorite: importFavoriteSchema,
-    currentEpisode: importProgressSchema,
     status: importStatusSchema(mediaType),
-    currentSeason: importPositiveProgressSchema,
 });
 
 
 const seasonalImportFields = {
+    firstWatchProgress: importTotalSchema.nonoptional(),
     seasons: z.preprocess((value) => {
         if (typeof value !== "string") return value;
         try {
@@ -86,24 +82,30 @@ const animeFinalListInsertSchema = createInsertSchema(animeList, {
 const seriesImportPayloadSchema = seriesCSVListSchema.omit({
     id: true,
     redo: true,
+    total: true,
     rating: true,
     userId: true,
     mediaId: true,
     addedAt: true,
     customCover: true,
     lastUpdated: true,
+    currentSeason: true,
+    currentEpisode: true,
 });
 
 
 const animeImportPayloadSchema = animeCSVListSchema.omit({
     id: true,
     redo: true,
+    total: true,
     rating: true,
     userId: true,
     mediaId: true,
     addedAt: true,
     customCover: true,
     lastUpdated: true,
+    currentSeason: true,
+    currentEpisode: true,
 });
 
 

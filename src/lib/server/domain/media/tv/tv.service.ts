@@ -47,8 +47,14 @@ export function createTvService(repository: TvRepository, definition: TvDefiniti
     }
 
     async function downloadMediaListAsCSV(userId: number) {
-        const rows = await service.downloadMediaListAsCSV(userId);
-        return rows?.map(row => ({ ...row, formatVersion: "2" }));
+        const rows = await repository.downloadMediaListAsCSV(userId);
+
+        return rows.map(({ addedAt: _addedAt, lastUpdated: _lastUpdated, ...row }) => ({
+            ...row,
+            formatVersion: "2",
+            mediaType: identity.mediaType,
+            externalApiSource: definition.ingestion.externalApiSource,
+        }));
     }
 
     async function updateMediaEditableFields(mediaId: number, payload: EditMediaDetailsPayloadByType[typeof MediaType.SERIES | typeof MediaType.ANIME]) {

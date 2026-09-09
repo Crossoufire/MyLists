@@ -235,6 +235,7 @@ describe.each([seriesServerDefinition, animeServerDefinition])("$identity.mediaT
         const original = seasons();
         const exported = (await service.downloadMediaListAsCSV(1))!;
         expect(exported[0].formatVersion).toBe("2");
+        expect(exported[0].firstWatchProgress).toBe(24);
         const parsed = parseMyListsCsv(convertToCsv(exported));
         expect(parsed.failedCount).toBe(0);
         const writer = new TvImportListWriter(service);
@@ -246,6 +247,60 @@ describe.each([seriesServerDefinition, animeServerDefinition])("$identity.mediaT
         await writer.addMatchedItems(1, [{ item, mediaId: 1 }]);
         expect(seasons()).toEqual(original);
         expect(read()).toMatchObject({ rating: 8.5, redo: 102, total: 840 });
+    });
+
+    it.each([
+        { change: "a season disappears", exportSeasons: [1, 2, 3], importSeasons: [1, 3], redoSeason: 2, total: 24, currentSeason: 3 },
+        { change: "the last season disappears", exportSeasons: [1, 2, 3], importSeasons: [1, 2], redoSeason: 3, total: 24, currentSeason: 2 },
+        { change: "an unavailable season returns", exportSeasons: [1, 3], importSeasons: [1, 2, 3], redoSeason: 2, total: 40, currentSeason: 3 },
+    ])("preserves first-watch progress when $change between export and import", async scenario => {
+        update({ type: UpdateType.RATING, seasonRating: { season: scenario.redoSeason, rating: 9 } });
+        update({ type: UpdateType.REDO, seasonRedos: [{ season: scenario.redoSeason, redo: 2 }] });
+        const refresh = (numbers: number[]) => withTransaction(() => repository.updateMediaWithDetails({
+            mediaData: { apiId: 1 }, seasonsData: numbers.map(season => ({ season, episodes: 8 })),
+        }));
+        refresh(scenario.exportSeasons);
+        const exported = (await service.downloadMediaListAsCSV(1))!;
+        expect(exported[0].firstWatchProgress).toBe(24);
+        const parsed = parseMyListsCsv(convertToCsv(exported));
+        expect(parsed.failedCount).toBe(0);
+        const item = { ...parsed.items[0], id: 1, jobId: 1, mediaType, matchedMediaId: 1, statusReason: null } as MatchedImportItem["item"];
+
+        tracking.removeMediaFromList(action);
+        refresh(scenario.importSeasons);
+        await new TvImportListWriter(service).addMatchedItems(1, [{ item, mediaId: 1 }]);
+        expect(read()).toMatchObject({ total: scenario.total, currentSeason: scenario.currentSeason, currentEpisode: 8 });
+        expect(seasons()).toContainEqual({
+            season: scenario.redoSeason, redo: 2, rating: 9,
+            episodes: scenario.importSeasons.includes(scenario.redoSeason) ? 8 : null,
+        });
+        expect((await service.downloadMediaListAsCSV(1))![0].firstWatchProgress).toBe(24);
+
+        StatsRepository.updateAllUsersPreComputedStats(mediaType, createTvStatistics(definition).computeAllUsersStats());
+        expect(stats()).toMatchObject({ totalSpecific: scenario.total, timeSpent: scenario.total * 30 });
+        refresh([1, 2, 3]);
+        expect(read()).toMatchObject({ total: 40, redo: 2, rating: 9, currentSeason: 3, currentEpisode: 8 });
+        expect(stats()).toMatchObject({ totalSpecific: 40, timeSpent: 1200 });
+    });
+
+    it("recalculates partial progress and rewatches when episode counts change before import", async () => {
+        update({ type: UpdateType.STATUS, status: Status.WATCHING });
+        update({ type: UpdateType.TV, currentSeason: 1 });
+        update({ type: UpdateType.TV, currentEpisode: 7 });
+        update({ type: UpdateType.REDO, seasonRedos: [{ season: 2, redo: 2 }] });
+        const exported = (await service.downloadMediaListAsCSV(1))!;
+        expect(exported[0]).toMatchObject({ firstWatchProgress: 7, total: 23 });
+        const parsed = parseMyListsCsv(convertToCsv(exported));
+        expect(parsed.failedCount).toBe(0);
+        const item = { ...parsed.items[0], id: 1, jobId: 1, mediaType, matchedMediaId: 1, statusReason: null } as MatchedImportItem["item"];
+
+        tracking.removeMediaFromList(action);
+        withTransaction(() => repository.updateMediaWithDetails({
+            mediaData: { apiId: 1 }, seasonsData: [{ season: 1, episodes: 4 }, { season: 2, episodes: 10 }, { season: 3, episodes: 8 }],
+        }));
+        await new TvImportListWriter(service).addMatchedItems(1, [{ item, mediaId: 1 }]);
+        expect(read()).toMatchObject({ total: 27, redo: 2, currentSeason: 2, currentEpisode: 3 });
+        expect((await service.downloadMediaListAsCSV(1))![0].firstWatchProgress).toBe(7);
     });
 
     it("rolls back the parent import when seasonal insertion fails", async () => {

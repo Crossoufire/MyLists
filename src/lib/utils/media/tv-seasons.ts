@@ -32,3 +32,26 @@ export const attachTvSeasonEpisodes = (states: TvSeasonState[], metadata: { seas
 
     return states.map(s => ({ ...s, episodes: episodes.get(s.season) ?? null }));
 };
+
+
+export const getTvSeasonPosition = (progress: number, seasons: { season: number; episodes: number }[]) => {
+    const totalEpsAvailable = seasons.reduce((sum, season) => sum + season.episodes, 0);
+
+    if (totalEpsAvailable === 0 || seasons.length === 0) {
+        return { season: 1, episode: 0 };
+    }
+
+    if (progress >= totalEpsAvailable) {
+        return { season: seasons.at(-1)!.season, episode: seasons.at(-1)!.episodes };
+    }
+
+    let accumulated = 0;
+    for (const season of seasons) {
+        if (accumulated + season.episodes >= progress) {
+            return { season: season.season, episode: Math.max(0, progress - accumulated) };
+        }
+        accumulated += season.episodes;
+    }
+
+    return { season: 1, episode: 0 };
+};

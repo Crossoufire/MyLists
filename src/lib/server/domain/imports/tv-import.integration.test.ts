@@ -86,6 +86,7 @@ describe("TV import processing", () => {
             externalApiSource: ApiProviderType.TMDB,
             payload: {
                 status: Status.COMPLETED,
+                firstWatchProgress: 18,
                 seasons: [{ season: 1, redo: 0, rating: 8 }, { season: 2, redo: 0, rating: 8 }],
             },
             status: ImportItemStatus.QUEUED,

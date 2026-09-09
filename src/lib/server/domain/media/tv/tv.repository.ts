@@ -6,9 +6,9 @@ import type {TvSeasonState} from "@/lib/schemas/tv-seasons.schema";
 import {StatsRepository} from "@/lib/server/domain/stats/stats.repository";
 import {createMediaQueries} from "@/lib/server/domain/media/base/media.queries";
 import {getDbClient, withTransaction} from "@/lib/server/database/async-storage";
-import {attachTvSeasonEpisodes, getTvSeasonTotals} from "@/lib/utils/media/tv-seasons";
 import {AnimeServerDefinition} from "@/lib/media-definitions/tv/anime/anime.definition.server";
 import {SeriesServerDefinition} from "@/lib/media-definitions/tv/series/series.definition.server";
+import {attachTvSeasonEpisodes, getTvSeasonPosition, getTvSeasonTotals} from "@/lib/utils/media/tv-seasons";
 import {TvListUpdate, TvType, UpdateTvWithDetails, UpsertTvWithDetails} from "@/lib/server/domain/media/tv/tv.types";
 import {and, asc, eq, getTableColumns, gte, inArray, isNotNull, isNull, lte, max, notInArray, or, sql} from "drizzle-orm";
 
@@ -56,29 +56,28 @@ export function createTvRepository(definition: TvDefinition) {
     }
 
     async function downloadMediaListAsCSV(userId: number) {
-        const { listTable, seasonStateTable } = repoDefinition.tables;
+        const { mediaTable, listTable, seasonStateTable, epsPerSeasonTable } = repoDefinition.tables;
 
-        const rows = await queries.downloadMediaListAsCSV(userId);
-
-        const seasons = getDbClient()
+        return getDbClient()
             .select({
-                redo: seasonStateTable.redo, rating: seasonStateTable.rating,
-                listId: seasonStateTable.listId, season: seasonStateTable.season,
-            }).from(seasonStateTable)
-            .innerJoin(listTable, eq(listTable.id, seasonStateTable.listId))
+                ...getTableColumns(listTable),
+                mediaName: mediaTable.name,
+                releaseDate: mediaTable.releaseDate,
+                externalApiId: sql<string>`${mediaTable.apiId}`,
+                firstWatchProgress: sql<number>`${listTable.total} - COALESCE(SUM(${seasonStateTable.redo} * ${epsPerSeasonTable.episodes}), 0)`,
+                seasons: sql<string>`json_group_array(json_object(
+                    'season', ${seasonStateTable.season}, 'rating', ${seasonStateTable.rating}, 'redo', ${seasonStateTable.redo}
+                ) ORDER BY ${seasonStateTable.season}) FILTER (WHERE ${seasonStateTable.season} IS NOT NULL)`,
+            }).from(listTable)
+            .innerJoin(mediaTable, eq(mediaTable.id, listTable.mediaId))
+            .leftJoin(seasonStateTable, eq(seasonStateTable.listId, listTable.id))
+            .leftJoin(epsPerSeasonTable, and(
+                eq(epsPerSeasonTable.mediaId, listTable.mediaId),
+                eq(epsPerSeasonTable.season, seasonStateTable.season),
+            ))
             .where(eq(listTable.userId, userId))
-            .orderBy(asc(seasonStateTable.season))
+            .groupBy(listTable.id)
             .all();
-
-        const byList = new Map<number, TvSeasonState[]>();
-
-        for (const { listId, ...season } of seasons) {
-            const list = byList.get(listId) ?? [];
-            list.push(season);
-            byList.set(listId, list);
-        }
-
-        return rows?.map(row => ({ ...row, seasons: JSON.stringify(byList.get(row.id) ?? []) }));
     }
 
     function getUserSeasons(userId: number, mediaId: number) {
@@ -450,7 +449,7 @@ export function createTvRepository(definition: TvDefinition) {
             const totals = getTvSeasonTotals(newStates);
 
             const newTotal = absoluteProgress + totals.redoEpisodes;
-            const newPosition = _reorderSeasEps(absoluteProgress, seasonsData);
+            const newPosition = getTvSeasonPosition(absoluteProgress, seasonsData);
 
             const status = shouldMoveToOnHold ? Status.ON_HOLD : userMedia.status;
             getDbClient()
@@ -489,36 +488,6 @@ export function createTvRepository(definition: TvDefinition) {
             .from(listTable)
             .innerJoin(user, eq(listTable.userId, user.id))
             .where(eq(listTable.mediaId, mediaId)).all();
-    }
-
-    function _reorderSeasEps(absoluteProgress: number, seasons: EpsPerSeasonType[]) {
-        const totalEpsAvailable = seasons.reduce((a, b) => a + b.episodes, 0);
-
-        // If series empty / progress exceeds series length, cap at last possible episode
-        if (totalEpsAvailable === 0 || seasons.length === 0) {
-            return { season: 1, episode: 0 };
-        }
-
-        if (absoluteProgress >= totalEpsAvailable) {
-            return {
-                season: seasons.at(-1)!.season,
-                episode: seasons.at(-1)!.episodes,
-            };
-        }
-
-        let accumulated = 0;
-        for (let i = 0; i < seasons.length; i += 1) {
-            const seasonEps = seasons[i].episodes;
-            if (accumulated + seasonEps >= absoluteProgress) {
-                return {
-                    season: seasons[i].season,
-                    episode: Math.max(0, absoluteProgress - accumulated),
-                };
-            }
-            accumulated += seasonEps;
-        }
-
-        return { season: 1, episode: 0 };
     }
 
     return {

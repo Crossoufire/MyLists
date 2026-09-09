@@ -122,6 +122,7 @@ describe("parseMyListsCsv", () => {
             currentEpisode: "4",
             redo: "1",
             seasons: JSON.stringify([{ season: 1, redo: 1, rating: 7 }, { season: 2, redo: 0, rating: 9 }]),
+            firstWatchProgress: "12",
             total: "20",
             addedAt: "2024-01-01 00:00:00",
             lastUpdated: "2024-01-02 00:00:00",
@@ -143,15 +144,16 @@ describe("parseMyListsCsv", () => {
                     status: Status.WATCHING,
                     favorite: false,
                     comment: "Sharp.",
-                    currentSeason: 2,
-                    currentEpisode: 4,
                     seasons: [{ season: 1, redo: 1, rating: 7 }, { season: 2, redo: 0, rating: 9 }],
-                    total: 20,
+                    firstWatchProgress: 12,
                 },
             }],
         });
         expect(parsed.items[0].payload).not.toHaveProperty("rating");
         expect(parsed.items[0].payload).not.toHaveProperty("redo");
+        expect(parsed.items[0].payload).not.toHaveProperty("total");
+        expect(parsed.items[0].payload).not.toHaveProperty("currentSeason");
+        expect(parsed.items[0].payload).not.toHaveProperty("currentEpisode");
         expect(parsed.items[0].payload).not.toHaveProperty("addedAt");
         expect(parsed.items[0].payload).not.toHaveProperty("lastUpdated");
     });
@@ -175,6 +177,7 @@ describe("parseMyListsCsv", () => {
             currentEpisode: "28",
             redo: "0",
             seasons: JSON.stringify([{ season: 1, redo: 0, rating: 10 }]),
+            firstWatchProgress: "28",
             total: "28",
             addedAt: "",
             lastUpdated: "",
@@ -190,10 +193,8 @@ describe("parseMyListsCsv", () => {
                     status: Status.COMPLETED,
                     favorite: true,
                     comment: null,
-                    currentSeason: 1,
-                    currentEpisode: 28,
                     seasons: [{ season: 1, redo: 0, rating: 10 }],
-                    total: 28,
+                    firstWatchProgress: 28,
                 },
             }],
         });
@@ -212,6 +213,7 @@ describe("parseMyListsCsv", () => {
             status: Status.COMPLETED,
             rating: "8",
             redo: "[1,0]",
+            firstWatchProgress: "16",
         }))));
 
         expect(parsed.failedCount).toBe(2);
@@ -219,6 +221,23 @@ describe("parseMyListsCsv", () => {
             expect(item.status).toBe(ImportItemStatus.FAILED);
             expect(item.statusReason).toContain("seasons");
         }
+    });
+
+    it.each([MediaType.SERIES, MediaType.ANIME])("requires first-watch progress when importing %s", mediaType => {
+        const parsed = parseMyListsCsv(toCsv([{
+            mediaName: "Show",
+            formatVersion: "2",
+            mediaType,
+            externalApiId: "100",
+            externalApiSource: ApiProviderType.TMDB,
+            releaseDate: "2024-01-01",
+            status: Status.COMPLETED,
+            total: "40",
+            seasons: JSON.stringify([{ season: 1, redo: 2, rating: 8 }]),
+        }]));
+
+        expect(parsed.failedCount).toBe(1);
+        expect(parsed.items[0].statusReason).toContain("firstWatchProgress");
     });
 
     it("parses MyLists game rows into a games import payload", () => {
