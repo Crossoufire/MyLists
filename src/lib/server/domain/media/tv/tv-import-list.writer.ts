@@ -1,6 +1,7 @@
 import {ImportItemStatus, Status} from "@/lib/utils/enums";
 import {TvService} from "@/lib/server/domain/media/tv/tv.service";
 import {ImportItemOutcome, MatchedImportItem} from "@/lib/types/imports.types";
+import {attachTvSeasonEpisodes, getTvSeasonTotals} from "@/lib/utils/media/tv-seasons";
 import {ImportListWriter} from "@/lib/server/domain/imports/matchers/media-matcher.interfaces";
 import {tvFinalListInsertSchema, TvImportPayload, tvImportPayloadSchema} from "@/lib/server/domain/media/tv/tv.types";
 
@@ -41,28 +42,38 @@ export class TvImportListWriter implements ImportListWriter {
     private async _materializeTvListPayload(mediaId: number, payload: TvImportPayload) {
         const seasons = this.tvService.getMediaEpsPerSeason(mediaId);
 
-        const redo = this._checkRedo(payload.redo, seasons.length);
+        const states = payload.seasons ?? [
+            ...seasons.map((season, index) => ({
+                season: season.season, redo: payload.redo?.[index] ?? 0, rating: payload.rating ?? null,
+            })),
+            ...(payload.redo?.slice(seasons.length) ?? []).map((redo, index) => ({
+                season: seasons.length + index + 1, redo, rating: null,
+            })).filter(s => s.redo > 0),
+        ];
+
+        const existing = new Set(states.map(s => s.season));
+        const completeStates = [...states, ...seasons.filter(s => !existing.has(s.season)).map(s => ({ season: s.season, redo: 0, rating: null }))];
+
+        const totals = getTvSeasonTotals(attachTvSeasonEpisodes(completeStates, seasons));
         const currentSeason = payload.currentSeason ?? this._defaultCurrentSeason(payload.status, seasons);
+
         const currentEpisode = payload.currentEpisode ?? this._defaultCurrentEpisode(payload.status, currentSeason, seasons);
-        const total = payload.total ?? this._calculateTotal(payload.status, currentSeason, currentEpisode, redo, seasons);
+        const total = payload.total ?? this._calculateTotal(payload.status, currentSeason, currentEpisode, totals.redoEpisodes, seasons);
 
         return {
             ...payload,
-            redo,
             total,
             currentSeason,
             currentEpisode,
+            redo: totals.redo,
+            rating: totals.rating,
+            seasons: completeStates,
         };
-    }
-
-    private _checkRedo(redo: number[] | undefined, seasonCount: number): number[] {
-        if (!redo) return Array(seasonCount).fill(0);
-        return Array.from({ length: seasonCount }, (_, idx) => redo[idx] ?? 0);
     }
 
     private _defaultCurrentSeason(status: Status, seasons: SeasonEpisodes[]) {
         if (status === Status.COMPLETED) return seasons.at(-1)!.season;
-        return 1;
+        return seasons[0].season;
     }
 
     private _defaultCurrentEpisode(status: Status, currentSeason: number, seasons: SeasonEpisodes[]) {
@@ -75,9 +86,7 @@ export class TvImportListWriter implements ImportListWriter {
         return 1;
     }
 
-    private _calculateTotal(status: Status, currentSeason: number, currentEpisode: number, redo: number[], seasons: SeasonEpisodes[]) {
-        const redoTotal = redo.reduce((sum, redoCount, idx) => sum + redoCount * (seasons[idx]?.episodes ?? 0), 0);
-
+    private _calculateTotal(status: Status, currentSeason: number, currentEpisode: number, redoTotal: number, seasons: SeasonEpisodes[]) {
         if (status === Status.COMPLETED) {
             return seasons.reduce((sum, season) => sum + season.episodes, 0) + redoTotal;
         }
