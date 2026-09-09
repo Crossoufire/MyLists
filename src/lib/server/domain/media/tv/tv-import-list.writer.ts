@@ -42,17 +42,8 @@ export class TvImportListWriter implements ImportListWriter {
     private async _materializeTvListPayload(mediaId: number, payload: TvImportPayload) {
         const seasons = this.tvService.getMediaEpsPerSeason(mediaId);
 
-        const states = payload.seasons ?? [
-            ...seasons.map((season, index) => ({
-                season: season.season, redo: payload.redo?.[index] ?? 0, rating: payload.rating ?? null,
-            })),
-            ...(payload.redo?.slice(seasons.length) ?? []).map((redo, index) => ({
-                season: seasons.length + index + 1, redo, rating: null,
-            })).filter(s => s.redo > 0),
-        ];
-
-        const existing = new Set(states.map(s => s.season));
-        const completeStates = [...states, ...seasons.filter(s => !existing.has(s.season)).map(s => ({ season: s.season, redo: 0, rating: null }))];
+        const existing = new Set(payload.seasons.map(s => s.season));
+        const completeStates = [...payload.seasons, ...seasons.filter(s => !existing.has(s.season)).map(s => ({ season: s.season, redo: 0, rating: null }))];
 
         const totals = getTvSeasonTotals(attachTvSeasonEpisodes(completeStates, seasons));
         const currentSeason = payload.currentSeason ?? this._defaultCurrentSeason(payload.status, seasons);

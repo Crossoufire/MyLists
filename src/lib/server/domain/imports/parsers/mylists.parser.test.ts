@@ -109,7 +109,7 @@ describe("parseMyListsCsv", () => {
             userId: "42",
             mediaId: "100",
             mediaName: "The Bear",
-            formatVersion: "1",
+            formatVersion: "2",
             mediaType: MediaType.SERIES,
             externalApiId: "136315",
             externalApiSource: ApiProviderType.TMDB,
@@ -120,8 +120,9 @@ describe("parseMyListsCsv", () => {
             comment: "Sharp.",
             currentSeason: "2",
             currentEpisode: "4",
-            redo: "1,0,0",
-            total: "12",
+            redo: "1",
+            seasons: JSON.stringify([{ season: 1, redo: 1, rating: 7 }, { season: 2, redo: 0, rating: 9 }]),
+            total: "20",
             addedAt: "2024-01-01 00:00:00",
             lastUpdated: "2024-01-02 00:00:00",
             customCover: "",
@@ -140,16 +141,17 @@ describe("parseMyListsCsv", () => {
                 status: ImportItemStatus.QUEUED,
                 payload: {
                     status: Status.WATCHING,
-                    rating: 8,
                     favorite: false,
                     comment: "Sharp.",
                     currentSeason: 2,
                     currentEpisode: 4,
-                    redo: [1, 0, 0],
-                    total: 12,
+                    seasons: [{ season: 1, redo: 1, rating: 7 }, { season: 2, redo: 0, rating: 9 }],
+                    total: 20,
                 },
             }],
         });
+        expect(parsed.items[0].payload).not.toHaveProperty("rating");
+        expect(parsed.items[0].payload).not.toHaveProperty("redo");
         expect(parsed.items[0].payload).not.toHaveProperty("addedAt");
         expect(parsed.items[0].payload).not.toHaveProperty("lastUpdated");
     });
@@ -160,7 +162,7 @@ describe("parseMyListsCsv", () => {
             userId: "42",
             mediaId: "100",
             mediaName: "Frieren",
-            formatVersion: "1",
+            formatVersion: "2",
             mediaType: MediaType.ANIME,
             externalApiId: "209867",
             externalApiSource: ApiProviderType.TMDB,
@@ -171,7 +173,8 @@ describe("parseMyListsCsv", () => {
             comment: "",
             currentSeason: "1",
             currentEpisode: "28",
-            redo: "[0]",
+            redo: "0",
+            seasons: JSON.stringify([{ season: 1, redo: 0, rating: 10 }]),
             total: "28",
             addedAt: "",
             lastUpdated: "",
@@ -185,18 +188,37 @@ describe("parseMyListsCsv", () => {
                 mediaType: MediaType.ANIME,
                 payload: {
                     status: Status.COMPLETED,
-                    rating: 10,
                     favorite: true,
                     comment: null,
                     currentSeason: 1,
                     currentEpisode: 28,
-                    redo: [0],
+                    seasons: [{ season: 1, redo: 0, rating: 10 }],
                     total: 28,
                 },
             }],
         });
         expect(parsed.items[0].payload).not.toHaveProperty("addedAt");
         expect(parsed.items[0].payload).not.toHaveProperty("lastUpdated");
+    });
+
+    it.each([MediaType.SERIES, MediaType.ANIME])("rejects %s exports without explicit season data", mediaType => {
+        const parsed = parseMyListsCsv(toCsv(["1", "2"].map(formatVersion => ({
+            mediaName: "Show",
+            formatVersion,
+            mediaType,
+            externalApiId: "100",
+            externalApiSource: ApiProviderType.TMDB,
+            releaseDate: "2024-01-01",
+            status: Status.COMPLETED,
+            rating: "8",
+            redo: "[1,0]",
+        }))));
+
+        expect(parsed.failedCount).toBe(2);
+        for (const item of parsed.items) {
+            expect(item.status).toBe(ImportItemStatus.FAILED);
+            expect(item.statusReason).toContain("seasons");
+        }
     });
 
     it("parses MyLists game rows into a games import payload", () => {

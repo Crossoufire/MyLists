@@ -1,5 +1,4 @@
 import * as z from "zod";
-import {REDO_MAX} from "@/lib/utils/constants";
 import {createInsertSchema} from "drizzle-zod";
 import {MediaType, TvMediaType} from "@/lib/utils/enums";
 import {minimalMyListsCSVSchema} from "@/lib/types/imports.types";
@@ -10,7 +9,6 @@ import {
     importFavoriteSchema,
     importPositiveProgressSchema,
     importProgressSchema,
-    importRatingSchema,
     importStatusSchema,
     importTotalSchema
 } from "@/lib/server/domain/imports/import-list-validation";
@@ -42,33 +40,8 @@ export type UpdateTvWithDetails = Omit<UpsertTvWithDetails, "mediaData"> & {
 };
 
 
-const parseTvRedo = (value: unknown) => {
-    if (value === "") return undefined;
-    if (Array.isArray(value)) return value;
-    if (typeof value !== "string") return value;
-
-    const trimmedValue = value.trim();
-    if (!trimmedValue) return undefined;
-
-    if (trimmedValue.startsWith("[") && trimmedValue.endsWith("]")) {
-        try {
-            return JSON.parse(trimmedValue);
-        }
-        catch {
-            return value;
-        }
-    }
-
-    const parts = trimmedValue.split(",").map((part) => part.trim());
-    if (parts.some((part) => part === "")) return value;
-
-    return parts.map((part) => Number(part));
-};
-
-
 const tvListSchemaOverrides = (mediaType: TvMediaType) => ({
     total: importTotalSchema,
-    rating: importRatingSchema,
     comment: importCommentSchema,
     favorite: importFavoriteSchema,
     currentEpisode: importProgressSchema,
@@ -78,10 +51,7 @@ const tvListSchemaOverrides = (mediaType: TvMediaType) => ({
 
 
 const seasonalImportFields = {
-    // Version 1 files contain a positional rewatch array; version 2 exports explicit seasons.
-    redo: z.preprocess(parseTvRedo, z.array(z.coerce.number().int().min(0).max(REDO_MAX)).optional()),
     seasons: z.preprocess((value) => {
-        if (value === "" || value === undefined) return undefined;
         if (typeof value !== "string") return value;
         try {
             return JSON.parse(value);
@@ -89,7 +59,7 @@ const seasonalImportFields = {
         catch {
             return value;
         }
-    }, tvSeasonStatesSchema.optional()),
+    }, tvSeasonStatesSchema),
 };
 
 
@@ -115,6 +85,8 @@ const animeFinalListInsertSchema = createInsertSchema(animeList, {
 
 const seriesImportPayloadSchema = seriesCSVListSchema.omit({
     id: true,
+    redo: true,
+    rating: true,
     userId: true,
     mediaId: true,
     addedAt: true,
@@ -125,6 +97,8 @@ const seriesImportPayloadSchema = seriesCSVListSchema.omit({
 
 const animeImportPayloadSchema = animeCSVListSchema.omit({
     id: true,
+    redo: true,
+    rating: true,
     userId: true,
     mediaId: true,
     addedAt: true,
@@ -133,19 +107,19 @@ const animeImportPayloadSchema = animeCSVListSchema.omit({
 });
 
 
-const withoutLegacyRedo = (value: unknown) => {
-    if (typeof value !== "object" || value === null || !("seasons" in value) || !value.seasons) return value;
-    return { ...value, redo: undefined };
-};
-
-
-export const tvImportPayloadSchema = z.preprocess(withoutLegacyRedo, z.union([seriesImportPayloadSchema, animeImportPayloadSchema]));
+export const tvImportPayloadSchema = z.union([seriesImportPayloadSchema, animeImportPayloadSchema]);
 
 
 export const tvFinalListInsertSchema = z.union([seriesFinalListInsertSchema, animeFinalListInsertSchema]);
 
 
-export const seriesMyListsCSVRowSchema = z.preprocess(withoutLegacyRedo, minimalMyListsCSVSchema.extend(seriesImportPayloadSchema.shape));
+export const seriesMyListsCSVRowSchema = minimalMyListsCSVSchema.extend({
+    ...seriesImportPayloadSchema.shape,
+    formatVersion: z.literal("2"),
+});
 
 
-export const animeMyListsCSVRowSchema = z.preprocess(withoutLegacyRedo, minimalMyListsCSVSchema.extend(animeImportPayloadSchema.shape));
+export const animeMyListsCSVRowSchema = minimalMyListsCSVSchema.extend({
+    ...animeImportPayloadSchema.shape,
+    formatVersion: z.literal("2"),
+});
